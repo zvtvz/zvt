@@ -1,0 +1,11 @@
+Scrapy == 1.5.1
+requests == 2.20.1
+SQLAlchemy == 1.2.14
+pandas == 0.24.2
+arrow == 0.11.0
+tzlocal == 1.5.1
+xlrd == 1.1.0
+apscheduler == 3.4.0
+TA-Lib
+jqdatasdk
+demjson == 2.2.4
