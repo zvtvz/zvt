@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Enum, Float
+from sqlalchemy import Column, String, DateTime, Float
 
-from zvt.domain.common import TradingLevel, StockKdataBase, Provider, enum_value
+from zvt.domain.common import StockDayKdataBase, IndexDayKdataBase
 
 
-class StockKdata(StockKdataBase):
-    __tablename__ = 'stock_kdata'
+class StockDayKdata(StockDayKdataBase):
+    __tablename__ = 'stock_day_kdata'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
-    level = Column(Enum(TradingLevel, values_callable=enum_value))
+    # level = Column(Enum(TradingLevel, values_callable=enum_value))
+    level = Column(String(length=32))
 
     open = Column(Float)
     hfq_open = Column(Float)
@@ -34,16 +35,17 @@ class StockKdata(StockKdataBase):
     factor = Column(Float)
 
 
-class IndexKdata(StockKdataBase):
-    __tablename__ = 'index_kdata'
+class IndexDayKdata(IndexDayKdataBase):
+    __tablename__ = 'index_day_kdata'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
-    level = Column(Enum(TradingLevel, values_callable=enum_value))
+    # level = Column(Enum(TradingLevel, values_callable=enum_value))
+    level = Column(String(length=32))
 
     open = Column(Float)
     close = Column(Float)

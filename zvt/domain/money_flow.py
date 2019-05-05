@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Enum, Float
+from sqlalchemy import Column, String, DateTime, Float
 
-from zvt.domain.common import Provider, enum_value, MoneyFlowBase
+from zvt.domain.common import MoneyFlowBase
 
 
 class MoneyFlow(MoneyFlowBase):
     __tablename__ = 'money_flow'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
+    name = Column(String(length=32))
 
     # 主力=超大单+大单
     net_main_inflows = Column(Float)

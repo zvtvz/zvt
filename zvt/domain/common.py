@@ -6,7 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 # every base logically means one type of data and physically one db file
 MetaBase = declarative_base()
 
-StockKdataBase = declarative_base()
+StockDayKdataBase = declarative_base()
+
+IndexDayKdataBase = declarative_base()
 
 FinanceBase = declarative_base()
 
@@ -28,11 +30,13 @@ class Provider(enum.Enum):
     SINA = 'sina'
     NETEASE = 'netease'
     EXCHANGE = 'exchange'
+    JOINQUANT = 'joinquant'
 
 
 class StoreCategory(enum.Enum):
     meta = 'meta'
-    stock_kdata = 'stock_kdata'
+    stock_day_kdata = 'stock_day_kdata'
+    index_day_kdata = 'index_day_kdata'
     finance = 'finance'
     dividend_financing = 'dividend_financing'
     holder = 'holder'
@@ -42,9 +46,24 @@ class StoreCategory(enum.Enum):
     business = 'business'
 
 
-store_map_base = {
+provider_map_category = {
+    Provider.EASTMONEY: [e for e in StoreCategory if e != StoreCategory.business],
+    Provider.EASTMONEY.value: [e for e in StoreCategory if e != StoreCategory.business],
+
+    Provider.SINA: [StoreCategory.meta, StoreCategory.stock_day_kdata, StoreCategory.money_flow],
+    Provider.SINA.value: [StoreCategory.meta, StoreCategory.stock_day_kdata, StoreCategory.money_flow],
+
+    Provider.NETEASE: [StoreCategory.stock_day_kdata, StoreCategory.index_day_kdata],
+    Provider.NETEASE.value: [StoreCategory.stock_day_kdata, StoreCategory.index_day_kdata],
+
+    Provider.EXCHANGE: [StoreCategory.meta, StoreCategory.macro],
+    Provider.EXCHANGE.value: [StoreCategory.meta, StoreCategory.macro]
+}
+
+category_map_db = {
     StoreCategory.meta: MetaBase,
-    StoreCategory.stock_kdata: StockKdataBase,
+    StoreCategory.stock_day_kdata: StockDayKdataBase,
+    StoreCategory.index_day_kdata: IndexDayKdataBase,
     StoreCategory.finance: FinanceBase,
     StoreCategory.dividend_financing: DividendFinancingBase,
     StoreCategory.holder: HolderBase,
@@ -58,8 +77,10 @@ store_map_base = {
 def get_store_category(data_schema):
     if isinstance(data_schema(), MetaBase):
         return StoreCategory.meta
-    if isinstance(data_schema(), StockKdataBase):
-        return StoreCategory.stock_kdata
+    if isinstance(data_schema(), StockDayKdataBase):
+        return StoreCategory.stock_day_kdata
+    if isinstance(data_schema(), IndexDayKdataBase):
+        return StoreCategory.index_day_kdata
     if isinstance(data_schema(), FinanceBase):
         return StoreCategory.finance
     if isinstance(data_schema(), BusinessBase):
@@ -199,3 +220,6 @@ class TradingLevel(enum.Enum):
 
 
 enum_value = lambda x: [e.value for e in x]
+
+if __name__ == '__main__':
+    print(provider_map_category.get('eastmoney'))

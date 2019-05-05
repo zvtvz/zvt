@@ -8,7 +8,7 @@ class ManagerTrading(TradingBase):
     __tablename__ = 'manager_trading'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -37,7 +37,7 @@ class HolderTrading(TradingBase):
     __tablename__ = 'holder_trading'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -56,7 +56,7 @@ class BigDealTrading(TradingBase):
     __tablename__ = 'big_deal_trading'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -77,7 +77,7 @@ class MarginTrading(TradingBase):
     __tablename__ = 'margin_trading'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -90,7 +90,7 @@ class DragonAndTiger(TradingBase):
     __tablename__ = 'dragon_and_tiger'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))

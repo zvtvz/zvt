@@ -21,7 +21,9 @@ class ApiWrapper(object):
 class Recorder(object):
     logger = logging.getLogger(__name__)
 
+    meta_provider = Provider.EASTMONEY  # type: Provider
     provider = Provider.EASTMONEY  # type: Provider
+    # not necessary to set,we could infer it from data_schema
     store_category = StoreCategory.meta  # type: StoreCategory
     data_schema = None
     need_securities = True  # type: bool
@@ -60,11 +62,12 @@ class Recorder(object):
         self.sleeping_time = sleeping_time
 
         # using to do db operations
-        self.session = get_db_session(store_category=self.store_category)  # type: sqlalchemy.orm.Session
+        self.session = get_db_session(provider=self.provider,
+                                      store_category=self.store_category)  # type: sqlalchemy.orm.Session
 
         if self.need_securities:
             if self.store_category != StoreCategory.meta:
-                self.meta_session = get_db_session(store_category=StoreCategory.meta)
+                self.meta_session = get_db_session(provider=self.meta_provider, store_category=StoreCategory.meta)
             else:
                 self.meta_session = self.session
             self.securities = get_securities(session=self.meta_session,
@@ -72,7 +75,7 @@ class Recorder(object):
                                              exchanges=self.exchanges,
                                              codes=self.codes,
                                              return_type='domain',
-                                             provider=self.provider)
+                                             provider=self.meta_provider)
 
     def run(self):
         raise NotImplementedError
@@ -205,7 +208,6 @@ class TimeSeriesDataRecorder(Recorder):
                 self.logger.exception(e)
 
             domain_item = self.data_schema(id=the_id,
-                                           provider=self.provider,
                                            code=security_item.code,
                                            security_id=security_item.id,
                                            timestamp=timestamp)
@@ -333,7 +335,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         # get latest record
         latest_record = get_data(security_id=security_item.id,
                                  provider=self.provider,
-                                 data_schema=self.data_schema, level=self.level,
+                                 data_schema=self.data_schema, level=self.level.value,
                                  order=self.data_schema.timestamp.desc(), limit=1,
                                  return_type='domain',
                                  session=self.session)

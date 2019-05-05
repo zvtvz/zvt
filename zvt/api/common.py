@@ -6,9 +6,9 @@ import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
 
-from zvt.domain import SecurityType, Stock, Index, StockKdata, IndexKdata, ReportPeriod, StoreCategory
-from zvt.domain import get_db_session, CompanyType, TradingLevel, StockIndex, get_store_category, \
-    StockKdataBase
+from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory
+from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category, \
+    StockDayKdataBase
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -22,9 +22,9 @@ def get_security_schema(security_type):
 
 def get_kdata_schema(security_type):
     if SecurityType(security_type) == SecurityType.stock:
-        return StockKdata
+        return StockDayKdata
     if SecurityType(security_type) == SecurityType.index:
-        return IndexKdata
+        return IndexDayKdata
 
 
 def to_report_period_type(report_period):
@@ -62,13 +62,11 @@ def next_report_period(start_report_period, size=10):
 
 
 def common_filter(query: Query, data_schema, start_timestamp=None, end_timestamp=None,
-                  filters=None, order=None, limit=None, provider='eastmoney'):
+                  filters=None, order=None, limit=None):
     if start_timestamp:
         query = query.filter(data_schema.timestamp >= to_pd_timestamp(start_timestamp))
     if end_timestamp:
         query = query.filter(data_schema.timestamp <= to_pd_timestamp(end_timestamp))
-    if provider:
-        query = query.filter(data_schema.provider == provider)
 
     if filters:
         for filter in filters:
@@ -83,10 +81,8 @@ def common_filter(query: Query, data_schema, start_timestamp=None, end_timestamp
     return query
 
 
-def get_count(data_schema, provider='eastmoney',
-              filters=None, session=None):
+def get_count(data_schema, filters=None, session=None):
     query = session.query(data_schema)
-    query = query.filter(data_schema.provider == provider)
     if filters:
         for filter in filters:
             query = query.filter(filter)
@@ -101,13 +97,13 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
              filters=None, session=None, order=None, limit=None):
     # assert (security_id is None) != (codes is None)
 
-    if isinstance(data_schema, StockKdataBase):
-        assert level != None
+    # if isinstance(data_schema(), StockDayKdataBase):
+    #     assert level != None
 
     local_session = False
     if not session:
         store_category = get_store_category(data_schema)
-        session = get_db_session(store_category=store_category)
+        session = get_db_session(provider=provider, store_category=store_category)
         local_session = True
 
     try:
@@ -121,11 +117,11 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
         if codes:
             query = query.filter(data_schema.code.in_(codes))
 
-        if isinstance(data_schema, StockKdataBase):
+        if isinstance(data_schema(), StockDayKdataBase):
             query = query.filter(data_schema.level == level)
 
         query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,
-                              end_timestamp=end_timestamp, filters=filters, order=order, limit=limit, provider=provider)
+                              end_timestamp=end_timestamp, filters=filters, order=order, limit=limit)
 
         if return_type == 'df':
             return pd.read_sql(query.statement, query.session.bind)
@@ -165,18 +161,8 @@ def get_company_type(stock_domain: Stock):
     return CompanyType.qiye
 
 
-def stock_index_rel_exist(stock_id, index_id, provider, session):
-    return session.query(exists().where(and_(
-        StockIndex.provider == provider, StockIndex.stock_id == stock_id, StockIndex.index_id == index_id))).scalar()
-
-
-def data_exist(session, schema, id, provider):
-    return session.query(exists().where(and_(schema.id == id, schema.provider == provider))).scalar()
-
-
-def save_stock_index_rel(stock_id, index_id, provider, session):
-    if not stock_index_rel_exist(stock_id, index_id, provider, session):
-        session.add(StockIndex(stock_id=stock_id, index_id=index_id, provider=provider))
+def data_exist(session, schema, id):
+    return session.query(exists().where(and_(schema.id == id))).scalar()
 
 
 def decode_security_id(security_id: str):
@@ -235,8 +221,16 @@ def generate_kdata_id(security_id, timestamp, level):
         return "{}_{}".format(timestamp, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
 
 
+def to_jq_security_id(security_item):
+    if security_item.type == SecurityType.stock.value:
+        if security_item.exchange == 'sh':
+            return '{}.XSHG'.format(security_item.code)
+        if security_item.exchange == 'sz':
+            return '{}.XSHE'.format(security_item.code)
+
+
 if __name__ == '__main__':
     store_category = get_store_category(Stock)
-    session = get_db_session(store_category=store_category)
+    session = get_db_session(provider='eastmoney', store_category=store_category)
 
     print(get_count(data_schema=Stock, filters=[Stock.exchange == 'sh'], session=session))

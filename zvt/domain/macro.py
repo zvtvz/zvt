@@ -8,7 +8,7 @@ class GDP(MacroBase):
     __tablename__ = 'gdp'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -21,7 +21,7 @@ class StockSummary(MacroBase):
     __tablename__ = 'stock_summary'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
