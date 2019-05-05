@@ -7,7 +7,7 @@ from zvt.domain import Provider, get_db_session, StoreCategory, FinanceFactor, B
     CashFlowStatement
 from zvt.utils.time_utils import to_time_str
 
-session = get_db_session(store_category=StoreCategory.finance)  # type: sqlalchemy.orm.Session
+session = get_db_session(provider='eastmoney', store_category=StoreCategory.finance)  # type: sqlalchemy.orm.Session
 
 
 # 银行指标

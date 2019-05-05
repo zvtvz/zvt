@@ -7,7 +7,7 @@ from typing import List
 from zvt.api import fundamental
 from zvt.domain import get_db_session, StoreCategory, Provider, HolderTrading, ManagerTrading
 
-session = get_db_session(store_category=StoreCategory.trading)  # type: sqlalchemy.orm.Session
+session = get_db_session(provider='eastmoney', store_category=StoreCategory.trading)  # type: sqlalchemy.orm.Session
 
 
 # 股东交易
@@ -15,7 +15,7 @@ def test_000778_holder_trading():
     result: List[HolderTrading] = fundamental.get_holder_trading(session=session, provider=Provider.EASTMONEY,
                                                                  return_type='domain',
                                                                  codes=['000778'],
-                                                                 end_timestamp='2018-12-31',
+                                                                 end_timestamp='2018-09-30',
                                                                  start_timestamp='2018-09-30',
                                                                  order=HolderTrading.holding_pct.desc())
     assert len(result) == 6
@@ -30,7 +30,7 @@ def test_000778_manager_trading():
     result: List[ManagerTrading] = fundamental.get_manager_trading(session=session, provider=Provider.EASTMONEY,
                                                                    return_type='domain',
                                                                    codes=['000778'],
-                                                                   end_timestamp='2018-12-31',
+                                                                   end_timestamp='2018-09-30',
                                                                    start_timestamp='2017-09-30',
                                                                    order=ManagerTrading.holding.desc())
     assert len(result) == 1

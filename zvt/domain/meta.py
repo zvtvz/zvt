@@ -1,26 +1,21 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Boolean, Enum, BigInteger, Float, Table, ForeignKey
-from sqlalchemy.orm import mapper, relationship
+from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Float, ForeignKey
+from sqlalchemy.orm import relationship
 
-from zvt.domain.common import MetaBase, SecurityType, StockCategory, \
-    Provider, enum_value
+from zvt.domain.common import MetaBase
+
 
 # 指数和个股为 many to many关系
-stock_indices = Table('stock_indices', MetaBase.metadata,
-                      Column('stock_id', ForeignKey('stocks.id'), primary_key=True),
-                      Column('index_id', ForeignKey('indices.id'), primary_key=True),
-                      Column('provider', Enum(Provider, values_callable=enum_value), primary_key=True)
-                      )
 
+class StockIndex(MetaBase):
+    __tablename__ = 'stock_indices'
+    id = Column(String(length=128), primary_key=True)
+    timestamp = Column(DateTime)
+    stock_id = Column(String(length=128), ForeignKey('stocks.id'), primary_key=True)
+    index_id = Column(String(length=128), ForeignKey('indices.id'), primary_key=True)
 
-class StockIndex(object):
-    def __init__(self, stock_id, index_id, provider) -> None:
-        self.stock_id = stock_id
-        self.index_id = index_id
-        self.provider = provider
-
-
-mapper(StockIndex, stock_indices)
+    indices = relationship("Index", back_populates="stocks")
+    stocks = relationship("Stock", back_populates="indices")
 
 
 # 指数
@@ -28,17 +23,16 @@ class Index(MetaBase):
     __tablename__ = 'indices'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
     timestamp = Column(DateTime)
     exchange = Column(String(length=32))
-    type = Column(Enum(SecurityType, values_callable=enum_value))
+    type = Column(String(length=64))
     code = Column(String(length=32))
     name = Column(String(length=32))
 
     is_delisted = Column(Boolean)
-    category = Column(Enum(StockCategory, values_callable=enum_value))
+    category = Column(String(length=64))
 
-    stocks = relationship("Stock", secondary=stock_indices, back_populates="indices")
+    stocks = relationship('StockIndex', back_populates="indices")
 
 
 # 个股
@@ -46,10 +40,9 @@ class Stock(MetaBase):
     __tablename__ = 'stocks'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
     timestamp = Column(DateTime)
     exchange = Column(String(length=32))
-    type = Column(Enum(SecurityType, values_callable=enum_value))
+    type = Column(String(length=64))
     code = Column(String(length=32))
     name = Column(String(length=32))
 
@@ -58,7 +51,7 @@ class Stock(MetaBase):
     industry_indices = Column(String)
     concept_indices = Column(String)
     area_indices = Column(String)
-    indices = relationship("Index", secondary=stock_indices, back_populates='stocks')
+    indices = relationship('StockIndex', back_populates='stocks')
 
     # 成立日期
     date_of_establishment = Column(DateTime)

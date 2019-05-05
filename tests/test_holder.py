@@ -7,14 +7,14 @@ from typing import List
 from zvt.api import fundamental
 from zvt.domain import get_db_session, StoreCategory, Provider, TopTenHolder, TopTenTradableHolder
 
-session = get_db_session(store_category=StoreCategory.holder)  # type: sqlalchemy.orm.Session
+session = get_db_session(provider='eastmoney', store_category=StoreCategory.holder)  # type: sqlalchemy.orm.Session
 
 
 # 十大股东
 def test_000778_top_ten_holder():
     result: List[TopTenHolder] = fundamental.get_top_ten_holder(session=session, provider=Provider.EASTMONEY,
                                                                 return_type='domain',
-                                                                codes=['000778'], end_timestamp='2018-12-31',
+                                                                codes=['000778'], end_timestamp='2018-09-30',
                                                                 start_timestamp='2018-09-30',
                                                                 order=TopTenHolder.shareholding_ratio.desc())
     assert len(result) == 10
@@ -28,7 +28,7 @@ def test_000778_top_ten_holder():
 def test_000778_top_ten_tradable_holder():
     result: List[TopTenHolder] = fundamental.get_top_ten_tradable_holder(session=session, provider=Provider.EASTMONEY,
                                                                          return_type='domain',
-                                                                         codes=['000778'], end_timestamp='2018-12-31',
+                                                                         codes=['000778'], end_timestamp='2018-09-30',
                                                                          start_timestamp='2018-09-30',
                                                                          order=TopTenTradableHolder.shareholding_ratio.desc())
     assert len(result) == 10

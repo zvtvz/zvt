@@ -4,6 +4,8 @@ import os
 from decimal import *
 from logging.handlers import RotatingFileHandler
 
+import pandas as pd
+
 getcontext().prec = 16
 
 logger = logging.getLogger(__name__)
@@ -45,9 +47,11 @@ def to_float(the_str, default=None):
         elif the_str[-1] == '万':
             the_str = the_str[0:-1]
             scale = 10000
-
+        if not the_str:
+            return default
         return float(Decimal(the_str.replace(',', '')) * Decimal(scale))
     except Exception as e:
+        logger.error('the_str:{}'.format(the_str))
         logger.exception(e)
         return default
 
@@ -119,3 +123,20 @@ def init_process_log(file_name, log_dir=None):
     # add the handlers to the logger
     root_logger.addHandler(fh)
     root_logger.addHandler(ch)
+
+
+def read_csv(f, encoding, sep=None, na_values=None):
+    try:
+        if sep:
+            return pd.read_csv(f, sep=sep, encoding=encoding, na_values=na_values)
+        else:
+            return pd.read_csv(f, encoding=encoding, na_values=na_values)
+    except UnicodeDecodeError as e:
+        if encoding == "GB2312":
+            return read_csv(f, "GBK")
+        elif encoding == "GBK":
+            return read_csv(f, "GB18030")
+        elif encoding == "GB18030":
+            return read_csv(f, "UTF-8")
+        else:
+            raise e

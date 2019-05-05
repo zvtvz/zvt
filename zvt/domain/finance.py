@@ -9,7 +9,7 @@ class BalanceSheet(FinanceBase):
     __tablename__ = 'balance_sheet'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -450,7 +450,7 @@ class IncomeStatement(FinanceBase):
     __tablename__ = 'income_statement'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -611,7 +611,7 @@ class CashFlowStatement(FinanceBase):
     __tablename__ = 'cash_flow_statement'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -811,7 +811,7 @@ class FinanceFactor(FinanceBase):
     __tablename__ = 'finance_factors'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))

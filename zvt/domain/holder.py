@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, String, DateTime, Enum, Float
 
-from zvt.domain.common import HolderBase, Provider, enum_value, ReportPeriod, InstitutionalInvestor
+from zvt.domain.common import HolderBase, enum_value, ReportPeriod
 
 
 class TopTenTradableHolder(HolderBase):
     __tablename__ = 'top_ten_tradable_holder'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -35,7 +35,7 @@ class TopTenHolder(HolderBase):
     __tablename__ = 'top_ten_holder'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -62,7 +62,7 @@ class InstitutionalInvestorHolder(HolderBase):
     __tablename__ = 'institutional_investor_holder'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # 报告披露的时间
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -72,7 +72,7 @@ class InstitutionalInvestorHolder(HolderBase):
     report_date = Column(DateTime)
 
     # 机构类型
-    institutional_investor_type = Column(Enum(InstitutionalInvestor, values_callable=enum_value))
+    institutional_investor_type = Column(String(length=64))
     # 股东代码
     holder_code = Column(String(length=32))
     # 股东名称

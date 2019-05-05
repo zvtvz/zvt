@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Enum, Float
+from sqlalchemy import Column, String, DateTime, Float
 
-from zvt.domain.common import DividendFinancingBase, Provider, enum_value
+from zvt.domain.common import DividendFinancingBase
 
 
 class DividendFinancing(DividendFinancingBase):
     __tablename__ = 'dividend_financing'
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -32,7 +32,7 @@ class DividendDetail(DividendFinancingBase):
     __tablename__ = "dividend_detail"
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     # =公告日
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
@@ -53,7 +53,7 @@ class SPODetail(DividendFinancingBase):
     __tablename__ = "spo_detail"
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))
@@ -67,7 +67,7 @@ class RightsIssueDetail(DividendFinancingBase):
     __tablename__ = "rights_issue_detail"
 
     id = Column(String(length=128), primary_key=True)
-    provider = Column(Enum(Provider, values_callable=enum_value), primary_key=True)
+    provider = Column(String(length=32))
     timestamp = Column(DateTime)
     security_id = Column(String(length=128))
     code = Column(String(length=32))

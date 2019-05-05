@@ -65,7 +65,6 @@ CHINA_STOCK_MAIN_INDEX = [{'id': 'index_cn_000001',
 
 def init_main_index(provider=Provider.EXCHANGE):
     for item in CHINA_STOCK_MAIN_INDEX:
-        item['provider'] = provider.value
         item['timestamp'] = to_pd_timestamp(item['timestamp'])
     df = pd.DataFrame(CHINA_STOCK_MAIN_INDEX)
     print(df)

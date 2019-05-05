@@ -1,11 +1,11 @@
 from zvt.api.common import get_kdata_schema
-from zvt.domain import SecurityType, StockKdata
+from zvt.domain import SecurityType, StockDayKdata
 from zvt.factors.factor import OneSchemaMustFactor
 
 
 class CrossMaFactor(OneSchemaMustFactor):
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
-                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, columns=[StockKdata.close],
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, columns=[StockDayKdata.close],
                  filters=None,
                  provider='eastmoney') -> None:
         self.data_schema = get_kdata_schema(security_type)
