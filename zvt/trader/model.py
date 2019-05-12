@@ -86,7 +86,7 @@ class Model(object):
             l.on_state_change(self.state)
 
         if self.trading_level.is_last_data_of_day(self.close_hour, self.close_minute, self.current_timestamp):
-            self.account_service.calculate_closing_account(self.current_timestamp)
+            self.account_service.save_closing_account(self.current_timestamp)
 
     def evaluate_fetch_interval(self, end_timestamp):
         if not self.current_timestamp:

@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
 
-from zvt.api.common import common_filter
+from zvt.api.common import get_data
 from zvt.domain.account import SimAccount
 
 
-def get_account(trader_name=None, model_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+def get_account(trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
                 filters=None, session=None, order=None, limit=None):
-    try:
-        data_schema = SimAccount
-        query = session.query(data_schema)
+    if trader_name:
+        if filters:
+            filters = filters + [SimAccount.trader_name == trader_name]
+        else:
+            filters = [SimAccount.trader_name == trader_name]
 
-        query = query.filter(data_schema.trader_name == trader_name, data_schema.model_name == model_name)
+    return get_data(data_schema=SimAccount, security_id=None, codes=None, level=None, provider='zvt',
+                    columns=None, return_type=return_type, start_timestamp=start_timestamp,
+                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit)
 
-        query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,
-                              end_timestamp=end_timestamp, filters=filters, order=order, limit=limit)
-        if return_type == 'df':
-            return pd.read_sql(query.statement, query.session.bind)
-        elif return_type == 'domain':
-            return query.all()
-        elif return_type == 'dict':
-            return [item.as_dict() for item in query.all()]
-    except Exception:
-        raise
+
+if __name__ == '__main__':
+    print(get_account())

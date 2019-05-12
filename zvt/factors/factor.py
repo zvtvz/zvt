@@ -66,6 +66,9 @@ class Factor(object):
     def __repr__(self) -> str:
         return self.df.__repr__()
 
+    def get_df(self):
+        return self.df
+
 
 class MustFactor(Factor):
     pass
@@ -189,3 +192,10 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
         self.df = self.df.loc[:, self.factors]
 
         self.logger.info(self.df)
+
+
+class StateFactor(Factor):
+    states = []
+
+    def get_state(self, timestamp, security_id):
+        pass

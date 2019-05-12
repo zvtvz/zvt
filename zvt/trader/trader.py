@@ -1,114 +1,124 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
+import queue
+from typing import List
 
 import pandas as pd
 
-from zvt.api.common import decode_security_id
-from zvt.api.technical import get_kdata
-from zvt.domain import TradingLevel
-from zvt.api.common import get_kdata_schema
-from zvt.models.technical_model import CrossMaModel
+from zvt.domain import SecurityType
+from zvt.selector.selector import TargetSelector
+from zvt.trader import TradingSignal, TradingSignalType
+from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 
 class Trader(object):
-    # backtest start time,would be now if not set
-    start_timestamp = None
-    # backtest end time,would not stop if not net
-    end_timestamp = None
-
-    current_timestamp = None
-    # the trading level of the trader
-    trading_level = None
-    # trading_level of model must <= self.trading_level
-    models = []
-    security_id = None
-
-    missing_data = False
-
     logger = logging.getLogger(__name__)
 
-    def __init__(self) -> None:
+    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
+                 start_timestamp=None,
+                 end_timestamp=None) -> None:
+
+        self.trader_name = type(self).__name__.lower()
+        self.trading_signal_queue = queue.Queue()
+        self.trading_signal_listeners = []
+        self.state_listeners = []
+
+        self.selectors: List[TargetSelector] = None
+
+        self.security_type = security_type
+        self.exchanges = exchanges
+        self.codes = codes
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+
         if self.start_timestamp:
             self.start_timestamp = to_pd_timestamp(self.start_timestamp)
-            self.start_timestamp = self.trading_level.floor_timestamp(self.start_timestamp)
-            self.current_timestamp = self.start_timestamp
         else:
             self.start_timestamp = now_pd_timestamp()
+
+        self.current_timestamp = self.start_timestamp
 
         if self.end_timestamp:
             self.end_timestamp = to_pd_timestamp(self.end_timestamp)
 
-        self.security_type, self.exchange, self.code = decode_security_id(self.security_id)
+        self.account_service = SimAccountService(trader_name=self.trader_name,
+                                                 timestamp=self.start_timestamp)
 
-        self.kdata_schema = get_kdata_schema(self.security_type)
+        self.add_trading_signal_listener(self.account_service)
 
-        # init history data
-        for model in self.models:
-            datas = \
-                get_kdata(self.security_id, level=model.trading_level,
-                          end_timestamp=self.start_timestamp, order=self.kdata_schema.timestamp.desc(),
-                          limit=model.history_size)
-            if datas:
-                model.init_history_data(datas)
+        self.init_selectors(security_type=self.security_type, exchanges=self.exchanges, codes=self.codes,
+                            start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
 
-            if not datas:
-                self.logger.warning(
-                    "to {}, {} no history data ".format(self.start_timestamp, self.security_id))
-            elif len(datas) < self.history_data_size:
-                self.logger.warning(
-                    "to {}, {} history data size:{}".format(self.start_timestamp, self.security_id, len(datas)))
+    def init_selectors(self, security_type, exchanges, codes, start_timestamp, end_timestamp):
+        """
+        implement this to init selectors
 
-    def on_next_period(self):
-        for model in self.models:
-            start_timestamp, end_timestamp = model.evaluate_fetch_interval(self.current_timestamp)
-            if start_timestamp and end_timestamp:
-                retry_times = 10
-                while retry_times > 0:
-                    datas = get_kdata(self.security_id, level=model.trading_level.value,
-                                      start_timestamp=start_timestamp, end_timestamp=end_timestamp)
-                    if not datas:
-                        self.logger.warning(
-                            "no kdata for security:{},trading_level:{},start_timestamp:{} end_timestamp:{} ".format(
-                                self.security_id, model.trading_level, start_timestamp, end_timestamp))
-                        retry_times = retry_times - 1
-                        continue
-                    for data in datas:
-                        series_data = pd.Series(data)
-                        series_data.name = to_pd_timestamp(data['timestamp'])
-                        model.append_data(series_data)
-                    break
+        :param security_type:
+        :type security_type:
+        :param exchanges:
+        :type exchanges:
+        :param codes:
+        :type codes:
+        :param start_timestamp:
+        :type start_timestamp:
+        :param end_timestamp:
+        :type end_timestamp:
+        """
+        raise NotImplementedError
+
+    def send_trading_signal(self, trading_signal):
+        self.trading_signal_queue.put(trading_signal)
+
+    def add_trading_signal_listener(self, listener):
+        if listener not in self.trading_signal_listeners:
+            self.trading_signal_listeners.append(listener)
+
+    def remove_trading_signal_listener(self, listener):
+        if listener in self.trading_signal_listeners:
+            self.trading_signal_listeners.remove(listener)
 
     def run(self):
-        while True:
-            if self.end_timestamp and self.current_timestamp >= self.end_timestamp:
-                return
+        # now we just support day level
+        for timestamp in pd.date_range(start=self.start_timestamp, end=self.end_timestamp,
+                                       freq='B').tolist():
 
-            self.on_next_period()
+            account = self.account_service.get_account_at_time(timestamp)
+            positions = [position.security_id for position in account.positions]
 
-            # time just add for backtest
-            self.current_timestamp += pd.Timedelta(seconds=self.trading_level.to_second())
+            # select the targets from the selectors
+            selected = set()
+            for selector in self.selectors:
+                df = selector.get_targets(timestamp)
+                if not df.empty:
+                    targets = set(df['security_id'].to_list())
+                    if not selected:
+                        selected = targets
+                    else:
+                        selected = selected & targets
 
-            if self.current_timestamp > now_pd_timestamp():
-                delta = self.current_timestamp - now_pd_timestamp()
-                time.sleep(delta.total_seconds())
+            if selected:
+                # just long the security not in the positions
+                longed = selected - set(positions)
+                position_pct = 1.0 / len(longed)
 
+                for security_id in longed:
+                    trading_signal = TradingSignal(security_id=security_id,
+                                                   the_timestamp=timestamp,
+                                                   trading_signal_type=TradingSignalType.trading_signal_open_long,
+                                                   trading_level=None,
+                                                   position_pct=position_pct)
+                    for listener in self.trading_signal_listeners:
+                        listener.on_trading_signal(trading_signal)
 
-class TestTrader(Trader):
-    security_id = 'coin_binance_EOS-USDT'
-    start_timestamp = '2018-06-28'
-    trading_level = TradingLevel.LEVEL_1DAY
+            shorted = set(positions) - selected
 
-    models = [CrossMaModel(security_id=security_id, trading_level=trading_level, trader_name='test_trader',
-                           timestamp=start_timestamp)]
+            for security_id in shorted:
+                trading_signal = TradingSignal(security_id=security_id,
+                                               the_timestamp=timestamp,
+                                               trading_signal_type=TradingSignalType.trading_signal_close_long,
+                                               trading_level=None)
+                for listener in self.trading_signal_listeners:
+                    listener.on_trading_signal(trading_signal)
 
-    def on_next_period(self):
-        super().on_next_period()
-        # check the models decision
-        # check the models state
-
-
-if __name__ == '__main__':
-    test_trader = TestTrader()
-    test_trader.run()
+            self.account_service.save_closing_account(timestamp)
