@@ -7,8 +7,7 @@ from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
 
 from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory
-from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category, \
-    StockDayKdataBase
+from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -117,7 +116,7 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
         if codes:
             query = query.filter(data_schema.code.in_(codes))
 
-        if isinstance(data_schema(), StockDayKdataBase):
+        if level:
             query = query.filter(data_schema.level == level)
 
         query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,

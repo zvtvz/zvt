@@ -12,12 +12,23 @@ class TradingSignalType(enum.Enum):
 
 
 class TradingSignal:
-    def __init__(self, security_id, start_timestamp, end_timestamp, trading_signal_type, current_price):
+    def __init__(self, security_id, the_timestamp, trading_level, trading_signal_type, position_pct):
+        """
+
+        :param security_id:
+        :type security_id:
+        :param the_timestamp:
+        :type the_timestamp:
+        :param trading_level:
+        :type trading_level: TradingLevel
+        :param trading_signal_type:
+        :type trading_signal_type: TradingSignalType
+        """
         self.security_id = security_id
-        self.start_timestamp = start_timestamp
-        self.end_timestamp = end_timestamp
+        self.the_timestamp = the_timestamp
+        self.trading_level = trading_level
         self.trading_signal_type = trading_signal_type
-        self.current_price = current_price
+        self.position_pct = position_pct
 
 
 class TradingSignalListener(object):

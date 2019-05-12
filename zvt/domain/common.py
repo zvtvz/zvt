@@ -31,6 +31,7 @@ class Provider(enum.Enum):
     NETEASE = 'netease'
     EXCHANGE = 'exchange'
     JOINQUANT = 'joinquant'
+    ZVT = 'zvt'
 
 
 class StoreCategory(enum.Enum):
@@ -57,7 +58,13 @@ provider_map_category = {
     Provider.NETEASE.value: [StoreCategory.stock_day_kdata, StoreCategory.index_day_kdata],
 
     Provider.EXCHANGE: [StoreCategory.meta, StoreCategory.macro],
-    Provider.EXCHANGE.value: [StoreCategory.meta, StoreCategory.macro]
+    Provider.EXCHANGE.value: [StoreCategory.meta, StoreCategory.macro],
+
+    Provider.ZVT: [StoreCategory.business],
+    Provider.ZVT.value: [StoreCategory.business],
+
+    Provider.JOINQUANT:[StoreCategory.stock_day_kdata],
+    Provider.JOINQUANT.value:[StoreCategory.stock_day_kdata]
 }
 
 category_map_db = {

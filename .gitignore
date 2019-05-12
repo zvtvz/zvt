@@ -92,7 +92,8 @@ ENV/
 
 /tick
 /full
-#/data/
+/data/
+data.tar.gz
 /*.zip
 /ve/
 .pytest_cache/

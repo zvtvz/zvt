@@ -1,6 +1,21 @@
 **Read this in other languages: [English](README-en.md).**  
 
-# 1. data schema and api
+ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，定位为日线级别全市场分析和交易框架。
+
+# 1.数据
+设计要点
+
+* schema的稳定性  
+整个金融市场的属性是稳定的，你需要关注的东西是稳定的，比如k线，比如财务报表，比如资金流.
+* schema字段的确定性  
+举个栗子，资产负债表里面无形资产字段，joinquant为intangible_assets，eastmoney为Intangibleasset，如果你直接依赖provider提供的字段来进行后续的计算，将有极大的风险，一家provider不可用，将使整个程序不可用。因此必须将相应的provider的数据转为自己定义的格式。
+* 多provider支持  
+前面的两个稳定性决定了多provider支持的可行，并为数据的完整性提供了保障，当某家provider数据不能满足需求时，可以多provider互补。当然，还可以利用多provider对数据进行验证。
+
+扩展数据请参考：[通过添加聚宽数据说明如何做数据扩展](./docs/add_provider.md)
+# 2. api
+整个api体系提供统一的查询能力，基本上不需要文档，会使用一个，其他也就会使用了。
+下面展示几个例子：
 ### 社保持仓 ###
 ```bash
 In [20]: df = get_top_ten_tradable_holder(start_timestamp='2018-09-30',filters=[TopTenTradableHolder.holder_name.like('%社保%')],order=TopTenTradableHolder.shareholding_ratio.desc())
@@ -8,7 +23,7 @@ Out[21]:
               holder_name    code  shareholding_numbers  shareholding_ratio      change  change_ratio
 0             全国社保基金一零三组合  600511            20000000.0              0.0720   5000000.0        0.3333
 1             全国社保基金一零三组合  002061            39990000.0              0.0715 -15000000.0       -0.2728
-2             全国社保基金六零四组合  002539            38600000.0              0.0637  32500000.0        5.3271
+2             全国社保基金六零四组合  002539         
 3             全国社保基金六零四组合  002539            38600000.0              0.0637         NaN           NaN
 
 779           全国社保基金一一三组合  601088             9258000.0              0.0005         NaN           NaN
@@ -46,24 +61,11 @@ Out[31]:
 49  600507 2018-12-31     2.0800
 
 ```
-里面包含很多数据,api用法都是一致的,掌握了一种,就掌握了所有.  
-具体查看代码:  
+更多api和相应的数据，可查看代码:  
 [*data schema*](./zvt/domain/)  
 [*data api*](./zvt/api/)  
-# 2. recorder
-如果你要扩展数据,可以通过继承[*recorder*](./zvt/recorders/recorder)里面的基类来实现.  
-项目一部分的数据源以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).
-
-<p align="center"><img src='./docs/recorder.png'/></p>
-
-# 4. factor
->"故经之以五事，校之以计，而索其情：一曰道，二曰天，三曰地，四曰将，五曰法。"------孙子兵法  
-
-我看过各种量化平台的因子库,成千上万的,它们甚至用机器学习的方法试图去找出因子跟股价的关系,然而却忘了最简单的"乘法原理",或者说因子的正交.这一点,缠中说禅曾经有过非常精彩的论述:
->"当然，上面这三个独立的程序只是本ID随手而写，任何人都可以设计自己的独立交易程序组，但原则是一致的，就是三个程序组之间必须是互相独立的，像人气指标和资金面其实是一回事情，各种技术指标都是互相相关的等等，如果把三个非独立的程序弄在一起，一点意义都没有。就像有人告诉你，面首的鼻子大就不会“早泄”，另一个告诉你耳朵大不会“早泄”，第三个告诉你胡子多不会“早泄”，如果真按这三样来选人，估计连武则天大姐的奶妈的邻居的奶妈的邻居的奶妈的奶妈的奶妈，都会不满意的"
-
-所以,只拥有一台破电脑的你,在后工业时代,最重要的是:你必须知道**标的们**在**某个时刻**在**某一方面**在**整个市场**中的位置.  
-生存,还是死亡? 离散,还是连续?  
+# 3. factor
+factor分为两类，过滤器和评分器  
 [*MustFactor*](./zvt/factors/factor.py#L120)  
 [*ScoreFactor*](./zvt/factors/factor.py#L129)  
 
@@ -142,7 +144,7 @@ stock_sz_300766 2017-12-31                   0.9                    0.9
 selector不过是各种factor的组合和权重的调整
 # 5. trader
 trader不过是selector在时间轴上的应用,然后看其表现
-# 6. 如果贡献代码
+# 6. 如何贡献代码
 
 ## 6.1 架构图
 <p align="center"><img src='./docs/architecture.png'/></p>

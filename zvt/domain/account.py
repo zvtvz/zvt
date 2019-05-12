@@ -10,10 +10,11 @@ class SimAccount(BusinessBase):
     __tablename__ = 'sim_accounts'
 
     id = Column(String(length=128), primary_key=True)
+    # 时间
+    timestamp = Column(DateTime)
+
     # 机器人名字
     trader_name = Column(String(length=128))
-    # 所用的模型
-    model_name = Column(String(length=128))
     # 可用现金
     cash = Column(Float)
     # 具体仓位
@@ -22,8 +23,6 @@ class SimAccount(BusinessBase):
     value = Column(Float)
     # 市值+cash
     all_value = Column(Float)
-    # 时间
-    timestamp = Column(DateTime)
 
     # 收盘计算
     closing = Column(Boolean)
@@ -33,13 +32,17 @@ class Position(BusinessBase):
     __tablename__ = 'positions'
 
     id = Column(String(length=128), primary_key=True)
+    # 时间
+    timestamp = Column(DateTime)
+
+    # 机器人名字
+    trader_name = Column(String(length=128))
+
     # 证券id
     security_id = Column(String(length=128))
     # 账户id
     sim_account_id = Column(Integer, ForeignKey('sim_accounts.id'))
     sim_account = relationship("SimAccount", back_populates="positions")
-    # 时间
-    timestamp = Column(DateTime)
 
     # 做多数量
     long_amount = Column(Float)
