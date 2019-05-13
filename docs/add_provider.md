@@ -181,13 +181,18 @@ def on_finish(self, security_item):
     self.logger.info('use netease provider to get turnover_rate')
 ```
 
-这里留了一个练习,由于聚宽的数据没有提供换手率和当日涨跌幅,可以通过其他数据源补全或者自己计算的方式来完成
-参考
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/netease/china_stock_day_kdata_recorder.py)
-网易的数据没有复权信息,通过聚宽的factor来补全,同理,可以用网易的换手率,涨跌幅数据来补全聚宽数据.
+这里留了一个练习,由于聚宽的数据没有提供换手率和当日涨跌幅,可以通过其他数据源补全或者自己计算的方式来完成.  
 
-运行recorder  
-在[settings](../zvt/settings.py)里面线设置自己的jqdata账户和密码
+网易的数据没有复权信息,通过聚宽的factor来补全,同理,可以用网易的换手率,涨跌幅数据来补全聚宽数据.
+[*参考代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/netease/china_stock_day_kdata_recorder.py)
+
+### 2.6 运行recorder
+
+在[settings](../zvt/settings.py)设置自己的jqdata账户和密码
+
+>jqdata目前免费使用一年,注册地址如下
+>https://www.joinquant.com/default/index/sdk?f=home&m=banner
+
 ```
 if __name__ == '__main__':
     init_process_log('jq_china_stock_day_kdata.log')
@@ -267,6 +272,5 @@ Out[26]:
 <p align="center"><img src='./recorder.png'/></p>
 
 具体实现请查看[*recorder*](../zvt/recorders/recorder.py)，项目一部分的recorder实现以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).  
+
 整个东财的recorder在基础recorder类的基础，基本上一类数据就10行左右代码搞定；掌握了上面的方法，相信大家也很容易其他写出的joinquant recorder。
-
-
