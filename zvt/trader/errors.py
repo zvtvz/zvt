@@ -4,6 +4,11 @@ class TraderError(Exception):
     pass
 
 
+class InvalidOrderParamError(TraderError):
+    def __init__(self, message="invalid order param"):
+        self.message = message
+
+
 class NotEnoughMoneyError(TraderError):
     def __init__(self, message="not enough money"):
         self.message = message

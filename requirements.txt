@@ -9,3 +9,6 @@ apscheduler == 3.4.0
 TA-Lib
 jqdatasdk
 demjson == 2.2.4
+marshmallow-sqlalchemy
+# matplotlib == 3.0.3
+pyecharts == 1.1.0

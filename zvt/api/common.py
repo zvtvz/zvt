@@ -6,8 +6,9 @@ import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
 
-from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory
+from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory, StockIndex
 from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category
+from zvt.utils.pd_utils import index_df_with_time
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -19,10 +20,10 @@ def get_security_schema(security_type):
         return Index
 
 
-def get_kdata_schema(security_type):
-    if SecurityType(security_type) == SecurityType.stock:
+def get_kdata_schema(security_type, level=TradingLevel.LEVEL_1DAY):
+    if SecurityType(security_type) == SecurityType.stock and level == TradingLevel.LEVEL_1DAY:
         return StockDayKdata
-    if SecurityType(security_type) == SecurityType.index:
+    if SecurityType(security_type) == SecurityType.index and level == TradingLevel.LEVEL_1DAY:
         return IndexDayKdata
 
 
@@ -94,11 +95,6 @@ def get_count(data_schema, filters=None, session=None):
 def get_data(data_schema, security_id=None, codes=None, level=None, provider='eastmoney', columns=None,
              return_type='df', start_timestamp=None, end_timestamp=None,
              filters=None, session=None, order=None, limit=None):
-    # assert (security_id is None) != (codes is None)
-
-    # if isinstance(data_schema(), StockDayKdataBase):
-    #     assert level != None
-
     local_session = False
     if not session:
         store_category = get_store_category(data_schema)
@@ -123,7 +119,9 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
                               end_timestamp=end_timestamp, filters=filters, order=order, limit=limit)
 
         if return_type == 'df':
-            return pd.read_sql(query.statement, query.session.bind)
+            df = pd.read_sql(query.statement, query.session.bind)
+            if not df.empty:
+                return index_df_with_time(df, drop=False)
         elif return_type == 'domain':
             return query.all()
         elif return_type == 'dict':
@@ -226,6 +224,23 @@ def to_jq_security_id(security_item):
             return '{}.XSHG'.format(security_item.code)
         if security_item.exchange == 'sz':
             return '{}.XSHE'.format(security_item.code)
+
+
+def security_id_in_index(security_id, index_id, session=None, data_schema=StockIndex, provider='eastmoney'):
+    the_id = '{}_{}'.format(index_id, security_id)
+    local_session = False
+    if not session:
+        store_category = get_store_category(data_schema)
+        session = get_db_session(provider=provider, store_category=store_category)
+        local_session = True
+
+    try:
+        return data_exist(session=session, schema=data_schema, id=the_id)
+    except Exception:
+        raise
+    finally:
+        if local_session:
+            session.close()
 
 
 if __name__ == '__main__':

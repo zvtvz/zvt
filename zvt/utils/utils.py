@@ -86,7 +86,7 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict):
             the_func = to_float
 
         the_value = the_dict.get(field_in_dict)
-        if the_value:
+        if the_value is not None:
             to_value = the_value
             if to_value in none_values:
                 setattr(the_domain, k, None)
