@@ -9,11 +9,11 @@ class ManagerGiveUpFactor(OneSchemaMustFactor):
     data_schema = ManagerTrading
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
-                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None,
-                 columns=[ManagerTrading.volume], filters=[ManagerTrading.trading_way == '减持'],
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
+                 fill_method='ffill', columns=[ManagerTrading.volume], filters=[ManagerTrading.trading_way == '减持'],
                  provider='eastmoney') -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, columns, filters, provider=provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider)
 
     def run(self):
         self.df = self.data_df.copy()

@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from zvt.domain.common import BusinessBase
 
 
+# 一天只有一条记录
 class SimAccount(BusinessBase):
     __tablename__ = 'sim_accounts'
 
@@ -28,16 +29,15 @@ class SimAccount(BusinessBase):
     closing = Column(Boolean)
 
 
+# 一天可有多条记录
 class Position(BusinessBase):
     __tablename__ = 'positions'
 
     id = Column(String(length=128), primary_key=True)
     # 时间
     timestamp = Column(DateTime)
-
     # 机器人名字
     trader_name = Column(String(length=128))
-
     # 证券id
     security_id = Column(String(length=128))
     # 账户id
@@ -50,7 +50,6 @@ class Position(BusinessBase):
     available_long = Column(Float)
     # 平均做多价格
     average_long_price = Column(Float)
-
     # 做空数量
     short_amount = Column(Float)
     # 可平空数量
@@ -63,3 +62,23 @@ class Position(BusinessBase):
     value = Column(Float)
     # 交易类型(0代表T+0,1代表T+1)
     trading_t = Column(Integer)
+
+
+class Order(BusinessBase):
+    __tablename__ = 'orders'
+
+    id = Column(String(length=128), primary_key=True)
+    # 时间
+    timestamp = Column(DateTime)
+    # 机器人名字
+    trader_name = Column(String(length=128))
+    # 证券id
+    security_id = Column(String(length=128))
+    # 订单价格
+    order_price = Column(Float)
+    # 订单数量
+    order_amount = Column(Float)
+    # 订单类型
+    order_type = Column(String(length=64))
+    # 订单状态
+    status = Column(String(length=64))

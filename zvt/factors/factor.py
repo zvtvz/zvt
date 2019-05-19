@@ -6,21 +6,22 @@ import pandas as pd
 from zvt.api.common import get_data
 from zvt.domain import SecurityType
 from zvt.utils.pd_utils import index_df_with_security_time
-from zvt.utils.time_utils import now_pd_timestamp, to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 class Factor(object):
     logger = logging.getLogger(__name__)
     df: pd.DataFrame = None
 
-    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
-                 the_timestamp=now_pd_timestamp(),
-                 window=None,
-                 window_func='mean',
-                 start_timestamp=None,
-                 end_timestamp=None) -> None:
+    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
+                 fill_method='ffill') -> None:
         """
 
+        :param keep_all_timestamp:
+        :type keep_all_timestamp:
+        :param fill_method:
+        :type fill_method:
         :param security_type:
         :type security_type:
         :param exchanges:
@@ -43,9 +44,13 @@ class Factor(object):
         elif start_timestamp and end_timestamp:
             self.start_timestamp = to_pd_timestamp(start_timestamp)
             self.end_timestamp = to_pd_timestamp(end_timestamp)
+        else:
+            assert False
 
         self.window = window
         self.window_func = window_func
+        self.keep_all_timestamp = keep_all_timestamp
+        self.fill_method = fill_method
 
         if self.window:
             self.fetch_start_timestamp = self.start_timestamp - self.window
@@ -69,6 +74,11 @@ class Factor(object):
     def get_df(self):
         return self.df
 
+    def fill_gap(self):
+        if self.keep_all_timestamp:
+            idx = pd.date_range(self.start_timestamp, self.end_timestamp)
+            self.df.reindex(idx, method=self.fill_method)
+
 
 class MustFactor(Factor):
     pass
@@ -82,10 +92,10 @@ class OneSchemaFactor(Factor):
     data_schema = None
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
-                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, columns=[], filters=None,
-                 provider='eastmoney') -> None:
-        super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func,
-                         start_timestamp, end_timestamp)
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney') -> None:
+        super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
+                         end_timestamp, keep_all_timestamp, fill_method)
 
         self.columns = set(columns) | {self.data_schema.security_id, self.data_schema.timestamp}
         self.factors = [item.key for item in columns]
@@ -123,18 +133,19 @@ class OneSchemaFactor(Factor):
 class OneSchemaMustFactor(OneSchemaFactor, MustFactor):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
-                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, columns=[], filters=None,
-                 provider='eastmoney') -> None:
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney') -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, columns, filters, provider=provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider=provider)
 
 
 class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
-                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, columns=[], filters=None,
-                 provider='eastmoney', score_levels=[0.1, 0.3, 0.5, 0.7, 0.9]) -> None:
+                 window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney',
+                 score_levels=[0.1, 0.3, 0.5, 0.7, 0.9]) -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, columns, filters, provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider)
         self.score_levels = score_levels
         self.score_levels.sort(reverse=True)
 
@@ -192,6 +203,8 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
         self.df = self.df.loc[:, self.factors]
 
         self.logger.info(self.df)
+
+        self.fill_gap()
 
 
 class StateFactor(Factor):
