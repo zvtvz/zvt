@@ -48,7 +48,7 @@ class Trader(object):
     logger = logging.getLogger(__name__)
 
     # overwrite it to custom your trader
-    selectors_comparator = SelectorsComparator(limit=5)
+    selectors_comparator = SelectorsComparator(limit=10)
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
                  start_timestamp=None,

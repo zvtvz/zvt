@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.factors.behavior_factor import ManagerGiveUpFactor
-from zvt.selectors.zvt_selector import MaSelector
+from zvt.selectors.zvt_selector import MaSelector, FinanceSelector
 from zvt.trader.trader import Trader
 
 
@@ -13,14 +12,17 @@ class FoolTrader(Trader):
                                  end_timestamp=end_timestamp)
         ma_selector.run()
 
-        # manager_behavior = ManagerGiveUpFactor(security_type=security_type, exchanges=exchanges, codes=codes,
-        #                                        start_timestamp=start_timestamp, end_timestamp=end_timestamp)
-        # manager_behavior.run()
+        finance_selector = FinanceSelector(security_type=security_type, exchanges=exchanges, codes=codes,
+                                           start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+        finance_selector.run()
 
         self.selectors.append(ma_selector)
-        # self.selectors.append(manager_behavior)
+        self.selectors.append(finance_selector)
+
+        print(ma_selector.get_df())
+        print(finance_selector.get_df())
 
 
 if __name__ == '__main__':
-    FoolTrader(start_timestamp='2018-10-01',
-               end_timestamp='2019-04-01').run()
+    FoolTrader(start_timestamp='2014-01-01',
+               end_timestamp='2019-05-01').run()

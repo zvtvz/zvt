@@ -16,8 +16,7 @@ class TargetSelector(object):
                  start_timestamp=None,
                  end_timestamp=None,
                  threshold=0.8,
-                 limit=None,
-                 parent_selector=None) -> None:
+                 limit=None) -> None:
         """
 
         :param security_type:
@@ -73,8 +72,11 @@ class TargetSelector(object):
             for factor in self.must_factors:
                 df = factor.get_df()
                 if len(df.columns) > 1:
-                    musts.append(df.agg("and", axis="columns"))
+                    s = df.agg("and", axis="columns")
+                    s.name = 'score'
+                    musts.append(s)
                 else:
+                    df.columns = ['score']
                     musts.append(df)
 
             self.must_result = list(accumulate(musts, func=operator.__and__))[-1]
@@ -84,8 +86,11 @@ class TargetSelector(object):
             for factor in self.score_factors:
                 df = factor.get_df()
                 if len(df.columns) > 1:
-                    scores.append(df.agg("mean", axis="columns"))
+                    s = df.agg("mean", axis="columns")
+                    s.name = 'score'
+                    scores.append(s)
                 else:
+                    df.columns = ['score']
                     scores.append(df)
             self.score_result = list(accumulate(scores, func=operator.__add__))[-1]
 
@@ -96,7 +101,6 @@ class TargetSelector(object):
         else:
             self.result = self.must_result
 
-        self.result.columns = ['score']
         self.df = self.result.reset_index()
 
         self.df = index_df_with_time(self.df)

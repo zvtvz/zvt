@@ -77,7 +77,9 @@ class Factor(object):
     def fill_gap(self):
         if self.keep_all_timestamp:
             idx = pd.date_range(self.start_timestamp, self.end_timestamp)
-            self.df.reindex(idx, method=self.fill_method)
+            new_index = pd.MultiIndex.from_product([self.df.index.levels[0], idx], names=['security_id', 'timestamp'])
+            self.df = self.df.reindex(new_index)
+            self.df = self.df.fillna(method=self.fill_method)
 
 
 class MustFactor(Factor):
@@ -201,6 +203,8 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
         self.df = self.df.reset_index()
         self.df = index_df_with_security_time(self.df)
         self.df = self.df.loc[:, self.factors]
+
+        self.df = self.df.loc[~self.df.index.duplicated(keep='first')]
 
         self.logger.info(self.df)
 
