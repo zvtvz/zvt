@@ -2,7 +2,7 @@
 import logging
 
 import pandas as pd
-from jqdatasdk import auth, get_price
+from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id
 from zvt.api.technical import get_kdata
@@ -124,6 +124,9 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
         # TODO:use netease provider to get turnover_rate
         self.logger.info('use netease provider to get turnover_rate')
 
+    def on_stop(self):
+        super().on_stop()
+        logout()
 
 if __name__ == '__main__':
     init_process_log('jq_china_stock_day_kdata.log')

@@ -103,6 +103,8 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
 
     try:
         if columns:
+            if data_schema.timestamp not in columns:
+                columns.append(data_schema.timestamp)
             query = session.query(*columns)
         else:
             query = session.query(data_schema)
@@ -218,14 +220,6 @@ def generate_kdata_id(security_id, timestamp, level):
         return "{}_{}".format(timestamp, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
 
 
-def to_jq_security_id(security_item):
-    if security_item.type == SecurityType.stock.value:
-        if security_item.exchange == 'sh':
-            return '{}.XSHG'.format(security_item.code)
-        if security_item.exchange == 'sz':
-            return '{}.XSHE'.format(security_item.code)
-
-
 def security_id_in_index(security_id, index_id, session=None, data_schema=StockIndex, provider='eastmoney'):
     the_id = '{}_{}'.format(index_id, security_id)
     local_session = False
@@ -241,6 +235,28 @@ def security_id_in_index(security_id, index_id, session=None, data_schema=StockI
     finally:
         if local_session:
             session.close()
+
+
+# joinquant related transform
+def to_jq_security_id(security_item):
+    if security_item.type == SecurityType.stock.value:
+        if security_item.exchange == 'sh':
+            return '{}.XSHG'.format(security_item.code)
+        if security_item.exchange == 'sz':
+            return '{}.XSHE'.format(security_item.code)
+
+
+def to_jq_report_period(timestamp):
+    the_date = to_pd_timestamp(timestamp)
+    report_period = to_report_period_type(timestamp)
+    if report_period == ReportPeriod.year:
+        return '{}'.format(the_date.year)
+    if report_period == ReportPeriod.season1:
+        return '{}q1'.format(the_date.year)
+    if report_period == ReportPeriod.half_year:
+        return '{}q2'.format(the_date.year)
+    if report_period == ReportPeriod.season3:
+        return '{}q3'.format(the_date.year)
 
 
 if __name__ == '__main__':

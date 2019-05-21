@@ -3,7 +3,7 @@ import io
 
 import pandas as pd
 import requests
-from jqdatasdk import auth, get_price
+from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id
 from zvt.api.technical import get_kdata
@@ -131,7 +131,11 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
                 self.session.execute(sql)
                 self.session.commit()
 
+    def on_stop(self):
+        super().on_stop()
+        logout()
+
 
 if __name__ == '__main__':
     init_process_log('china_stock_day_kdata.log')
-    ChinaStockDayKdataRecorder(level=TradingLevel.LEVEL_1DAY, codes=['300027']).run()
+    ChinaStockDayKdataRecorder(level=TradingLevel.LEVEL_1DAY).run()

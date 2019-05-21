@@ -92,7 +92,7 @@ class AccountService(TradingListener):
                 kdata = get_kdata(provider=self.provider, security_id=security_id, level=trading_level,
                                   start_timestamp=current_timestamp, end_timestamp=current_timestamp,
                                   limit=1)
-                if not kdata.empty:
+                if kdata is not None and not kdata.empty:
                     # use qfq for stock
                     security_type, _, _ = decode_security_id(kdata['security_id'][0])
 

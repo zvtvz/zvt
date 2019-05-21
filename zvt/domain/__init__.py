@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 
 from sqlalchemy import schema
@@ -14,6 +15,8 @@ from zvt.domain.money_flow import *
 from zvt.domain.quote import *
 from zvt.domain.trading import *
 from zvt.settings import DATA_PATH
+
+logger = logging.getLogger(__name__)
 
 _db_engine_map = {}
 _db_session_map = {}
@@ -71,6 +74,8 @@ def init_schema():
                         rs = con.execute("PRAGMA INDEX_LIST('{}')".format(table_name))
                         for row in rs:
                             index_list.append(row[1])
+
+                    logger.debug('engine:{},table:{},index:{}'.format(engine, table_name, index_list))
 
                     for col in ['timestamp', 'security_id', 'code', 'report_period']:
                         if col in table.c:
