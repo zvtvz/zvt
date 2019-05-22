@@ -73,7 +73,7 @@ def get_kdata(security_id, level=TradingLevel.LEVEL_1DAY.value, provider='eastmo
               return_type='df', start_timestamp=None, end_timestamp=None,
               filters=None, session=None, order=None, limit=None):
     security_type, exchange, code = decode_security_id(security_id)
-    data_schema = get_kdata_schema(security_type)
+    data_schema = get_kdata_schema(security_type, level=level)
 
     return get_data(data_schema=data_schema, security_id=security_id, level=level, provider=provider, columns=columns,
                     return_type=return_type,
