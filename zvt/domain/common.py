@@ -8,6 +8,8 @@ MetaBase = declarative_base()
 
 StockDayKdataBase = declarative_base()
 
+Stock1HKdataBase = declarative_base()
+
 IndexDayKdataBase = declarative_base()
 
 FinanceBase = declarative_base()
@@ -37,6 +39,7 @@ class Provider(enum.Enum):
 class StoreCategory(enum.Enum):
     meta = 'meta'
     stock_day_kdata = 'stock_day_kdata'
+    stock_1h_kdata = 'stock_1h_kdata'
     index_day_kdata = 'index_day_kdata'
     finance = 'finance'
     dividend_financing = 'dividend_financing'
@@ -63,13 +66,14 @@ provider_map_category = {
     Provider.ZVT: [StoreCategory.business],
     Provider.ZVT.value: [StoreCategory.business],
 
-    Provider.JOINQUANT:[StoreCategory.stock_day_kdata],
-    Provider.JOINQUANT.value:[StoreCategory.stock_day_kdata]
+    Provider.JOINQUANT: [StoreCategory.stock_day_kdata, StoreCategory.stock_1h_kdata],
+    Provider.JOINQUANT.value: [StoreCategory.stock_day_kdata, StoreCategory.stock_1h_kdata]
 }
 
 category_map_db = {
     StoreCategory.meta: MetaBase,
     StoreCategory.stock_day_kdata: StockDayKdataBase,
+    StoreCategory.stock_1h_kdata: Stock1HKdataBase,
     StoreCategory.index_day_kdata: IndexDayKdataBase,
     StoreCategory.finance: FinanceBase,
     StoreCategory.dividend_financing: DividendFinancingBase,
@@ -86,6 +90,8 @@ def get_store_category(data_schema):
         return StoreCategory.meta
     if isinstance(data_schema(), StockDayKdataBase):
         return StoreCategory.stock_day_kdata
+    if isinstance(data_schema(), Stock1HKdataBase):
+        return StoreCategory.stock_1h_kdata
     if isinstance(data_schema(), IndexDayKdataBase):
         return StoreCategory.index_day_kdata
     if isinstance(data_schema(), FinanceBase):

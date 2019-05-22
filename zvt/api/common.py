@@ -6,7 +6,8 @@ import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
 
-from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory, StockIndex
+from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory, \
+    StockIndex, Stock1HKdata
 from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category
 from zvt.utils.pd_utils import index_df_with_time
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
@@ -21,8 +22,15 @@ def get_security_schema(security_type):
 
 
 def get_kdata_schema(security_type, level=TradingLevel.LEVEL_1DAY):
-    if SecurityType(security_type) == SecurityType.stock and level == TradingLevel.LEVEL_1DAY:
-        return StockDayKdata
+    if type(level) == str:
+        level = TradingLevel(level)
+
+    if SecurityType(security_type) == SecurityType.stock:
+        if level == TradingLevel.LEVEL_1DAY:
+            return StockDayKdata
+        if level == TradingLevel.LEVEL_1HOUR:
+            return Stock1HKdata
+
     if SecurityType(security_type) == SecurityType.index and level == TradingLevel.LEVEL_1DAY:
         return IndexDayKdata
 
@@ -115,6 +123,8 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
             query = query.filter(data_schema.code.in_(codes))
 
         if level:
+            if type(level) == TradingLevel:
+                level = level.value
             query = query.filter(data_schema.level == level)
 
         query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,
@@ -217,7 +227,7 @@ def generate_kdata_id(security_id, timestamp, level):
     if level == TradingLevel.LEVEL_1DAY:
         return "{}_{}".format(security_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))
     else:
-        return "{}_{}".format(timestamp, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
+        return "{}_{}".format(security_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
 
 
 def security_id_in_index(security_id, index_id, session=None, data_schema=StockIndex, provider='eastmoney'):
@@ -244,6 +254,14 @@ def to_jq_security_id(security_item):
             return '{}.XSHG'.format(security_item.code)
         if security_item.exchange == 'sz':
             return '{}.XSHE'.format(security_item.code)
+
+
+def to_jq_trading_level(trading_level: TradingLevel):
+    # TODO:add other levels
+    if trading_level == TradingLevel.LEVEL_1DAY:
+        return 'daily'
+    if trading_level == TradingLevel.LEVEL_1HOUR:
+        return '60m'
 
 
 def to_jq_report_period(timestamp):

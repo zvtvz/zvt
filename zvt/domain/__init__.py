@@ -51,8 +51,10 @@ def get_db_session(provider, store_category) -> Session:
 def get_db_session_factory(provider, store_category):
     if isinstance(provider, Provider):
         provider = provider.value
+    if isinstance(store_category, StoreCategory):
+        store_category = store_category.value
 
-    session_key = '{}_{}'.format(provider, store_category.value)
+    session_key = '{}_{}'.format(provider, store_category)
     session = _db_session_map.get(session_key)
     if not session:
         session = sessionmaker()
