@@ -28,6 +28,10 @@ class MyApiWrapper(ApiWrapper):
         response = requests.get(url=url)
 
         df = utils.read_csv(io.BytesIO(response.content), encoding='GB2312', na_values='None')
+
+        if df is None:
+            []
+
         df['name'] = security_item.name
         # 指数数据
         if security_item.type == 'index':

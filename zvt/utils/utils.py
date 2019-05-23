@@ -125,18 +125,19 @@ def init_process_log(file_name, log_dir=None):
     root_logger.addHandler(ch)
 
 
+SUPPORT_ENCODINGS = ['GB2312', 'GBK', 'GB18030', 'UTF-8']
+
+
 def read_csv(f, encoding, sep=None, na_values=None):
-    try:
-        if sep:
-            return pd.read_csv(f, sep=sep, encoding=encoding, na_values=na_values)
-        else:
-            return pd.read_csv(f, encoding=encoding, na_values=na_values)
-    except UnicodeDecodeError as e:
-        if encoding == "GB2312":
-            return read_csv(f, "GBK")
-        elif encoding == "GBK":
-            return read_csv(f, "GB18030")
-        elif encoding == "GB18030":
-            return read_csv(f, "UTF-8")
-        else:
-            raise e
+    encodings = [encoding] + SUPPORT_ENCODINGS
+    for encoding in encodings:
+        try:
+            if sep:
+                return pd.read_csv(f, sep=sep, encoding=encoding, na_values=na_values)
+            else:
+                return pd.read_csv(f, encoding=encoding, na_values=na_values)
+        except UnicodeDecodeError as e:
+            logger.warning('read_csv failed by using encoding:{}'.format(encoding), e)
+            f.seek(0)
+            continue
+    return None
