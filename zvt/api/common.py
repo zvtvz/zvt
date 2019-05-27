@@ -122,10 +122,16 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
         if codes:
             query = query.filter(data_schema.code.in_(codes))
 
+        # we always store different level in different schema,the level param is not useful now
         if level:
-            if type(level) == TradingLevel:
-                level = level.value
-            query = query.filter(data_schema.level == level)
+            try:
+                # some schema has no level,just ignore it
+                data_schema.level
+                if type(level) == TradingLevel:
+                    level = level.value
+                query = query.filter(data_schema.level == level)
+            except Exception as e:
+                pass
 
         query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,
                               end_timestamp=end_timestamp, filters=filters, order=order, limit=limit)

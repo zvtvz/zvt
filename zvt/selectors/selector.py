@@ -5,7 +5,7 @@ from typing import List
 import pandas as pd
 from pandas import DataFrame
 
-from zvt.domain import SecurityType
+from zvt.domain import SecurityType, TradingLevel
 from zvt.factors.factor import MustFactor, ScoreFactor
 from zvt.utils.pd_utils import index_df_with_time
 from zvt.utils.time_utils import to_pd_timestamp
@@ -16,7 +16,8 @@ class TargetSelector(object):
                  start_timestamp=None,
                  end_timestamp=None,
                  threshold=0.8,
-                 limit=None) -> None:
+                 level=TradingLevel.LEVEL_1DAY,
+                 provider='eastmoney') -> None:
         """
 
         :param security_type:
@@ -33,12 +34,11 @@ class TargetSelector(object):
         :type end_timestamp:
         :param threshold:
         :type threshold:
-        :param limit:
-        :type limit:
         """
         self.security_type = security_type
         self.exchanges = exchanges
         self.codes = codes
+        self.provider = provider
 
         if the_timestamp:
             self.the_timestamp = to_pd_timestamp(the_timestamp)
@@ -51,7 +51,7 @@ class TargetSelector(object):
             assert False
 
         self.threshold = threshold
-        self.limit = limit
+        self.level = level
 
         self.must_factors: List[MustFactor] = None
         self.score_factors: List[ScoreFactor] = None
@@ -74,7 +74,7 @@ class TargetSelector(object):
                 if len(df.columns) > 1:
                     s = df.agg("and", axis="columns")
                     s.name = 'score'
-                    musts.append(s)
+                    musts.append(s.to_frame(name='score'))
                 else:
                     df.columns = ['score']
                     musts.append(df)
@@ -88,18 +88,18 @@ class TargetSelector(object):
                 if len(df.columns) > 1:
                     s = df.agg("mean", axis="columns")
                     s.name = 'score'
-                    scores.append(s)
+                    scores.append(s.to_frame(name='score'))
                 else:
                     df.columns = ['score']
                     scores.append(df)
             self.score_result = list(accumulate(scores, func=operator.__add__))[-1]
 
         if (self.must_result is not None) and (self.score_result is not None):
-            self.result = self.score_result[self.must_result > 0 and self.score_result > self.threshold]
+            self.result = self.score_result[self.must_result.score and (self.score_result.score >= self.threshold)]
         elif self.score_result is not None:
-            self.result = self.score_result[self.score_result > self.threshold]
+            self.result = self.score_result[self.score_result.score >= self.threshold]
         else:
-            self.result = self.must_result
+            self.result = self.must_result[self.must_result.score]
 
         self.df = self.result.reset_index()
 

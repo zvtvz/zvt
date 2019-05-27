@@ -1,19 +1,21 @@
 from zvt.api.common import get_kdata_schema
-from zvt.domain import SecurityType, StockDayKdata
+from zvt.domain import SecurityType, TradingLevel
 from zvt.factors.factor import OneSchemaMustFactor
 
 
 class CrossMaFactor(OneSchemaMustFactor):
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
-                 fill_method='ffill', columns=[StockDayKdata.qfq_close], filters=None, provider='netease',
+                 fill_method='ffill', columns=['qfq_close'], filters=None, provider='netease',
+                 level=TradingLevel.LEVEL_1DAY,
                  short_window=5, long_window=10) -> None:
-        self.data_schema = get_kdata_schema(security_type)
+        self.data_schema = get_kdata_schema(security_type, level=level)
+        columns = [self.data_schema.qfq_close]
         self.short_window = short_window
         self.long_window = long_window
 
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider, level=level)
 
     def run(self):
         short_df = self.calculate_ma(self.short_window)
@@ -34,7 +36,7 @@ class CrossMaFactor(OneSchemaMustFactor):
 
 
 if __name__ == '__main__':
-    factor = CrossMaFactor(codes=['300027'], start_timestamp='2018-01-01', end_timestamp='2019-05-01')
+    factor = CrossMaFactor(codes=['000338'], start_timestamp='2018-01-01', end_timestamp='2019-05-01')
     factor.run()
 
     print(factor.get_df())
