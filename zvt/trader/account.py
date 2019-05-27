@@ -6,7 +6,7 @@ import math
 from zvt.api.account import get_account
 from zvt.api.common import decode_security_id, get_kdata_schema
 from zvt.api.technical import get_kdata
-from zvt.domain import get_db_session, StoreCategory, SecurityType, Order
+from zvt.domain import get_db_session, StoreCategory, SecurityType, Order, Provider, TradingLevel
 from zvt.domain.account import SimAccount, Position
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
 from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError
@@ -125,6 +125,8 @@ class SimAccountService(AccountService):
 
     def __init__(self, trader_name,
                  timestamp,
+                 provider=Provider.NETEASE,
+                 level=TradingLevel.LEVEL_1DAY,
                  base_capital=1000000,
                  buy_cost=0.001,
                  sell_cost=0.001,
@@ -137,7 +139,8 @@ class SimAccountService(AccountService):
         self.trader_name = trader_name
 
         self.session = get_db_session('zvt', StoreCategory.business)
-        self.provider = 'netease'
+        self.provider = provider
+        self.level = level
         self.start_timestamp = timestamp
 
         account = get_account(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
@@ -147,6 +150,7 @@ class SimAccountService(AccountService):
             self.session.query(SimAccount).filter(SimAccount.trader_name == self.trader_name).delete()
             self.session.query(Position).filter(Position.trader_name == self.trader_name).delete()
             self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
+            self.session.commit()
 
         account = SimAccount(trader_name=self.trader_name, cash=self.base_capital,
                              positions=[], all_value=self.base_capital, value=0, closing=False,
@@ -160,7 +164,7 @@ class SimAccountService(AccountService):
             return
         # get the account for trading at the date
         account = get_account(session=self.session, trader_name=self.trader_name, return_type='domain',
-                              end_timestamp=timestamp, limit=1, order=SimAccount.timestamp.desc())[0]
+                              end_timestamp=to_time_str(timestamp), limit=1, order=SimAccount.timestamp.desc())[0]
         positions = []
         # FIXME:dump all directly
         for position_domain in account.positions:
@@ -179,9 +183,9 @@ class SimAccountService(AccountService):
         for position in self.latest_account['positions']:
             # use qfq for stock
             security_type, _, _ = decode_security_id(position['security_id'])
-            data_schema = get_kdata_schema(security_type)
+            data_schema = get_kdata_schema(security_type, level=self.level)
 
-            kdata = get_kdata(provider=self.provider, security_id=position['security_id'],
+            kdata = get_kdata(provider=self.provider, level=self.level, security_id=position['security_id'],
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 

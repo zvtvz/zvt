@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 
 from zvt.api.common import get_data
-from zvt.domain import SecurityType
+from zvt.domain import SecurityType, TradingLevel
 from zvt.utils.pd_utils import index_df_with_security_time
 from zvt.utils.time_utils import to_pd_timestamp
 
@@ -15,7 +15,7 @@ class Factor(object):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
-                 fill_method='ffill') -> None:
+                 fill_method='ffill', effective_number=10) -> None:
         """
 
         :param keep_all_timestamp:
@@ -37,6 +37,8 @@ class Factor(object):
         :param end_timestamp:
         :type end_timestamp:
         """
+        self.factor_name = type(self).__name__.lower()
+
         if the_timestamp:
             self.the_timestamp = to_pd_timestamp(the_timestamp)
             self.start_timestamp = self.the_timestamp
@@ -51,6 +53,7 @@ class Factor(object):
         self.window_func = window_func
         self.keep_all_timestamp = keep_all_timestamp
         self.fill_method = fill_method
+        self.effective_number = effective_number
 
         if self.window:
             self.fetch_start_timestamp = self.start_timestamp - self.window
@@ -79,7 +82,7 @@ class Factor(object):
             idx = pd.date_range(self.start_timestamp, self.end_timestamp)
             new_index = pd.MultiIndex.from_product([self.df.index.levels[0], idx], names=['security_id', 'timestamp'])
             self.df = self.df.reindex(new_index)
-            self.df = self.df.fillna(method=self.fill_method)
+            self.df = self.df.fillna(method=self.fill_method, limit=self.effective_number)
 
 
 class MustFactor(Factor):
@@ -95,21 +98,23 @@ class OneSchemaFactor(Factor):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
-                 fill_method='ffill', columns=[], filters=None, provider='eastmoney') -> None:
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney',
+                 level=TradingLevel.LEVEL_1DAY, effective_number=10) -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, keep_all_timestamp, fill_method)
+                         end_timestamp, keep_all_timestamp, fill_method, effective_number)
 
         self.columns = set(columns) | {self.data_schema.security_id, self.data_schema.timestamp}
         self.factors = [item.key for item in columns]
         self.provider = provider
+        self.level = level
 
         self.original_df = get_data(data_schema=self.data_schema, provider=self.provider, codes=self.codes,
                                     columns=self.columns, start_timestamp=self.fetch_start_timestamp,
-                                    end_timestamp=self.end_timestamp, filters=filters)
+                                    end_timestamp=self.end_timestamp, filters=filters, level=level)
 
         self.original_df = index_df_with_security_time(self.original_df)
 
-        self.logger.info(self.original_df)
+        self.logger.info('factor:{},original_df:\n{}'.format(self.factor_name, self.original_df))
 
         if self.window:
             self.data_df = self.original_df.reset_index(level='timestamp')
@@ -123,31 +128,34 @@ class OneSchemaFactor(Factor):
                                                                      on='timestamp').count()
             self.data_df = self.data_df.reset_index(level=0, drop=True)
             self.data_df = self.data_df.set_index('timestamp', append=True)
-            print(self.data_df)
         else:
             self.data_df = self.original_df
 
         self.data_df = self.data_df.loc[(slice(None), slice(self.start_timestamp, self.end_timestamp)), :]
 
-        self.logger.info(self.data_df)
+        self.logger.info('factor:{},data_df:\n{}'.format(self.factor_name, self.data_df))
 
 
 class OneSchemaMustFactor(OneSchemaFactor, MustFactor):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
-                 fill_method='ffill', columns=[], filters=None, provider='eastmoney') -> None:
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney',
+                 level=TradingLevel.LEVEL_1DAY, effective_number=10) -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider=provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider=provider,
+                         level=level, effective_number=effective_number)
 
 
 class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
-                 fill_method='ffill', columns=[], filters=None, provider='eastmoney',
+                 fill_method='ffill', columns=[], filters=None, provider='eastmoney', level=TradingLevel.LEVEL_1DAY,
+                 effective_number=10,
                  score_levels=[0.1, 0.3, 0.5, 0.7, 0.9]) -> None:
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
-                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider)
+                         end_timestamp, keep_all_timestamp, fill_method, columns, filters, provider, level=level,
+                         effective_number=effective_number)
         self.score_levels = score_levels
         self.score_levels.sort(reverse=True)
 
@@ -169,7 +177,7 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
         self.quantile = self.data_df.groupby(level=1).quantile(self.score_levels)
         self.quantile.index.names = ['timestamp', 'score']
 
-        self.logger.info(self.quantile)
+        self.logger.info('factor:{},quantile:\n{}'.format(self.factor_name, self.quantile))
 
         self.df = self.data_df.copy()
         self.df.reset_index(inplace=True, level='security_id')
@@ -178,7 +186,7 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
             length = len(self.df.loc[self.df.index == timestamp, 'quantile'])
             self.df.loc[self.df.index == timestamp, 'quantile'] = [self.quantile.loc[timestamp].to_dict()] * length
 
-        self.logger.info(self.df)
+        self.logger.info('factor:{},df with quantile:\n{}'.format(self.factor_name, self.df))
 
         # self.df = self.df.set_index(['security_id'], append=True)
         # self.df = self.df.sort_index(level=[0, 1])
@@ -206,7 +214,7 @@ class OneSchemaScoreFactor(OneSchemaFactor, ScoreFactor):
 
         self.df = self.df.loc[~self.df.index.duplicated(keep='first')]
 
-        self.logger.info(self.df)
+        self.logger.info('factor:{},df:\n{}'.format(self.factor_name, self.df))
 
         self.fill_gap()
 

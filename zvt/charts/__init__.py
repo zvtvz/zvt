@@ -13,6 +13,7 @@ from zvt.api.common import decode_security_id
 from zvt.api.technical import get_kdata
 from zvt.domain import SecurityType
 from zvt.settings import UI_PATH
+from zvt.utils.pd_utils import fill_with_same_index
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_ISO8601, now_time_str
 
 
@@ -39,8 +40,7 @@ def get_default_kline() -> Kline:
                 is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
             ),
         ),
-        datazoom_opts=[opts.DataZoomOpts()],
-        title_opts=opts.TitleOpts(title="Kline-ItemStyle"))
+        datazoom_opts=[opts.DataZoomOpts()])
     return kline
 
 
@@ -53,11 +53,11 @@ def get_default_timeline():
 def get_ui_path(name):
     if name is None:
         name = '{}.html'.format(now_time_str(fmt=TIME_FORMAT_ISO8601))
-    return os.path.join(UI_PATH, name)
+    return os.path.join(UI_PATH, '{}.html'.format(name))
 
 
-def draw_compare(df_list: List[pd.DataFrame], chart_type=Line, columns=[], name='security_id', render='html',
-                 file_name=None):
+def common_draw(df_list: List[pd.DataFrame], chart_type=Line, columns=[], name_field='security_id', render='html',
+                file_name=None):
     chart = None
 
     if chart_type == Line:
@@ -69,23 +69,34 @@ def draw_compare(df_list: List[pd.DataFrame], chart_type=Line, columns=[], name=
     chart.add_xaxis(xdata)
 
     for df in df_list:
-        name = df[name][0]
+        series_name = df[df[name_field].notna()][name_field][0]
 
         if len(columns) == 1:
             ydata = df.loc[:, columns[0]].values.tolist()
 
-        chart.add_yaxis(name, ydata, is_smooth=True)
+        chart.add_yaxis(series_name, ydata, is_smooth=True,
+                        markpoint_opts=opts.MarkPointOpts(
+                            data=[opts.MarkPointItem(type_="min"), opts.MarkPointItem(type_="max")]))
 
-    if render == 'html':
-        chart.render(get_ui_path(file_name))
+        if render == 'html':
+            chart.render(get_ui_path(file_name))
+        elif render == 'notebook':
+            chart.render_notebook()
 
     return chart
 
 
-def draw_kline(df_list: List[pd.DataFrame], render='html', file_name=None) -> Kline:
+def draw_line(df_list: List[pd.DataFrame], columns=[], name_field='security_id', render='html',
+              file_name=None):
+    return common_draw(df_list=df_list, chart_type=Line, columns=columns, name_field=name_field, render=render,
+                       file_name=file_name)
+
+
+def draw_kline(df_list: List[pd.DataFrame], markpoints_list: List[pd.DataFrame] = None, render='html',
+               file_name=None) -> Kline:
     kline = None
-    for df in df_list:
-        security_id = df['security_id'][0]
+    for idx, df in enumerate(df_list):
+        security_id = df[df.security_id.notna()]['security_id'][0]
         security_type, _, _ = decode_security_id(security_id)
 
         xdata = [to_time_str(timestamp) for timestamp in df.index]
@@ -97,7 +108,34 @@ def draw_kline(df_list: List[pd.DataFrame], render='html', file_name=None) -> Kl
 
         current_kline = get_default_kline()
         current_kline.add_xaxis(xdata)
+
+        # markpoint
+        markpoint_opts = None
+        if markpoints_list:
+            mark_points = markpoints_list[idx]
+            if mark_points is not None and not mark_points.empty:
+                mark_point_items = []
+                for timestamp, item in mark_points.iterrows():
+                    if to_time_str(timestamp) in df.index:
+
+                        if item['order_type'] == 'order_long':
+                            flag_name = 'buy'
+                            symbol = 'arrow'
+
+                        if item['order_type'] == 'order_close_long':
+                            flag_name = 'sell'
+                            symbol = 'pin'
+
+                        value = round(item['order_price'], 2)
+
+                        mark_point_items.append(
+                            opts.MarkPointItem(name=flag_name, coord=[to_time_str(timestamp), value],
+                                               value=value, symbol=symbol, symbol_size=20))
+
+                    markpoint_opts = opts.MarkPointOpts(data=mark_point_items, symbol_size=20)
+
         current_kline.add_yaxis(security_id, ydata,
+                                markpoint_opts=markpoint_opts,
                                 itemstyle_opts=opts.ItemStyleOpts(
                                     color="#ec0000",
                                     color0="#00da3c",
@@ -111,10 +149,19 @@ def draw_kline(df_list: List[pd.DataFrame], render='html', file_name=None) -> Kl
 
     if render == 'html':
         kline.render(get_ui_path(file_name))
+    elif render == 'notebook':
+        kline.render_notebook()
 
     return kline
 
 
 if __name__ == '__main__':
-    kdata = get_kdata(security_id='stock_sz_300027', provider='netease')
-    draw_kline([kdata])
+    kdata1 = get_kdata(security_id='stock_sz_000338', provider='netease')
+    kdata2 = get_kdata(security_id='stock_sz_000778', provider='netease')
+
+    df_list = fill_with_same_index([kdata1, kdata2])
+    assert len(df_list[0]) == len(df_list[1])
+    print(df_list[0])
+    print(df_list[1])
+
+    draw_kline(df_list, file_name='test_kline.html')

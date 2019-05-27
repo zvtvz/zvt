@@ -137,11 +137,11 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in TradingLevel])
+    parser.add_argument('--level', help='trading level', default='1h', choices=[item.value for item in TradingLevel])
 
     args = parser.parse_args()
 
     level = TradingLevel(args.level)
 
     init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, codes=['603220']).run()
+    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=['000338']).run()

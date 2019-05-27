@@ -15,6 +15,8 @@ TIME_FORMAT_DAY1 = 'YYYYMMDD'
 
 TIME_FORMAT_MINUTE = 'YYYYMMDDHHmm'
 
+TIME_FORMAT_MINUTE1 = 'HH:mm'
+
 
 # ms(int) or second(float) or str
 def to_pd_timestamp(the_time):
@@ -61,7 +63,7 @@ def is_same_date(one, two):
 
 
 def is_same_time(one, two):
-    to_timestamp(one) == to_timestamp(two)
+    return to_timestamp(one) == to_timestamp(two)
 
 
 def get_year_quarter(time):
@@ -83,3 +85,13 @@ def get_year_quarters(start, end=pd.Timestamp.now()):
                [(current_year_quarter[0], x) for x in range(1, current_year_quarter[1] + 1)]
     else:
         raise Exception("wrong start time:{}".format(start))
+
+
+def date_and_time(the_date, the_time):
+    time_str = '{}T{}:00.000'.format(to_time_str(the_date), the_time)
+
+    return to_pd_timestamp(time_str)
+
+
+if __name__ == '__main__':
+    print(date_and_time('2019-10-01', '10:00'))
