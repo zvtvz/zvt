@@ -315,7 +315,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, fetching_style=TimeSeriesFetchingStyle.end_size,
-                 default_size=2000, contain_unfinished_data=True, level=TradingLevel.LEVEL_5MIN,
+                 default_size=2000, contain_unfinished_data=True, level=TradingLevel.LEVEL_1DAY,
                  one_shot=False) -> None:
         super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
                          default_size, one_shot)
@@ -351,12 +351,12 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         current_time = pd.Timestamp.now()
         time_delta = current_time - latest_timestamp
 
-        close_hour, close_minute = get_close_time(security_item.id)
-
         if self.level == TradingLevel.LEVEL_1DAY:
             if is_same_date(current_time, latest_timestamp):
                 return latest_timestamp, None, 0, None
             return latest_timestamp, None, time_delta.days + 1, None
+
+        close_hour, close_minute = get_close_time(security_item.id)
 
         # to today,check closing time
         if time_delta.days == 0:

@@ -58,6 +58,9 @@ def get_ui_path(name):
 
 def common_draw(df_list: List[pd.DataFrame], chart_type=Line, columns=[], name_field='security_id', render='html',
                 file_name=None):
+    if len(df_list) > 1:
+        df_list = fill_with_same_index(df_list=df_list)
+
     chart = None
 
     if chart_type == Line:
@@ -94,6 +97,9 @@ def draw_line(df_list: List[pd.DataFrame], columns=[], name_field='security_id',
 
 def draw_kline(df_list: List[pd.DataFrame], markpoints_list: List[pd.DataFrame] = None, render='html',
                file_name=None) -> Kline:
+    if len(df_list) > 1:
+        df_list = fill_with_same_index(df_list=df_list)
+
     kline = None
     for idx, df in enumerate(df_list):
         security_id = df[df.security_id.notna()]['security_id'][0]
@@ -121,10 +127,12 @@ def draw_kline(df_list: List[pd.DataFrame], markpoints_list: List[pd.DataFrame] 
                         if item['order_type'] == 'order_long':
                             flag_name = 'buy'
                             symbol = 'arrow'
+                            color = "#ec0000"
 
                         if item['order_type'] == 'order_close_long':
                             flag_name = 'sell'
                             symbol = 'pin'
+                            color = "#00da3c"
 
                         value = round(item['order_price'], 2)
 

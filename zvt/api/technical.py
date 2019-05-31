@@ -21,7 +21,7 @@ def df_to_db(df, data_schema, provider):
     store_category = get_store_category(data_schema)
     db_engine = get_db_engine(provider, store_category=store_category)
 
-    current = get_data(data_schema=data_schema, columns=[data_schema.id])
+    current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider)
     df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')

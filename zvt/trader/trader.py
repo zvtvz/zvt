@@ -15,35 +15,30 @@ from zvt.utils.time_utils import to_pd_timestamp
 logger = logging.getLogger(__name__)
 
 
+# overwrite it to custom your selector comparator
 class SelectorsComparator(object):
 
-    def __init__(self, limit=10) -> None:
-        self.selectors: List[TargetSelector] = []
+    def __init__(self, selectors: List[TargetSelector]) -> None:
+        self.selectors: List[TargetSelector] = selectors
+
+    def make_decision(self, timestamp, trading_level: TradingLevel):
+        raise NotImplementedError
+
+
+# a selector comparator select the targets ordered by score and limit the targets number
+class LimitSelectorsComparator(SelectorsComparator):
+
+    def __init__(self, selectors: List[TargetSelector], limit=10) -> None:
+        super().__init__(selectors)
         self.limit = limit
 
-    def add_selector(self, selector):
-        """
-
-        :param selector:
-        :type selector: TargetSelector
-        """
-        self.selectors.append(selector)
-
-    def add_selectors(self, selectors):
-        """
-
-        :param selectors:
-        :type selectors: List[TargetSelector]
-        """
-        self.selectors += selectors
-
-    def make_decision(self, timestamp, trading_level):
+    def make_decision(self, timestamp, trading_level: TradingLevel):
         df_result = pd.DataFrame()
         for selector in self.selectors:
             if selector.level == trading_level:
                 df = selector.get_targets(timestamp)
                 if not df.empty:
-                    df = df.sort_values(by=['security_id', 'score'])
+                    df = df.sort_values(by=['score', 'security_id'])
                     if len(df.index) > self.limit:
                         df = df.iloc[list(range(self.limit)), :]
                 df_result = df_result.append(df)
@@ -66,9 +61,6 @@ class TargetsSlot(object):
 
 class Trader(object):
     logger = logging.getLogger(__name__)
-
-    # overwrite it to custom your trader
-    selectors_comparator = SelectorsComparator(limit=10)
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
                  start_timestamp=None,
@@ -108,9 +100,13 @@ class Trader(object):
         self.init_selectors(security_type=self.security_type, exchanges=self.exchanges, codes=self.codes,
                             start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
 
-        self.selectors_comparator.add_selectors(self.selectors)
+        self.selectors_comparator = LimitSelectorsComparator(self.selectors)
 
-        self.trading_levels = list(set([TradingLevel(selector.level) for selector in self.selectors]))
+        self.trading_level_asc = list(set([TradingLevel(selector.level) for selector in self.selectors]))
+        self.trading_level_asc.sort()
+
+        self.trading_level_desc = list(self.trading_level_asc)
+        self.trading_level_desc.reverse()
 
         self.targets_slot: TargetsSlot = TargetsSlot()
 
@@ -140,20 +136,17 @@ class Trader(object):
             self.trading_signal_listeners.remove(listener)
 
     def handle_targets_slot(self, timestamp):
-        # handling max level to min level
-        self.trading_levels.sort(reverse=True)
-
-        # the default behavior is select the targets in all levels
+        # the default behavior is selecting the targets in all levels
         selected = None
-        for level in self.trading_levels:
-            current = self.targets_slot.get_targets(level=level)
-            if not current:
-                current = {}
+        for level in self.trading_level_desc:
+            targets = self.targets_slot.get_targets(level=level)
+            if not targets:
+                targets = {}
 
             if not selected:
-                selected = current
+                selected = targets
             else:
-                selected = selected & current
+                selected = selected & targets
 
         if selected:
             self.logger.info('timestamp:{},selected:{}'.format(timestamp, selected))
@@ -212,11 +205,11 @@ class Trader(object):
                                                                                    timestamp=timestamp)):
                 self.account_service.on_trading_open(timestamp)
 
-            # handle trading_signal_slo
+            # the time always move on by min level step and we could check all level targets in the slot
             self.handle_targets_slot(timestamp=timestamp)
 
-            # handle selector
-            for level in self.trading_levels:
+            for level in self.trading_level_asc:
+                # in every cycle, all level selector do its job in its time
                 if (is_in_finished_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
                                               timestamp=timestamp, level=level)):
                     df = self.selectors_comparator.make_decision(timestamp=timestamp,

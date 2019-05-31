@@ -25,5 +25,5 @@ class FoolTrader(Trader):
 
 
 if __name__ == '__main__':
-    FoolTrader(start_timestamp='2014-01-01',
+    FoolTrader(start_timestamp='2019-01-01',
                end_timestamp='2019-05-01', provider=Provider.NETEASE).run()

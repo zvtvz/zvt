@@ -20,13 +20,13 @@ class MultipleLevelTrader(Trader):
                                            provider='joinquant')
         ma_1h_selector.run()
 
-        finance_selector = FundamentalSelector(security_type=security_type, exchanges=exchanges, codes=codes,
-                                               start_timestamp=start_timestamp, end_timestamp=end_timestamp)
-        finance_selector.run()
+        # finance_selector = FundamentalSelector(security_type=security_type, exchanges=exchanges, codes=codes,
+        #                                        start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+        # finance_selector.run()
 
         self.selectors.append(ma_1d_selector)
         self.selectors.append(ma_1h_selector)
-        self.selectors.append(finance_selector)
+        # self.selectors.append(finance_selector)
 
         print(ma_1d_selector.get_df())
         print(ma_1h_selector.get_df())
@@ -35,4 +35,4 @@ class MultipleLevelTrader(Trader):
 if __name__ == '__main__':
     MultipleLevelTrader(provider=Provider.JOINQUANT,
                         start_timestamp='2019-01-01',
-                        end_timestamp='2019-05-01', trading_level=TradingLevel.LEVEL_1HOUR).run()
+                        end_timestamp='2019-05-01', trading_level=TradingLevel.LEVEL_1HOUR, codes=['000338']).run()
