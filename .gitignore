@@ -97,3 +97,6 @@ data.tar.gz
 /*.zip
 /ve/
 .pytest_cache/
+
+zen/
+eastmoney/

@@ -94,6 +94,6 @@ def draw_account_details(trader_name, render='html'):
 
 
 if __name__ == '__main__':
-    draw_account_list(['fooltrader', 'multipleleveltrader'])
+    #draw_account_list(['fooltrader', 'multipleleveltrader'])
     # draw_account_details('multipleleveltrader')
-    # draw_order_signals('multipleleveltrader')
+    draw_order_signals('fooltrader')

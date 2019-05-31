@@ -4,7 +4,7 @@ import enum
 
 class TradingSignalType(enum.Enum):
     trading_signal_open_long = 'trading_signal_open_long'
-    trading_signal_open_short = 'trading_signal_open_oshort'
+    trading_signal_open_short = 'trading_signal_open_short'
     trading_signal_keep_long = 'trading_signal_keep_long'
     trading_signal_keep_short = 'trading_signal_keep_short'
     trading_signal_close_long = 'trading_signal_close_long'

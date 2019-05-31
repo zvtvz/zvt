@@ -10,6 +10,7 @@ from zvt.utils.time_utils import get_year_quarters, is_same_date, to_pd_timestam
 from zvt.utils.utils import to_float
 
 
+# this recorder is deprecated,because sina hfq factor could not get now
 class StockKdataSinaSpider(FixedCycleDataRecorder):
     provider = Provider.SINA
     store_category = StoreCategory.stock_day_kdata
@@ -127,10 +128,10 @@ class StockKdataSinaSpider(FixedCycleDataRecorder):
             else:
                 sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
                       'security_id=\'{}\' and level=\'{}\''.format(latest_factor, latest_factor,
-                                                                                        latest_factor,
-                                                                                        latest_factor,
-                                                                                        security_item.id,
-                                                                                        self.level.value)
+                                                                   latest_factor,
+                                                                   latest_factor,
+                                                                   security_item.id,
+                                                                   self.level.value)
             self.session.execute(sql)
             self.session.commit()
 

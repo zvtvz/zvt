@@ -11,7 +11,6 @@ from zvt.utils.time_utils import to_pd_timestamp
 
 class Factor(object):
     logger = logging.getLogger(__name__)
-    df: pd.DataFrame = None
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
                  window=None, window_func='mean', start_timestamp=None, end_timestamp=None, keep_all_timestamp=False,
@@ -64,6 +63,9 @@ class Factor(object):
         self.exchanges = exchanges
         self.codes = codes
 
+        self.data_df: pd.DataFrame = None
+        self.df: pd.DataFrame = None
+
     def run(self):
         """
         implement this to calculate factors normalize to [0,1]
@@ -72,17 +74,21 @@ class Factor(object):
         raise NotImplementedError
 
     def __repr__(self) -> str:
-        return self.df.__repr__()
+        return self.data_df.__repr__()
 
     def get_df(self):
         return self.df
 
+    def get_data_df(self):
+        return self.data_df
+
     def fill_gap(self):
         if self.keep_all_timestamp:
             idx = pd.date_range(self.start_timestamp, self.end_timestamp)
-            new_index = pd.MultiIndex.from_product([self.df.index.levels[0], idx], names=['security_id', 'timestamp'])
-            self.df = self.df.reindex(new_index)
-            self.df = self.df.fillna(method=self.fill_method, limit=self.effective_number)
+            new_index = pd.MultiIndex.from_product([self.data_df.index.levels[0], idx],
+                                                   names=['security_id', 'timestamp'])
+            self.data_df = self.data_df.reindex(new_index)
+            self.data_df = self.data_df.fillna(method=self.fill_method, limit=self.effective_number)
 
 
 class MustFactor(Factor):
@@ -103,8 +109,12 @@ class OneSchemaFactor(Factor):
         super().__init__(security_type, exchanges, codes, the_timestamp, window, window_func, start_timestamp,
                          end_timestamp, keep_all_timestamp, fill_method, effective_number)
 
-        self.columns = set(columns) | {self.data_schema.security_id, self.data_schema.timestamp}
-        self.factors = [item.key for item in columns]
+        if columns:
+            self.columns = set(columns) | {self.data_schema.security_id, self.data_schema.timestamp}
+            self.factors = [item.key for item in columns]
+        else:
+            self.columns = None
+
         self.provider = provider
         self.level = level
 
