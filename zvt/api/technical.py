@@ -4,11 +4,15 @@ import pandas as pd
 
 from zvt.api.common import common_filter, get_data, decode_security_id
 from zvt.api.common import get_security_schema, get_kdata_schema
-from zvt.domain import get_db_engine, get_db_session, TradingLevel, StoreCategory, Provider, get_store_category
+from zvt.domain import get_db_engine, get_db_session, TradingLevel, Provider, get_store_category
 
 
 def init_securities(df, security_type='stock', provider=Provider.EASTMONEY):
-    db_engine = get_db_engine(provider, store_category=StoreCategory.meta)
+    df = df.drop_duplicates(subset=['id'])
+    data_schema = get_security_schema(security_type)
+    store_category = get_store_category(data_schema=data_schema)
+
+    db_engine = get_db_engine(provider, store_category=store_category)
     security_schema = get_security_schema(security_type)
 
     current = get_securities(security_type=security_type, columns=[security_schema.id], provider=provider)
@@ -31,10 +35,13 @@ def get_securities(security_type='stock', exchanges=None, codes=None, columns=No
                    return_type='df', session=None, start_timestamp=None, end_timestamp=None,
                    filters=None, order=None, limit=None, provider='eastmoney'):
     local_session = False
-    if not session:
-        session = get_db_session(provider=provider, store_category=StoreCategory.meta)
-        local_session = True
+
     data_schema = get_security_schema(security_type)
+    store_category = get_store_category(data_schema=data_schema)
+
+    if not session:
+        session = get_db_session(provider=provider, store_category=store_category)
+        local_session = True
 
     if not order:
         order = data_schema.code.asc()
@@ -83,7 +90,8 @@ def get_kdata(security_id, level=TradingLevel.LEVEL_1DAY.value, provider='eastmo
 
 if __name__ == '__main__':
     # print(get_securities())
-    print(get_kdata(security_id='stock_sz_300027', provider='netease'))
+    # print(get_kdata(security_id='stock_sz_300027', provider='netease'))
+    print(get_kdata(security_id='coin_binance_EOS/USDT', provider='ccxt', level=TradingLevel.LEVEL_1MIN))
     # print(get_finance_factor(security_id='stock_sh_601318', session=get_db_session('eastmoney')))
     # a = get_stock_category('stock_sz_000029')
     # print(a)

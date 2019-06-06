@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import enum
 import logging
-import math
 import time
 
 import pandas as pd
 
 from zvt.api.common import get_one_day_trading_minutes, get_close_time, get_data
 from zvt.api.technical import get_securities
-from zvt.domain import TradingLevel, get_db_session, StoreCategory, Provider, SecurityType
+from zvt.domain import TradingLevel, get_db_session, Provider, SecurityType, get_store_category
 from zvt.utils.time_utils import is_same_date, now_pd_timestamp, to_pd_timestamp
 from zvt.utils.utils import fill_domain_from_dict
 
@@ -21,29 +20,18 @@ class ApiWrapper(object):
 class Recorder(object):
     logger = logging.getLogger(__name__)
 
-    meta_provider = Provider.EASTMONEY  # type: Provider
-    provider = Provider.EASTMONEY  # type: Provider
-    # not necessary to set,we could infer it from data_schema
-    store_category = StoreCategory.meta  # type: StoreCategory
+    # overwrite them to setup the data you want to record
+    provider: Provider = None
     data_schema = None
-    need_securities = True  # type: bool
+
     url = None
 
     def __init__(self,
-                 security_type=SecurityType.stock,
-                 exchanges=['sh', 'sz'],
-                 codes=None,
                  batch_size=10,
                  force_update=False,
                  sleeping_time=10) -> None:
         """
 
-        :param security_type:
-        :type security_type:SecurityType
-        :param exchanges:the exchanges for recording
-        :type exchanges:list of str
-        :param codes:the codes for recording
-        :type codes:list of str
         :param batch_size:batch size to saving to db
         :type batch_size:int
         :param force_update: whether force update the data even if it exists
@@ -52,10 +40,10 @@ class Recorder(object):
         :type sleeping_time:int
         """
 
-        # setup the securities you want to record
-        self.security_type = security_type
-        self.exchanges = exchanges
-        self.codes = codes
+        assert self.provider is not None
+        assert self.data_schema is not None
+
+        self.store_category = get_store_category(data_schema=self.data_schema)
 
         self.batch_size = batch_size
         self.force_update = force_update
@@ -63,25 +51,46 @@ class Recorder(object):
 
         # using to do db operations
         self.session = get_db_session(provider=self.provider,
-                                      store_category=self.store_category)  # type: sqlalchemy.orm.Session
-
-        if self.need_securities:
-            if self.store_category != StoreCategory.meta:
-                self.meta_session = get_db_session(provider=self.meta_provider, store_category=StoreCategory.meta)
-            else:
-                self.meta_session = self.session
-            self.securities = get_securities(session=self.meta_session,
-                                             security_type=self.security_type,
-                                             exchanges=self.exchanges,
-                                             codes=self.codes,
-                                             return_type='domain',
-                                             provider=self.meta_provider)
+                                      store_category=self.store_category)
 
     def run(self):
         raise NotImplementedError
 
     def sleep(self):
         time.sleep(self.sleeping_time)
+
+
+class RecorderForSecurities(Recorder):
+    # overwrite them to fetch the security list
+    meta_provider: Provider = None
+    meta_schema = None
+
+    def __init__(self,
+                 security_type=SecurityType.stock,
+                 exchanges=['sh', 'sz'],
+                 codes=None,
+                 batch_size=10,
+                 force_update=False,
+                 sleeping_time=10) -> None:
+        super().__init__(batch_size=batch_size, force_update=force_update, sleeping_time=sleeping_time)
+
+        assert self.meta_provider is not None
+        assert self.meta_schema is not None
+        self.meta_category = get_store_category(data_schema=self.meta_schema)
+
+        # setup the securities you want to record
+        self.security_type = security_type
+        self.exchanges = exchanges
+        self.codes = codes
+
+        self.meta_session = get_db_session(provider=self.meta_provider, store_category=self.meta_category)
+        # init the security listo
+        self.securities = get_securities(session=self.meta_session,
+                                         security_type=self.security_type,
+                                         exchanges=self.exchanges,
+                                         codes=self.codes,
+                                         return_type='domain',
+                                         provider=self.meta_provider)
 
 
 class TimeSeriesFetchingStyle(enum.Enum):
@@ -101,7 +110,7 @@ class TimeSeriesFetchingStyle(enum.Enum):
     timestamps = 'timestamps'
 
 
-class TimeSeriesDataRecorder(Recorder):
+class TimeSeriesDataRecorder(RecorderForSecurities):
     api_wrapper = None  # type: ApiWrapper
     request_method = 'post'
     # 返回json数据中需要的数据的path组成的列表
@@ -120,12 +129,28 @@ class TimeSeriesDataRecorder(Recorder):
         """
         evaluate the size for recording data
         :param security_item:
-        :type security_item:Union[Stock]
-        :return:the start,end,size,list of timestamps need to recording,size=0 means finish recording
-        :rtype:(pd.Timestamp,pd.Timestamp,int,list of pd.Timestamp)
+        :type security_item: str
+        :return:the start,end,size need to recording,size=0 means finish recording
+        :rtype:(pd.Timestamp,pd.Timestamp,int)
         """
 
-        raise NotImplementedError
+        # get latest record
+        latest_record = get_data(security_id=security_item.id,
+                                 provider=self.provider,
+                                 data_schema=self.data_schema,
+                                 order=self.data_schema.timestamp.desc(), limit=1,
+                                 return_type='domain',
+                                 session=self.session)
+
+        if latest_record:
+            latest_timestamp = latest_record[0].timestamp
+        else:
+            latest_timestamp = security_item.timestamp
+
+        if not latest_timestamp:
+            return None, None, self.default_size, None
+
+        return latest_timestamp, None, self.default_size, None
 
     def generate_request_param(self, security_item, start, end, size, timestamp):
         raise NotImplementedError
@@ -282,8 +307,11 @@ class TimeSeriesDataRecorder(Recorder):
                                     domain_item.id = "{}_{}".format(domain_item.id, duplicate_count)
 
                                 domain_list.append(domain_item)
+
                         if domain_list:
                             self.persist(security_item, domain_list)
+                        else:
+                            self.logger.info('just get {} duplicated data in this cycle'.format(len(original_list)))
 
                     # no  more data or force set to one shot means finished
                     if not original_list or self.one_shot:
@@ -315,13 +343,15 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, fetching_style=TimeSeriesFetchingStyle.end_size,
-                 default_size=2000, contain_unfinished_data=True, level=TradingLevel.LEVEL_1DAY,
-                 one_shot=False) -> None:
+                 default_size=2000, contain_unfinished_data=False, level=TradingLevel.LEVEL_1DAY,
+                 one_shot=False, kdata_use_begin_time=False) -> None:
         super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
                          default_size, one_shot)
 
         self.level = level
+        # FIXME:should remove unfinished data when recording,always set it to False now
         self.contain_unfinished_data = contain_unfinished_data
+        self.kdata_use_begin_time = kdata_use_begin_time
 
     def evaluate_start_end_size_timestamps(self, security_item):
         """
@@ -359,22 +389,33 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         close_hour, close_minute = get_close_time(security_item.id)
 
         # to today,check closing time
-        if time_delta.days == 0:
+        # 0,0 means never stop,e.g,coin
+        if (close_hour != 0 and close_minute != 0) and time_delta.days == 0:
             if latest_timestamp.hour == close_hour and latest_timestamp.minute == close_minute:
                 return latest_timestamp, None, 0, None
 
-        if self.level == TradingLevel.LEVEL_5MIN:
-            if time_delta.days > 0:
-                minutes = (time_delta.days + 1) * get_one_day_trading_minutes(security_item.id)
-                return latest_timestamp, None, int(math.ceil(minutes / 5)) + 1, None
-            else:
-                return latest_timestamp, None, int(math.ceil(time_delta.total_seconds() / (5 * 60))) + 1, None
-        if self.level == TradingLevel.LEVEL_1HOUR:
-            if time_delta.days > 0:
-                minutes = (time_delta.days + 1) * get_one_day_trading_minutes(security_item.id)
-                return latest_timestamp, None, int(math.ceil(minutes / 60)) + 1, None
-            else:
-                return latest_timestamp, None, int(math.ceil(time_delta.total_seconds() / (60 * 60))) + 1, None
+        if self.kdata_use_begin_time:
+            touching_timestamp = latest_timestamp + pd.Timedelta(seconds=self.level.to_second())
+        else:
+            touching_timestamp = latest_timestamp
+
+        waiting_seconds, size = self.level.count_from_timestamp(touching_timestamp,
+                                                                one_day_trading_minutes=get_one_day_trading_minutes(
+                                                                    security_item.id))
+        if waiting_seconds and (waiting_seconds > 30):
+            t = waiting_seconds / 2
+            self.logger.info(
+                'level:{},recorded_time:{},touching_timestamp:{},current_time:{},next_ok_time:{},just sleep:{} seconds'.format(
+                    self.level.value,
+                    latest_timestamp,
+                    touching_timestamp,
+                    current_time,
+                    touching_timestamp + pd.Timedelta(
+                        seconds=self.level.to_second()),
+                    t))
+            time.sleep(t)
+
+        return latest_timestamp, None, size, None
 
     def persist(self, security_item, domain_list):
         if domain_list:
@@ -388,6 +429,8 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 
             saving_datas = domain_list
 
+            # FIXME:remove this logic
+            # FIXME:should remove unfinished data when recording,always set it to False now
             if is_same_date(current_timestamp, last_timestamp) and self.contain_unfinished_data:
                 close_hour, close_minute = get_close_time(security_item.id)
                 if current_timestamp.hour >= close_hour and current_timestamp.minute >= close_minute + 2:

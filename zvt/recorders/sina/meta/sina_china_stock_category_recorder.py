@@ -7,17 +7,14 @@ import requests
 
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.technical import get_securities, df_to_db
-from zvt.domain import Provider, StoreCategory, StockIndex, StockCategory, SecurityType
+from zvt.domain import Provider, StockIndex, StockCategory, SecurityType
 from zvt.domain.meta import Index
 from zvt.recorders.recorder import Recorder
 from zvt.utils.utils import init_process_log
 
 
 class SinaChinaStockCategoryRecorder(Recorder):
-    meta_provider = Provider.SINA
     provider = Provider.SINA
-    store_category = StoreCategory.meta
-    need_securities = False
     data_schema = StockIndex
 
     # 用于抓取行业/概念/地域列表
@@ -30,8 +27,8 @@ class SinaChinaStockCategoryRecorder(Recorder):
     # 用于抓取行业包含的股票
     category_stocks_url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page={}&num=5000&sort=symbol&asc=1&node={}&symbol=&_s_r_a=page'
 
-    def __init__(self, batch_size=10, force_update=True, sleeping_time=5) -> None:
-        super().__init__(SecurityType.stock, ['sh', 'sz'], None, batch_size, force_update, sleeping_time)
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
+        super().__init__(batch_size, force_update, sleeping_time)
 
         self.indices = get_securities(session=self.session, security_type=SecurityType.index, exchanges=['cn'],
                                       return_type='domain', provider=self.provider)

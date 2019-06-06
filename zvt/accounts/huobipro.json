@@ -1,0 +1,9 @@
+{
+  "tick_limit": 2000,
+  "kdata_limit": 2000,
+  "safe_sleeping_time": 40,
+  "support_limit": true,
+  "support_since": false,
+  "apiKey": "",
+  "secret": ""
+}

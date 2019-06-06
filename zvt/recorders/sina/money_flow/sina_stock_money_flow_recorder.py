@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from zvt.domain import SecurityType, StoreCategory, Provider, TradingLevel, StockMoneyFlow
+from zvt.domain import SecurityType, Provider, TradingLevel, StockMoneyFlow, Stock
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
 from zvt.utils.time_utils import to_pd_timestamp
 from zvt.utils.utils import to_float
@@ -96,10 +96,11 @@ class MyApiWrapper(ApiWrapper):
 
 class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
     meta_provider = Provider.SINA
-    provider = Provider.SINA
+    meta_schema = Stock
 
+    provider = Provider.SINA
     data_schema = StockMoneyFlow
-    store_category = StoreCategory.money_flow
+
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_lscjfb?page=1&num={}&sort=opendate&asc=0&daima={}'
     api_wrapper = MyApiWrapper()
 

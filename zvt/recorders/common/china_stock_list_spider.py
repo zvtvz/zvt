@@ -6,21 +6,18 @@ import pandas as pd
 import requests
 
 from zvt.api.technical import init_securities
-from zvt.domain import SecurityType, StoreCategory, Provider
+from zvt.domain import Provider, Stock
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 from zvt.recorders.recorder import Recorder
 from zvt.utils.time_utils import to_pd_timestamp
 
 
 class ChinaStockListSpider(Recorder):
-    store_category = StoreCategory.meta
-    need_securities = False
+    data_schema = Stock
 
-    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
-                 force_update=False, sleeping_time=5, provider=Provider.EASTMONEY) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider=Provider.EASTMONEY) -> None:
         self.provider = provider
-        super().__init__(security_type, exchanges, codes, batch_size,
-                         force_update, sleeping_time)
+        super().__init__(batch_size, force_update, sleeping_time)
 
     def run(self):
         url = 'http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=1'
@@ -37,15 +34,24 @@ class ChinaStockListSpider(Recorder):
         df = None
         if exchange == 'sh':
             df = pd.read_csv(io.BytesIO(response.content), sep='\s+', encoding='GB2312', dtype=str,
-                             parse_dates=['A股上市日期'])
+                             parse_dates=['上市日期'])
+            if df is not None:
+                df = df.loc[:, ['A股代码', 'A股简称', '上市日期']]
+
         elif exchange == 'sz':
             df = pd.read_excel(io.BytesIO(response.content), sheet_name='A股列表', dtype=str, parse_dates=['A股上市日期'])
+            if df is not None:
+                df = df.loc[:, ['A股代码', 'A股简称', 'A股上市日期']]
+
         if df is not None:
-            df = df.loc[:, ['A股代码', 'A股简称', 'A股上市日期']]
             df.columns = ['code', 'name', 'list_date']
+
+            df = df.dropna(subset=['code'])
+
             # handle the dirty data
             # 600996,贵广网络,2016-12-26,2016-12-26,sh,stock,stock_sh_600996,,次新股,贵州,,
             df.loc[df['code'] == '600996', 'list_date'] = '2016-12-26'
+            print(df[df['list_date'] == '-'])
             df['list_date'] = df['list_date'].apply(lambda x: to_pd_timestamp(x))
             df['exchange'] = exchange
             df['type'] = 'stock'

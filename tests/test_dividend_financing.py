@@ -44,7 +44,7 @@ def test_000778_dividend_financing():
     assert len(result) == 22
     latest: DividendFinancing = result[1]
     assert latest.timestamp == to_pd_timestamp('2017')
-    assert latest.dividend_money == 598600000
-    assert latest.spo_issues == 347600000
+    assert latest.dividend_money == 598632026.4
+    assert latest.spo_issues == 347572815.0
     assert latest.rights_issues == 0
     assert latest.ipo_issues == 0

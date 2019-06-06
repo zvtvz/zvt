@@ -14,6 +14,8 @@ from zvt.domain.meta import *
 from zvt.domain.money_flow import *
 from zvt.domain.quote import *
 from zvt.domain.trading import *
+from zvt.domain.coin_meta import *
+
 from zvt.settings import DATA_PATH
 
 logger = logging.getLogger(__name__)
