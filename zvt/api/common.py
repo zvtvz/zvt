@@ -1,38 +1,43 @@
 # -*- coding: utf-8 -*-
 
 import math
+from typing import Union
 
 import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
 
-from zvt.domain import SecurityType, Stock, Index, StockDayKdata, IndexDayKdata, ReportPeriod, StoreCategory, \
-    StockIndex, Stock1HKdata
+from zvt.domain import SecurityType, Stock, Index, ReportPeriod, StoreCategory, \
+    StockIndex
 from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category
+from zvt.domain.coin_meta import Coin
+from zvt.domain.quote import *
 from zvt.utils.pd_utils import index_df_with_time
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
 
-def get_security_schema(security_type):
+def get_security_schema(security_type: Union[SecurityType, str]):
     if SecurityType(security_type) == SecurityType.stock:
         return Stock
     if SecurityType(security_type) == SecurityType.index:
         return Index
+    if SecurityType(security_type) == SecurityType.coin:
+        return Coin
 
 
-def get_kdata_schema(security_type, level=TradingLevel.LEVEL_1DAY):
+def get_kdata_schema(security_type: Union[SecurityType, str],
+                     level: Union[TradingLevel, str] = TradingLevel.LEVEL_1DAY):
     if type(level) == str:
         level = TradingLevel(level)
+    if type(security_type) == str:
+        security_type = SecurityType(security_type)
 
-    if SecurityType(security_type) == SecurityType.stock:
-        if level == TradingLevel.LEVEL_1DAY:
-            return StockDayKdata
-        if level == TradingLevel.LEVEL_1HOUR:
-            return Stock1HKdata
+    # kdata schema rule
+    # 1)name:{SecurityType.value.capitalize()}{TradingLevel.value.upper()}Kdata
+    schema_str = '{}{}Kdata'.format(security_type.value.capitalize(), level.value.upper())
 
-    if SecurityType(security_type) == SecurityType.index and level == TradingLevel.LEVEL_1DAY:
-        return IndexDayKdata
+    return eval(schema_str)
 
 
 def to_report_period_type(report_period):
@@ -100,8 +105,8 @@ def get_count(data_schema, filters=None, session=None):
     return count
 
 
-def get_data(data_schema, security_id=None, codes=None, level=None, provider='eastmoney', columns=None,
-             return_type='df', start_timestamp=None, end_timestamp=None,
+def get_data(data_schema, security_list=None, security_id=None, codes=None, level=None, provider='eastmoney',
+             columns=None, return_type='df', start_timestamp=None, end_timestamp=None,
              filters=None, session=None, order=None, limit=None):
     local_session = False
     if not session:
@@ -121,6 +126,8 @@ def get_data(data_schema, security_id=None, codes=None, level=None, provider='ea
             query = query.filter(data_schema.security_id == security_id)
         if codes:
             query = query.filter(data_schema.code.in_(codes))
+        if security_list:
+            query = query.filter(data_schema.security_id.in_(security_list))
 
         # we always store different level in different schema,the level param is not useful now
         if level:
@@ -199,8 +206,9 @@ def china_stock_code_to_id(code):
     return "{}_{}_{}".format('stock', get_exchange(code), code)
 
 
-def get_one_day_trading_minutes(security_id: str):
-    security_type, _, _ = decode_security_id(security_id)
+def get_one_day_trading_minutes(security_id: str = None, security_type: SecurityType = None):
+    if security_type is None:
+        security_type, _, _ = decode_security_id(security_id)
     if security_type == SecurityType.coin:
         return 24 * 60
     if security_type == SecurityType.stock:
@@ -208,6 +216,13 @@ def get_one_day_trading_minutes(security_id: str):
 
 
 def get_close_time(security_id: str):
+    """
+
+    :param security_id:
+    :type security_id: str
+    :return:0,0 means never stop
+    :rtype: Tuple[int, int]
+    """
     security_type, _, _ = decode_security_id(security_id)
     if security_type == SecurityType.coin:
         return 0, 0
@@ -268,6 +283,10 @@ def to_jq_trading_level(trading_level: TradingLevel):
         return 'daily'
     if trading_level == TradingLevel.LEVEL_1HOUR:
         return '60m'
+    if trading_level == TradingLevel.LEVEL_15MIN:
+        return '15m'
+
+    assert False
 
 
 def to_jq_report_period(timestamp):
@@ -283,8 +302,18 @@ def to_jq_report_period(timestamp):
         return '{}q3'.format(the_date.year)
 
 
-if __name__ == '__main__':
-    store_category = get_store_category(Stock)
-    session = get_db_session(provider='eastmoney', store_category=store_category)
+# ccxt related transform
+def to_ccxt_trading_level(trading_level: TradingLevel):
+    # TODO:add other levels
+    if trading_level == TradingLevel.LEVEL_1DAY:
+        return '1d'
+    return trading_level.value
 
-    print(get_count(data_schema=Stock, filters=[Stock.exchange == 'sh'], session=session))
+
+if __name__ == '__main__':
+    assert get_kdata_schema(security_type='stock', level=TradingLevel.LEVEL_1DAY) == Stock1DKdata
+    assert get_kdata_schema(security_type='stock', level=TradingLevel.LEVEL_15MIN) == Stock15MKdata
+    assert get_kdata_schema(security_type='stock', level=TradingLevel.LEVEL_1HOUR) == Stock1HKdata
+
+    assert get_kdata_schema(security_type='coin', level=TradingLevel.LEVEL_1DAY) == Coin1DKdata
+    assert get_kdata_schema(security_type='coin', level=TradingLevel.LEVEL_1MIN) == Coin1MKdata

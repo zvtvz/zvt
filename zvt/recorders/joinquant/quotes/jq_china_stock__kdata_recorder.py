@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import argparse
 import logging
+from datetime import timedelta
 
 import pandas as pd
 from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id, get_kdata_schema, to_jq_trading_level
 from zvt.api.technical import get_kdata
-from zvt.domain import TradingLevel, SecurityType, Provider, get_store_category
+from zvt.domain import TradingLevel, SecurityType, Provider, Stock
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
+from zvt.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
 from zvt.utils.utils import init_process_log
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,10 @@ class MyApiWrapper(ApiWrapper):
     def request(self, url=None, method='get', param=None, path_fields=None):
         security_item = param['security_item']
         start_timestamp = param['start_timestamp']
+        end_timestamp = param['end_timestamp']
         # 不复权
         df = get_price(to_jq_security_id(security_item), start_date=to_time_str(start_timestamp),
-                       end_date=now_time_str(),
+                       end_date=end_timestamp,
                        frequency=param['jq_level'],
                        fields=['open', 'close', 'low', 'high', 'volume', 'money'],
                        skip_paused=True, fq=None)
@@ -39,17 +41,20 @@ class MyApiWrapper(ApiWrapper):
 
 
 class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
+    meta_provider = Provider.EASTMONEY
+    meta_schema = Stock
+
     provider = Provider.JOINQUANT
     api_wrapper = MyApiWrapper()
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, fetching_style=TimeSeriesFetchingStyle.end_size,
                  default_size=2000, contain_unfinished_data=False, level=TradingLevel.LEVEL_1DAY,
-                 one_shot=True) -> None:
+                 one_shot=True, start_timestamp=None) -> None:
 
         self.data_schema = get_kdata_schema(security_type=security_type, level=level)
-        self.store_category = get_store_category(self.data_schema)
         self.jq_trading_level = to_jq_trading_level(level)
+        self.start_timestamp = to_pd_timestamp(start_timestamp)
 
         super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
                          default_size, contain_unfinished_data, level, one_shot)
@@ -74,10 +79,15 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         return generate_kdata_id(security_id=security_item.id, timestamp=original_data['timestamp'], level=self.level)
 
     def generate_request_param(self, security_item, start, end, size, timestamp):
+        if self.start_timestamp:
+            start = max(self.start_timestamp, to_pd_timestamp(start))
+
+        end = now_pd_timestamp() + timedelta(days=1)
+
         return {
             'security_item': security_item,
-            'start_timestamp': to_time_str(start, fmt=TIME_FORMAT_DAY1),
-            'end_timestamp': now_time_str(fmt=TIME_FORMAT_DAY1),
+            'start_timestamp': to_time_str(start),
+            'end_timestamp': to_time_str(end),
             'level': self.level.value,
             'jq_level': self.jq_trading_level
         }
@@ -137,11 +147,11 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1h', choices=[item.value for item in TradingLevel])
+    parser.add_argument('--level', help='trading level', default='15m', choices=[item.value for item in TradingLevel])
 
     args = parser.parse_args()
 
     level = TradingLevel(args.level)
 
     init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=['000338']).run()
+    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=['000338'], start_timestamp='2019-05-30').run()

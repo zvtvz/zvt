@@ -6,7 +6,7 @@ from zvt.api import technical
 from zvt.domain import get_db_session, StoreCategory, TradingLevel
 
 day_k_session = get_db_session(provider='joinquant',
-                               store_category=StoreCategory.stock_day_kdata)  # type: sqlalchemy.orm.Session
+                               store_category=StoreCategory.stock_1d_kdata)  # type: sqlalchemy.orm.Session
 
 day_1h_session = get_db_session(provider='joinquant',
                                 store_category=StoreCategory.stock_1h_kdata)  # type: sqlalchemy.orm.Session

@@ -5,6 +5,7 @@ import math
 
 from zvt.api.account import get_account
 from zvt.api.common import decode_security_id, get_kdata_schema
+from zvt.api.rules import get_trading_t
 from zvt.api.technical import get_kdata
 from zvt.domain import get_db_session, StoreCategory, SecurityType, Order, Provider, TradingLevel
 from zvt.domain.account import SimAccount, Position
@@ -160,6 +161,7 @@ class SimAccountService(AccountService):
         # self.persist_account(timestamp)
 
     def on_trading_open(self, timestamp):
+        self.logger.info('on_trading_open:{}'.format(timestamp))
         if is_same_date(timestamp, self.start_timestamp):
             return
         # get the account for trading at the date
@@ -178,6 +180,8 @@ class SimAccountService(AccountService):
         self.logger.info('on_trading_open:{},latest_account:{}'.format(timestamp, self.latest_account))
 
     def on_trading_close(self, timestamp):
+        self.logger.info('on_trading_close:{}'.format(timestamp))
+
         self.latest_account['value'] = 0
         self.latest_account['all_value'] = 0
         for position in self.latest_account['positions']:
@@ -397,7 +401,7 @@ class SimAccountService(AccountService):
                     'average_short_price': 0,
                     'profit': 0,
                     'value': 0,
-                    'trading_t': 1
+                    'trading_t': get_trading_t(security_id=security_id)
                 }
                 # add it to latest account
                 self.latest_account['positions'].append(current_position)

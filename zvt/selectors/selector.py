@@ -12,7 +12,8 @@ from zvt.utils.time_utils import to_pd_timestamp
 
 
 class TargetSelector(object):
-    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
+    def __init__(self, security_list=None, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
+                 the_timestamp=None,
                  start_timestamp=None,
                  end_timestamp=None,
                  threshold=0.8,
@@ -35,6 +36,7 @@ class TargetSelector(object):
         :param threshold:
         :type threshold:
         """
+        self.security_list = security_list
         self.security_type = security_type
         self.exchanges = exchanges
         self.codes = codes
@@ -60,11 +62,22 @@ class TargetSelector(object):
         self.result = None
         self.df: DataFrame = None
 
-        self.init_factors(security_type=security_type, exchanges=exchanges, codes=codes, the_timestamp=the_timestamp,
+        self.init_factors(security_list=security_list, security_type=security_type, exchanges=exchanges, codes=codes,
+                          the_timestamp=the_timestamp,
                           start_timestamp=start_timestamp, end_timestamp=end_timestamp)
 
-    def init_factors(self, security_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp):
+    def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
+                     end_timestamp):
         raise NotImplementedError
+
+    def move_on(self, to_timestamp, touching_timestamp):
+        if self.score_factors:
+            for factor in self.score_factors:
+                factor.move_on(to_timestamp, touching_timestamp)
+        if self.must_factors:
+            for factor in self.must_factors:
+                factor.move_on(to_timestamp, touching_timestamp)
+        self.run()
 
     def run(self):
         if self.must_factors:

@@ -293,12 +293,12 @@ def test_000778_finance_factor():
     assert latest.op_income_growth_yoy == -0.1024
     assert latest.net_profit_growth_yoy == 1.2404
     assert latest.deducted_net_profit_growth_yoy == 1.4813
-    assert latest.op_income_growth_qoq == 0.0409
-    assert latest.net_profit_growth_qoq == 0.2139
-    assert latest.deducted_net_profit_growth_qoq == 0.2945
+    assert latest.op_income_growth_qoq == 0.0408
+    assert latest.net_profit_growth_qoq == 0.2143
+    assert latest.deducted_net_profit_growth_qoq == 0.2955
 
     assert latest.roe == 0.0882
-    assert latest.rota == 0.0377
+    assert latest.rota == 0.0376
     assert latest.gross_profit_margin == 0.1731
     assert latest.net_margin == 0.0591
 
@@ -314,12 +314,12 @@ def test_000778_finance_factor():
     assert latest.em == 2.36
     assert latest.equity_ratio == 1.43
 
-    assert latest.total_assets_turnover_days == 423.09
-    assert latest.inventory_turnover_days == 32.77
-    assert latest.receivables_turnover_days == 51.84
+    assert latest.total_assets_turnover_days == 423.91
+    assert latest.inventory_turnover_days == 32.88
+    assert latest.receivables_turnover_days == 52.23
     assert latest.total_assets_turnover == 0.64
-    assert latest.inventory_turnover == 8.24
-    assert latest.receivables_turnover == 5.21
+    assert latest.inventory_turnover == 8.21
+    assert latest.receivables_turnover == 5.17
 
 
 # 企业资产负债表

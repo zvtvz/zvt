@@ -7,7 +7,7 @@ from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id
 from zvt.api.technical import get_kdata
-from zvt.domain import TradingLevel, SecurityType, Provider, StockDayKdata, StoreCategory
+from zvt.domain import TradingLevel, SecurityType, Provider, Stock1DKdata, StoreCategory, Stock
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 from zvt.utils import utils
@@ -51,9 +51,12 @@ class MyApiWrapper(ApiWrapper):
 
 
 class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
+    meta_provider = Provider.EASTMONEY
+    meta_schema = Stock
+
     provider = Provider.NETEASE
-    store_category = StoreCategory.stock_day_kdata
-    data_schema = StockDayKdata
+    store_category = StoreCategory.stock_1d_kdata
+    data_schema = Stock1DKdata
     url = 'http://quotes.money.163.com/service/chddata.html?code={}{}&start={}&end={}&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER'
     api_wrapper = MyApiWrapper()
 
@@ -67,7 +70,7 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
         self.current_factors = {}
         for security_item in self.securities:
             kdata = get_kdata(security_id=security_item.id, provider=self.provider,
-                              level=self.level.value, order=StockDayKdata.timestamp.desc(),
+                              level=self.level.value, order=Stock1DKdata.timestamp.desc(),
                               limit=1,
                               return_type='domain',
                               session=self.session)
@@ -92,11 +95,11 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
         }
 
     def on_finish(self, security_item):
-        kdatas = get_kdata(security_id=security_item.id, level=self.level.value, order=StockDayKdata.timestamp.asc(),
+        kdatas = get_kdata(security_id=security_item.id, level=self.level.value, order=Stock1DKdata.timestamp.asc(),
                            return_type='domain',
                            session=self.session,
-                           filters=[StockDayKdata.factor.is_(None),
-                                    StockDayKdata.timestamp >= to_pd_timestamp('2005-01-01')])
+                           filters=[Stock1DKdata.factor.is_(None),
+                                    Stock1DKdata.timestamp >= to_pd_timestamp('2005-01-01')])
         if kdatas:
             start = kdatas[0].timestamp
             end = kdatas[-1].timestamp
@@ -120,11 +123,11 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
                 latest_factor = df.factor[-1]
                 # factor not change yet, no need to reset the qfq past
                 if latest_factor == self.current_factors.get(security_item.id):
-                    sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
+                    sql = 'UPDATE stock_1d_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
                           'security_id=\'{}\' and level=\'{}\' and (qfq_close isnull or qfq_high isnull or qfq_low isnull or qfq_open isnull)'.format(
                         latest_factor, latest_factor, latest_factor, latest_factor, security_item.id, self.level.value)
                 else:
-                    sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
+                    sql = 'UPDATE stock_1d_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
                           'security_id=\'{}\' and level=\'{}\''.format(latest_factor,
                                                                        latest_factor,
                                                                        latest_factor,

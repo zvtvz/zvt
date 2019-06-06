@@ -4,7 +4,7 @@ from scrapy import Selector
 
 from zvt.api.common import generate_kdata_id
 from zvt.api.technical import get_kdata
-from zvt.domain import TradingLevel, SecurityType, Provider, StockDayKdata, StoreCategory
+from zvt.domain import TradingLevel, SecurityType, Provider, Stock1DKdata, StoreCategory
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder
 from zvt.utils.time_utils import get_year_quarters, is_same_date, to_pd_timestamp
 from zvt.utils.utils import to_float
@@ -13,8 +13,8 @@ from zvt.utils.utils import to_float
 # this recorder is deprecated,because sina hfq factor could not get now
 class StockKdataSinaSpider(FixedCycleDataRecorder):
     provider = Provider.SINA
-    store_category = StoreCategory.stock_day_kdata
-    data_schema = StockDayKdata
+    store_category = StoreCategory.stock_1d_kdata
+    data_schema = Stock1DKdata
 
     def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, fetching_style=TimeSeriesFetchingStyle.end_size,
@@ -27,7 +27,7 @@ class StockKdataSinaSpider(FixedCycleDataRecorder):
         self.latest_factors = {}
         for security_item in self.securities:
             kdata = get_kdata(security_id=security_item.id, provider=self.provider,
-                              level=self.level.value, order=StockDayKdata.timestamp.desc(),
+                              level=self.level.value, order=Stock1DKdata.timestamp.desc(),
                               return_type='domain',
                               session=self.session)
             if kdata:
@@ -121,12 +121,12 @@ class StockKdataSinaSpider(FixedCycleDataRecorder):
         # if latest_factor != self.current_factors.get(security_item.id):
         if latest_factor:
             if latest_factor != self.current_factors.get(security_item.id):
-                sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
+                sql = 'UPDATE stock_1d_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
                       'provider =\'{}\' and security_id=\'{}\' and level=\'{}\' and (qfq_close isnull or qfq_high isnull or qfq_low isnull or qfq_open isnull)'.format(
                     latest_factor, latest_factor, latest_factor, latest_factor, self.provider.value, security_item.id,
                     self.level.value)
             else:
-                sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
+                sql = 'UPDATE stock_1d_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
                       'security_id=\'{}\' and level=\'{}\''.format(latest_factor, latest_factor,
                                                                    latest_factor,
                                                                    latest_factor,

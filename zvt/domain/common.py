@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
 import enum
+import math
 
+import pandas as pd
 from sqlalchemy.ext.declarative import declarative_base
+
+from zvt.utils.time_utils import to_pd_timestamp
 
 # every base logically means one type of data and physically one db file
 MetaBase = declarative_base()
 
-StockDayKdataBase = declarative_base()
+Stock1DKdataBase = declarative_base()
 
 Stock1HKdataBase = declarative_base()
 
-IndexDayKdataBase = declarative_base()
+Stock15MKdataBase = declarative_base()
+
+Index1DKdataBase = declarative_base()
 
 FinanceBase = declarative_base()
 
@@ -26,6 +32,15 @@ MoneyFlowBase = declarative_base()
 
 MacroBase = declarative_base()
 
+CoinMetaBase = declarative_base()
+
+Coin1MKdataBase = declarative_base()
+Coin5MKdataBase = declarative_base()
+Coin15MKdataBase = declarative_base()
+Coin1HKdataBase = declarative_base()
+Coin1DKdataBase = declarative_base()
+Coin1WKKdataBase = declarative_base()
+
 
 class Provider(enum.Enum):
     EASTMONEY = 'eastmoney'
@@ -33,14 +48,16 @@ class Provider(enum.Enum):
     NETEASE = 'netease'
     EXCHANGE = 'exchange'
     JOINQUANT = 'joinquant'
+    CCXT = 'ccxt'
     ZVT = 'zvt'
 
 
 class StoreCategory(enum.Enum):
     meta = 'meta'
-    stock_day_kdata = 'stock_day_kdata'
+    stock_1d_kdata = 'stock_1d_kdata'
     stock_1h_kdata = 'stock_1h_kdata'
-    index_day_kdata = 'index_day_kdata'
+    stock_15m_kdata = 'stock_15m_kdata'
+    index_1d_kdata = 'index_1d_kdata'
     finance = 'finance'
     dividend_financing = 'dividend_financing'
     holder = 'holder'
@@ -49,32 +66,53 @@ class StoreCategory(enum.Enum):
     macro = 'macro'
     business = 'business'
 
+    coin_meta = 'coin_meta'
+    coin_1m_kdata = 'coin_1m_kdata'
+    coin_5m_kdata = 'coin_5m_kdata'
+    coin_15m_kdata = 'coin_15m_kdata'
+    coin_1h_kdata = 'coin_1h_kdata'
+    coin_1d_kdata = 'coin_1d_kdata'
+    coin_1wk_kdata = 'coin_1wk_kdata'
+
 
 provider_map_category = {
-    Provider.EASTMONEY: [e for e in StoreCategory if e != StoreCategory.business],
-    Provider.EASTMONEY.value: [e for e in StoreCategory if e != StoreCategory.business],
+    Provider.EASTMONEY: [StoreCategory.meta,
+                         StoreCategory.finance,
+                         StoreCategory.dividend_financing,
+                         StoreCategory.holder,
+                         StoreCategory.trading,
+                         StoreCategory.stock_15m_kdata],
 
-    Provider.SINA: [StoreCategory.meta, StoreCategory.stock_day_kdata, StoreCategory.money_flow],
-    Provider.SINA.value: [StoreCategory.meta, StoreCategory.stock_day_kdata, StoreCategory.money_flow],
+    Provider.SINA: [StoreCategory.meta,
+                    StoreCategory.stock_1d_kdata,
+                    StoreCategory.money_flow],
 
-    Provider.NETEASE: [StoreCategory.stock_day_kdata, StoreCategory.index_day_kdata],
-    Provider.NETEASE.value: [StoreCategory.stock_day_kdata, StoreCategory.index_day_kdata],
+    Provider.NETEASE: [StoreCategory.stock_1d_kdata,
+                       StoreCategory.index_1d_kdata],
 
     Provider.EXCHANGE: [StoreCategory.meta, StoreCategory.macro],
-    Provider.EXCHANGE.value: [StoreCategory.meta, StoreCategory.macro],
 
     Provider.ZVT: [StoreCategory.business],
-    Provider.ZVT.value: [StoreCategory.business],
 
-    Provider.JOINQUANT: [StoreCategory.stock_day_kdata, StoreCategory.stock_1h_kdata],
-    Provider.JOINQUANT.value: [StoreCategory.stock_day_kdata, StoreCategory.stock_1h_kdata]
+    Provider.JOINQUANT: [StoreCategory.stock_1d_kdata,
+                         StoreCategory.stock_1h_kdata,
+                         StoreCategory.stock_15m_kdata],
+
+    Provider.CCXT: [StoreCategory.coin_meta,
+                    StoreCategory.coin_1m_kdata,
+                    StoreCategory.coin_5m_kdata,
+                    StoreCategory.coin_15m_kdata,
+                    StoreCategory.coin_1h_kdata,
+                    StoreCategory.coin_1d_kdata,
+                    StoreCategory.coin_1wk_kdata],
 }
 
 category_map_db = {
     StoreCategory.meta: MetaBase,
-    StoreCategory.stock_day_kdata: StockDayKdataBase,
+    StoreCategory.stock_1d_kdata: Stock1DKdataBase,
     StoreCategory.stock_1h_kdata: Stock1HKdataBase,
-    StoreCategory.index_day_kdata: IndexDayKdataBase,
+    StoreCategory.stock_15m_kdata: Stock15MKdataBase,
+    StoreCategory.index_1d_kdata: Index1DKdataBase,
     StoreCategory.finance: FinanceBase,
     StoreCategory.dividend_financing: DividendFinancingBase,
     StoreCategory.holder: HolderBase,
@@ -82,32 +120,21 @@ category_map_db = {
     StoreCategory.money_flow: MoneyFlowBase,
     StoreCategory.macro: MacroBase,
     StoreCategory.business: BusinessBase,
+
+    StoreCategory.coin_meta: CoinMetaBase,
+    StoreCategory.coin_1m_kdata: Coin1MKdataBase,
+    StoreCategory.coin_5m_kdata: Coin5MKdataBase,
+    StoreCategory.coin_15m_kdata: Coin15MKdataBase,
+    StoreCategory.coin_1h_kdata: Coin1HKdataBase,
+    StoreCategory.coin_1d_kdata: Coin1DKdataBase,
+    StoreCategory.coin_1wk_kdata: Coin1WKKdataBase
 }
 
 
 def get_store_category(data_schema):
-    if isinstance(data_schema(), MetaBase):
-        return StoreCategory.meta
-    if isinstance(data_schema(), StockDayKdataBase):
-        return StoreCategory.stock_day_kdata
-    if isinstance(data_schema(), Stock1HKdataBase):
-        return StoreCategory.stock_1h_kdata
-    if isinstance(data_schema(), IndexDayKdataBase):
-        return StoreCategory.index_day_kdata
-    if isinstance(data_schema(), FinanceBase):
-        return StoreCategory.finance
-    if isinstance(data_schema(), BusinessBase):
-        return StoreCategory.business
-    if isinstance(data_schema(), DividendFinancingBase):
-        return StoreCategory.dividend_financing
-    if isinstance(data_schema(), HolderBase):
-        return StoreCategory.holder
-    if isinstance(data_schema(), TradingBase):
-        return StoreCategory.trading
-    if isinstance(data_schema(), MacroBase):
-        return StoreCategory.macro
-    if isinstance(data_schema(), MoneyFlowBase):
-        return StoreCategory.money_flow
+    for category, base in category_map_db.items():
+        if isinstance(data_schema(), base):
+            return category
 
 
 class SecurityType(enum.Enum):
@@ -157,6 +184,36 @@ class TradingLevel(enum.Enum):
     LEVEL_1DAY = '1d'
     LEVEL_1WEEK = '1wk'
 
+    def to_pd_freq(self):
+        if self == TradingLevel.LEVEL_1MIN:
+            return '1min'
+        if self == TradingLevel.LEVEL_5MIN:
+            return '5min'
+        if self == TradingLevel.LEVEL_15MIN:
+            return '15min'
+        if self == TradingLevel.LEVEL_30MIN:
+            return '30min'
+        if self == TradingLevel.LEVEL_1HOUR:
+            return '1H'
+        if self == TradingLevel.LEVEL_4HOUR:
+            return '4H'
+        if self >= TradingLevel.LEVEL_1DAY:
+            return '1D'
+
+    def count_from_timestamp(self, pd_timestamp, one_day_trading_minutes):
+        current_time = pd.Timestamp.now()
+        time_delta = current_time - pd_timestamp
+
+        one_day_trading_seconds = one_day_trading_minutes * 60
+
+        if time_delta.days > 0:
+            seconds = (time_delta.days + 1) * one_day_trading_seconds
+            return None, int(math.ceil(seconds / self.to_second())) + 1
+        else:
+            seconds = time_delta.total_seconds()
+            return self.to_second() - seconds, min(int(math.ceil(seconds / self.to_second())) + 1,
+                                                   one_day_trading_seconds / self.to_second())
+
     def floor_timestamp(self, pd_timestamp):
         if self == TradingLevel.LEVEL_1MIN:
             return pd_timestamp.floor('1min')
@@ -188,6 +245,9 @@ class TradingLevel(enum.Enum):
             return pd_timestamp.hour == hour and pd_timestamp.minute + 240 == minute
         if self >= TradingLevel.LEVEL_1DAY:
             return True
+
+    def to_minute(self):
+        return int(self.to_second() / 60)
 
     def to_second(self):
         return int(self.to_ms() / 1000)
@@ -234,5 +294,16 @@ class TradingLevel(enum.Enum):
 
 enum_value = lambda x: [e.value for e in x]
 
+COIN_EXCHANGES = ["binance", "huobipro", "okex"]
+
+# COIN_BASE = ["BTC", "ETH", "XRP", "BCH", "EOS", "LTC", "XLM", "ADA", "IOTA", "TRX", "NEO", "DASH", "XMR",
+#                        "BNB", "ETC", "QTUM", "ONT"]
+
+COIN_BASE = ["BTC", "ETH", "EOS"]
+
+COIN_PAIRS = [("{}/{}".format(item, "USDT")) for item in COIN_BASE] + \
+             [("{}/{}".format(item, "USD")) for item in COIN_BASE]
+
 if __name__ == '__main__':
-    print(provider_map_category.get('eastmoney'))
+    # print(provider_map_category.get('eastmoney'))
+    print(TradingLevel.LEVEL_1HOUR.count_from_timestamp(to_pd_timestamp('2019-05-31'), 240))
