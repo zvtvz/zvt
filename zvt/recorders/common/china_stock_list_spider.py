@@ -36,7 +36,7 @@ class ChinaStockListSpider(Recorder):
             df = pd.read_csv(io.BytesIO(response.content), sep='\s+', encoding='GB2312', dtype=str,
                              parse_dates=['上市日期'])
             if df is not None:
-                df = df.loc[:, ['A股代码', 'A股简称', '上市日期']]
+                df = df.loc[:, ['公司代码', '公司简称', '上市日期']]
 
         elif exchange == 'sz':
             df = pd.read_excel(io.BytesIO(response.content), sheet_name='A股列表', dtype=str, parse_dates=['A股上市日期'])
