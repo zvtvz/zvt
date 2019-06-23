@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
-import math
 
+import math
 import pandas as pd
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -141,6 +141,7 @@ class SecurityType(enum.Enum):
     stock = 'stock'
     index = 'index'
     coin = 'coin'
+    future = 'future'
 
 
 class StockCategory(enum.Enum):

@@ -20,7 +20,6 @@ class TechnicalSelector(TargetSelector):
         ma_factor = CrossMaFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
                                   codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
                                   end_timestamp=end_timestamp, provider=self.provider, level=self.level)
-        ma_factor.run()
 
         self.must_factors = [ma_factor]
 
@@ -31,23 +30,17 @@ class FundamentalSelector(TargetSelector):
         factor = FinanceGrowthFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
                                      codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
                                      end_timestamp=end_timestamp, keep_all_timestamp=True, provider=self.provider)
-        factor.run()
         self.score_factors = [factor]
 
 
 if __name__ == '__main__':
-    # s = FundamentalSelector(start_timestamp='2018-01-01', end_timestamp='2019-05-01')
-    # s.run()
-    #
-    # print(s.get_df())
-
     ma_selector = TechnicalSelector(security_list=['coin_binance_EOS/USDT'], provider='ccxt',
                                     security_type=SecurityType.coin, start_timestamp='2019-01-01',
                                     end_timestamp='2019-06-05', level=TradingLevel.LEVEL_5MIN)
     ma_selector.run()
-    print(ma_selector.get_df())
+    print(ma_selector.get_result_df())
 
     while True:
         ma_selector.move_on()
-        print(ma_selector.get_df())
+        print(ma_selector.get_result_df())
         time.sleep(10)

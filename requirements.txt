@@ -13,3 +13,5 @@ marshmallow-sqlalchemy
 # matplotlib == 3.0.3
 pyecharts == 1.1.0
 ccxt == 1.17.191
+dash==0.43.0
+dash-daq==0.1.0

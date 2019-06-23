@@ -4,6 +4,10 @@ from typing import List
 import pandas as pd
 
 
+def df_is_not_null(df: pd.DataFrame):
+    return df is not None and isinstance(df, pd.DataFrame) and not df.empty
+
+
 def index_df_with_time(df, index='timestamp', inplace=True, drop=True):
     if inplace:
         df.set_index(index, drop=drop, inplace=inplace)
@@ -18,6 +22,14 @@ def index_df_with_security_time(df):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df.set_index(['security_id', 'timestamp'])
     df.index.names = ['security_id', 'timestamp']
+    df = df.sort_index(level=[0, 1])
+    return df
+
+
+def index_df_with_category_time(df, category):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.set_index([category, 'timestamp'])
+    df.index.names = [category, 'timestamp']
     df = df.sort_index(level=[0, 1])
     return df
 

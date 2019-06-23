@@ -2,8 +2,9 @@
 import os
 
 # please change the path to your real store path
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','datasample'))
-UI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','ui'))
+DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
+UI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ui'))
+LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'logs'))
 
 if not DATA_PATH:
     DATA_PATH = os.environ.get('ZVT_DATA_PATH')
@@ -15,3 +16,6 @@ if not JQ_ACCOUNT:
 JQ_PASSWD = ''
 if not JQ_PASSWD:
     JQ_PASSWD = os.environ.get('JQ_PASSWD')
+
+# 覆盖维度 银行/保险/企业/券商 创业板 中小板 主板
+SAMPLE_STOCK_CODES = ['000001', '000783', '603220', '601318', '000338', '002572', '300027']
