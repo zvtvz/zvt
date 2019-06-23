@@ -2,9 +2,13 @@
 import logging
 import os
 from decimal import *
+from enum import Enum
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
+
+from zvt import LOG_PATH
+from zvt.utils.time_utils import to_time_str
 
 getcontext().prec = 16
 
@@ -96,7 +100,7 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict):
                 exec('the_domain.{}=result_value'.format(k))
 
 
-def init_process_log(file_name, log_dir=None):
+def init_process_log(file_name, log_dir=LOG_PATH):
     root_logger = logging.getLogger()
 
     # reset the handlers
@@ -141,3 +145,13 @@ def read_csv(f, encoding, sep=None, na_values=None):
             f.seek(0)
             continue
     return None
+
+
+def marshal_object_for_ui(object):
+    if isinstance(object, Enum):
+        return object.value
+
+    if isinstance(object, pd.Timestamp):
+        return to_time_str(object)
+
+    return object

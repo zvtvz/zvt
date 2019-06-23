@@ -50,6 +50,7 @@ class Position(BusinessBase):
     available_long = Column(Float)
     # 平均做多价格
     average_long_price = Column(Float)
+
     # 做空数量
     short_amount = Column(Float)
     # 可平空数量
@@ -82,3 +83,6 @@ class Order(BusinessBase):
     order_type = Column(String(length=64))
     # 订单状态
     status = Column(String(length=64))
+
+    # 产生订单的selector/factor level
+    level = Column(String(length=32))

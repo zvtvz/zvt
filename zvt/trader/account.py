@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 import math
 
 from zvt.api.account import get_account
 from zvt.api.common import decode_security_id, get_kdata_schema
-from zvt.api.rules import get_trading_t
+from zvt.api.rules import get_trading_meta
 from zvt.api.technical import get_kdata
 from zvt.domain import get_db_session, StoreCategory, SecurityType, Order, Provider, TradingLevel
 from zvt.domain.account import SimAccount, Position
@@ -83,7 +84,7 @@ class AccountService(TradingListener):
             return ORDER_TYPE_CLOSE_SHORT
 
     def on_trading_signal(self, trading_signal: TradingSignal):
-        self.logger.info('trader:{} received trading signal:{}'.format(self.trader_name, trading_signal))
+        self.logger.debug('trader:{} received trading signal:{}'.format(self.trader_name, trading_signal))
         security_id = trading_signal.security_id
         current_timestamp = trading_signal.the_timestamp
         order_type = AccountService.trading_signal_to_order_type(trading_signal.trading_signal_type)
@@ -390,6 +391,7 @@ class SimAccountService(AccountService):
             current_position = self.get_current_position(security_id=security_id)
 
             if not current_position:
+                trading_t = get_trading_meta(security_id=security_id)['trading_t']
                 current_position = {
                     'trader_name': self.trader_name,
                     'security_id': security_id,
@@ -401,7 +403,7 @@ class SimAccountService(AccountService):
                     'average_short_price': 0,
                     'profit': 0,
                     'value': 0,
-                    'trading_t': get_trading_t(security_id=security_id)
+                    'trading_t': trading_t
                 }
                 # add it to latest account
                 self.latest_account['positions'].append(current_position)

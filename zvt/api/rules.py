@@ -25,7 +25,7 @@ def generate_finished_timestamps(security_type, exchange, level):
     return [to_time_str(timestamp, fmt=TIME_FORMAT_MINUTE1) for timestamp in
             iterate_timestamps(security_type=security_type, exchange=exchange,
                                start_timestamp='1999-01-01', end_timestamp='1999-01-01', level=level,
-                               contain_all_timestamp=True)]
+                               contain_all_timestamp=False, kdata_use_begin_time=False)]
 
 
 def iterate_timestamps(security_type, exchange, start_timestamp: pd.Timestamp, end_timestamp: pd.Timestamp,
@@ -101,53 +101,80 @@ def is_close_time(security_type, exchange, timestamp):
                                                                                 exchange=exchange)[-1][-1]))
 
 
-# use generate_finished_timestamps to generate
-china_stock_finished_1h_timstamps = ['10:30', '11:30', '14:00', '15:00']
-china_stock_finished_1d_timstamps = ['00:00', '15:00']
-
 china_stock_level_map_finished_timestamps = {
-    '1h': china_stock_finished_1h_timstamps,
-    '1d': china_stock_finished_1d_timstamps
+    TradingLevel.LEVEL_1DAY.value: ['00:00', '15:00']
 }
+
+for level in TradingLevel:
+    if level < TradingLevel.LEVEL_1DAY:
+        china_stock_level_map_finished_timestamps[level.value] = generate_finished_timestamps(
+            security_type=SecurityType.stock, exchange='sh', level=level)
 
 
 def coin_finished_timestamp(timestamp: pd.Timestamp, level: TradingLevel):
     timestamp = to_pd_timestamp(timestamp)
 
+    if timestamp.microsecond != 0:
+        return False
+
     return timestamp.minute % level.to_minute() == 0
 
 
+def china_stock_finished_timestamp(timestamp: pd.Timestamp, level: TradingLevel):
+    timestamp = to_pd_timestamp(timestamp)
+
+    if timestamp.microsecond != 0:
+        return False
+
+    return to_time_str(timestamp, fmt=TIME_FORMAT_MINUTE1) in china_stock_level_map_finished_timestamps.get(
+        level.value)
+
+
 def is_in_finished_timestamps(security_type, exchange, timestamp, level: TradingLevel):
+    """
+
+    :param security_type:
+    :type security_type: zvt.domain.common.SecurityType
+    :param exchange:
+    :type exchange: str
+    :param timestamp: the timestamp could be recorded in kdata of the level
+    :type timestamp: pd.Timestamp
+    :param level:
+    :type level: zvt.domain.common.TradingLevel
+    :return:
+    :rtype: bool
+    """
     if type(security_type) == str:
         security_type = SecurityType(security_type)
 
     if security_type == SecurityType.stock and exchange in ('sh', 'sz'):
-        if to_time_str(timestamp, fmt=TIME_FORMAT_MINUTE1) in china_stock_level_map_finished_timestamps.get(
-                level.value):
-            return True
+        return china_stock_finished_timestamp(timestamp, level=level)
     if security_type == SecurityType.coin:
         return coin_finished_timestamp(timestamp, level=level)
+
     return False
 
 
-def get_trading_t(security_type=None, security_id=None):
-    if security_type is None:
-        security_type, _, _ = decode_security_id(security_id)
+def get_trading_meta(security_id=None, security_type=None, exchange=None):
+    if security_id:
+        security_type, exchange, _ = decode_security_id(security_id)
+
+    if security_type == SecurityType.future:
+        return {
+            'trading_t': 0,
+            'could_short': True
+        }
 
     if security_type == SecurityType.coin:
-        return 0
+        return {
+            'trading_t': 0,
+            'could_short': True
+        }
     if security_type == SecurityType.stock:
-        return 1
-
-
-def could_short(security_type=None, security_id=None):
-    if security_type is None:
-        security_type, _, _ = decode_security_id(security_id)
-
-    if security_type == SecurityType.coin:
-        return True
-    if security_type == SecurityType.stock:
-        return False
+        return {
+            'trading_t': 1,
+            'could_short': False
+        }
 
 
 if __name__ == '__main__':

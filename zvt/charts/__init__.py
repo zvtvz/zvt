@@ -3,51 +3,14 @@ import os
 from typing import List
 
 import pandas as pd
-from pyecharts import options as opts
-from pyecharts.charts import Line, Timeline
-from pyecharts.charts.basic_charts.kline import Kline
-from pyecharts.globals import ThemeType
-from pyecharts.options import InitOpts, TitleOpts
+import plotly
+import plotly.graph_objs as go
 
 from zvt.api.common import decode_security_id
-from zvt.api.technical import get_kdata
 from zvt.domain import SecurityType
 from zvt.settings import UI_PATH
-from zvt.utils.pd_utils import fill_with_same_index
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_ISO8601, now_time_str
-
-
-def get_init_opts():
-    return InitOpts(theme=ThemeType.LIGHT, page_title='awesome zvt')
-
-
-def get_title_opts():
-    return TitleOpts()
-
-
-def get_default_line():
-    line = Line(init_opts=get_init_opts())
-    return line
-
-
-def get_default_kline() -> Kline:
-    kline = Kline(init_opts=get_init_opts())
-    kline.set_global_opts(
-        xaxis_opts=opts.AxisOpts(is_scale=True),
-        yaxis_opts=opts.AxisOpts(
-            is_scale=True,
-            splitarea_opts=opts.SplitAreaOpts(
-                is_show=True, areastyle_opts=opts.AreaStyleOpts(opacity=1)
-            ),
-        ),
-        datazoom_opts=[opts.DataZoomOpts()])
-    return kline
-
-
-def get_default_timeline():
-    timeline = Timeline(init_opts=get_init_opts())
-    timeline.add_schema(is_auto_play=False, axis_type='time', pos_bottom='10%')
-    return timeline
+from zvt.utils.pd_utils import fill_with_same_index, df_is_not_null
+from zvt.utils.time_utils import TIME_FORMAT_ISO8601, now_time_str
 
 
 def get_ui_path(name):
@@ -56,120 +19,186 @@ def get_ui_path(name):
     return os.path.join(UI_PATH, '{}.html'.format(name))
 
 
-def common_draw(df_list: List[pd.DataFrame], chart_type=Line, columns=[], name_field='security_id', render='html',
-                file_name=None):
-    if len(df_list) > 1:
-        df_list = fill_with_same_index(df_list=df_list)
+class Chart(object):
+    def __init__(self,
+                 category_field: str = 'security_id',
+                 # child added arguments
+                 figure=go.Scatter,
+                 mode='lines',
+                 value_field='close',
+                 render='html',
+                 file_name=None,
+                 width=None,
+                 height=None,
+                 title=None,
+                 keep_ui_state=True) -> None:
+        self.figure = figure
+        self.mode = mode
+        self.trace_field = category_field
+        self.value_field = value_field
+        self.render = render
+        self.file_name = file_name
+        self.width = width
+        self.height = height
 
-    chart = None
-
-    if chart_type == Line:
-        chart = get_default_line()
-        assert len(columns) == 1
-
-    xdata = [to_time_str(timestamp) for timestamp in df_list[0].index]
-
-    chart.add_xaxis(xdata)
-
-    for df in df_list:
-        series_name = df[df[name_field].notna()][name_field][0]
-
-        if len(columns) == 1:
-            ydata = df.loc[:, columns[0]].values.tolist()
-
-        chart.add_yaxis(series_name, ydata, is_smooth=True,
-                        markpoint_opts=opts.MarkPointOpts(
-                            data=[opts.MarkPointItem(type_="min"), opts.MarkPointItem(type_="max")]))
-
-        if render == 'html':
-            chart.render(get_ui_path(file_name))
-        elif render == 'notebook':
-            chart.render_notebook()
-
-    return chart
-
-
-def draw_line(df_list: List[pd.DataFrame], columns=[], name_field='security_id', render='html',
-              file_name=None):
-    return common_draw(df_list=df_list, chart_type=Line, columns=columns, name_field=name_field, render=render,
-                       file_name=file_name)
-
-
-def draw_kline(df_list: List[pd.DataFrame], markpoints_list: List[pd.DataFrame] = None, render='html',
-               file_name=None) -> Kline:
-    if len(df_list) > 1:
-        df_list = fill_with_same_index(df_list=df_list)
-
-    kline = None
-    for idx, df in enumerate(df_list):
-        security_id = df[df.security_id.notna()]['security_id'][0]
-        security_type, _, _ = decode_security_id(security_id)
-
-        xdata = [to_time_str(timestamp) for timestamp in df.index]
-
-        if security_type == SecurityType.stock:
-            ydata = df.loc[:, ['qfq_open', 'qfq_close', 'qfq_low', 'qfq_high']].values.tolist()
+        if title:
+            self.title = title
         else:
-            ydata = df.loc[:, ['open', 'close', 'low', 'high']].values.tolist()
+            self.title = type(self).__name__.lower()
 
-        current_kline = get_default_kline()
-        current_kline.add_xaxis(xdata)
+        self.keep_ui_state = keep_ui_state
 
-        # markpoint
-        markpoint_opts = None
-        if markpoints_list:
-            mark_points = markpoints_list[idx]
-            if mark_points is not None and not mark_points.empty:
-                mark_point_items = []
-                for timestamp, item in mark_points.iterrows():
-                    if to_time_str(timestamp) in df.index:
+        self.data_df: pd.DataFrame = None
+        self.annotation_df: pd.DataFrame = None
 
-                        if item['order_type'] == 'order_long':
-                            flag_name = 'buy'
-                            symbol = 'arrow'
-                            color = "#ec0000"
+    def set_data_df(self, df):
+        self.data_df = df
 
-                        if item['order_type'] == 'order_close_long':
-                            flag_name = 'sell'
-                            symbol = 'pin'
-                            color = "#00da3c"
+    def set_annotation_df(self, df):
+        """
+        annotation_df should in this format:
+                                           flag value  color
+        self.trace_field      timestamp
 
-                        value = round(item['order_price'], 2)
+        stock_sz_000338       2019-01-02   buy  100    "#ec0000"
 
-                        mark_point_items.append(
-                            opts.MarkPointItem(name=flag_name, coord=[to_time_str(timestamp), value],
-                                               value=value, symbol=symbol, symbol_size=20))
+        :param df:
+        :type df:
+        """
+        self.annotation_df = df
 
-                    markpoint_opts = opts.MarkPointOpts(data=mark_point_items, symbol_size=20)
+    def get_annotation_df(self):
+        return self.annotation_df
 
-        current_kline.add_yaxis(security_id, ydata,
-                                markpoint_opts=markpoint_opts,
-                                itemstyle_opts=opts.ItemStyleOpts(
-                                    color="#ec0000",
-                                    color0="#00da3c",
-                                    border_color="#8A0000",
-                                    border_color0="#008F28"))
+    def get_data_df(self):
+        return self.data_df
 
-        if not kline:
-            kline = current_kline
+    def get_plotly_annotations(self):
+        annotations = []
+
+        if df_is_not_null(self.get_annotation_df()):
+            for trace_name, df in self.annotation_df.groupby(level=0):
+                if df_is_not_null(df):
+                    for (_, timestamp), item in df.iterrows():
+                        if 'color' in item:
+                            color = item['color']
+                        else:
+                            color = '#ec0000'
+
+                        value = round(item['value'], 2)
+                        annotations.append(dict(
+                            x=timestamp,
+                            y=value,
+                            xref='x',
+                            yref='y',
+                            text=item['flag'],
+                            showarrow=True,
+                            align='center',
+                            arrowhead=2,
+                            arrowsize=1,
+                            arrowwidth=2,
+                            arrowcolor='#030813',
+                            ax=-10,
+                            ay=-30,
+                            bordercolor='#c7c7c7',
+                            borderwidth=1,
+                            bgcolor=color,
+                            opacity=0.8
+                        ))
+        return annotations
+
+    def get_plotly_data(self):
+        if not df_is_not_null(self.get_data_df()):
+            return []
+
+        df_list: List[pd.DataFrame] = []
+        for trace_name, df_item in self.get_data_df().groupby(self.trace_field):
+            df = df_item.copy()
+            df.reset_index(inplace=True, level=self.trace_field)
+            df_list.append(df)
+
+        if len(df_list) > 1:
+            df_list = fill_with_same_index(df_list=df_list)
+
+        data = []
+        for df in df_list:
+            series_name = df[df[self.trace_field].notna()][self.trace_field][0]
+
+            xdata = [timestamp for timestamp in df.index]
+
+            if self.figure != go.Candlestick:
+                ydata = df.loc[:, self.value_field].values.tolist()
+                data.append(self.figure(x=xdata, y=ydata, mode=self.mode, name=series_name))
+            else:
+                security_type, _, _ = decode_security_id(series_name)
+
+                if security_type == SecurityType.stock:
+                    open = df.loc[:, 'qfq_open']
+                    close = df.loc[:, 'qfq_close']
+                    high = df.loc[:, 'qfq_high']
+                    low = df.loc[:, 'qfq_low']
+                else:
+                    open = df.loc[:, 'open']
+                    close = df.loc[:, 'close']
+                    high = df.loc[:, 'high']
+                    low = df.loc[:, 'low']
+
+                data.append(self.figure(x=xdata, open=open, close=close, low=low, high=high, name=series_name))
+        return data
+
+    def get_plotly_layout(self):
+        if self.keep_ui_state:
+            uirevision = True
         else:
-            kline.overlap(current_kline)
+            uirevision = None
 
-    if render == 'html':
-        kline.render(get_ui_path(file_name))
-    elif render == 'notebook':
-        kline.render_notebook()
+        return go.Layout(showlegend=True,
+                         uirevision=uirevision,
+                         height=self.height,
+                         width=self.width,
+                         title=self.title,
+                         annotations=self.get_plotly_annotations(),
+                         yaxis=dict(
+                             autorange=True,
+                             fixedrange=False
+                         ),
+                         xaxis=dict(
+                             rangeselector=dict(
+                                 buttons=list([
+                                     dict(count=1,
+                                          label='1m',
+                                          step='month',
+                                          stepmode='backward'),
+                                     dict(count=6,
+                                          label='6m',
+                                          step='month',
+                                          stepmode='backward'),
+                                     dict(count=1,
+                                          label='YTD',
+                                          step='year',
+                                          stepmode='todate'),
+                                     dict(count=1,
+                                          label='1y',
+                                          step='year',
+                                          stepmode='backward'),
+                                     dict(step='all')
+                                 ])
+                             ),
+                             rangeslider=dict(
+                                 visible=True
+                             ),
+                             type='date'
+                         ))
 
-    return kline
+    def draw(self):
+        if self.render == 'html':
+            plotly.offline.plot(figure_or_data={'data': self.get_plotly_data(),
+                                                'layout': self.get_plotly_layout()
+                                                }, filename=get_ui_path(self.file_name), )
+        elif self.render == 'notebook':
+            plotly.offline.init_notebook_mode(connected=True)
+            plotly.offline.iplot(figure_or_data={'data': self.get_plotly_data(),
+                                                 'layout': self.get_plotly_layout()
+                                                 })
 
-
-if __name__ == '__main__':
-    kdata1 = get_kdata(security_id='stock_sz_000338', provider='netease')
-    kdata2 = get_kdata(security_id='stock_sz_000778', provider='netease')
-
-    df_list = fill_with_same_index([kdata1, kdata2])
-    assert len(df_list[0]) == len(df_list[1])
-    print(df_list[0])
-    print(df_list[1])
-
-    draw_kline(df_list, file_name='test_kline.html')
+        return self.get_plotly_data(), self.get_plotly_layout()

@@ -1,7 +1,7 @@
 # 数字货币
 from sqlalchemy import Column, String, DateTime
 
-from zvt.domain import CoinMetaBase
+from zvt.domain.common import CoinMetaBase
 
 
 class Coin(CoinMetaBase):

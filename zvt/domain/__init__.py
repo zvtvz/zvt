@@ -5,6 +5,7 @@ import os
 from sqlalchemy import schema
 
 from zvt.domain.account import *
+from zvt.domain.coin_meta import *
 from zvt.domain.common import *
 from zvt.domain.dividend_financing import *
 from zvt.domain.finance import *
@@ -14,8 +15,6 @@ from zvt.domain.meta import *
 from zvt.domain.money_flow import *
 from zvt.domain.quote import *
 from zvt.domain.trading import *
-from zvt.domain.coin_meta import *
-
 from zvt.settings import DATA_PATH
 
 logger = logging.getLogger(__name__)
@@ -98,6 +97,8 @@ def init_schema():
                 Session = get_db_session_factory(provider, store_category)
                 Session.configure(bind=engine)
 
+
+init_schema()
 
 if __name__ == '__main__':
     init_schema()
