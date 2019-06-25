@@ -15,11 +15,11 @@ fi
 
 BASEDIR=`dirname $0`
 
-if ! which python3 > /dev/null; then
+if ! which python3.6 > /dev/null; then
    echo -e "Python3 not found! Install? (y/n) \c"
    read
    if [ "$REPLY" = "y" ]; then
-      $install_cmd install python3
+      $install_cmd install python3.6
    fi
 fi
 
@@ -32,7 +32,7 @@ if ! which virtualenv > /dev/null; then
 fi
 
 if [ ! -d "$BASEDIR/ve" ]; then
-    virtualenv -p python3 $BASEDIR/ve
+    virtualenv -p python3.6 $BASEDIR/ve
     echo "Virtualenv created."
 fi
 

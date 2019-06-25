@@ -5,6 +5,7 @@ import pandas as pd
 
 from zvt.domain import TradingLevel, Provider, SecurityType
 from zvt.selectors.zvt_selector import TechnicalSelector, FundamentalSelector
+from zvt.settings import SAMPLE_STOCK_CODES
 from zvt.trader.trader import Trader
 from zvt.utils.utils import marshal_object_for_ui
 
@@ -95,13 +96,15 @@ class StockTrader(Trader):
 
 
 if __name__ == '__main__':
-    # CoinTrader(start_timestamp='2019-06-21',
+    # CoinTrader(start_timestamp='2019-06-03',
     #            end_timestamp='2019-06-22',
     #            level=TradingLevel.LEVEL_1MIN,
     #            security_list=['coin_binance_EOS/USDT'],
-    #            real_time=True,
+    #            real_time=False,
     #            kdata_use_begin_time=True).run()
 
-    StockTrader(start_timestamp='2005-01-01',
+    StockTrader(start_timestamp='2015-01-01',
                 end_timestamp='2019-06-21',
-                provider=Provider.JOINQUANT).run()
+                provider=Provider.NETEASE,
+                codes=SAMPLE_STOCK_CODES,
+                level=TradingLevel.LEVEL_1DAY).run()

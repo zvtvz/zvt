@@ -4,7 +4,8 @@ import os
 
 import pandas as pd
 
-from zvt.settings import LOG_PATH
+from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH
+from zvt.utils.zip_utils import unzip
 
 
 def init_log():
@@ -39,3 +40,5 @@ pd.set_option('mode.chained_assignment', 'raise')
 
 # init_schema()
 init_log()
+
+unzip(DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH)

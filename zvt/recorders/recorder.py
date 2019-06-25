@@ -402,7 +402,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         waiting_seconds, size = self.level.count_from_timestamp(touching_timestamp,
                                                                 one_day_trading_minutes=get_one_day_trading_minutes(
                                                                     security_item.id))
-        if waiting_seconds and (waiting_seconds > 30):
+        if not self.one_shot and waiting_seconds and (waiting_seconds > 30):
             t = waiting_seconds / 2
             self.logger.info(
                 'level:{},recorded_time:{},touching_timestamp:{},current_time:{},next_ok_time:{},just sleep:{} seconds'.format(
