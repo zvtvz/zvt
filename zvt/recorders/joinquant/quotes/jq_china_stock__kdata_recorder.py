@@ -7,10 +7,11 @@ import pandas as pd
 from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id, get_kdata_schema, to_jq_trading_level
+from zvt.api.rules import is_in_trading
 from zvt.api.technical import get_kdata
 from zvt.domain import TradingLevel, SecurityType, Provider, Stock
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
+from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
 from zvt.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
 from zvt.utils.utils import init_process_log
 
@@ -36,6 +37,10 @@ class MyApiWrapper(ApiWrapper):
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df['provider'] = Provider.JOINQUANT.value
         df['level'] = param['level']
+
+        # remove the unfinished kdata
+        if is_in_trading(security_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
+            df = df.iloc[:-1, :]
 
         return df.to_dict(orient='records')
 
@@ -148,7 +153,7 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in TradingLevel])
-    parser.add_argument('--codes', help='codes', default=None, nargs='+')
+    parser.add_argument('--codes', help='codes', default=SAMPLE_STOCK_CODES, nargs='+')
 
     args = parser.parse_args()
 

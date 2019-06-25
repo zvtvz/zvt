@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import math
 from typing import Union
 
+import math
 import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
@@ -278,15 +278,13 @@ def to_jq_security_id(security_item):
 
 
 def to_jq_trading_level(trading_level: TradingLevel):
-    # TODO:add other levels
-    if trading_level == TradingLevel.LEVEL_1DAY:
-        return 'daily'
+    if trading_level < TradingLevel.LEVEL_1HOUR:
+        return trading_level.value
+
     if trading_level == TradingLevel.LEVEL_1HOUR:
         return '60m'
-    if trading_level == TradingLevel.LEVEL_15MIN:
-        return '15m'
-
-    assert False
+    if trading_level == TradingLevel.LEVEL_1DAY:
+        return '1d'
 
 
 def to_jq_report_period(timestamp):
@@ -304,9 +302,6 @@ def to_jq_report_period(timestamp):
 
 # ccxt related transform
 def to_ccxt_trading_level(trading_level: TradingLevel):
-    # TODO:add other levels
-    if trading_level == TradingLevel.LEVEL_1DAY:
-        return '1d'
     return trading_level.value
 
 

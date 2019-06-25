@@ -29,10 +29,10 @@ def test_000001_finance_factor():
                           '1994-06-30', '1993-12-31', '1993-06-30', '1992-12-31', '1991-12-31', '1990-12-31',
                           '1989-12-31']
     result = fundamental.get_finance_factor(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                            codes=['000001'], end_timestamp='2018-09-30',
+                                            codes=['000001'], end_timestamp='2018-12-30',
                                             order=FinanceFactor.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: FinanceFactor = result[0]
     assert latest.basic_eps == 1.14
@@ -87,10 +87,10 @@ def test_000001_balance_sheet():
                           '1996-06-30', '1995-12-31', '1995-06-30', '1994-12-31', '1994-06-30', '1993-12-31',
                           '1992-12-31', '1991-12-31', '1990-12-31', '1989-12-31']
     result = fundamental.get_balance_sheet(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                           codes=['000001'], end_timestamp='2018-09-30',
+                                           codes=['000001'], end_timestamp='2018-12-30',
                                            order=BalanceSheet.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: BalanceSheet = result[0]
     assert latest.fi_cash_and_deposit_in_central_bank == 287600000000
@@ -160,10 +160,10 @@ def test_000001_income_statement():
                           '1994-12-31', '1994-06-30', '1993-12-31', '1993-06-30', '1992-12-31', '1991-12-31',
                           '1990-12-31', '1989-12-31']
     result = fundamental.get_income_statement(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                              codes=['000001'], end_timestamp='2018-09-30',
+                                              codes=['000001'], end_timestamp='2018-12-30',
                                               order=IncomeStatement.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: IncomeStatement = result[0]
 
@@ -206,10 +206,10 @@ def test_000001_cash_flow_statement():
                           '2001-12-31', '2001-06-30', '2000-12-31', '2000-06-30', '1999-12-31', '1999-06-30',
                           '1998-12-31', '1998-06-30']
     result = fundamental.get_cash_flow_statement(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                                 codes=['000001'], end_timestamp='2018-09-30',
+                                                 codes=['000001'], end_timestamp='2018-12-30',
                                                  order=CashFlowStatement.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: CashFlowStatement = result[0]
 
@@ -273,10 +273,10 @@ def test_000778_finance_factor():
                           '1999-06-30', '1998-12-31', '1998-06-30', '1997-12-31', '1997-06-30', '1996-12-31',
                           '1995-12-31', '1994-12-31']
     result = fundamental.get_finance_factor(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                            codes=['000778'], end_timestamp='2018-09-30',
+                                            codes=['000778'], end_timestamp='2018-12-30',
                                             order=FinanceFactor.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: FinanceFactor = result[0]
 
@@ -339,10 +339,10 @@ def test_000778_balance_sheet():
                           '1999-06-30', '1998-12-31', '1998-06-30', '1997-12-31', '1997-06-30', '1996-12-31',
                           '1995-12-31', '1994-12-31']
     result = fundamental.get_balance_sheet(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                           codes=['000778'], end_timestamp='2018-09-30',
+                                           codes=['000778'], end_timestamp='2018-12-30',
                                            order=BalanceSheet.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: BalanceSheet = result[0]
 
@@ -416,10 +416,10 @@ def test_000778_income_statement():
                           '1999-06-30', '1998-12-31', '1998-06-30', '1997-12-31', '1997-06-30', '1996-12-31',
                           '1995-12-31', '1994-12-31']
     result = fundamental.get_income_statement(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                              codes=['000778'], end_timestamp='2018-09-30',
+                                              codes=['000778'], end_timestamp='2018-12-30',
                                               order=IncomeStatement.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: IncomeStatement = result[0]
 
@@ -473,10 +473,10 @@ def test_000778_cash_flow_statement():
                           '2003-09-30', '2003-06-30', '2003-03-31', '2002-12-31', '2002-06-30', '2001-12-31',
                           '2001-06-30', '2000-12-31', '2000-06-30', '1999-12-31', '1998-12-31', '1998-06-30']
     result = fundamental.get_cash_flow_statement(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                                 codes=['000778'], end_timestamp='2018-09-30',
+                                                 codes=['000778'], end_timestamp='2018-12-30',
                                                  order=CashFlowStatement.timestamp.desc())
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.timestamp) for item in result]
+    timestamps = [to_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: CashFlowStatement = result[0]
 

@@ -10,11 +10,13 @@ from zvt.utils.time_utils import to_pd_timestamp
 # every base logically means one type of data and physically one db file
 MetaBase = declarative_base()
 
-Stock1DKdataBase = declarative_base()
-
-Stock1HKdataBase = declarative_base()
-
+Stock1MKdataBase = declarative_base()
+Stock5MKdataBase = declarative_base()
 Stock15MKdataBase = declarative_base()
+Stock30MKdataBase = declarative_base()
+Stock1HKdataBase = declarative_base()
+Stock1DKdataBase = declarative_base()
+Stock1WKKdataBase = declarative_base()
 
 Index1DKdataBase = declarative_base()
 
@@ -54,9 +56,13 @@ class Provider(enum.Enum):
 
 class StoreCategory(enum.Enum):
     meta = 'meta'
-    stock_1d_kdata = 'stock_1d_kdata'
-    stock_1h_kdata = 'stock_1h_kdata'
+    stock_1m_kdata = 'stock_1m_kdata'
+    stock_5m_kdata = 'stock_5m_kdata'
     stock_15m_kdata = 'stock_15m_kdata'
+    stock_1h_kdata = 'stock_1h_kdata'
+    stock_1d_kdata = 'stock_1d_kdata'
+    stock_1wk_kdata = 'stock_1wk_kdata'
+
     index_1d_kdata = 'index_1d_kdata'
     finance = 'finance'
     dividend_financing = 'dividend_financing'
@@ -80,8 +86,7 @@ provider_map_category = {
                          StoreCategory.finance,
                          StoreCategory.dividend_financing,
                          StoreCategory.holder,
-                         StoreCategory.trading,
-                         StoreCategory.stock_15m_kdata],
+                         StoreCategory.trading],
 
     Provider.SINA: [StoreCategory.meta,
                     StoreCategory.stock_1d_kdata,
@@ -94,9 +99,13 @@ provider_map_category = {
 
     Provider.ZVT: [StoreCategory.business],
 
-    Provider.JOINQUANT: [StoreCategory.stock_1d_kdata,
+    # TODO:would add other data from joinquant
+    Provider.JOINQUANT: [StoreCategory.stock_1m_kdata,
+                         StoreCategory.stock_5m_kdata,
+                         StoreCategory.stock_15m_kdata,
                          StoreCategory.stock_1h_kdata,
-                         StoreCategory.stock_15m_kdata],
+                         StoreCategory.stock_1d_kdata,
+                         StoreCategory.stock_1wk_kdata, ],
 
     Provider.CCXT: [StoreCategory.coin_meta,
                     StoreCategory.coin_1m_kdata,
@@ -109,9 +118,13 @@ provider_map_category = {
 
 category_map_db = {
     StoreCategory.meta: MetaBase,
-    StoreCategory.stock_1d_kdata: Stock1DKdataBase,
-    StoreCategory.stock_1h_kdata: Stock1HKdataBase,
+    StoreCategory.stock_1m_kdata: Stock1MKdataBase,
+    StoreCategory.stock_5m_kdata: Stock5MKdataBase,
     StoreCategory.stock_15m_kdata: Stock15MKdataBase,
+    StoreCategory.stock_1h_kdata: Stock1HKdataBase,
+    StoreCategory.stock_1d_kdata: Stock1DKdataBase,
+    StoreCategory.stock_1wk_kdata: Stock1WKKdataBase,
+
     StoreCategory.index_1d_kdata: Index1DKdataBase,
     StoreCategory.finance: FinanceBase,
     StoreCategory.dividend_financing: DividendFinancingBase,

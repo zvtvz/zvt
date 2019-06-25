@@ -2,7 +2,8 @@
 from sqlalchemy import Column, String, DateTime, Float
 
 from zvt.domain.common import Stock1DKdataBase, Index1DKdataBase, Stock1HKdataBase, Stock15MKdataBase, \
-    Coin15MKdataBase, Coin1HKdataBase, Coin1DKdataBase, Coin1MKdataBase, Coin5MKdataBase, Coin1WKKdataBase
+    Coin15MKdataBase, Coin1HKdataBase, Coin1DKdataBase, Coin1MKdataBase, Coin5MKdataBase, Coin1WKKdataBase, \
+    Stock1MKdataBase, Stock5MKdataBase, Stock30MKdataBase, Stock1WKKdataBase
 
 
 class StockKdataCommon(object):
@@ -54,6 +55,10 @@ class KdataCommon(object):
 # kdata schema rule
 # 1)name:{SecurityType.value.capitalize()}{TradingLevel.value.upper()}Kdata
 # 2)one db file for one schema
+class Stock1WKKdata(Stock1WKKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1wk_kdata'
+
+
 class Stock1DKdata(Stock1DKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1d_kdata'
 
@@ -62,8 +67,20 @@ class Stock1HKdata(Stock1HKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1h_kdata'
 
 
+class Stock30MKdata(Stock30MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_30m_kdata'
+
+
 class Stock15MKdata(Stock15MKdataBase, StockKdataCommon):
     __tablename__ = 'stock_15m_kdata'
+
+
+class Stock5MKdata(Stock5MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_5m_kdata'
+
+
+class Stock1MKdata(Stock1MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1m_kdata'
 
 
 class Index1DKdata(Index1DKdataBase, KdataCommon):

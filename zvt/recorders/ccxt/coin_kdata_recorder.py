@@ -64,7 +64,7 @@ class MyApiWrapper(ApiWrapper):
             logger.warning("exchange:{} not support fetchOHLCV".format(security_item.exchange))
 
 
-class CoinMetaRecorder(FixedCycleDataRecorder):
+class CoinKdataRecorder(FixedCycleDataRecorder):
     provider = Provider.CCXT
 
     meta_provider = Provider.CCXT
@@ -119,4 +119,4 @@ if __name__ == '__main__':
 
     init_process_log('coin_{}_kdata.log'.format(args.level))
 
-    CoinMetaRecorder(codes=['EOS/USDT'], level=level).run()
+    CoinKdataRecorder(codes=['EOS/USDT'], level=level).run()

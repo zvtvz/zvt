@@ -5,6 +5,7 @@ import pandas as pd
 from zvt.api.common import common_filter, get_data, decode_security_id
 from zvt.api.common import get_security_schema, get_kdata_schema
 from zvt.domain import get_db_engine, get_db_session, TradingLevel, Provider, get_store_category
+from zvt.utils.pd_utils import df_is_not_null
 
 
 def init_securities(df, security_type='stock', provider=Provider.EASTMONEY):
@@ -26,7 +27,8 @@ def df_to_db(df, data_schema, provider):
     db_engine = get_db_engine(provider, store_category=store_category)
 
     current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider)
-    df = df[~df['id'].isin(current['id'])]
+    if df_is_not_null(current):
+        df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
 

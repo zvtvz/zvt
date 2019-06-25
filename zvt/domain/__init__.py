@@ -64,12 +64,23 @@ def get_db_session_factory(provider, store_category):
 
 
 def init_schema():
+    # create table at first
     for provider in Provider:
         dbs = provider_map_category.get(provider)
         if dbs:
             for store_category in dbs:
                 engine = get_db_engine(provider, store_category)
                 category_map_db.get(store_category).metadata.create_all(engine)
+
+                Session = get_db_session_factory(provider, store_category)
+                Session.configure(bind=engine)
+
+    # create index
+    for provider in Provider:
+        dbs = provider_map_category.get(provider)
+        if dbs:
+            for store_category in dbs:
+                engine = get_db_engine(provider, store_category)
                 # create index for 'timestamp','security_id','code','report_period
                 for table_name, table in iter(category_map_db.get(store_category).metadata.tables.items()):
                     index_list = []
@@ -93,9 +104,6 @@ def init_schema():
                             index = schema.Index('{}_{}_{}_index'.format(table_name, col[0], col[1]), column0, column1)
                             if index.name not in index_list:
                                 index.create(engine)
-
-                Session = get_db_session_factory(provider, store_category)
-                Session.configure(bind=engine)
 
 
 init_schema()

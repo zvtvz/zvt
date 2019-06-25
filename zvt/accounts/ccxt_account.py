@@ -1,5 +1,6 @@
 import json
 import ccxt
+
 from zvt.domain import COIN_EXCHANGES
 
 
@@ -34,5 +35,6 @@ class CCXTAccount(object):
         exchange = eval("ccxt.{}()".format(exchange_str))
         exchange.apiKey = self.exchange_conf[exchange_str]['apiKey']
         exchange.secret = self.exchange_conf[exchange_str]['secret']
-        exchange.proxies = {'http': 'http://127.0.0.1:10081', 'https': 'http://127.0.0.1:10081'}
+        # set to your proxies if need
+        # exchange.proxies = {'http': 'http://127.0.0.1:10081', 'https': 'http://127.0.0.1:10081'}
         return exchange

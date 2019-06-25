@@ -5,9 +5,22 @@ import pandas as pd
 
 from zvt.api.common import decode_security_id
 from zvt.domain import SecurityType, TradingLevel, to_pd_timestamp
-from zvt.utils.time_utils import date_and_time, is_same_time, to_time_str, TIME_FORMAT_MINUTE1
+from zvt.utils.time_utils import date_and_time, is_same_time, to_time_str, TIME_FORMAT_MINUTE1, now_pd_timestamp, \
+    is_same_date
 
 logger = logging.getLogger(__name__)
+
+
+# make sure the timestamp is in trading date at first
+# this function is used to handle unfinished kdata
+def is_in_trading(security_type, exchange, timestamp):
+    current = now_pd_timestamp()
+    timestamp = to_pd_timestamp(timestamp)
+    if is_same_date(current, timestamp):
+        for start, end in get_trading_intervals(security_type=security_type, exchange=exchange):
+            if current > date_and_time(current, start) and current < date_and_time(current, end):
+                return True
+    return False
 
 
 def get_trading_intervals(security_type, exchange):
