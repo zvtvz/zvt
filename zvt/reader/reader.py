@@ -246,9 +246,9 @@ class DataReader(object):
             self.data_listeners.remove(listener)
 
     def draw(self,
-             figure=go.Scatter,
-             mode='lines',
-             value_field='close',
+             figures=[go.Scatter],
+             modes=['lines'],
+             value_fields=['close'],
              render='html',
              file_name=None,
              width=None,
@@ -256,7 +256,7 @@ class DataReader(object):
              title=None,
              keep_ui_state=True,
              annotation_df=None):
-        chart = Chart(category_field=self.category_field, figure=figure, mode=mode, value_field=value_field,
+        chart = Chart(category_field=self.category_field, figures=figures, modes=modes, value_fields=value_fields,
                       render=render, file_name=file_name,
                       width=width, height=height, title=title, keep_ui_state=keep_ui_state)
         chart.set_data_df(self.data_df)
@@ -265,7 +265,7 @@ class DataReader(object):
 
 
 if __name__ == '__main__':
-    data_reader = DataReader(codes=['000338', '600651'], data_schema=Stock1DKdata, provider='netease',
+    data_reader = DataReader(codes=['000338', '600651'], data_schema=Stock1DKdata, provider='joinquant',
                              start_timestamp='2008-01-01',
                              end_timestamp='2019-06-30',
                              real_time=True)

@@ -23,19 +23,19 @@ class Chart(object):
     def __init__(self,
                  category_field: str = 'security_id',
                  # child added arguments
-                 figure=go.Scatter,
-                 mode='lines',
-                 value_field='close',
-                 render='html',
-                 file_name=None,
-                 width=None,
-                 height=None,
-                 title=None,
-                 keep_ui_state=True) -> None:
-        self.figure = figure
-        self.mode = mode
-        self.trace_field = category_field
-        self.value_field = value_field
+                 figures: List[go._BaseTraceType] = [go.Scatter],
+                 modes: List[str] = ['lines'],
+                 value_fields: List[str] = ['close'],
+                 render: str = 'html',
+                 file_name: str = None,
+                 width: int = None,
+                 height: int = None,
+                 title: str = None,
+                 keep_ui_state: bool = True) -> None:
+        self.figures = figures
+        self.modes = modes
+        self.category_field = category_field
+        self.value_fields = value_fields
         self.render = render
         self.file_name = file_name
         self.width = width
@@ -97,7 +97,7 @@ class Chart(object):
                             arrowhead=2,
                             arrowsize=1,
                             arrowwidth=2,
-                            arrowcolor='#030813',
+                            # arrowcolor='#030813',
                             ax=-10,
                             ay=-30,
                             bordercolor='#c7c7c7',
@@ -112,9 +112,9 @@ class Chart(object):
             return []
 
         df_list: List[pd.DataFrame] = []
-        for trace_name, df_item in self.get_data_df().groupby(self.trace_field):
+        for _, df_item in self.get_data_df().groupby(self.category_field):
             df = df_item.copy()
-            df.reset_index(inplace=True, level=self.trace_field)
+            df.reset_index(inplace=True, level=self.category_field)
             df_list.append(df)
 
         if len(df_list) > 1:
@@ -122,28 +122,35 @@ class Chart(object):
 
         data = []
         for df in df_list:
-            series_name = df[df[self.trace_field].notna()][self.trace_field][0]
+            series_name = df[df[self.category_field].notna()][self.category_field][0]
 
             xdata = [timestamp for timestamp in df.index]
 
-            if self.figure != go.Candlestick:
-                ydata = df.loc[:, self.value_field].values.tolist()
-                data.append(self.figure(x=xdata, y=ydata, mode=self.mode, name=series_name))
-            else:
-                security_type, _, _ = decode_security_id(series_name)
+            # draw all figures for one category
+            for i, figure in enumerate(self.figures):
 
-                if security_type == SecurityType.stock:
-                    open = df.loc[:, 'qfq_open']
-                    close = df.loc[:, 'qfq_close']
-                    high = df.loc[:, 'qfq_high']
-                    low = df.loc[:, 'qfq_low']
+                if figure == go.Candlestick:
+                    security_type, _, _ = decode_security_id(series_name)
+                    trace_name = '{}_kdata'.format(series_name)
+
+                    if security_type == SecurityType.stock:
+                        open = df.loc[:, 'qfq_open']
+                        close = df.loc[:, 'qfq_close']
+                        high = df.loc[:, 'qfq_high']
+                        low = df.loc[:, 'qfq_low']
+                    else:
+                        open = df.loc[:, 'open']
+                        close = df.loc[:, 'close']
+                        high = df.loc[:, 'high']
+                        low = df.loc[:, 'low']
+
+                    data.append(go.Candlestick(x=xdata, open=open, close=close, low=low, high=high, name=trace_name))
                 else:
-                    open = df.loc[:, 'open']
-                    close = df.loc[:, 'close']
-                    high = df.loc[:, 'high']
-                    low = df.loc[:, 'low']
+                    trace_name = '{}_{}'.format(series_name, self.value_fields[i])
 
-                data.append(self.figure(x=xdata, open=open, close=close, low=low, high=high, name=series_name))
+                    ydata = df.loc[:, self.value_fields[i]].values.tolist()
+                    data.append(figure(x=xdata, y=ydata, mode=self.modes[i], name=trace_name))
+
         return data
 
     def get_plotly_layout(self):

@@ -84,7 +84,7 @@ class Factor(DataReader, DataListener):
 
     def draw_depth(self, figure=go.Scatter, mode='lines', value_field='close', render='html', file_name=None,
                    width=None, height=None, title=None, keep_ui_state=True):
-        chart = Chart(category_field=self.category_field, figure=figure, mode=mode, value_field=value_field,
+        chart = Chart(category_field=self.category_field, figures=figure, modes=mode, value_fields=value_field,
                       render=render, file_name=file_name,
                       width=width, height=height, title=title, keep_ui_state=keep_ui_state)
         chart.set_data_df(self.depth_df)
@@ -92,7 +92,7 @@ class Factor(DataReader, DataListener):
 
     def draw_result(self, figure=go.Scatter, mode='lines', value_field='close', render='html', file_name=None,
                     width=None, height=None, title=None, keep_ui_state=True):
-        chart = Chart(category_field=self.category_field, figure=figure, mode=mode, value_field=value_field,
+        chart = Chart(category_field=self.category_field, figures=figure, modes=mode, value_fields=value_field,
                       render=render, file_name=file_name,
                       width=width, height=height, title=title, keep_ui_state=keep_ui_state)
         chart.set_data_df(self.result_df)

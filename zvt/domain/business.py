@@ -6,6 +6,28 @@ from sqlalchemy.orm import relationship
 from zvt.domain.common import BusinessBase
 
 
+class Trader(BusinessBase):
+    __tablename__ = 'trader'
+    id = Column(String(length=128), primary_key=True)
+    # 时间
+    timestamp = Column(DateTime)
+    # 机器人名字
+    trader_name = Column(String(length=128))
+
+    security_list = Column(String(length=1024))
+    security_type = Column(String(length=128))
+    exchanges = Column(String(length=128))
+    codes = Column(String(length=128))
+    start_timestamp = Column(DateTime)
+    end_timestamp = Column(DateTime)
+    provider = Column(String(length=32))
+    level = Column(String(length=32))
+    real_time = Column(Boolean)
+    kdata_use_begin_time = Column(Boolean)
+    # TODO:inspect selector/factors
+    selectors = Column(String(length=1024))
+
+
 # 一天只有一条记录
 class SimAccount(BusinessBase):
     __tablename__ = 'sim_accounts'

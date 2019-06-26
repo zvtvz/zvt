@@ -4,7 +4,7 @@ import os
 
 from sqlalchemy import schema
 
-from zvt.domain.account import *
+from zvt.domain.business import *
 from zvt.domain.coin_meta import *
 from zvt.domain.common import *
 from zvt.domain.dividend_financing import *

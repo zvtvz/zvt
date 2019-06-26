@@ -6,7 +6,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 
-from zvt.charts.dcc_components import get_trader_details
+from zvt.charts.dcc_components import get_trader_detail_figures
 from zvt.charts.html_components import cls_to_input_list
 from zvt.composer import get_trader_classes
 from zvt.reader.business_reader import AccountReader, OrderReader
@@ -105,7 +105,7 @@ def update_trader_details(n, trader_name):
         if trader_name in account_readers:
             account_readers[trader_name].move_on(timeout=1)
             order_readers[trader_name].move_on(timeout=1)
-            return get_trader_details(account_readers[trader_name], order_readers[trader_name])
+            return get_trader_detail_figures(account_readers[trader_name], order_readers[trader_name])
     return html.Label('trader details')
 
 

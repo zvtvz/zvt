@@ -36,5 +36,5 @@ class CCXTAccount(object):
         exchange.apiKey = self.exchange_conf[exchange_str]['apiKey']
         exchange.secret = self.exchange_conf[exchange_str]['secret']
         # set to your proxies if need
-        # exchange.proxies = {'http': 'http://127.0.0.1:10081', 'https': 'http://127.0.0.1:10081'}
+        exchange.proxies = {'http': 'http://127.0.0.1:10081', 'https': 'http://127.0.0.1:10081'}
         return exchange

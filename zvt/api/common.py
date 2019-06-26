@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import math
 from typing import Union
 
-import math
 import pandas as pd
 from sqlalchemy import exists, and_, func
 from sqlalchemy.orm import Query
@@ -103,6 +103,26 @@ def get_count(data_schema, filters=None, session=None):
     count_q = query.statement.with_only_columns([func.count()]).order_by(None)
     count = session.execute(count_q).scalar()
     return count
+
+
+def get_group(provider, data_schema, column, group_func=func.count, session=None):
+    local_session = False
+    if not session:
+        store_category = get_store_category(data_schema)
+        session = get_db_session(provider=provider, store_category=store_category)
+        local_session = True
+    try:
+        if group_func:
+            query = session.query(column, group_func(column)).group_by(column)
+        else:
+            query = session.query(column).group_by(column)
+        df = pd.read_sql(query.statement, query.session.bind)
+        return df
+    except Exception:
+        raise
+    finally:
+        if local_session:
+            session.close()
 
 
 def get_data(data_schema, security_list=None, security_id=None, codes=None, level=None, provider='eastmoney',

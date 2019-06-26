@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from typing import List, Union
 
 import pandas as pd
 
-from zvt.api.common import get_one_day_trading_minutes
+from zvt.api.business import get_trader
+from zvt.api.common import get_one_day_trading_minutes, decode_security_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time
 from zvt.core import Constructor
-from zvt.domain import SecurityType, TradingLevel, Provider
+from zvt.domain import SecurityType, TradingLevel, Provider, business, get_db_session, StoreCategory
 from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
@@ -102,9 +104,18 @@ class Trader(Constructor):
         self.selectors: List[TargetSelector] = None
 
         self.security_list = security_list
+
         self.security_type = SecurityType(security_type)
         self.exchanges = exchanges
         self.codes = codes
+
+        # FIXME:handle this case gracefully
+        if self.security_list:
+            security_type, exchange, code = decode_security_id(self.security_list[0])
+            if not self.security_type:
+                self.security_type = security_type
+            if not self.exchanges:
+                self.exchanges = [exchange]
 
         self.provider = provider
         # make sure the min level selector correspond to the provider and level
@@ -143,6 +154,41 @@ class Trader(Constructor):
         self.trading_level_desc.reverse()
 
         self.targets_slot: TargetsSlot = TargetsSlot()
+
+        self.session = get_db_session('zvt', StoreCategory.business)
+        trader = get_trader(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
+
+        if trader:
+            self.logger.warning("trader:{} has run before,old result would be deleted".format(self.trader_name))
+            self.session.query(business.Trader).filter(business.Trader.trader_name == self.trader_name).delete()
+            self.session.commit()
+        self.on_start()
+
+    def on_start(self):
+        if self.security_list:
+            security_list = json.dumps(self.security_list)
+        else:
+            security_list = None
+
+        if self.exchanges:
+            exchanges = json.dumps(self.exchanges)
+        else:
+            exchanges = None
+
+        if self.codes:
+            codes = json.dumps(self.codes)
+        else:
+            codes = None
+
+        trader_domain = business.Trader(id=self.trader_name, timestamp=self.start_timestamp,
+                                        trader_name=self.trader_name,
+                                        security_type=security_list, exchanges=exchanges, codes=codes,
+                                        start_timestamp=self.start_timestamp,
+                                        end_timestamp=self.end_timestamp, provider=self.provider,
+                                        level=self.level.value,
+                                        real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time)
+        self.session.add(trader_domain)
+        self.session.commit()
 
     def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
         """

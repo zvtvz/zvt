@@ -9,15 +9,15 @@ from zvt.trader.trader import Trader
 from zvt.utils.utils import marshal_object_for_ui
 
 
-class CoinTrader(Trader):
+class SingleCoinTrader(Trader):
     security_type = SecurityType.coin
 
     def __init__(self,
                  security: str = 'coin_binance_EOS/USDT',
-                 start_timestamp: Union[str, pd.Timestamp] = '2019-06-15',
+                 start_timestamp: Union[str, pd.Timestamp] = '2018-06-01',
                  end_timestamp: Union[str, pd.Timestamp] = '2019-06-30',
                  provider: Union[str, Provider] = 'ccxt',
-                 level: Union[str, TradingLevel] = TradingLevel.LEVEL_5MIN,
+                 level: Union[str, TradingLevel] = TradingLevel.LEVEL_1DAY,
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = True) -> None:
@@ -30,7 +30,7 @@ class CoinTrader(Trader):
         selector1 = TechnicalSelector(security_list=security_list, security_type=security_type,
                                       exchanges=exchanges, codes=codes,
                                       start_timestamp=start_timestamp,
-                                      end_timestamp=end_timestamp, level=TradingLevel.LEVEL_1MIN,
+                                      end_timestamp=end_timestamp, level=TradingLevel.LEVEL_1DAY,
                                       provider='ccxt')
         selector1.run()
 
@@ -52,9 +52,4 @@ class CoinTrader(Trader):
 
 
 if __name__ == '__main__':
-    CoinTrader(start_timestamp='2019-06-03',
-               end_timestamp='2019-06-22',
-               level=TradingLevel.LEVEL_1MIN,
-               security_list=['coin_binance_EOS/USDT'],
-               real_time=False,
-               kdata_use_begin_time=True).run()
+    SingleCoinTrader().run()

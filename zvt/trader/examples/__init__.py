@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-from typing import List, Union
+from typing import List
 
-import pandas as pd
-
-from zvt.domain import TradingLevel, Provider, SecurityType
-from zvt.selectors.zvt_selector import TechnicalSelector, FundamentalSelector
+from zvt.selectors.zvt_selector import FundamentalSelector
 from zvt.settings import SAMPLE_STOCK_CODES
-from zvt.trader.trader import Trader
-from zvt.utils.utils import marshal_object_for_ui
+from zvt.trader.examples.coin_trader import *
 
 
 class CoinTrader(Trader):

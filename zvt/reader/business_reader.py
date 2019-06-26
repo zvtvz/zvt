@@ -62,4 +62,4 @@ class OrderReader(DataReader):
 
 if __name__ == '__main__':
     reader = OrderReader(trader_names=['cointrader'])
-    reader.draw(value_field='order_amount')
+    reader.draw(value_fields='order_amount')

@@ -43,6 +43,8 @@ class MyApiWrapper(ApiWrapper):
                 # always ignore the latest one,because it's not finished
                 for kdata in kdatas[0:-1]:
                     current_timestamp = kdata[0]
+                    if level == TradingLevel.LEVEL_1DAY:
+                        current_timestamp = to_time_str(current_timestamp)
 
                     kdata_json = {
                         'timestamp': to_pd_timestamp(current_timestamp),
@@ -53,7 +55,7 @@ class MyApiWrapper(ApiWrapper):
                         'volume': kdata[5],
                         'name': security_item.name,
                         'provider': 'ccxt',
-                        'level': param['level']
+                        'level': level.value
                     }
                     kdata_list.append(kdata_json)
 
@@ -99,7 +101,7 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
             'security_item': security_item,
             'start_timestamp': to_time_str(start),
             'size': size,
-            'level': self.level.value,
+            'level': self.level,
             'ccxt_level': self.ccxt_trading_level,
             'ccxt_account': self.ccxt_account
         }
