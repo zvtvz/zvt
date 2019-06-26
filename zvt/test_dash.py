@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from zvt.charts.dcc_components import get_trader_details
+from zvt.charts.dcc_components import get_trader_detail_figures
 from zvt.domain import TradingLevel
 from zvt.reader.business_reader import AccountReader, OrderReader
 
@@ -39,7 +39,7 @@ app.layout = serve_layout
 def update_trader_details(n):
     account_reader.move_on()
     order_reader.move_on()
-    return html.Div(get_trader_details(account_reader, order_reader, provider='ccxt'))
+    return html.Div(get_trader_detail_figures(account_reader, order_reader, provider='ccxt'))
 
 
 if __name__ == '__main__':

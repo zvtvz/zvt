@@ -61,5 +61,5 @@ def test_reader_draw():
     data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1DKdata, provider='joinquant',
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-14')
-    data_reader.draw(figure=go.Scatter, render=None)
-    data_reader.draw(figure=go.Candlestick, render=None)
+    data_reader.draw(figures=[go.Scatter], render=None)
+    data_reader.draw(figures=[go.Candlestick], render=None)

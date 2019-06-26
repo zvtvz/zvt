@@ -93,8 +93,8 @@ ENV/
 /tick
 /full
 /data/
+/datasample
 data.tar.gz
-/*.zip
 /ve/
 .pytest_cache/
 

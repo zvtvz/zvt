@@ -4,7 +4,7 @@ import datetime
 import os
 import zipfile
 
-from zvt.settings import DATA_SAMPLE_PATH, DATA_SAMPLE_ZIP_PATH
+from zvt.settings import DATA_SAMPLE_PATH
 
 
 def zip_dir(src_dir,
@@ -18,12 +18,15 @@ def zip_dir(src_dir,
     else:
         dst_path = os.path.abspath(os.path.join(src_dir, os.pardir, zip_file_name))
 
+    # os.remove(dst_path)
+
     the_zip_file = zipfile.ZipFile(dst_path, 'w')
 
     for folder, subfolders, files in os.walk(src_dir):
         for file in files:
             the_path = os.path.join(folder, file)
-
+            if 'zvt_business.db' in the_path:
+                continue
             print("zip {}".format(the_path))
             the_zip_file.write(the_path,
                                os.path.relpath(the_path, src_dir),
@@ -41,5 +44,5 @@ def unzip(zip_file, dst_dir):
 
 
 if __name__ == '__main__':
-    # zip_dir(DATA_SAMPLE_PATH, zip_file_name='datasample.zip')
-    unzip(DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH)
+    zip_dir(DATA_SAMPLE_PATH, zip_file_name='datasample.zip')
+    # unzip(DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH)
