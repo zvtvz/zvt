@@ -1,9 +1,13 @@
 language: python
 python:
 - '3.6'
+install:
+  - pip install --user codecov
 script:
 - python init_data_sample.py
-- pytest tests
+- pytest --cov=zvt tests/
+after_success:
+  - codecov
 deploy:
   provider: pypi
   user: foolcage
