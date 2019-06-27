@@ -1,5 +1,9 @@
+[![image](https://img.shields.io/pypi/v/zvt.svg)](https://pypi.org/project/zvt/)
+[![image](https://img.shields.io/pypi/l/zvt.svg)](https://pypi.org/project/zvt/)
+[![image](https://img.shields.io/pypi/pyversions/zvt.svg)](https://pypi.org/project/zvt/)
 [![Build Status](https://api.travis-ci.org/zvtvz/zvt.svg?branch=master)](https://travis-ci.org/zvtvz/zvt)
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
+[![HitCount](http://hits.dwyl.io/zvtvz/zvt.svg)](http://hits.dwyl.io/zvtvz/zvt)
 
 **Read this in other languages: [English](README-en.md).**  
 
