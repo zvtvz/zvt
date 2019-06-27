@@ -3,6 +3,7 @@ cache: pip
 python:
 - '3.6'
 install:
+  - git fetch --tags --depth=500
   - pip install 'pytest>=3.6' --force-reinstall
   - pip install pytest-cov codecov
   - pip install -r ./requirements.txt
