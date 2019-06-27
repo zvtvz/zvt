@@ -1,8 +1,9 @@
 language: python
+cache: pip
 python:
 - '3.6'
 install:
-  - pip install --user codecov
+  - pip install codecov
 script:
 - python init_data_sample.py
 - pytest --cov=zvt tests/
