@@ -3,7 +3,8 @@ cache: pip
 python:
 - '3.6'
 install:
-  - pip install pytest pytest-cov
+  - pip install 'pytest>=3.6' --force-reinstall
+  - pip install pytest-cov
   - pip install -r ./requirements.txt
 script:
 - python init_data_sample.py
