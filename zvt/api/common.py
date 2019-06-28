@@ -12,7 +12,7 @@ from zvt.domain import SecurityType, Stock, Index, ReportPeriod, StoreCategory, 
 from zvt.domain import get_db_session, CompanyType, TradingLevel, get_store_category
 from zvt.domain.coin_meta import Coin
 from zvt.domain.quote import *
-from zvt.utils.pd_utils import index_df_with_time
+from zvt.utils.pd_utils import index_df, df_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -127,7 +127,7 @@ def get_group(provider, data_schema, column, group_func=func.count, session=None
 
 def get_data(data_schema, security_list=None, security_id=None, codes=None, level=None, provider='eastmoney',
              columns=None, return_type='df', start_timestamp=None, end_timestamp=None,
-             filters=None, session=None, order=None, limit=None):
+             filters=None, session=None, order=None, limit=None, index='timestamp', index_is_time=True):
     local_session = False
     if not session:
         store_category = get_store_category(data_schema)
@@ -165,12 +165,12 @@ def get_data(data_schema, security_list=None, security_id=None, codes=None, leve
 
         if return_type == 'df':
             df = pd.read_sql(query.statement, query.session.bind)
-            if not df.empty:
-                return index_df_with_time(df, drop=False)
+            if df_is_not_null(df):
+                return index_df(df, drop=False, index=index, index_is_time=index_is_time)
         elif return_type == 'domain':
             return query.all()
         elif return_type == 'dict':
-            return [item.to_json() for item in query.all()]
+            return [item.__dict__ for item in query.all()]
     except Exception:
         raise
     finally:

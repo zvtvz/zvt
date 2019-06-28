@@ -4,7 +4,7 @@ from typing import Union
 import pandas as pd
 
 from zvt.domain import TradingLevel, Provider, SecurityType
-from zvt.selectors.zvt_selector import TechnicalSelector
+from zvt.selectors.examples.technical_selector import TechnicalSelector
 from zvt.trader.trader import Trader
 from zvt.utils.utils import marshal_object_for_ui
 
@@ -27,12 +27,12 @@ class SingleCoinTrader(Trader):
     def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
         self.selectors = []
 
-        selector1 = TechnicalSelector(security_list=security_list, security_type=security_type,
-                                      exchanges=exchanges, codes=codes,
-                                      start_timestamp=start_timestamp,
-                                      end_timestamp=end_timestamp, level=TradingLevel.LEVEL_1DAY,
-                                      provider='ccxt')
-        selector1.run()
+        technical_selector = TechnicalSelector(security_list=security_list, security_type=security_type,
+                                               exchanges=exchanges, codes=codes,
+                                               start_timestamp=start_timestamp,
+                                               end_timestamp=end_timestamp, level=TradingLevel.LEVEL_1DAY,
+                                               provider='ccxt')
+        technical_selector.run()
 
         # selector2 = TechnicalSelector(security_list=security_list, security_type=security_type,
         #                                    exchanges=exchanges, codes=codes,
@@ -41,7 +41,7 @@ class SingleCoinTrader(Trader):
         #                                    provider='ccxt')
         # selector2.run()
 
-        self.selectors.append(selector1)
+        self.selectors.append(technical_selector)
         # self.selectors.append(selector2)
 
     @classmethod

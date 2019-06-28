@@ -44,4 +44,4 @@ if __name__ == '__main__':
                                  end_timestamp='2018-12-31',
                                  codes=['000338', '000778', '601318'])
 
-    factor.draw_result(value_field='op_income_growth_yoy')
+    factor.draw_result(value_fields=['op_income_growth_yoy', 'rota'])
