@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import io
+
 import demjson
 import requests
 import pandas as pd
@@ -23,21 +25,27 @@ class ChinaETFListSpider(Recorder):
         resp = requests.get(url, headers=DEFAULT_SH_ETF_LIST_HEADER)
         self.download_etf_list(response=resp, exchange='sh')
 
+        url = 'http://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1105&TABKEY=tab1&selectJjlb=ETF'
+
+        resp = requests.get(url)
+        self.download_etf_list(response=resp, exchange='sz')
+
     def download_etf_list(self, response: requests.Response, exchange: str) -> None:
         df = None
         if exchange == 'sh':
             response_dict = demjson.decode(response.text)
             df = pd.DataFrame(response_dict['result'])
-
             if df is not None:
                 df = df[['FUND_ID', 'FUND_NAME']]
+                df.columns = ['code', 'name']
 
         elif exchange == 'sz':
-            pass
+            df = pd.read_excel(io.BytesIO(response.content), dtype=str, parse_dates=['上市日期'])
+            if df is not None:
+                df = df[['基金代码', '基金简称', '上市日期']]
+                df.columns = ['code', 'name', 'timestamp']
 
         if df is not None:
-            df.columns = ['code', 'name']
-
             df['id'] = df['code'].apply(lambda x: f'index_{exchange}_{x}')
             df['exchange'] = exchange
             df['type'] = 'index'
