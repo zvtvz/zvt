@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from typing import List, Union
 
 import pandas as pd
+from sqlalchemy.orm import Session
 
-from zvt.api.common import common_filter, get_data, decode_security_id
+from zvt.api.common import get_data, decode_security_id
 from zvt.api.common import get_security_schema, get_kdata_schema
-from zvt.domain import get_db_engine, get_db_session, TradingLevel, Provider, get_store_category
+from zvt.domain import get_db_engine, TradingLevel, Provider, get_store_category, SecurityType, get_db_session, \
+    StoreCategory, Index
 from zvt.utils.pd_utils import df_is_not_null
 
 
@@ -33,49 +36,58 @@ def df_to_db(df, data_schema, provider):
     df.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
 
 
-def get_securities(security_type='stock', exchanges=None, codes=None, columns=None,
-                   return_type='df', session=None, start_timestamp=None, end_timestamp=None,
-                   filters=None, order=None, limit=None, provider='eastmoney'):
-    local_session = False
+def get_securities_in_blocks(block_names=['HS300_'], block_category='concept', provider='eastmoney'):
+    session = get_db_session(provider=provider, store_category=StoreCategory.meta)
 
+    filters = [Index.category == block_category]
+    name_filters = None
+    for block_name in block_names:
+        if name_filters:
+            name_filters |= (Index.name == block_name)
+        else:
+            name_filters = (Index.name == block_name)
+    filters.append(name_filters)
+    blocks = get_securities(security_type='index', provider='eastmoney',
+                            filters=filters,
+                            return_type='domain', session=session)
+    securities = []
+    for block in blocks:
+        securities += [item.stock_id for item in block.stocks]
+
+    return securities
+
+
+def get_securities(security_list: List[str] = None,
+                   security_type: Union[SecurityType, str] = 'stock',
+                   exchanges: List[str] = None,
+                   codes: List[str] = None,
+                   columns: List = None,
+                   return_type: str = 'df',
+                   session: Session = None,
+                   start_timestamp: Union[str, pd.Timestamp] = None,
+                   end_timestamp: Union[str, pd.Timestamp] = None,
+                   filters: List = None,
+                   order: object = None,
+                   limit: int = None,
+                   provider: Union[str, Provider] = 'eastmoney',
+                   index: str = 'code',
+                   index_is_time: bool = False) -> object:
     data_schema = get_security_schema(security_type)
-    store_category = get_store_category(data_schema=data_schema)
-
-    if not session:
-        session = get_db_session(provider=provider, store_category=store_category)
-        local_session = True
 
     if not order:
         order = data_schema.code.asc()
 
-    try:
-        if columns:
-            query = session.query(*columns)
+    if exchanges:
+        if filters:
+            filters.append(data_schema.exchange.in_(exchanges))
         else:
-            query = session.query(data_schema)
+            filters = [data_schema.exchange.in_(exchanges)]
 
-        # filters
-        if exchanges:
-            query = query.filter(data_schema.exchange.in_(exchanges))
-        if codes:
-            query = query.filter(data_schema.code.in_(codes))
-
-        query = common_filter(query, data_schema=data_schema, start_timestamp=start_timestamp,
-                              end_timestamp=end_timestamp, filters=filters, order=order, limit=limit)
-
-        if return_type == 'df':
-            # TODO:add indices info
-            return pd.read_sql(query.statement, query.session.bind)
-        elif return_type == 'domain':
-            return query.all()
-        elif return_type == 'dict':
-            return [item.to_json() for item in query.all()]
-    except Exception as e:
-
-        raise
-    finally:
-        if local_session:
-            session.close()
+    return get_data(data_schema=data_schema, security_list=security_list, security_id=None, codes=codes, level=None,
+                    provider=provider,
+                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
+                    end_timestamp=end_timestamp, filters=filters,
+                    session=session, order=order, limit=limit, index=index, index_is_time=index_is_time)
 
 
 def get_kdata(security_id, level=TradingLevel.LEVEL_1DAY.value, provider='eastmoney', columns=None,

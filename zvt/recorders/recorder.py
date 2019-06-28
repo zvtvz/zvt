@@ -84,7 +84,7 @@ class RecorderForSecurities(Recorder):
         self.codes = codes
 
         self.meta_session = get_db_session(provider=self.meta_provider, store_category=self.meta_category)
-        # init the security listo
+        # init the security list
         self.securities = get_securities(session=self.meta_session,
                                          security_type=self.security_type,
                                          exchanges=self.exchanges,

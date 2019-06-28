@@ -3,6 +3,7 @@ from typing import Union
 
 import dash_core_components as dcc
 import plotly.graph_objs as go
+import simplejson
 
 from zvt.api.common import decode_security_id
 from zvt.domain import Provider, business
@@ -75,35 +76,42 @@ def get_trader_detail_figures(trader_domain: business.Trader,
                 'layout': account_layout
             }))
 
-    df_orders = order_reader.get_data_df()
+    order_reader.move_on(timeout=0)
+    df_orders = order_reader.get_data_df().copy()
 
     if df_is_not_null(df_orders):
         grouped = df_orders.groupby('security_id')
 
         for security_id, order_df in grouped:
             security_type, _, _ = decode_security_id(security_id)
-            # TODO:just show the indicators used by the trader
+
+            indicators = []
+            indicators_param = []
+            indicator_cols = []
+            if trader_domain.technical_factors:
+                tech_factors = simplejson.loads(trader_domain.technical_factors)
+                for factor in tech_factors:
+                    indicators += factor['indicators']
+                    indicators_param += factor['indicators_param']
+                    indicator_cols += factor['indicator_cols']
+
             security_factor = TechnicalFactor(security_type=security_type, security_list=[security_id],
                                               start_timestamp=trader_domain.start_timestamp,
                                               end_timestamp=trader_domain.end_timestamp,
                                               level=trader_domain.level, provider=trader_domain.provider,
-                                              indicators=['ma', 'ma'],
-                                              indicators_param=[{'window': 5}, {'window': 10}]
-                                              )
-
-            # if df_is_not_null(security_factor.get_data_df()):
-            #     print(security_factor.get_data_df().tail())
+                                              indicators=indicators,
+                                              indicators_param=indicators_param)
 
             # generate the annotation df
-            order_reader.move_on(timeout=0)
-            df = order_reader.get_data_df().copy()
+            df = order_df.copy()
             if df_is_not_null(df):
                 df['value'] = df['order_price']
                 df['flag'] = df['order_type'].apply(lambda x: order_type_flag(x))
                 df['color'] = df['order_type'].apply(lambda x: order_type_color(x))
             print(df.tail())
 
-            data, layout = security_factor.draw_with_indicators(render=None, annotation_df=df)
+            data, layout = security_factor.draw_with_indicators(render=None, annotation_df=df,
+                                                                indicators=indicator_cols)
 
             graph_list.append(
                 dcc.Graph(

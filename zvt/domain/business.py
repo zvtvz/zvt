@@ -26,6 +26,8 @@ class Trader(BusinessBase):
     kdata_use_begin_time = Column(Boolean)
     # TODO:inspect selector/factors
     selectors = Column(String(length=1024))
+    factors = Column(String(length=1024))
+    technical_factors = Column(String(length=1024))
 
 
 # 一天只有一条记录

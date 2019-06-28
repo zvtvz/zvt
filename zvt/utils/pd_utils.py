@@ -8,12 +8,14 @@ def df_is_not_null(df: pd.DataFrame):
     return df is not None and isinstance(df, pd.DataFrame) and not df.empty
 
 
-def index_df_with_time(df, index='timestamp', inplace=True, drop=True):
+def index_df(df, index='timestamp', inplace=True, drop=True, index_is_time=True):
     if inplace:
         df.set_index(index, drop=drop, inplace=inplace)
     else:
         df = df.set_index(index, drop=drop, inplace=inplace)
-    df.index = pd.to_datetime(df.index)
+
+    if index_is_time:
+        df.index = pd.to_datetime(df.index)
     df = df.sort_index()
     return df
 

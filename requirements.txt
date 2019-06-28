@@ -15,3 +15,4 @@ marshmallow-sqlalchemy
 ccxt == 1.17.191
 dash==0.43.0
 dash-daq==0.1.0
+simplejson==3.16.0

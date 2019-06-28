@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import enum
-import logging
 from typing import List, Union
 
 import pandas as pd
@@ -82,17 +81,17 @@ class Factor(DataReader, DataListener):
     def get_depth_df(self):
         return self.depth_df
 
-    def draw_depth(self, figure=go.Scatter, mode='lines', value_field='close', render='html', file_name=None,
+    def draw_depth(self, figures=[go.Scatter], modes=['lines'], value_fields=['close'], render='html', file_name=None,
                    width=None, height=None, title=None, keep_ui_state=True):
-        chart = Chart(category_field=self.category_field, figures=figure, modes=mode, value_fields=value_field,
+        chart = Chart(category_field=self.category_field, figures=figures, modes=modes, value_fields=value_fields,
                       render=render, file_name=file_name,
                       width=width, height=height, title=title, keep_ui_state=keep_ui_state)
         chart.set_data_df(self.depth_df)
         chart.draw()
 
-    def draw_result(self, figure=go.Scatter, mode='lines', value_field='close', render='html', file_name=None,
+    def draw_result(self, figures=[go.Scatter], modes=['lines'], value_fields=['score'], render='html', file_name=None,
                     width=None, height=None, title=None, keep_ui_state=True):
-        chart = Chart(category_field=self.category_field, figures=figure, modes=mode, value_fields=value_field,
+        chart = Chart(category_field=self.category_field, figures=figures, modes=modes, value_fields=value_fields,
                       render=render, file_name=file_name,
                       width=width, height=height, title=title, keep_ui_state=keep_ui_state)
         chart.set_data_df(self.result_df)

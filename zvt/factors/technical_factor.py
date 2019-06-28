@@ -12,6 +12,16 @@ from zvt.utils.pd_utils import index_df_with_security_time
 
 
 class TechnicalFactor(FilterFactor):
+
+    def __json__(self):
+        return {
+            'indicators': self.indicators,
+            'indicators_param': self.indicators_param,
+            'indicator_cols': list(self.indicator_cols)
+        }
+
+    for_json = __json__  # supported by simplejson
+
     def __init__(self,
                  security_list: List[str] = None,
                  security_type: Union[str, SecurityType] = SecurityType.stock,
@@ -170,17 +180,25 @@ class CrossMaFactor(TechnicalFactor):
         self.compute()
 
 
-if __name__ == '__main__':
-    factor = TechnicalFactor(codes=['000338'], start_timestamp='2018-01-01', end_timestamp='2019-02-01',
-                             indicators=['ma', 'ma'],
-                             indicators_param=[{'window': 5}, {'window': 10}])
-    factor.draw_with_indicators()
+class BullFactor(TechnicalFactor):
+    def __init__(self, security_list: List[str] = None, security_type: Union[str, SecurityType] = SecurityType.stock,
+                 exchanges: List[str] = ['sh', 'sz'], codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
+                 provider: Union[str, Provider] = 'joinquant', level: TradingLevel = TradingLevel.LEVEL_1DAY,
+                 real_time: bool = False, refresh_interval: int = 10, category_field: str = 'security_id',
+                 indicators=['macd'], indicators_param=[{'slow': 26, 'fast': 12, 'n': 9}],
+                 valid_window=26) -> None:
+        super().__init__(security_list, security_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+                         columns, filters, provider, level, real_time, refresh_interval, category_field, indicators,
+                         indicators_param, valid_window)
 
-    # factor1 = CrossMaFactor(security_list=['coin_binance_EOS/USDT'],
-    #                         security_type=SecurityType.coin,
-    #                         start_timestamp='2019-01-01',
-    #                         end_timestamp='2019-06-05', level=TradingLevel.LEVEL_5MIN, provider='ccxt')
-    # factor1.compute()
-    # factor1.draw()
-    # factor1.draw_depth(value_field='ma10')
-    # factor1.draw_result(value_field='score')
+    def compute(self):
+        super().compute()
+        s = (self.depth_df['diff'] > 0) & (self.depth_df['dea'] > 0)
+        self.result_df = s.to_frame(name='score')
+
+
+if __name__ == '__main__':
+    factor = BullFactor(codes=['000338'], start_timestamp='2018-01-01', end_timestamp='2019-02-01')
+    factor.draw_result()

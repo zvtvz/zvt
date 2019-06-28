@@ -4,12 +4,14 @@ import logging
 from typing import List, Union
 
 import pandas as pd
+import simplejson
 
 from zvt.api.business import get_trader
 from zvt.api.common import get_one_day_trading_minutes, decode_security_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time
 from zvt.core import Constructor
 from zvt.domain import SecurityType, TradingLevel, Provider, business, get_db_session, StoreCategory
+from zvt.factors.technical_factor import TechnicalFactor
 from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
@@ -101,7 +103,7 @@ class Trader(Constructor):
         self.trading_signal_listeners = []
         self.state_listeners = []
 
-        self.selectors: List[TargetSelector] = None
+        self.selectors: List[TargetSelector] = []
 
         self.security_list = security_list
 
@@ -165,6 +167,17 @@ class Trader(Constructor):
         self.on_start()
 
     def on_start(self):
+        # run all the selectors
+        technical_factors = []
+        for selector in self.selectors:
+            selector.run()
+
+            for factor in selector.filter_factors:
+                if isinstance(factor, TechnicalFactor):
+                    technical_factors.append(factor)
+
+        technical_factors = simplejson.dumps(technical_factors, for_json=True)
+
         if self.security_list:
             security_list = json.dumps(self.security_list)
         else:
@@ -186,7 +199,8 @@ class Trader(Constructor):
                                         start_timestamp=self.start_timestamp,
                                         end_timestamp=self.end_timestamp, provider=self.provider,
                                         level=self.level.value,
-                                        real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time)
+                                        real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time,
+                                        technical_factors=technical_factors)
         self.session.add(trader_domain)
         self.session.commit()
 

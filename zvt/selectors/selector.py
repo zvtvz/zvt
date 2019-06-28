@@ -7,7 +7,7 @@ from pandas import DataFrame
 
 from zvt.domain import SecurityType, TradingLevel
 from zvt.factors.factor import FilterFactor, ScoreFactor
-from zvt.utils.pd_utils import index_df_with_time
+from zvt.utils.pd_utils import index_df, df_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp
 
 
@@ -42,8 +42,8 @@ class TargetSelector(object):
         self.threshold = threshold
         self.level = level
 
-        self.must_factors: List[FilterFactor] = None
-        self.score_factors: List[ScoreFactor] = None
+        self.filter_factors: List[FilterFactor] = []
+        self.score_factors: List[ScoreFactor] = []
         self.must_result = None
         self.score_result = None
         self.result_df: DataFrame = None
@@ -53,21 +53,29 @@ class TargetSelector(object):
 
     def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
                      end_timestamp):
-        raise NotImplementedError
+        pass
+
+    def add_filter_factor(self, factor):
+        self.filter_factors.append(factor)
+        return self
+
+    def add_score_factor(self, factor):
+        self.score_factors.append(factor)
+        return self
 
     def move_on(self, to_timestamp=None, kdata_use_begin_time=False, timeout=20):
         if self.score_factors:
             for factor in self.score_factors:
                 factor.move_on(to_timestamp, timeout=timeout)
-        if self.must_factors:
-            for factor in self.must_factors:
+        if self.filter_factors:
+            for factor in self.filter_factors:
                 factor.move_on(to_timestamp, timeout=timeout)
         self.run()
 
     def run(self):
-        if self.must_factors:
+        if self.filter_factors:
             musts = []
-            for factor in self.must_factors:
+            for factor in self.filter_factors:
                 df = factor.get_result_df()
                 if len(df.columns) > 1:
                     s = df.agg("and", axis="columns")
@@ -92,16 +100,19 @@ class TargetSelector(object):
                     scores.append(df)
             self.score_result = list(accumulate(scores, func=operator.__add__))[-1]
 
-        if (self.must_result is not None) and (self.score_result is not None):
-            result = self.score_result[self.must_result.score and (self.score_result.score >= self.threshold)]
-        elif self.score_result is not None:
+        if df_is_not_null(self.must_result) and df_is_not_null(self.score_result):
+            result1 = self.must_result[self.must_result.score]
+            result2 = self.score_result[self.score_result.score >= self.threshold]
+            result = result2.loc[result1.index, :]
+
+        elif df_is_not_null(self.score_result):
             result = self.score_result[self.score_result.score >= self.threshold]
         else:
             result = self.must_result[self.must_result.score]
 
         self.result_df = result.reset_index()
 
-        self.result_df = index_df_with_time(self.result_df)
+        self.result_df = index_df(self.result_df)
 
     def get_targets(self, timestamp) -> pd.DataFrame:
         if timestamp in self.result_df.index:

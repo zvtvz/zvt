@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from zvt.selectors.zvt_selector import TechnicalSelector
+from zvt.selectors.examples.technical_selector import TechnicalSelector
+from zvt.utils.pd_utils import df_is_not_null
 from ..context import init_context
 
 init_context()
@@ -17,13 +18,17 @@ def test_technical_selector():
 
     print(selector.get_result_df())
 
-    assert 'stock_sz_000338' in selector.get_targets('2019-06-04')['security_id'].tolist()
-    assert 'stock_sz_000338' in selector.get_targets('2019-06-04')['security_id'].tolist()
-    assert 'stock_sz_002572' not in selector.get_targets('2019-06-04')['security_id'].tolist()
-    assert 'stock_sz_002572' not in selector.get_targets('2019-06-04')['security_id'].tolist()
+    targets = selector.get_targets('2019-06-04')
+    if df_is_not_null(targets):
+        assert 'stock_sz_000338' not in targets['security_id'].tolist()
+        assert 'stock_sz_000338' not in targets['security_id'].tolist()
+        assert 'stock_sz_002572' not in targets['security_id'].tolist()
+        assert 'stock_sz_002572' not in targets['security_id'].tolist()
 
     selector.move_on(timeout=0)
 
-    assert 'stock_sz_000338' in selector.get_targets('2019-06-17')['security_id'].tolist()
+    targets = selector.get_targets('2019-06-19')
+    if df_is_not_null(targets):
+        assert 'stock_sz_000338' in targets['security_id'].tolist()
 
-    assert 'stock_sz_002572' in selector.get_targets('2019-06-17')['security_id'].tolist()
+        assert 'stock_sz_002572' not in targets['security_id'].tolist()
