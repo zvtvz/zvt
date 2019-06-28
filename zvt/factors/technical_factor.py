@@ -153,7 +153,7 @@ class CrossMaFactor(TechnicalFactor):
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = None, filters: List = None,
-                 provider: Union[str, Provider] = 'netease',
+                 provider: Union[str, Provider] = 'joinquant',
                  level: TradingLevel = TradingLevel.LEVEL_1DAY,
                  real_time: bool = False,
                  refresh_interval: int = 10,

@@ -8,7 +8,7 @@ import simplejson
 
 from zvt.api.business import get_trader
 from zvt.api.common import get_one_day_trading_minutes, decode_security_id
-from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time
+from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date
 from zvt.core import Constructor
 from zvt.domain import SecurityType, TradingLevel, Provider, business, get_db_session, StoreCategory
 from zvt.factors.technical_factor import TechnicalFactor
@@ -299,6 +299,9 @@ class Trader(Constructor):
         for timestamp in iterate_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
                                             start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp,
                                             level=self.level):
+
+            if not is_trading_date(security_type=self.security_type, exchange=self.exchanges[0], timestamp=timestamp):
+                continue
             if self.real_time:
                 # all selector move on to handle the coming data
                 if self.kdata_use_begin_time:
