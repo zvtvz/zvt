@@ -4,9 +4,15 @@ from ..context import init_context
 init_context()
 
 from zvt.api.rules import coin_finished_timestamp, iterate_timestamps, is_open_time, is_close_time, \
-    is_in_finished_timestamps, is_in_trading
+    is_in_finished_timestamps, is_in_trading, is_trading_date
 from zvt.domain import TradingLevel, SecurityType
 from zvt.utils.time_utils import is_same_time
+
+
+def test_is_trading_date():
+    assert is_trading_date(security_type=SecurityType.stock, exchange=None, timestamp='2019-06-28')
+    assert not is_trading_date(security_type=SecurityType.stock, exchange=None, timestamp='2019-06-22')
+    assert not is_trading_date(security_type=SecurityType.stock, exchange=None, timestamp='2019-06-23')
 
 
 def test_is_open_close_time():

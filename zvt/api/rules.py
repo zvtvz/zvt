@@ -11,6 +11,22 @@ from zvt.utils.time_utils import date_and_time, is_same_time, to_time_str, TIME_
 logger = logging.getLogger(__name__)
 
 
+# TODO:more precise
+def is_trading_date(security_type, exchange, timestamp: pd.Timestamp):
+    if type(security_type) == str:
+        security_type = SecurityType(security_type)
+    if type(timestamp) == str:
+        timestamp = to_pd_timestamp(timestamp)
+
+    # just ignore 00:00
+    # the_date = date_and_time(timestamp, '09:00')
+
+    if security_type == SecurityType.stock:
+        return (timestamp.weekday() != 5) and (timestamp.weekday() != 6)
+
+    return True
+
+
 # make sure the timestamp is in trading date at first
 # this function is used to handle unfinished kdata
 def is_in_trading(security_type, exchange, timestamp):

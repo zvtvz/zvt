@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 import math
 
 from zvt.api.business import get_account
@@ -166,8 +165,13 @@ class SimAccountService(AccountService):
         if is_same_date(timestamp, self.start_timestamp):
             return
         # get the account for trading at the date
-        account = get_account(session=self.session, trader_name=self.trader_name, return_type='domain',
-                              end_timestamp=to_time_str(timestamp), limit=1, order=SimAccount.timestamp.desc())[0]
+        accounts = get_account(session=self.session, trader_name=self.trader_name, return_type='domain',
+                               end_timestamp=to_time_str(timestamp), limit=1, order=SimAccount.timestamp.desc())
+        if accounts:
+            account = accounts[0]
+        else:
+            return
+
         positions = []
         # FIXME:dump all directly
         for position_domain in account.positions:
