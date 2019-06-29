@@ -166,6 +166,7 @@ class StockCategory(enum.Enum):
     concept = 'concept'
     area = 'area'
     main = 'main'
+    etf = 'etf'
 
 
 class ReportPeriod(enum.Enum):
