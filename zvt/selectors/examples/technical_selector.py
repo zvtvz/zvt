@@ -8,11 +8,11 @@ from zvt.selectors.selector import TargetSelector
 
 class TechnicalSelector(TargetSelector):
     def __init__(self, security_list=None, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
-                 the_timestamp=None, start_timestamp=None, end_timestamp=None, threshold=0.8,
+                 the_timestamp=None, start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=-0.8,
                  level=TradingLevel.LEVEL_1DAY,
                  provider='joinquant') -> None:
         super().__init__(security_list, security_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         threshold, level, provider)
+                         long_threshold, short_threshold, level, provider)
 
     def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
                      end_timestamp):
