@@ -93,6 +93,7 @@ ENV/
 /tick
 /full
 /data/
+/ui/
 /datasample
 data.tar.gz
 /ve/
