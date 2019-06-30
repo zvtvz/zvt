@@ -66,15 +66,16 @@ def get_trader_detail_figures(trader_domain: business.Trader,
                               order_reader: OrderReader):
     graph_list = []
 
-    account_data, account_layout = account_reader.draw(render=None, value_fields=['all_value'], keep_ui_state=False)
+    if account_reader:
+        account_data, account_layout = account_reader.draw(render=None, value_fields=['all_value'], keep_ui_state=False)
 
-    for trader_name in account_reader.trader_names:
-        graph_list.append(dcc.Graph(
-            id='{}-account'.format(trader_name),
-            figure={
-                'data': account_data,
-                'layout': account_layout
-            }))
+        for trader_name in account_reader.trader_names:
+            graph_list.append(dcc.Graph(
+                id='{}-account'.format(trader_name),
+                figure={
+                    'data': account_data,
+                    'layout': account_layout
+                }))
 
     order_reader.move_on(timeout=0)
     df_orders = order_reader.get_data_df().copy()

@@ -339,7 +339,7 @@ class Trader(Constructor):
                                                       timestamp=timestamp, level=level)):
                             for selector in self.selectors:
                                 if selector.level == level:
-                                    selector.move_on(timestamp, self.kdata_use_begin_time)
+                                    selector.move_on(timestamp, self.kdata_use_begin_time, timeout=waiting_seconds + 20)
 
             # on_trading_open to setup the account
             if self.level == TradingLevel.LEVEL_1DAY or (

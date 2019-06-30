@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
-
 import math
+
 import pandas as pd
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -36,6 +36,7 @@ MacroBase = declarative_base()
 
 CoinMetaBase = declarative_base()
 
+CoinTickKdataBase = declarative_base()
 Coin1MKdataBase = declarative_base()
 Coin5MKdataBase = declarative_base()
 Coin15MKdataBase = declarative_base()
@@ -73,6 +74,7 @@ class StoreCategory(enum.Enum):
     business = 'business'
 
     coin_meta = 'coin_meta'
+    coin_tick_kdata = 'coin_tick_kdata'
     coin_1m_kdata = 'coin_1m_kdata'
     coin_5m_kdata = 'coin_5m_kdata'
     coin_15m_kdata = 'coin_15m_kdata'
@@ -108,6 +110,7 @@ provider_map_category = {
                          StoreCategory.stock_1wk_kdata, ],
 
     Provider.CCXT: [StoreCategory.coin_meta,
+                    StoreCategory.coin_tick_kdata,
                     StoreCategory.coin_1m_kdata,
                     StoreCategory.coin_5m_kdata,
                     StoreCategory.coin_15m_kdata,
@@ -135,6 +138,7 @@ category_map_db = {
     StoreCategory.business: BusinessBase,
 
     StoreCategory.coin_meta: CoinMetaBase,
+    StoreCategory.coin_tick_kdata: CoinTickKdataBase,
     StoreCategory.coin_1m_kdata: Coin1MKdataBase,
     StoreCategory.coin_5m_kdata: Coin5MKdataBase,
     StoreCategory.coin_15m_kdata: Coin15MKdataBase,
@@ -189,6 +193,7 @@ class CompanyType(enum.Enum):
 
 
 class TradingLevel(enum.Enum):
+    LEVEL_TICK = 'tick'
     LEVEL_1MIN = '1m'
     LEVEL_5MIN = '5m'
     LEVEL_15MIN = '15m'
@@ -267,6 +272,9 @@ class TradingLevel(enum.Enum):
         return int(self.to_ms() / 1000)
 
     def to_ms(self):
+        # we treat tick intervals is 5s, you could change it
+        if self == TradingLevel.LEVEL_TICK:
+            return 5 * 1000
         if self == TradingLevel.LEVEL_1MIN:
             return 60 * 1000
         if self == TradingLevel.LEVEL_5MIN:
