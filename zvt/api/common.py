@@ -35,7 +35,10 @@ def get_kdata_schema(security_type: Union[SecurityType, str],
 
     # kdata schema rule
     # 1)name:{SecurityType.value.capitalize()}{TradingLevel.value.upper()}Kdata
-    schema_str = '{}{}Kdata'.format(security_type.value.capitalize(), level.value.upper())
+    if level == TradingLevel.LEVEL_TICK:
+        schema_str = '{}{}Kdata'.format(security_type.value.capitalize(), level.value.capitalize())
+    else:
+        schema_str = '{}{}Kdata'.format(security_type.value.capitalize(), level.value.upper())
 
     return eval(schema_str)
 
