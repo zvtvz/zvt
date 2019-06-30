@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, DateTime, Float
 
 from zvt.domain.common import Stock1DKdataBase, Index1DKdataBase, Stock1HKdataBase, Stock15MKdataBase, \
     Coin15MKdataBase, Coin1HKdataBase, Coin1DKdataBase, Coin1MKdataBase, Coin5MKdataBase, Coin1WKKdataBase, \
-    Stock1MKdataBase, Stock5MKdataBase, Stock30MKdataBase, Stock1WKKdataBase
+    Stock1MKdataBase, Stock5MKdataBase, Stock30MKdataBase, Stock1WKKdataBase, CoinTickKdataBase
 
 
 class StockKdataCommon(object):
@@ -52,6 +52,23 @@ class KdataCommon(object):
     turnover = Column(Float)
 
 
+class TickCommon(object):
+    id = Column(String(length=128), primary_key=True)
+    provider = Column(String(length=32))
+    timestamp = Column(DateTime)
+    security_id = Column(String(length=128))
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    level = Column(String(length=32))
+
+    order = Column(String(length=32))
+    price = Column(Float)
+    volume = Column(Float)
+    turnover = Column(Float)
+    direction = Column(String(length=32))
+    orderType = Column(String(length=32))
+
+
 # kdata schema rule
 # 1)name:{SecurityType.value.capitalize()}{TradingLevel.value.upper()}Kdata
 # 2)one db file for one schema
@@ -86,6 +103,10 @@ class Stock1MKdata(Stock1MKdataBase, StockKdataCommon):
 class Index1DKdata(Index1DKdataBase, KdataCommon):
     __tablename__ = 'index_1d_kdata'
     turnover_rate = Column(Float)
+
+
+class CoinTickKdata(CoinTickKdataBase, TickCommon):
+    __tablename__ = 'coin_tick_kdata'
 
 
 class Coin1MKdata(Coin1MKdataBase, KdataCommon):

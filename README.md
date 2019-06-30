@@ -25,6 +25,7 @@ pip install -U zvt
 <p align="center"><img src='./docs/multiple-stock-macd.gif'/></p>
 
 #### 1分钟级别实时交易信号 ####
+<p align="center"><img src='./docs/realtime_signals.gif'/></p>
 
 # 联系方式  
 QQ群:300911873  加群请备注github用户名
