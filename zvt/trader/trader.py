@@ -47,22 +47,33 @@ class LimitSelectorsComparator(SelectorsComparator):
     def make_decision(self, timestamp, trading_level: TradingLevel):
         logger.debug('current timestamp:{}'.format(timestamp))
 
-        df_result = pd.DataFrame()
+        all_long_targets = []
+        all_short_targets = []
         for selector in self.selectors:
             if selector.level == trading_level:
-                logger.debug('the df:{}'.format(selector.get_result_df()))
-                df = selector.get_targets(timestamp)
-                if not df.empty:
-                    logger.debug('{} selector:{} make_decision,size:{}'.format(trading_level.value, selector, len(df)))
+                long_targets = selector.get_open_long_targets(timestamp=timestamp)
+                short_targets = selector.get_open_short_targets(timestamp=timestamp)
+                if long_targets:
+                    logger.debug(
+                        '{} selector:{} make_decision,long_targets size:{}'.format(trading_level.value, selector,
+                                                                                   len(long_targets)))
+                    if len(long_targets) > self.limit:
+                        long_targets = long_targets[0:self.limit]
+                        logger.debug('{} selector:{} make_decision,keep:{}'.format(trading_level.value, selector,
+                                                                                   len(long_targets)))
+                if short_targets:
+                    logger.debug(
+                        '{} selector:{} make_decision, short_targets size:{}'.format(trading_level.value, selector,
+                                                                                     len(short_targets)))
+                    if len(short_targets) > self.limit:
+                        short_targets = short_targets[0:self.limit]
+                        logger.debug('{} selector:{} make_decision,keep:{}'.format(trading_level.value, selector,
+                                                                                   len(short_targets)))
 
-                    df = df.sort_values(by=['score', 'security_id'])
-                    if len(df.index) > self.limit:
-                        df = df.iloc[list(range(self.limit)), :]
+                all_long_targets += long_targets
+                all_short_targets += short_targets
 
-                    logger.debug('{} selector:{} make_decision,keep:{}'.format(trading_level.value, selector, len(df)))
-
-                    df_result = df_result.append(df)
-        return df_result
+        return all_long_targets, all_short_targets
 
 
 # the data structure for storing level:targets map,you should handle the targets of the level before overwrite it
@@ -71,10 +82,11 @@ class TargetsSlot(object):
     def __init__(self) -> None:
         self.level_map_targets = {}
 
-    def input_targets(self, level: TradingLevel, targets: List[str]):
+    def input_targets(self, level: TradingLevel, long_targets: List[str], short_targets: List[str]):
         logger.debug('level:{},old targets:{},new targets:{}'.format(level,
-                                                                     self.get_targets(level), targets))
-        self.level_map_targets[level.value] = targets
+                                                                     self.get_targets(level),
+                                                                     (long_targets, short_targets)))
+        self.level_map_targets[level.value] = (long_targets, short_targets)
 
     def get_targets(self, level: TradingLevel):
         return self.level_map_targets.get(level.value)
@@ -170,6 +182,7 @@ class Trader(Constructor):
         # run all the selectors
         technical_factors = []
         for selector in self.selectors:
+            # run for the history data at first
             selector.run()
 
             for factor in selector.filter_factors:
@@ -236,31 +249,39 @@ class Trader(Constructor):
         :param timestamp:
         :type timestamp:
         """
-        selected = None
+        long_selected = None
+        short_selected = None
         for level in self.trading_level_desc:
             targets = self.targets_slot.get_targets(level=level)
-            if not targets:
-                targets = set()
+            if targets:
+                long_targets = set(targets[0])
+                short_targets = set(targets[1])
 
-            if not selected:
-                selected = targets
-            else:
-                selected = selected & targets
+                if not long_selected:
+                    long_selected = long_targets
+                else:
+                    long_selected = long_selected & long_targets
 
-        if selected:
-            self.logger.debug('timestamp:{},selected:{}'.format(timestamp, selected))
+                if not short_selected:
+                    short_selected = short_targets
+                else:
+                    short_selected = short_selected & short_targets
 
-        self.send_trading_signals(timestamp=timestamp, selected=selected)
+        self.logger.debug('timestamp:{},long_selected:{}'.format(timestamp, long_selected))
 
-    def send_trading_signals(self, timestamp, selected):
+        self.logger.debug('timestamp:{},short_selected:{}'.format(timestamp, short_selected))
+
+        self.send_trading_signals(timestamp=timestamp, long_selected=long_selected, short_selected=short_selected)
+
+    def send_trading_signals(self, timestamp, long_selected, short_selected):
         # current position
         account = self.account_service.latest_account
         current_holdings = [position['security_id'] for position in account['positions'] if
                             position['available_long'] > 0]
 
-        if selected:
+        if long_selected:
             # just long the security not in the positions
-            longed = selected - set(current_holdings)
+            longed = long_selected - set(current_holdings)
             if longed:
                 position_pct = 1.0 / len(longed)
                 order_money = account['cash'] * position_pct
@@ -274,20 +295,18 @@ class Trader(Constructor):
                     for listener in self.trading_signal_listeners:
                         listener.on_trading_signal(trading_signal)
 
-        # just short the security not in the selected but in current_holdings
-        if selected:
-            shorted = set(current_holdings) - selected
-        else:
-            shorted = set(current_holdings)
+        # just short the security in current_holdings and short_selected
+        if short_selected:
+            shorted = set(current_holdings) & short_selected
 
-        for security_id in shorted:
-            trading_signal = TradingSignal(security_id=security_id,
-                                           the_timestamp=timestamp,
-                                           trading_signal_type=TradingSignalType.trading_signal_close_long,
-                                           position_pct=1.0,
-                                           trading_level=self.level)
-            for listener in self.trading_signal_listeners:
-                listener.on_trading_signal(trading_signal)
+            for security_id in shorted:
+                trading_signal = TradingSignal(security_id=security_id,
+                                               the_timestamp=timestamp,
+                                               trading_signal_type=TradingSignalType.trading_signal_close_long,
+                                               position_pct=1.0,
+                                               trading_level=self.level)
+                for listener in self.trading_signal_listeners:
+                    listener.on_trading_signal(trading_signal)
 
     def on_finish(self):
         # show the result
@@ -336,14 +355,10 @@ class Trader(Constructor):
                 # in every cycle, all level selector do its job in its time
                 if (is_in_finished_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
                                               timestamp=timestamp, level=level)):
-                    df = self.selectors_comparator.make_decision(timestamp=timestamp,
-                                                                 trading_level=level)
-                    if not df.empty:
-                        selected = set(df['security_id'].to_list())
-                    else:
-                        selected = {}
+                    long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
+                                                                                          trading_level=level)
 
-                    self.targets_slot.input_targets(level, selected)
+                    self.targets_slot.input_targets(level, long_targets, short_targets)
 
             # on_trading_close to calculate date account
             if self.level == TradingLevel.LEVEL_1DAY or (

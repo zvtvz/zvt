@@ -19,7 +19,7 @@ def init_securities(df, security_type='stock', provider=Provider.EASTMONEY):
     db_engine = get_db_engine(provider, store_category=store_category)
     security_schema = get_security_schema(security_type)
 
-    current = get_securities(security_type=security_type, columns=[security_schema.id], provider=provider)
+    current = get_securities(security_type=security_type, columns=[security_schema.id,security_schema.code], provider=provider)
     df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(security_schema.__tablename__, db_engine, index=False, if_exists='append')
