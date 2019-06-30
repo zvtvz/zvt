@@ -4,7 +4,6 @@ from typing import Union, List
 import pandas as pd
 
 from zvt.domain import TradingLevel, Provider, SecurityType
-from zvt.factors.finance_factor import FinanceGrowthFactor
 from zvt.factors.technical_factor import BullFactor, CrossMaFactor
 from zvt.selectors.selector import TargetSelector
 from zvt.settings import SAMPLE_STOCK_CODES
@@ -44,13 +43,13 @@ class MultipleStockTrader(StockTrader):
                                           start_timestamp=start_timestamp,
                                           end_timestamp=end_timestamp,
                                           level=TradingLevel.LEVEL_1DAY))
-            # .add_score_factor(FinanceGrowthFactor(security_list=security_list,
-            #                                       security_type=security_type,
-            #                                       exchanges=exchanges,
-            #                                       codes=codes,
-            #                                       start_timestamp=start_timestamp,
-            #                                       end_timestamp=end_timestamp,
-            #                                       level=TradingLevel.LEVEL_1DAY))
+        # .add_score_factor(FinanceGrowthFactor(security_list=security_list,
+        #                                       security_type=security_type,
+        #                                       exchanges=exchanges,
+        #                                       codes=codes,
+        #                                       start_timestamp=start_timestamp,
+        #                                       end_timestamp=end_timestamp,
+        #                                       level=TradingLevel.LEVEL_1DAY))
         self.selectors.append(my_selector)
 
 
@@ -95,4 +94,4 @@ if __name__ == '__main__':
     # just get hs300 securities
     # security_list = get_securities_in_blocks(block_names=['HS300_'])
     # MultipleStockTrader(security_list=security_list, start_timestamp='2018-01-01', end_timestamp='2019-06-25').run()
-    MultipleStockTrader(codes=SAMPLE_STOCK_CODES, start_timestamp='2018-01-01', end_timestamp='2019-06-25').run()
+    MultipleStockTrader(codes=['000338','000783'], start_timestamp='2018-01-01', end_timestamp='2019-06-25').run()
