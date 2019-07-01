@@ -18,6 +18,7 @@ Stock1HKdataBase = declarative_base()
 Stock1DKdataBase = declarative_base()
 Stock1WKKdataBase = declarative_base()
 
+ETF1DKdataBase = declarative_base()
 Index1DKdataBase = declarative_base()
 
 FinanceBase = declarative_base()
@@ -64,7 +65,9 @@ class StoreCategory(enum.Enum):
     stock_1d_kdata = 'stock_1d_kdata'
     stock_1wk_kdata = 'stock_1wk_kdata'
 
+    etf_1d_kdata = 'etf_1d_kdata'
     index_1d_kdata = 'index_1d_kdata'
+
     finance = 'finance'
     dividend_financing = 'dividend_financing'
     holder = 'holder'
@@ -91,6 +94,7 @@ provider_map_category = {
                          StoreCategory.trading],
 
     Provider.SINA: [StoreCategory.meta,
+                    StoreCategory.etf_1d_kdata,
                     StoreCategory.stock_1d_kdata,
                     StoreCategory.money_flow],
 
@@ -128,6 +132,7 @@ category_map_db = {
     StoreCategory.stock_1d_kdata: Stock1DKdataBase,
     StoreCategory.stock_1wk_kdata: Stock1WKKdataBase,
 
+    StoreCategory.etf_1d_kdata: ETF1DKdataBase,
     StoreCategory.index_1d_kdata: Index1DKdataBase,
     StoreCategory.finance: FinanceBase,
     StoreCategory.dividend_financing: DividendFinancingBase,
@@ -166,6 +171,7 @@ class StockCategory(enum.Enum):
     concept = 'concept'
     area = 'area'
     main = 'main'
+    etf = 'etf'
 
 
 class ReportPeriod(enum.Enum):

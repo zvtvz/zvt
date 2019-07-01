@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, String, DateTime, Float
 
-from zvt.domain.common import Stock1DKdataBase, Index1DKdataBase, Stock1HKdataBase, Stock15MKdataBase, \
+from zvt.domain.common import Stock1DKdataBase, ETF1DKdataBase, Index1DKdataBase, Stock1HKdataBase, Stock15MKdataBase, \
     Coin15MKdataBase, Coin1HKdataBase, Coin1DKdataBase, Coin1MKdataBase, Coin5MKdataBase, Coin1WKKdataBase, \
     Stock1MKdataBase, Stock5MKdataBase, Stock30MKdataBase, Stock1WKKdataBase, CoinTickKdataBase
 
@@ -98,6 +98,15 @@ class Stock5MKdata(Stock5MKdataBase, StockKdataCommon):
 
 class Stock1MKdata(Stock1MKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1m_kdata'
+
+
+class ETF1DKdata(ETF1DKdataBase, KdataCommon):
+    __tablename__ = 'etf_1d_kdata'
+
+    # 累计净值（货币 ETF 为七日年化)
+    cumulative_net_value = Column(Float)
+    # 净值增长率
+    change_pct = Column(Float)
 
 
 class Index1DKdata(Index1DKdataBase, KdataCommon):
