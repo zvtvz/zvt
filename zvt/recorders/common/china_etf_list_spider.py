@@ -17,7 +17,7 @@ from zvt.recorders.recorder import Recorder
 class ChinaETFListSpider(Recorder):
     data_schema = StockIndex
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=2.0, provider=Provider.EXCHANGE) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10.0, provider=Provider.EXCHANGE) -> None:
         self.provider = provider
         super().__init__(batch_size, force_update, sleeping_time)
 

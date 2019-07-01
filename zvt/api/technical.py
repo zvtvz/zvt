@@ -90,11 +90,13 @@ def get_securities(security_list: List[str] = None,
                     session=session, order=order, limit=limit, index=index, index_is_time=index_is_time)
 
 
-def get_kdata(security_id, level=TradingLevel.LEVEL_1DAY.value, provider='eastmoney', columns=None,
+def get_kdata(security_id, data_schema=None, level=TradingLevel.LEVEL_1DAY.value, provider='eastmoney', columns=None,
               return_type='df', start_timestamp=None, end_timestamp=None,
               filters=None, session=None, order=None, limit=None):
     security_type, exchange, code = decode_security_id(security_id)
-    data_schema = get_kdata_schema(security_type, level=level)
+
+    if data_schema is None:
+        data_schema = get_kdata_schema(security_type, level=level)
 
     return get_data(data_schema=data_schema, security_id=security_id, level=level, provider=provider, columns=columns,
                     return_type=return_type,
