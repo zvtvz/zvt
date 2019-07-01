@@ -618,3 +618,9 @@ there.
 /* Larger than Desktop HD */
 @media (min-width: 1200px) {
 }
+
+.center {
+    margin: auto;
+    max-width: 300px;
+    min-width: 100px;
+}
