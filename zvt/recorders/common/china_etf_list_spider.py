@@ -45,7 +45,7 @@ class ChinaETFListSpider(Recorder):
 
         # 抓取深市 ETF 成分股
         self.download_sz_etf_component(df)
-        self.logger.info('沪市 ETF 成分股抓取完成...')
+        self.logger.info('深市 ETF 成分股抓取完成...')
 
     def persist_etf_list(self, df: pd.DataFrame, exchange: str):
         if df is None:
