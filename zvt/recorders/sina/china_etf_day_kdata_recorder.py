@@ -64,8 +64,8 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         return generate_kdata_id(security_id=security_item.id, timestamp=original_data['timestamp'], level=self.level)
 
     def generate_request_param(self, security_item, start, end, size, timestamp):
-        # 此 url 不支持指定日期，如果第一次获取，则取最大数据
-        if start is None:
+        # 此 url 不支持分页，如果超过我们想取的条数，则只能取最大条数
+        if start is None or size > self.default_size:
             size = 8000
 
         return {
@@ -128,5 +128,5 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     init_process_log('sina_china_etf_day_kdata.log')
-    ChinaETFDayKdataRecorder(level=TradingLevel.LEVEL_1DAY, codes=['159938']).run()
+    ChinaETFDayKdataRecorder(level=TradingLevel.LEVEL_1DAY).run()
 
