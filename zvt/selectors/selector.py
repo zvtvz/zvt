@@ -61,11 +61,11 @@ class TargetSelector(object):
                      end_timestamp):
         pass
 
-    def add_filter_factor(self, factor):
+    def add_filter_factor(self, factor: FilterFactor):
         self.filter_factors.append(factor)
         return self
 
-    def add_score_factor(self, factor):
+    def add_score_factor(self, factor: ScoreFactor):
         self.score_factors.append(factor)
         return self
 

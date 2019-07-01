@@ -16,6 +16,7 @@ from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.utils.utils import marshal_object_for_ui
 
 logger = logging.getLogger(__name__)
 
@@ -95,9 +96,10 @@ class TargetsSlot(object):
 class Trader(Constructor):
     logger = logging.getLogger(__name__)
 
+    security_type: SecurityType = None
+
     def __init__(self,
                  security_list: List[str] = None,
-                 security_type: Union[str, SecurityType] = SecurityType.stock,
                  exchanges: List[str] = ['sh', 'sz'],
                  codes: List[str] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
@@ -107,6 +109,9 @@ class Trader(Constructor):
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False) -> None:
+
+        assert self.security_type is not None
+
         if trader_name:
             self.trader_name = trader_name
         else:
@@ -119,7 +124,6 @@ class Trader(Constructor):
 
         self.security_list = security_list
 
-        self.security_type = SecurityType(security_type)
         self.exchanges = exchanges
         self.codes = codes
 
@@ -131,7 +135,7 @@ class Trader(Constructor):
             if not self.exchanges:
                 self.exchanges = [exchange]
 
-        self.provider = provider
+        self.provider = Provider(provider)
         # make sure the min level selector correspond to the provider and level
         self.level = TradingLevel(level)
         self.real_time = real_time
@@ -179,6 +183,9 @@ class Trader(Constructor):
         self.on_start()
 
     def on_start(self):
+        if not self.selectors:
+            raise Exception('please setup self.selectors in init_selectors at first')
+
         # run all the selectors
         technical_factors = []
         for selector in self.selectors:
@@ -210,7 +217,7 @@ class Trader(Constructor):
                                         trader_name=self.trader_name,
                                         security_type=security_list, exchanges=exchanges, codes=codes,
                                         start_timestamp=self.start_timestamp,
-                                        end_timestamp=self.end_timestamp, provider=self.provider,
+                                        end_timestamp=self.end_timestamp, provider=self.provider.value,
                                         level=self.level.value,
                                         real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time,
                                         technical_factors=technical_factors)
@@ -368,3 +375,9 @@ class Trader(Constructor):
                 self.account_service.on_trading_close(timestamp)
 
         self.on_finish()
+
+    @classmethod
+    def get_constructor_meta(cls):
+        meta = super().get_constructor_meta()
+        meta.metas['security_type'] = marshal_object_for_ui(cls.security_type)
+        return meta

@@ -112,7 +112,7 @@ def get_trader_detail_figures(trader_domain: business.Trader,
             print(df.tail())
 
             data, layout = security_factor.draw_with_indicators(render=None, annotation_df=df,
-                                                                indicators=indicator_cols)
+                                                                indicators=indicator_cols, height=650)
 
             graph_list.append(
                 dcc.Graph(
