@@ -120,3 +120,19 @@ Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.8,en;q=0.6
 Cookie: yfx_c_g_u_id_10000042=_ck17122009304714819234313401740; VISITED_COMPANY_CODE=%5B%22000016%22%5D; VISITED_INDEX_CODE=%5B%22000016%22%5D; yfx_f_l_v_t_10000042=f_t_1513733447386__r_t_1515716891222__v_t_1515721033042__r_c_3; VISITED_MENU=%5B%228464%22%2C%229666%22%2C%229668%22%2C%229669%22%2C%228454%22%2C%228460%22%2C%229665%22%2C%228459%22%2C%229692%22%2C%228451%22%2C%228466%22%5D
 ''')
+
+DEFAULT_SH_ETF_LIST_HEADER = chrome_copy_header_to_dict('''
+Host: query.sse.com.cn
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
+Accept: */*
+Referer: http://www.sse.com.cn/assortment/fund/etf/list/
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+Cookie: yfx_c_g_u_id_10000042=_ck19062609443812815766114343798; VISITED_COMPANY_CODE=%5B%22510300%22%5D; VISITED_FUND_CODE=%5B%22510300%22%5D; VISITED_MENU=%5B%228307%22%2C%228823%22%2C%228547%22%2C%228556%22%2C%228549%22%2C%2210848%22%2C%228550%22%5D; yfx_f_l_v_t_10000042=f_t_1561513478278__r_t_1561692626758__v_t_1561695738302__r_c_1
+Connection: keep-alive
+''')
+
+EASTMONEY_ETF_NET_VALUE_HEADER = chrome_copy_header_to_dict('''
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
+Referer: http://fund.eastmoney.com/
+''')

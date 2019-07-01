@@ -63,5 +63,5 @@ class ChinaStockListSpider(Recorder):
 
 
 if __name__ == '__main__':
-    spider = ChinaStockListSpider(provider=Provider.EASTMONEY)
+    spider = ChinaStockListSpider(provider=Provider.EXCHANGE)
     spider.run()

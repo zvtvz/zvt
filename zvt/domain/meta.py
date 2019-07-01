@@ -34,6 +34,9 @@ class Index(MetaBase):
 
     stocks = relationship('StockIndex', back_populates="indices")
 
+    def __repr__(self):
+        return f'[{self.name} - {self.code}]'
+
 
 # 个股
 class Stock(MetaBase):
