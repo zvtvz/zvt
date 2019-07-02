@@ -3,6 +3,7 @@ from zvt.domain.common import TradingLevel
 
 from zvt.factors.technical_factor import CrossMaFactor, BullFactor
 from zvt.selectors.selector import TargetSelector
+from zvt.settings import SAMPLE_STOCK_CODES
 from zvt.trader.impls import StockTrader
 
 
@@ -31,8 +32,18 @@ class MyBullTrader(StockTrader):
 
 
 if __name__ == '__main__':
+    # single stock with cross ma factor
     MyMaTrader(codes=['000338'], level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
                end_timestamp='2019-06-30', trader_name='000338_ma_trader').run()
 
+    # single stock with bull factor
     MyBullTrader(codes=['000338'], level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
                  end_timestamp='2019-06-30', trader_name='000338_bull_trader').run()
+
+    #  multiple stocks with cross ma factor
+    MyMaTrader(codes=SAMPLE_STOCK_CODES, level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
+               end_timestamp='2019-06-30', trader_name='sample_stocks_ma_trader').run()
+
+    # multiple stocks with bull factor
+    MyBullTrader(codes=SAMPLE_STOCK_CODES, level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
+                 end_timestamp='2019-06-30', trader_name='sample_stocks_bull_trader').run()

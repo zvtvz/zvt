@@ -3,25 +3,16 @@
 - 使用
 
   - [快速开始](quickstart.md)
-  - [](more-pages.md)
-  - [Custom navbar](custom-navbar.md)
-  - [Cover page](cover.md)
+  - [使用数据](data_usage.md)
+  - [使用factor](factor_usage.md)
+  - [使用selector](selector_usage.md)
+  - [使用trader](trader_usage.md)
 
 - 扩展
 
-  - [recorder](configuration.md)
-  - [api](themes.md)
-  - [factor](plugins.md)
-  - [trader](write-a-plugin.md)
-
-- Guide
-
-  - [Deploy](deploy.md)
-  - [Helpers](helpers.md)
-  - [Vue compatibility](vue.md)
-  - [CDN](cdn.md)
-  - [Offline Mode(PWA)](pwa.md)
-  - [Server-Side Rendering(SSR)](ssr.md)
-  - [Embed Files](embed-files.md)
+  - [扩展数据](extend_data.md)
+  - [扩展factor](extend_factor.md)
+  - [扩展selector](extend_selector.md)
+  - [扩展factor](extend_trader.md)
 
 - [Changelog](changelog.md)
