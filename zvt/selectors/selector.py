@@ -3,11 +3,13 @@ from itertools import accumulate
 from typing import List
 
 import pandas as pd
+import plotly.graph_objs as go
 from pandas import DataFrame
 
+from zvt.charts import Chart
 from zvt.domain import SecurityType, TradingLevel
 from zvt.factors.factor import FilterFactor, ScoreFactor
-from zvt.utils.pd_utils import index_df, df_is_not_null
+from zvt.utils.pd_utils import index_df, df_is_not_null, index_df_with_category_time
 from zvt.utils.time_utils import to_pd_timestamp
 
 
@@ -173,7 +175,38 @@ class TargetSelector(object):
         return self.open_long_df
 
     def normalize_result_df(self, df):
-        df = df.reset_index()
-        df = index_df(df)
-        df = df.sort_values(by=['score', 'security_id'])
+        if df_is_not_null(df):
+            df = df.reset_index()
+            df = index_df(df)
+            df = df.sort_values(by=['score', 'security_id'])
         return df
+
+    def draw(self,
+             figures=[go.Table],
+             modes=['lines'],
+             value_fields=['close'],
+             render='html',
+             file_name=None,
+             width=None,
+             height=None,
+             title=None,
+             keep_ui_state=True,
+             annotation_df=None,
+             targets='open_long'):
+
+        if targets == 'open_long':
+            df = self.open_long_df.copy()
+        elif targets == 'open_short':
+            df = self.open_long_df.copy()
+
+        df[targets] = targets
+        df = df.reset_index()
+        df = index_df_with_category_time(df, targets)
+
+        chart = Chart(category_field=targets, figures=figures, modes=modes, value_fields=value_fields,
+                      render=render, file_name=file_name,
+                      width=width, height=height, title=title, keep_ui_state=keep_ui_state)
+
+        chart.set_data_df(df)
+        chart.set_annotation_df(annotation_df)
+        return chart.draw()

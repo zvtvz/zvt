@@ -145,6 +145,18 @@ class Chart(object):
                         low = df.loc[:, 'low']
 
                     data.append(go.Candlestick(x=xdata, open=open, close=close, low=low, high=high, name=trace_name))
+                elif figure == go.Table:
+                    cols = ['timestamp'] + list(df.columns)
+                    trace = go.Table(
+                        header=dict(values=cols,
+                                    fill=dict(color='#C2D4FF'),
+                                    align=['left'] * 5),
+                        cells=dict(values=[df.index] + [df[col] for col in df.columns],
+                                   fill=dict(color='#F5F8FF'),
+                                   align=['left'] * 5))
+
+                    data.append(trace)
+
                 else:
                     trace_name = '{}_{}'.format(series_name, self.value_fields[i])
 

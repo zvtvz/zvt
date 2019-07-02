@@ -15,4 +15,4 @@ class FundamentalSelector(TargetSelector):
 if __name__ == '__main__':
     selector: TargetSelector = FundamentalSelector(start_timestamp='2018-01-01', end_timestamp='2019-06-30')
     selector.run()
-    print(selector.get_result_df())
+    selector.draw()
