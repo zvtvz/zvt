@@ -81,6 +81,9 @@ def update_trader_details(i):
 #     return get_trader_detail_figures(trader_domain=trader_domains[i], account_reader=account_readers[i],
 #                                      order_reader=order_readers[i])
 
+def main():
+    app.run_server(debug=True)
+
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    main()
