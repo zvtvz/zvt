@@ -5,7 +5,7 @@ from ..context import init_context
 init_context()
 
 from zvt.domain import SecurityType, TradingLevel, Provider
-from zvt.selectors.examples.technical_selector import TechnicalSelector
+from zvt.selectors.technical_selector import TechnicalSelector
 from zvt.selectors.selector import TargetSelector
 
 
