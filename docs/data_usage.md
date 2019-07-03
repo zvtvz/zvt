@@ -31,7 +31,7 @@
 |名称|dataschema|provider|comments| download|
 |-----------|--------|--------|-----|-----|
 |货币资料|Coin|ccxt||
-|行情|Coin{level}Kdata|joinquant,netease,eastmoney|支持tick,1,5,15,30,60分钟, 日线,周线级别|
+|行情|Coin{level}Kdata|ccxt|支持tick,1,5,15,30,60分钟, 日线,周线级别|
 
 ### 期货数据
 > 待支持

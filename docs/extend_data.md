@@ -1,7 +1,8 @@
-# 1. 数据结构
+## 1. 数据结构
 相关概念及关系
+
 ### 1.1 provider
-代表数据提供商,比如joinquant,eastmoney,sina,netease
+代表数据提供商,比如joinquant,eastmoney,sina,netease,ccxt
 ### 1.2 store category
 数据的逻辑分类,物理上代表一个db,其下面一般有多个data schema,schema间可能有关系
 ### 1.3 data schema
@@ -14,31 +15,36 @@
 <p align="center"><img src='./data_structure_physics.png'/></p>
 
 > 一般来说,data schema是稳定的,有些数据需要多个provider来一起生成,这时也认为数据只属于某个provider;某类数据有多个provider时,可以相互验证,api上只需要指定相应的provider即可
-# 2. 如何添加provider支持
+
+## 2. 如何添加provider支持
 下面以joinquant来举个栗子
 
 ### 2.1 添加joinquant provider ###
 
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L33) 
+[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L54) 
 
 ```
 class Provider(enum.Enum):
-    EASTMONEY = 'eastmoney'
-    SINA = 'sina'
-    NETEASE = 'netease'
-    EXCHANGE = 'exchange'
+    # add
     JOINQUANT = 'joinquant'
 ```
 
 ### 2.2 添加store category ###
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L37)  
-目前定义的类别,需要扩展的在其基础上添加
+[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L59)  
+
 ```
 class StoreCategory(enum.Enum):
     meta = 'meta'
-    #个股日线行情数据
-    stock_day_kdata = 'stock_day_kdata'
-    index_day_kdata = 'index_day_kdata'
+    stock_1m_kdata = 'stock_1m_kdata'
+    stock_5m_kdata = 'stock_5m_kdata'
+    stock_15m_kdata = 'stock_15m_kdata'
+    stock_1h_kdata = 'stock_1h_kdata'
+    stock_1d_kdata = 'stock_1d_kdata'
+    stock_1wk_kdata = 'stock_1wk_kdata'
+
+    etf_1d_kdata = 'etf_1d_kdata'
+    index_1d_kdata = 'index_1d_kdata'
+
     finance = 'finance'
     dividend_financing = 'dividend_financing'
     holder = 'holder'
@@ -47,28 +53,62 @@ class StoreCategory(enum.Enum):
     macro = 'macro'
     business = 'business'
 
-category_map_db = {
-    StoreCategory.meta: MetaBase,
-    #个股日线行情数据
-    StoreCategory.stock_day_kdata: StockDayKdataBase,
-    StoreCategory.index_day_kdata: IndexDayKdataBase,
-    StoreCategory.finance: FinanceBase,
-    StoreCategory.dividend_financing: DividendFinancingBase,
-    StoreCategory.holder: HolderBase,
-    StoreCategory.trading: TradingBase,
-    StoreCategory.money_flow: MoneyFlowBase,
-    StoreCategory.macro: MacroBase,
-    StoreCategory.business: BusinessBase,
+    coin_meta = 'coin_meta'
+    coin_tick_kdata = 'coin_tick_kdata'
+    coin_1m_kdata = 'coin_1m_kdata'
+    coin_5m_kdata = 'coin_5m_kdata'
+    coin_15m_kdata = 'coin_15m_kdata'
+    coin_1h_kdata = 'coin_1h_kdata'
+    coin_1d_kdata = 'coin_1d_kdata'
+    coin_1wk_kdata = 'coin_1wk_kdata'
+```
+
+### 2.3 设置provider支持的store category ###
+```
+
+provider_map_category = {
+    Provider.EASTMONEY: [StoreCategory.meta,
+                         StoreCategory.finance,
+                         StoreCategory.dividend_financing,
+                         StoreCategory.holder,
+                         StoreCategory.trading],
+
+    Provider.SINA: [StoreCategory.meta,
+                    StoreCategory.etf_1d_kdata,
+                    StoreCategory.stock_1d_kdata,
+                    StoreCategory.money_flow],
+
+    Provider.NETEASE: [StoreCategory.stock_1d_kdata,
+                       StoreCategory.index_1d_kdata],
+
+    Provider.EXCHANGE: [StoreCategory.meta, StoreCategory.macro],
+
+    Provider.ZVT: [StoreCategory.business],
+
+    # TODO:would add other data from joinquant
+    Provider.JOINQUANT: [StoreCategory.stock_1m_kdata,
+                         StoreCategory.stock_5m_kdata,
+                         StoreCategory.stock_15m_kdata,
+                         StoreCategory.stock_1h_kdata,
+                         StoreCategory.stock_1d_kdata,
+                         StoreCategory.stock_1wk_kdata, ],
+
+    Provider.CCXT: [StoreCategory.coin_meta,
+                    StoreCategory.coin_tick_kdata,
+                    StoreCategory.coin_1m_kdata,
+                    StoreCategory.coin_5m_kdata,
+                    StoreCategory.coin_15m_kdata,
+                    StoreCategory.coin_1h_kdata,
+                    StoreCategory.coin_1d_kdata,
+                    StoreCategory.coin_1wk_kdata],
 }
 
 ```
-### 2.3 添加data schema ###
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/quote.py#L7)  
+### 2.4 添加data schema ###
+[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/quote.py#L9)  
 个股日线行情数据结构
 ```
-class StockDayKdata(StockDayKdataBase):
-    __tablename__ = 'stock_day_kdata'
-
+class StockKdataCommon(object):
     id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
     timestamp = Column(DateTime)
@@ -95,19 +135,13 @@ class StockDayKdata(StockDayKdataBase):
     change_pct = Column(Float)
     turnover_rate = Column(Float)
     factor = Column(Float)
-```
-### 2.4 关联provider和相应的store category
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/quote.py#L66)  
-支持其他数据时,在此扩展
-```
-provider_map_category = {
-    Provider.JOINQUANT:[StoreCategory.stock_day_kdata],
-    Provider.JOINQUANT.value:[StoreCategory.stock_day_kdata]
-}
+
+class Stock1DKdata(Stock1DKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1d_kdata'
 ```
 
 ### 2.5 实现相应的recorder
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/joinquant/jq_china_stock_day_kdata_recorder.py)  
+[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/joinquant/quotes/jq_china_stock__kdata_recorder.py)  
 核心代码
 ```
 #将聚宽数据转换为标准zvt数据
@@ -115,10 +149,11 @@ class MyApiWrapper(ApiWrapper):
     def request(self, url=None, method='get', param=None, path_fields=None):
         security_item = param['security_item']
         start_timestamp = param['start_timestamp']
+        end_timestamp = param['end_timestamp']
         # 不复权
         df = get_price(to_jq_security_id(security_item), start_date=to_time_str(start_timestamp),
-                       end_date=now_time_str(),
-                       frequency='daily',
+                       end_date=end_timestamp,
+                       frequency=param['jq_level'],
                        fields=['open', 'close', 'low', 'high', 'volume', 'money'],
                        skip_paused=True, fq=None)
         df.index.name = 'timestamp'
@@ -129,6 +164,10 @@ class MyApiWrapper(ApiWrapper):
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df['provider'] = Provider.JOINQUANT.value
         df['level'] = param['level']
+
+        # remove the unfinished kdata
+        if is_in_trading(security_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
+            df = df.iloc[:-1, :]
 
         return df.to_dict(orient='records')
 
@@ -188,17 +227,27 @@ def on_finish(self, security_item):
 
 ### 2.6 运行recorder
 
-在[settings](../zvt/settings.py)设置自己的jqdata账户和密码
+在[settings](https://github.com/zvtvz/zvt/blob/master/zvt/settings.py)设置自己的jqdata账户和密码
 
->jqdata目前免费使用一年,注册地址如下
->https://www.joinquant.com/default/index/sdk?f=home&m=banner
+>jqdata目前免费使用一年,注册地址如下  
+>https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d  
+>需要增加免费使用额度的可进群咨询
 
 ```
 if __name__ == '__main__':
-    init_process_log('jq_china_stock_day_kdata.log')
-    ChinaStockDayKdataRecorder(level=TradingLevel.LEVEL_1DAY, codes=['300027']).run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in TradingLevel])
+    parser.add_argument('--codes', help='codes', default=SAMPLE_STOCK_CODES, nargs='+')
+
+    args = parser.parse_args()
+
+    level = TradingLevel(args.level)
+    codes = args.codes
+
+    init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
+    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
 ```
-这里codes填写需要抓取的标的，如果不设置codes就是全市场抓取。
+这里可以通过传入不同的level来抓取不同级别的k线数据,codes为个股的代码列表,不填的话会全量抓取.
 
 # 3. 获得的能力
 添加一种数据源后,天然就获得相应的api,factor,selector和trader的能力,这里展示使用聚宽的数据的能力
@@ -271,6 +320,6 @@ Out[26]:
 流程图如下：
 <p align="center"><img src='./recorder.png'/></p>
 
-具体实现请查看[*recorder*](../zvt/recorders/recorder.py)，项目一部分的recorder实现以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).  
+具体实现请查看[*recorder*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/recorder.py)，项目一部分的recorder实现以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).  
 
 整个东财的recorder在基础recorder类的基础，基本上一类数据就10行左右代码搞定；掌握了上面的方法，相信大家也很容易其他写出的joinquant recorder。
