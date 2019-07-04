@@ -19,19 +19,18 @@ class MyApiWrapper(ApiWrapper):
         size = param['size']
         ccxt_level = param['ccxt_level']
         level = param['level']
-        ccxt_account: CCXTAccount = param['ccxt_account']
 
-        ccxt_exchange = ccxt_account.get_ccxt_exchange(security_item.exchange)
+        ccxt_exchange = CCXTAccount.get_ccxt_exchange(security_item.exchange)
 
         if ccxt_exchange.has['fetchOHLCV']:
-            limit = ccxt_account.get_kdata_limit(security_item.exchange)
+            limit = CCXTAccount.get_kdata_limit(security_item.exchange)
 
             limit = min(size, limit)
 
             kdata_list = []
 
             try:
-                if ccxt_account.exchange_conf[security_item.exchange]['support_since']:
+                if CCXTAccount.exchange_conf[security_item.exchange]['support_since']:
                     kdatas = ccxt_exchange.fetch_ohlcv(security_item.code,
                                                        timeframe=ccxt_level,
                                                        since=start_timestamp)
@@ -82,7 +81,6 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
 
         self.ccxt_trading_level = to_ccxt_trading_level(level)
         self.start_timestamp = to_pd_timestamp(start_timestamp)
-        self.ccxt_account = CCXTAccount(exchanges=exchanges)
 
         super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
                          default_size, contain_unfinished_data, level, one_shot, kdata_use_begin_time=True)
@@ -102,8 +100,7 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
             'start_timestamp': to_time_str(start),
             'size': size,
             'level': self.level,
-            'ccxt_level': self.ccxt_trading_level,
-            'ccxt_account': self.ccxt_account
+            'ccxt_level': self.ccxt_trading_level
         }
 
 

@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 import json
+
 import ccxt
 
 from zvt.domain import COIN_EXCHANGES
+from zvt.settings import HTTP_PROXY, HTTPS_PROXY
 
 
 class CCXTAccount(object):
-    def __init__(self, exchanges=COIN_EXCHANGES) -> None:
-        self.exchange_conf = {}
-        self.exchanges = exchanges
+    exchanges = COIN_EXCHANGES
+    exchange_conf = {}
 
-        self.init_exchange_conf()
-
-    def init_exchange_conf(self):
-        for exchange in self.exchanges:
+    @classmethod
+    def init(cls):
+        for exchange in cls.exchanges:
             import pkg_resources
 
             resource_package = 'zvt'
@@ -21,21 +21,25 @@ class CCXTAccount(object):
             config_file = pkg_resources.resource_filename(resource_package, resource_path)
 
             with open(config_file) as f:
-                self.exchange_conf[exchange] = json.load(f)
+                cls.exchange_conf[exchange] = json.load(f)
 
-    def get_tick_limit(self, exchange):
-        return self.exchange_conf[exchange]['tick_limit']
+    @classmethod
+    def get_tick_limit(cls, exchange):
+        return cls.exchange_conf[exchange]['tick_limit']
 
-    def get_kdata_limit(self, exchange):
-        return self.exchange_conf[exchange]['kdata_limit']
+    @classmethod
+    def get_kdata_limit(cls, exchange):
+        return cls.exchange_conf[exchange]['kdata_limit']
 
-    def get_safe_sleeping_time(self, exchange):
-        return self.exchange_conf[exchange]['safe_sleeping_time']
+    @classmethod
+    def get_safe_sleeping_time(cls, exchange):
+        return cls.exchange_conf[exchange]['safe_sleeping_time']
 
-    def get_ccxt_exchange(self, exchange_str):
+    @classmethod
+    def get_ccxt_exchange(cls, exchange_str) -> ccxt.Exchange:
         exchange = eval("ccxt.{}()".format(exchange_str))
-        exchange.apiKey = self.exchange_conf[exchange_str]['apiKey']
-        exchange.secret = self.exchange_conf[exchange_str]['secret']
+        exchange.apiKey = cls.exchange_conf[exchange_str]['apiKey']
+        exchange.secret = cls.exchange_conf[exchange_str]['secret']
         # set to your proxies if need
-        exchange.proxies = {'http': 'http://127.0.0.1:10081', 'https': 'http://127.0.0.1:10081'}
+        exchange.proxies = {'http': HTTP_PROXY, 'https': HTTPS_PROXY}
         return exchange

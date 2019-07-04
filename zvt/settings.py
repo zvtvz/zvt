@@ -5,7 +5,7 @@ DATA_SAMPLE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample.zip'))
 
 # please change the path to your real store path
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
 
 UI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ui'))
 
@@ -27,3 +27,11 @@ if not JQ_PASSWD:
 
 # 覆盖维度 银行/保险/企业/券商 创业板 中小板 主板
 SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']
+
+HTTP_PROXY = None
+if not HTTP_PROXY:
+    HTTP_PROXY = os.environ.get('HTTP_PROXY')
+
+HTTPS_PROXY = None
+if not HTTPS_PROXY:
+    HTTPS_PROXY = os.environ.get('HTTPS_PROXY')

@@ -13,12 +13,11 @@ class CoinMetaRecorder(Recorder):
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, exchanges=COIN_EXCHANGES) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
-        self.ccxt_account = CCXTAccount(exchanges=exchanges)
         self.exchanges = COIN_EXCHANGES
 
     def run(self):
         for exchange_str in self.exchanges:
-            exchange = self.ccxt_account.get_ccxt_exchange(exchange_str)
+            exchange = CCXTAccount.get_ccxt_exchange(exchange_str)
             try:
                 markets = exchange.fetch_markets()
                 df = pd.DataFrame()
