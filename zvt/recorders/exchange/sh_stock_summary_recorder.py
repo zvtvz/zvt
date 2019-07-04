@@ -2,7 +2,7 @@ import demjson
 import pandas as pd
 import requests
 
-from zvt.domain import Provider, StoreCategory, SecurityType
+from zvt.domain import Provider, StoreCategory, SecurityType, Index
 from zvt.domain.macro import StockSummary
 from zvt.recorders.consts import DEFAULT_SH_SUMMARY_HEADER
 from zvt.recorders.recorder import TimestampsDataRecorder, ApiWrapper, TimeSeriesFetchingStyle
@@ -34,6 +34,7 @@ class StockSummaryApiWrapper(ApiWrapper):
             result_json = result[0]
             # 有些较老的数据不存在,默认设为0.0
             return [{
+                'provider': Provider.EXCHANGE.value,
                 'timestamp': param,
                 'name': '上证指数',
                 'pe': to_float(result_json['profitRate'], 0.0),
@@ -46,6 +47,9 @@ class StockSummaryApiWrapper(ApiWrapper):
 
 
 class StockSummaryRecorder(TimestampsDataRecorder):
+    meta_provider = Provider.EXCHANGE
+    meta_schema = Index
+
     provider = Provider.EXCHANGE
     store_category = StoreCategory.macro  # type: StoreCategory
     data_schema = StockSummary
