@@ -8,7 +8,7 @@ import requests
 from zvt.api.common import generate_kdata_id
 from zvt.recorders.consts import EASTMONEY_ETF_NET_VALUE_HEADER
 from zvt.api.technical import get_kdata
-from zvt.domain import Index, ETF1DKdata, Provider, SecurityType, StoreCategory, TradingLevel
+from zvt.domain import Index, Provider, SecurityType, StoreCategory, TradingLevel, Index1DKdata
 from zvt.recorders.recorder import ApiWrapper, FixedCycleDataRecorder, TimeSeriesFetchingStyle
 from zvt.utils.time_utils import to_time_str
 from zvt.utils.utils import init_process_log
@@ -44,8 +44,8 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
     meta_schema = Index
 
     provider = Provider.SINA
-    store_category = StoreCategory.etf_1d_kdata
-    data_schema = ETF1DKdata
+    store_category = StoreCategory.index_1d_kdata
+    data_schema = Index1DKdata
     url = 'http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?' \
           'symbol={}{}&scale=240&&datalen={}&ma=no'
     api_wrapper = MyApiWrapper()
@@ -75,10 +75,10 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         }
 
     def on_finish(self, security_item):
-        kdatas = get_kdata(security_id=security_item.id, data_schema=ETF1DKdata, level=TradingLevel.LEVEL_1DAY.value,
-                           order=ETF1DKdata.timestamp.asc(),
+        kdatas = get_kdata(security_id=security_item.id, level=TradingLevel.LEVEL_1DAY.value,
+                           order=Index1DKdata.timestamp.asc(),
                            return_type='domain', session=self.session,
-                           filters=[ETF1DKdata.cumulative_net_value.is_(None)])
+                           filters=[Index1DKdata.cumulative_net_value.is_(None)])
 
         if kdatas and len(kdatas) > 0:
             start = kdatas[0].timestamp
