@@ -4,6 +4,7 @@ from typing import List, Union
 import pandas as pd
 from sqlalchemy.orm import Session
 
+from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_data, decode_security_id
 from zvt.api.common import get_security_schema, get_kdata_schema
 from zvt.domain import get_db_engine, TradingLevel, Provider, get_store_category, SecurityType, get_db_session, \
@@ -19,7 +20,8 @@ def init_securities(df, security_type='stock', provider=Provider.EASTMONEY):
     db_engine = get_db_engine(provider, store_category=store_category)
     security_schema = get_security_schema(security_type)
 
-    current = get_securities(security_type=security_type, columns=[security_schema.id,security_schema.code], provider=provider)
+    current = get_securities(security_type=security_type, columns=[security_schema.id, security_schema.code],
+                             provider=provider)
     df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(security_schema.__tablename__, db_engine, index=False, if_exists='append')
@@ -102,10 +104,32 @@ def get_kdata(security_id, level=TradingLevel.LEVEL_1DAY.value, provider='eastmo
                     end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit)
 
 
+def get_current_price(security_list=None, security_type=SecurityType.coin):
+    result = {}
+    if security_type == SecurityType.coin:
+        if security_list:
+            for security_id in security_list:
+                a, exchange, code = decode_security_id(security_id)
+                assert SecurityType(a) == security_type
+                ccxt_exchange = CCXTAccount.get_ccxt_exchange(exchange_str=exchange)
+
+                if not ccxt_exchange:
+                    raise Exception('{} not support'.format(exchange))
+
+                orderbook = ccxt_exchange.fetch_order_book(code)
+
+                bid = orderbook['bids'][0][0] if len(orderbook['bids']) > 0 else None
+                ask = orderbook['asks'][0][0] if len(orderbook['asks']) > 0 else None
+                security_id = f'coin_{exchange}_{code}'
+                result[security_id] = (bid, ask)
+
+    return result
+
+
 if __name__ == '__main__':
     # print(get_securities())
     # print(get_kdata(security_id='stock_sz_300027', provider='netease'))
-    print(get_kdata(security_id='coin_binance_EOS/USDT', provider='ccxt', level=TradingLevel.LEVEL_1MIN))
+    # print(get_kdata(security_id='coin_binance_EOS/USDT', provider='ccxt', level=TradingLevel.LEVEL_1MIN))
     # print(get_finance_factor(security_id='stock_sh_601318', session=get_db_session('eastmoney')))
     # a = get_stock_category('stock_sz_000029')
     # print(a)
@@ -120,3 +144,4 @@ if __name__ == '__main__':
     # print(df)
     #
     # print(get_securities(codes=['000338', '000778', '600338'], exchanges=['sz']))
+    print(get_current_price(['coin_huobipro_EOS/USDT', 'coin_binance_EOS/USDT']))

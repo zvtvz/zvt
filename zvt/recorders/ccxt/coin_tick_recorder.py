@@ -16,12 +16,11 @@ class MyApiWrapper(ApiWrapper):
     def request(self, url=None, method='get', param=None, path_fields=None):
         security_item = param['security_item']
         size = param['size']
-        ccxt_account: CCXTAccount = param['ccxt_account']
 
-        ccxt_exchange = ccxt_account.get_ccxt_exchange(security_item.exchange)
+        ccxt_exchange = CCXTAccount.get_ccxt_exchange(security_item.exchange)
 
         if ccxt_exchange.has['fetchTrades']:
-            limit = ccxt_account.get_tick_limit(security_item.exchange)
+            limit = CCXTAccount.get_tick_limit(security_item.exchange)
 
             limit = min(size, limit)
 
@@ -70,7 +69,6 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(security_type=security_type, level=TradingLevel.LEVEL_TICK)
 
         self.start_timestamp = to_pd_timestamp(start_timestamp)
-        self.ccxt_account = CCXTAccount(exchanges=exchanges)
 
         super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
                          default_size, contain_unfinished_data, TradingLevel.LEVEL_TICK, one_shot,
@@ -91,8 +89,7 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
         return {
             'security_item': security_item,
             'start_timestamp': to_time_str(start),
-            'size': size,
-            'ccxt_account': self.ccxt_account
+            'size': size
         }
 
 
