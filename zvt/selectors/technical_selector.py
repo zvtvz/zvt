@@ -18,7 +18,7 @@ class TechnicalSelector(TargetSelector):
                      end_timestamp):
         bull_factor = BullFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
                                  codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
-                                 end_timestamp=end_timestamp, provider=self.provider, level=self.level)
+                                 end_timestamp=end_timestamp, provider='joinquant', level=self.level)
 
         self.filter_factors = [bull_factor]
 

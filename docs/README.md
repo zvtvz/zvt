@@ -12,7 +12,7 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
  - 从形态看,Z V T本身暗合市场的典型形态,寓意市场几何结构的重要性.
  - 而zvt图标的含义,大家可自行解读
 
-<p align="center"><img src='zvt-ok.gif'/></p>
+<p align="center"><img src='./imgs/zvt-ok.gif'/></p>
 
 ## 功能
 

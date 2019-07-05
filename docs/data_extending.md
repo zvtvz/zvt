@@ -9,10 +9,10 @@
 数据的结构描述,物理上代表一个table
 
 #### *逻辑视图* ####
-<p align="center"><img src='./data_structure.png'/></p>
+<p align="center"><img src='./imgs/data_structure.png'/></p>
 
 #### *物理视图* ####
-<p align="center"><img src='./data_structure_physics.png'/></p>
+<p align="center"><img src='./imgs/data_structure_physics.png'/></p>
 
 > 一般来说,data schema是稳定的,有些数据需要多个provider来一起生成,这时也认为数据只属于某个provider;某类数据有多个provider时,可以相互验证,api上只需要指定相应的provider即可
 
@@ -318,7 +318,7 @@ Out[26]:
 方便数据校验和多provider数据补全
 
 流程图如下：
-<p align="center"><img src='./recorder.png'/></p>
+<p align="center"><img src='./imgs/recorder.png'/></p>
 
 具体实现请查看[*recorder*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/recorder.py)，项目一部分的recorder实现以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).  
 

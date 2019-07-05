@@ -14,7 +14,7 @@
 ```
 
 factor本身是可以draw的,并且可以在notebook中使用:
-<p align="center"><img src='factor-in-notebook.gif'/></p>
+<p align="center"><img src='./imgs/factor-in-notebook.gif'/></p>
 
 你甚至可以把所有标的的factor都draw成一致的图片,然后用机器学习来对其进行分析,需要做的也只是把codes遍历一遍.
 
@@ -63,7 +63,7 @@ class CrossMaFactor(TechnicalFactor):
 cross = CrossMaFactor(codes=['000338'], start_timestamp='2018-01-01', end_timestamp='2019-02-01',provider='joinquant')
 cross.draw_result(render='notebook')
 ```
-<p align="center"><img src='factor-result-in-notebook.gif'/></p>
+<p align="center"><img src='./imgs/factor-result-in-notebook.gif'/></p>
 
 ## ScoreFactor
 

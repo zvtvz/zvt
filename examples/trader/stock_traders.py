@@ -7,10 +7,13 @@ from zvt.settings import SAMPLE_STOCK_CODES
 from zvt.trader.impls import StockTrader
 
 
+# make sure run init_data_sample.py to init the data sample at first
+# or you could change settings.DATA_PATH to your data path,and run the recorders for the data
 class MyMaTrader(StockTrader):
     def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
         myselector = TargetSelector(security_list=security_list, security_type=security_type, exchanges=exchanges,
-                                    codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+                                    codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                                    provider='joinquant')
 
         myselector.add_filter_factor(
             CrossMaFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
@@ -22,7 +25,8 @@ class MyMaTrader(StockTrader):
 class MyBullTrader(StockTrader):
     def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
         myselector = TargetSelector(security_list=security_list, security_type=security_type, exchanges=exchanges,
-                                    codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+                                    codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                                    provider='joinquant')
 
         myselector.add_filter_factor(
             BullFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
