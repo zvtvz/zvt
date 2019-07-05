@@ -28,10 +28,10 @@ if not JQ_PASSWD:
 # 覆盖维度 银行/保险/企业/券商 创业板 中小板 主板
 SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']
 
-HTTP_PROXY = None
+HTTP_PROXY = 'http://127.0.0.1:10080'
 if not HTTP_PROXY:
     HTTP_PROXY = os.environ.get('HTTP_PROXY')
 
-HTTPS_PROXY = None
+HTTPS_PROXY = 'http://127.0.0.1:10080'
 if not HTTPS_PROXY:
     HTTPS_PROXY = os.environ.get('HTTPS_PROXY')

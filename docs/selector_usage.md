@@ -30,7 +30,7 @@ s.draw()
 
 该selector选取macd黄白线在0轴上的标的,选取完成后,可以运行draw来获取选中标的的表格.
 
-<p align="center"><img src='technical-selector-in-notebook.gif'/></p>
+<p align="center"><img src='./imgs/technical-selector-in-notebook.gif'/></p>
 
 
 ### FundamentalSelector
@@ -54,7 +54,7 @@ selector.draw()
 
 该selector选取成长性评分在0.8以上的个股.
 
-<p align="center"><img src='fundamental-selector-in-notebook.png'/></p>
+<p align="center"><img src='./imgs/fundamental-selector-in-notebook.png'/></p>
 
 > 注意:使用到的ScoreFactor是对全市场和历史数据进行运算,比较耗时,但运算结果可以直接进行回测.
 

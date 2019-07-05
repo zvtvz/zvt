@@ -11,9 +11,9 @@
   - [使用trader](trader_usage.md "zvt trader usage")
 
 - 扩展
-  - [扩展数据](extend_data.md "extend zvt data")
-  - [扩展factor](extend_factor.md "extend zvt factor")
-  - [扩展selector](extend_selector.md "extend zvt selector")
-  - [扩展factor](extend_trader.md "extend zvt trader")
+  - [扩展数据](data_extending.md "extend zvt data")
+  - [扩展factor](factor_extending.md "extend zvt factor")
+  - [扩展selector](selector_extending.md "extend zvt selector")
+  - [扩展factor](trader_extending.md "extend zvt trader")
 
 - [Changelog](changelog.md)

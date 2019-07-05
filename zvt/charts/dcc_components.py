@@ -2,10 +2,12 @@
 from typing import Union
 
 import dash_core_components as dcc
+import dash_daq as daq
 import plotly.graph_objs as go
 import simplejson
 
 from zvt.api.common import decode_security_id
+from zvt.api.technical import get_current_price
 from zvt.domain import Provider, business
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.reader.business_reader import OrderReader, AccountReader
@@ -113,6 +115,24 @@ def get_trader_detail_figures(trader_domain: business.Trader,
 
             data, layout = security_factor.draw_with_indicators(render=None, annotation_df=df,
                                                                 indicators=indicator_cols, height=620)
+            if trader_domain.real_time:
+                result = get_current_price(security_list=[security_id])
+                bid_ask = result.get(security_id)
+
+                if bid_ask:
+                    graph_list.append(daq.LEDDisplay(
+                        id='ask',
+                        label=f'ask price',
+                        value=bid_ask[0],
+                        color="#00da3c"
+                    ))
+
+                    graph_list.append(daq.LEDDisplay(
+                        id='bid',
+                        label=f'bid price',
+                        value=bid_ask[1],
+                        color="#FF5E5E"
+                    ))
 
             graph_list.append(
                 dcc.Graph(

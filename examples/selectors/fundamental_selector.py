@@ -8,7 +8,7 @@ class FundamentalSelector(TargetSelector):
                      end_timestamp):
         factor = FinanceGrowthFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
                                      codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
-                                     end_timestamp=end_timestamp, keep_all_timestamp=True, provider=self.provider)
+                                     end_timestamp=end_timestamp, keep_all_timestamp=True, provider='eastmoney')
         self.score_factors.append(factor)
 
 

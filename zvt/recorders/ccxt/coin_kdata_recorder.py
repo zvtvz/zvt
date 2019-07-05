@@ -106,7 +106,7 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='15m', choices=[item.value for item in TradingLevel])
+    parser.add_argument('--level', help='trading level', default='1m', choices=[item.value for item in TradingLevel])
     parser.add_argument('--exchanges', help='exchanges', default='binance', nargs='+',
                         choices=[item for item in COIN_EXCHANGES])
     parser.add_argument('--codes', help='codes', default='EOS/USDT', nargs='+',
@@ -116,6 +116,15 @@ if __name__ == '__main__':
 
     level = TradingLevel(args.level)
 
-    init_process_log('coin_{}_kdata.log'.format(args.level))
+    exchanges = args.exchanges
+    if type(exchanges) != list:
+        exchanges = [exchanges]
 
-    CoinKdataRecorder(codes=['EOS/USDT'], level=level).run()
+    codes = args.codes
+    if type(codes) != list:
+        codes = [codes]
+
+    init_process_log(
+        'coin_{}_{}_{}_kdata.log'.format('-'.join(exchanges), '-'.join(codes).replace('/', ''), args.level))
+
+    CoinKdataRecorder(exchanges=exchanges, codes=codes, level=level).run()

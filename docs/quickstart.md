@@ -9,12 +9,40 @@ pip install zvt
 ```
 pip install -U zvt
 ```
-如果想直接撸源码(推荐方式)
+如果想直接撸源码(**推荐方式**)
 ```
 git clone https://github.com/zvtvz/zvt.git
 ```
+**以下假设在项目root目录下操作**
+
+## 初始化项目环境
+
+- python>=3.6(建议使用virtualenv)
+
+- 安装项目依赖
+```
+pip install -r requirements.txt
+```
+
+**以下假设环境已经ready** 
+
+## 初始化数据
+```
+python init_data_sample.py
+```
+该脚本解压自带的数据sample,项目中的tests和examples对其有依赖
+
+使用自己的data,请更改settings.py
+
+```
+# please change the path to your real store path
+DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
+
+```
+
+如何获取全量数据并维护数据的更新,请参考[数据使用](./data_usage.md)
+
 ## 运行主界面
-假设你在项目root目录下
 ```
 python main.py
 ```
@@ -53,7 +81,7 @@ class MyMaTrader(StockTrader):
 ```
 
 刷新刚才打开的运行界面,查看运行效果
-<p align="center"><img src='trader_list_view.gif'/></p>
+<p align="center"><img src='./imgs/trader_list_view.gif'/></p>
 
 上面为策略运行的市值曲线,下面为策略操作标的的k线图和买卖信号标记,还有策略中用到的factor.
 

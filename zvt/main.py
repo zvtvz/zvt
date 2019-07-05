@@ -47,9 +47,11 @@ def serve_layout():
 
             dcc.Interval(
                 id='interval-component',
-                interval=10 * 1000,  # in milliseconds
+                interval=5 * 1000,  # in milliseconds
                 n_intervals=0
-            )
+            ),
+            html.Div(id='intermediate-value', style={'display': 'none'})
+
         ])
 
     load_traders()
@@ -63,23 +65,23 @@ app.layout = serve_layout
 
 
 @app.callback(
-    Output('trader-details', 'children'),
+    Output('intermediate-value', 'children'),
     [Input('trader-selector', 'value')])
-def update_trader_details(i):
-    # order_reader.move_on()
-    if i is None:
+def init_trader_details(i):
+    return i
+
+
+@app.callback(
+    Output('trader-details', 'children'),
+    [Input('interval-component', 'n_intervals'),
+     Input('intermediate-value', 'children')])
+def update_trader_details(n, i):
+    if i is None or n < 1:
         return ''
+
     return get_trader_detail_figures(trader_domain=trader_domains[i], account_reader=account_readers[i],
                                      order_reader=order_readers[i])
 
-
-# @app.callback(
-#     Output('trader-details', 'children'),
-#     [Input('interval-component', 'n_intervals')])
-# def update_trader_details(n):
-#     # order_reader.move_on()
-#     return get_trader_detail_figures(trader_domain=trader_domains[i], account_reader=account_readers[i],
-#                                      order_reader=order_readers[i])
 
 def main():
     app.run_server(debug=True)

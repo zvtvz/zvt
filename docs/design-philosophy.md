@@ -15,7 +15,7 @@
 ## 分层(Layer)
 
 分层的核心在于不同层次之间的协议,整个系统的稳定性在于协议的稳定性.
-<p align="center"><img src='architecture.png'/></p>
+<p align="center"><img src='./imgs/architecture.png'/></p>
 
 ## 扩展性(Scalable)
 

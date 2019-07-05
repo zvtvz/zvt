@@ -135,6 +135,6 @@ select count(id) from manager_trading where volume < 0 and timestamp > '2018-01-
 select * from manager_trading where volume > 0 and timestamp > '2018-01-01';
 select count(id) from manager_trading where volume > 0 and timestamp > '2018-01-01'
 ```
-<p align="center"><img src='sql-usage.gif'/></p>
+<p align="center"><img src='./imgs/sql-usage.gif'/></p>
 
 库都给你了,SQL大神,请开始你的表演
