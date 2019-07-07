@@ -44,7 +44,6 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
     meta_schema = Index
 
     provider = Provider.SINA
-    store_category = StoreCategory.index_1d_kdata
     data_schema = Index1DKdata
     url = 'http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?' \
           'symbol={}{}&scale=240&&datalen={}&ma=no'
