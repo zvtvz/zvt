@@ -3,7 +3,9 @@ import argparse
 import logging
 from datetime import timedelta
 
+import io
 import pandas as pd
+import requests
 from jqdatasdk import auth, get_price, logout
 
 from zvt.api.common import generate_kdata_id, to_jq_security_id, get_kdata_schema, to_jq_trading_level
@@ -13,7 +15,7 @@ from zvt.domain import TradingLevel, SecurityType, Provider, Stock
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
 from zvt.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
-from zvt.utils.utils import init_process_log
+from zvt.utils.utils import init_process_log, read_csv
 
 logger = logging.getLogger(__name__)
 
@@ -142,8 +144,28 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                 self.session.execute(sql)
                 self.session.commit()
 
-        # TODO:use netease provider to get turnover_rate
-        self.logger.info('use netease provider to get turnover_rate')
+            # use netease provider to get turnover_rate
+            query_url = 'http://quotes.money.163.com/service/chddata.html?code={}{}&start={}&end={}&fields=PCHG;TURNOVER'
+
+            if security_item.exchange == 'sh':
+                exchange_flag = 0
+            else:
+                exchange_flag = 1
+
+            url = query_url.format(exchange_flag, security_item.code, to_time_str(start), to_time_str(end))
+            response = requests.get(url=url)
+
+            df = read_csv(io.BytesIO(response.content), encoding='GB2312', na_values='None')
+            df['日期'] = pd.to_datetime(df['日期'])
+            df.set_index('日期', drop=True, inplace=True)
+
+            if df is not None and not df.empty:
+                # fill turnover_rate, pct_change
+                for kdata in kdatas:
+                    if kdata.timestamp in df.index:
+                        kdata.turnover_rate = df.loc[kdata.timestamp, '换手率']
+                        kdata.change_pct = df.loc[kdata.timestamp, '涨跌幅']
+                self.session.commit()
 
     def on_stop(self):
         super().on_stop()
