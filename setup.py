@@ -122,7 +122,7 @@ setup(
     install_requires=['Scrapy>=1.5.1', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2', 'arrow>=0.11.0',
                       'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0', 'jqdatasdk', 'demjson>=2.2.4',
                       'marshmallow-sqlalchemy',
-                      'ccxt>=1.17.191', 'dash>=0.43.0', 'dash-daq>=0.1.0'],  # Optional
+                      'ccxt>=1.17.191', 'dash>=1.0.0', 'dash-daq>=0.1.0'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

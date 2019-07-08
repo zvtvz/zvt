@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-\
-
+# -*- coding: utf-8 -*-
 
 def init_context():
     import os
