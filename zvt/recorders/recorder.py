@@ -13,6 +13,8 @@ from zvt.utils.utils import fill_domain_from_dict
 
 
 class ApiWrapper(object):
+    logger = logging.getLogger(__name__)
+
     def request(self, url=None, method='post', param=None, path_fields=None):
         raise NotImplementedError
 
