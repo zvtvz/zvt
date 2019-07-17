@@ -107,7 +107,7 @@ class ChinaIndexListSpider(Recorder):
         """
         url = 'http://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1812_zs&TABKEY=tab1'
         response = requests.get(url)
-        df = pd.read_excel(io.BytesIO(response.content))
+        df = pd.read_excel(io.BytesIO(response.content), dtype='str')
 
         df.columns = ['code', 'name', 'timestamp', 'base_point', 'online_date']
         df['category'] = 'szse'
@@ -162,6 +162,7 @@ class ChinaIndexListSpider(Recorder):
             header = df.iloc[0]
             df = df[1:]
             df.columns = header
+            df.astype('str')
 
             result_df = pd.concat([result_df, df])
 
@@ -170,7 +171,7 @@ class ChinaIndexListSpider(Recorder):
         result_df['timestamp'] = result_df['timestamp'].apply(lambda x: x.replace('-', ''))
         result_df['online_date'] = result_df['online_date'].apply(lambda x: x.replace('-', ''))
         result_df['category'] = 'csi'
-        result_df = result_df.loc[df['code'].str.contains(r'^\d{6}$')]
+        result_df = result_df.loc[result_df['code'].str.contains(r'^\d{6}$')]
 
         self.persist_index(result_df)
         self.logger.info('国证指数列表抓取完成...')
@@ -181,7 +182,7 @@ class ChinaIndexListSpider(Recorder):
 
     def fetch_cni_index_component(self, df: pd.DataFrame):
         """
-        抓取深证指数成分股
+        抓取国证指数成分股
         """
         query_url = 'http://www.cnindex.com.cn/docs/yb_{}.xls'
 
@@ -200,11 +201,17 @@ class ChinaIndexListSpider(Recorder):
             response_df = pd.read_excel(io.BytesIO(response.content), dtype='str')
 
             index_id = f'index_cn_{index_code}'
-            response_df = response_df[['样本股代码']]
-            response_df['id'] = response_df['样本股代码'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
-            response_df['stock_id'] = response_df['样本股代码'].apply(lambda x: china_stock_code_to_id(str(x)))
+
+            try:
+                response_df = response_df[['样本股代码']]
+            except KeyError:
+                response_df = response_df[['证券代码']]
+
+            response_df.columns = ['stock_code']
+            response_df['id'] = response_df['stock_code'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
             response_df['index_id'] = index_id
-            response_df.drop('样本股代码', axis=1, inplace=True)
+            response_df.drop('stock_code', axis=1, inplace=True)
 
             df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
             self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')
