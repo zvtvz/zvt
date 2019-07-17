@@ -60,6 +60,7 @@ class ChinaIndexListSpider(Recorder):
         df.columns = ['timestamp', 'base_point', 'code', 'name', 'online_date', 'class_eseries']
         df['category'] = df['class_eseries'].apply(lambda x: x.split(' ')[0].lower())
         df = df.drop('class_eseries', axis=1)
+        df = df.loc[df['code'].str.contains(r'^\d{6}$')]
 
         self.persist_index(df)
         self.logger.info('上证、中证指数列表抓取完成...')
@@ -110,6 +111,7 @@ class ChinaIndexListSpider(Recorder):
 
         df.columns = ['code', 'name', 'timestamp', 'base_point', 'online_date']
         df['category'] = 'szse'
+        df = df.loc[df['code'].str.contains(r'^\d{6}$')]
         self.persist_index(df)
         self.logger.info('深证指数列表抓取完成...')
 
@@ -168,6 +170,7 @@ class ChinaIndexListSpider(Recorder):
         result_df['timestamp'] = result_df['timestamp'].apply(lambda x: x.replace('-', ''))
         result_df['online_date'] = result_df['online_date'].apply(lambda x: x.replace('-', ''))
         result_df['category'] = 'csi'
+        result_df = result_df.loc[df['code'].str.contains(r'^\d{6}$')]
 
         self.persist_index(result_df)
         self.logger.info('国证指数列表抓取完成...')
@@ -186,7 +189,13 @@ class ChinaIndexListSpider(Recorder):
             index_code = index['code']
 
             url = query_url.format(index_code)
-            response = requests.get(url)
+
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+            except requests.HTTPError as error:
+                self.logger.error(f'{index["name"]} - {index_code} 成分股抓取错误 ({error})')
+                continue
 
             response_df = pd.read_excel(io.BytesIO(response.content), dtype='str')
 
