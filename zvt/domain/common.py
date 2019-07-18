@@ -164,10 +164,21 @@ class SecurityType(enum.Enum):
 
 
 class StockCategory(enum.Enum):
+    # 行业版块
     industry = 'industry'
+    # 概念版块
     concept = 'concept'
+    # 区域版块
     area = 'area'
-    main = 'main'
+    # 上证指数
+    sse = 'sse'
+    # 深圳指数
+    szse = 'szse'
+    # 中证指数
+    csi = 'csi'
+    # 国证指数
+    cni = 'cni'
+    # ETF
     etf = 'etf'
 
 
