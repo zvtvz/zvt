@@ -34,6 +34,11 @@ class Index(MetaBase):
 
     stocks = relationship('StockIndex', back_populates="indices")
 
+    # 基准点数
+    base_point = Column(Float)
+    # 发布日期
+    online_date = Column(DateTime)
+
     def __repr__(self):
         return f'[{self.name} - {self.code}]'
 
