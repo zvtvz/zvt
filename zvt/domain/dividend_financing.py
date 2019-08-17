@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, String, DateTime, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain.common import DividendFinancingBase
+from zvdata.domain import register_schema, register_api
+from zvdata.structs import Mixin
+
+DividendFinancingBase = declarative_base()
 
 
-class DividendFinancing(DividendFinancingBase):
+@register_api(provider='eastmoney')
+class DividendFinancing(DividendFinancingBase, Mixin):
     __tablename__ = 'dividend_financing'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 分红总额
@@ -28,14 +30,11 @@ class DividendFinancing(DividendFinancingBase):
     rights_raising_fund = Column(Float)
 
 
-class DividendDetail(DividendFinancingBase):
+@register_api(provider='eastmoney')
+class DividendDetail(DividendFinancingBase, Mixin):
     __tablename__ = "dividend_detail"
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    # =公告日
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 公告日
@@ -49,13 +48,11 @@ class DividendDetail(DividendFinancingBase):
     dividend = Column(String(length=128))
 
 
-class SPODetail(DividendFinancingBase):
+@register_api(provider='eastmoney')
+class SpoDetail(DividendFinancingBase, Mixin):
     __tablename__ = "spo_detail"
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     spo_issues = Column(Float)
@@ -63,16 +60,17 @@ class SPODetail(DividendFinancingBase):
     spo_raising_fund = Column(Float)
 
 
-class RightsIssueDetail(DividendFinancingBase):
+@register_api(provider='eastmoney')
+class RightsIssueDetail(DividendFinancingBase, Mixin):
     __tablename__ = "rights_issue_detail"
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 配股
     rights_issues = Column(Float)
     rights_issue_price = Column(Float)
     rights_raising_fund = Column(Float)
+
+
+register_schema(providers=['eastmoney'], db_name='dividend_financing', schema_base=DividendFinancingBase)

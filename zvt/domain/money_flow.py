@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Float
+from sqlalchemy import Column, String, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain.common import MoneyFlowBase
+from zvdata.domain import register_schema, register_api
+from zvdata.structs import Mixin
+
+MoneyFlowBase = declarative_base()
 
 
 # 板块资金流向
-class IndexMoneyFlow(MoneyFlowBase):
+@register_api(provider='sina')
+class IndexMoneyFlow(MoneyFlowBase, Mixin):
     __tablename__ = 'index_money_flow'
 
-    id = Column(String(length=128), primary_key=True)
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
 
@@ -42,12 +44,10 @@ class IndexMoneyFlow(MoneyFlowBase):
     net_small_inflow_rate = Column(Float)
 
 
-class StockMoneyFlow(MoneyFlowBase):
+@register_api(provider='sina')
+class StockMoneyFlow(MoneyFlowBase, Mixin):
     __tablename__ = 'stock_money_flow'
 
-    id = Column(String(length=128), primary_key=True)
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
 
@@ -77,3 +77,6 @@ class StockMoneyFlow(MoneyFlowBase):
     # 小单
     net_small_inflows = Column(Float)
     net_small_inflow_rate = Column(Float)
+
+
+register_schema(providers=['sina'], db_name='money_flow', schema_base=MoneyFlowBase)

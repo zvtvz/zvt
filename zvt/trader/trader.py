@@ -6,17 +6,17 @@ from typing import List, Union
 import pandas as pd
 import simplejson
 
+from zvdata.domain import get_db_session
+from zvdata.structs import IntervalLevel
 from zvt.api.business import get_trader
-from zvt.api.common import get_one_day_trading_minutes, decode_security_id
+from zvt.api.common import get_one_day_trading_minutes, decode_entity_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date
-from zvt.core import Constructor
-from zvt.domain import SecurityType, TradingLevel, Provider, business, get_db_session, StoreCategory
+from zvt.domain import business
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.utils.utils import marshal_object_for_ui
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +27,13 @@ class SelectorsComparator(object):
     def __init__(self, selectors: List[TargetSelector]) -> None:
         self.selectors: List[TargetSelector] = selectors
 
-    def make_decision(self, timestamp, trading_level: TradingLevel):
+    def make_decision(self, timestamp, trading_level: IntervalLevel):
         """
 
         :param timestamp:
         :type timestamp:
         :param trading_level:
-        :type trading_level: zvt.domain.common.TradingLevel
+        :type trading_level: zvt.domain.common.IntervalLevel
         """
         raise NotImplementedError
 
@@ -45,7 +45,7 @@ class LimitSelectorsComparator(SelectorsComparator):
         super().__init__(selectors)
         self.limit = limit
 
-    def make_decision(self, timestamp, trading_level: TradingLevel):
+    def make_decision(self, timestamp, trading_level: IntervalLevel):
         logger.debug('current timestamp:{}'.format(timestamp))
 
         all_long_targets = []
@@ -83,34 +83,34 @@ class TargetsSlot(object):
     def __init__(self) -> None:
         self.level_map_targets = {}
 
-    def input_targets(self, level: TradingLevel, long_targets: List[str], short_targets: List[str]):
+    def input_targets(self, level: IntervalLevel, long_targets: List[str], short_targets: List[str]):
         logger.debug('level:{},old targets:{},new targets:{}'.format(level,
                                                                      self.get_targets(level),
                                                                      (long_targets, short_targets)))
         self.level_map_targets[level.value] = (long_targets, short_targets)
 
-    def get_targets(self, level: TradingLevel):
+    def get_targets(self, level: IntervalLevel):
         return self.level_map_targets.get(level.value)
 
 
-class Trader(Constructor):
+class Trader(object):
     logger = logging.getLogger(__name__)
 
-    security_type: SecurityType = None
+    entity_type: str = None
 
     def __init__(self,
-                 security_list: List[str] = None,
+                 entity_ids: List[str] = None,
                  exchanges: List[str] = ['sh', 'sz'],
                  codes: List[str] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 provider: Union[str, Provider] = Provider.JOINQUANT,
-                 level: Union[str, TradingLevel] = TradingLevel.LEVEL_1DAY,
+                 provider: str = 'joinquant',
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False) -> None:
 
-        assert self.security_type is not None
+        assert self.entity_type is not None
 
         if trader_name:
             self.trader_name = trader_name
@@ -122,22 +122,22 @@ class Trader(Constructor):
 
         self.selectors: List[TargetSelector] = []
 
-        self.security_list = security_list
+        self.entity_ids = entity_ids
 
         self.exchanges = exchanges
         self.codes = codes
 
         # FIXME:handle this case gracefully
-        if self.security_list:
-            security_type, exchange, code = decode_security_id(self.security_list[0])
-            if not self.security_type:
-                self.security_type = security_type
+        if self.entity_ids:
+            entity_type, exchange, code = decode_entity_id(self.entity_ids[0])
+            if not self.entity_type:
+                self.entity_type = entity_type
             if not self.exchanges:
                 self.exchanges = [exchange]
 
-        self.provider = Provider(provider)
+        self.provider = provider
         # make sure the min level selector correspond to the provider and level
-        self.level = TradingLevel(level)
+        self.level = IntervalLevel(level)
         self.real_time = real_time
 
         if start_timestamp and end_timestamp:
@@ -160,12 +160,12 @@ class Trader(Constructor):
 
         self.add_trading_signal_listener(self.account_service)
 
-        self.init_selectors(security_list=security_list, security_type=self.security_type, exchanges=self.exchanges,
+        self.init_selectors(entity_ids=entity_ids, entity_type=self.entity_type, exchanges=self.exchanges,
                             codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
 
         self.selectors_comparator = self.init_selectors_comparator()
 
-        self.trading_level_asc = list(set([TradingLevel(selector.level) for selector in self.selectors]))
+        self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
         self.trading_level_asc.sort()
 
         self.trading_level_desc = list(self.trading_level_asc)
@@ -173,7 +173,7 @@ class Trader(Constructor):
 
         self.targets_slot: TargetsSlot = TargetsSlot()
 
-        self.session = get_db_session('zvt', StoreCategory.business)
+        self.session = get_db_session('zvt', 'business')
         trader = get_trader(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
 
         if trader:
@@ -198,10 +198,10 @@ class Trader(Constructor):
 
         technical_factors = simplejson.dumps(technical_factors, for_json=True)
 
-        if self.security_list:
-            security_list = json.dumps(self.security_list)
+        if self.entity_ids:
+            entity_ids = json.dumps(self.entity_ids)
         else:
-            security_list = None
+            entity_ids = None
 
         if self.exchanges:
             exchanges = json.dumps(self.exchanges)
@@ -215,16 +215,16 @@ class Trader(Constructor):
 
         trader_domain = business.Trader(id=self.trader_name, timestamp=self.start_timestamp,
                                         trader_name=self.trader_name,
-                                        security_type=security_list, exchanges=exchanges, codes=codes,
+                                        entity_type=entity_ids, exchanges=exchanges, codes=codes,
                                         start_timestamp=self.start_timestamp,
-                                        end_timestamp=self.end_timestamp, provider=self.provider.value,
+                                        end_timestamp=self.end_timestamp, provider=self.provider,
                                         level=self.level.value,
                                         real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time,
                                         technical_factors=technical_factors)
         self.session.add(trader_domain)
         self.session.commit()
 
-    def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
         """
         implement this to init selectors
 
@@ -283,7 +283,7 @@ class Trader(Constructor):
     def send_trading_signals(self, timestamp, long_selected, short_selected):
         # current position
         account = self.account_service.latest_account
-        current_holdings = [position['security_id'] for position in account['positions'] if
+        current_holdings = [position['entity_id'] for position in account['positions'] if
                             position['available_long'] > 0]
 
         if long_selected:
@@ -293,8 +293,8 @@ class Trader(Constructor):
                 position_pct = 1.0 / len(longed)
                 order_money = account['cash'] * position_pct
 
-                for security_id in longed:
-                    trading_signal = TradingSignal(security_id=security_id,
+                for entity_id in longed:
+                    trading_signal = TradingSignal(entity_id=entity_id,
                                                    the_timestamp=timestamp,
                                                    trading_signal_type=TradingSignalType.trading_signal_open_long,
                                                    trading_level=self.level,
@@ -306,8 +306,8 @@ class Trader(Constructor):
         if short_selected:
             shorted = set(current_holdings) & short_selected
 
-            for security_id in shorted:
-                trading_signal = TradingSignal(security_id=security_id,
+            for entity_id in shorted:
+                trading_signal = TradingSignal(entity_id=entity_id,
                                                the_timestamp=timestamp,
                                                trading_signal_type=TradingSignalType.trading_signal_close_long,
                                                position_pct=1.0,
@@ -322,11 +322,11 @@ class Trader(Constructor):
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
         # timestamp represents the timestamp in kdata
-        for timestamp in iterate_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
+        for timestamp in iterate_timestamps(entity_type=self.entity_type, exchange=self.exchanges[0],
                                             start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp,
                                             level=self.level):
 
-            if not is_trading_date(security_type=self.security_type, exchange=self.exchanges[0], timestamp=timestamp):
+            if not is_trading_date(entity_type=self.entity_type, exchange=self.exchanges[0], timestamp=timestamp):
                 continue
             if self.real_time:
                 # all selector move on to handle the coming data
@@ -337,22 +337,22 @@ class Trader(Constructor):
 
                 waiting_seconds, _ = self.level.count_from_timestamp(real_end_timestamp,
                                                                      one_day_trading_minutes=get_one_day_trading_minutes(
-                                                                         security_type=self.security_type))
+                                                                         entity_type=self.entity_type))
                 # meaning the future kdata not ready yet,we could move on to check
                 if waiting_seconds and (waiting_seconds > 0):
                     # iterate the selector from min to max which in finished timestamp kdata
                     for level in self.trading_level_asc:
-                        if (is_in_finished_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
+                        if (is_in_finished_timestamps(entity_type=self.entity_type, exchange=self.exchanges[0],
                                                       timestamp=timestamp, level=level)):
                             for selector in self.selectors:
                                 if selector.level == level:
                                     selector.move_on(timestamp, self.kdata_use_begin_time, timeout=waiting_seconds + 20)
 
             # on_trading_open to setup the account
-            if self.level == TradingLevel.LEVEL_1DAY or (
-                    self.level != TradingLevel.LEVEL_1DAY and is_open_time(security_type=self.security_type,
-                                                                           exchange=self.exchanges[0],
-                                                                           timestamp=timestamp)):
+            if self.level == IntervalLevel.LEVEL_1DAY or (
+                    self.level != IntervalLevel.LEVEL_1DAY and is_open_time(entity_type=self.entity_type,
+                                                                            exchange=self.exchanges[0],
+                                                                            timestamp=timestamp)):
                 self.account_service.on_trading_open(timestamp)
 
             # the time always move on by min level step and we could check all level targets in the slot
@@ -360,7 +360,7 @@ class Trader(Constructor):
 
             for level in self.trading_level_asc:
                 # in every cycle, all level selector do its job in its time
-                if (is_in_finished_timestamps(security_type=self.security_type, exchange=self.exchanges[0],
+                if (is_in_finished_timestamps(entity_type=self.entity_type, exchange=self.exchanges[0],
                                               timestamp=timestamp, level=level)):
                     long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
                                                                                           trading_level=level)
@@ -368,16 +368,10 @@ class Trader(Constructor):
                     self.targets_slot.input_targets(level, long_targets, short_targets)
 
             # on_trading_close to calculate date account
-            if self.level == TradingLevel.LEVEL_1DAY or (
-                    self.level != TradingLevel.LEVEL_1DAY and is_close_time(security_type=self.security_type,
-                                                                            exchange=self.exchanges[0],
-                                                                            timestamp=timestamp)):
+            if self.level == IntervalLevel.LEVEL_1DAY or (
+                    self.level != IntervalLevel.LEVEL_1DAY and is_close_time(entity_type=self.entity_type,
+                                                                             exchange=self.exchanges[0],
+                                                                             timestamp=timestamp)):
                 self.account_service.on_trading_close(timestamp)
 
         self.on_finish()
-
-    @classmethod
-    def get_constructor_meta(cls):
-        meta = super().get_constructor_meta()
-        meta.metas['security_type'] = marshal_object_for_ui(cls.security_type)
-        return meta

@@ -6,7 +6,7 @@ init_context()
 from zvt.recorders.common.china_stock_list_spider import ChinaStockListSpider
 
 
-def test_coin_meta_recorder():
+def test_china_stock_recorder():
     recorder = ChinaStockListSpider()
 
     try:

@@ -3,20 +3,20 @@
 import io
 
 import demjson
-import requests
 import pandas as pd
+import requests
+from zvdata.api import df_to_db, init_entities
+from zvdata.recorder import Recorder
 
 from zvt.api.common import china_stock_code_to_id
-from zvt.api.technical import init_securities, df_to_db
-from zvt.domain import Provider, StockIndex
-from zvt.recorders.recorder import Recorder
+from zvt.domain import StockIndex
 from zvt.utils.time_utils import to_pd_timestamp
 
 
 class ChinaIndexListSpider(Recorder):
     data_schema = StockIndex
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=2.0, provider=Provider.EXCHANGE) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=2.0, provider='exchange') -> None:
         self.provider = provider
         super(ChinaIndexListSpider, self).__init__(batch_size, force_update, sleeping_time)
 
@@ -35,7 +35,7 @@ class ChinaIndexListSpider(Recorder):
         抓取上证、中证指数列表
         """
         url = 'http://www.csindex.com.cn/zh-CN/indices/index' \
-            '?page={}&page_size={}&data_type=json&class_1=1&class_2=2&class_7=7&class_10=10'
+              '?page={}&page_size={}&data_type=json&class_1=1&class_2=2&class_7=7&class_10=10'
 
         index_list = []
         page = 1
@@ -57,7 +57,7 @@ class ChinaIndexListSpider(Recorder):
 
         df = pd.DataFrame(index_list)
         df = df[['base_date', 'base_point', 'index_code', 'indx_sname', 'online_date', 'class_eseries']]
-        df.columns = ['timestamp', 'base_point', 'code', 'name', 'online_date', 'class_eseries']
+        df.columns = ['timestamp', 'base_point', 'code', 'name', 'list_date', 'class_eseries']
         df['category'] = df['class_eseries'].apply(lambda x: x.split(' ')[0].lower())
         df = df.drop('class_eseries', axis=1)
         df = df.loc[df['code'].str.contains(r'^\d{6}$')]
@@ -91,7 +91,9 @@ class ChinaIndexListSpider(Recorder):
 
             index_id = f'index_cn_{index_code}'
             response_df = response_df[['成分券代码Constituent Code']].rename(columns={'成分券代码Constituent Code': 'stock_code'})
-            response_df['id'] = response_df['stock_code'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['id'] = response_df['stock_code'].apply(
+                lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['entity_id'] = response_df['id']
             response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
             response_df['index_id'] = index_id
             response_df.drop('stock_code', axis=1, inplace=True)
@@ -109,7 +111,7 @@ class ChinaIndexListSpider(Recorder):
         response = requests.get(url)
         df = pd.read_excel(io.BytesIO(response.content), dtype='str')
 
-        df.columns = ['code', 'name', 'timestamp', 'base_point', 'online_date']
+        df.columns = ['code', 'name', 'timestamp', 'base_point', 'list_date']
         df['category'] = 'szse'
         df = df.loc[df['code'].str.contains(r'^\d{6}$')]
         self.persist_index(df)
@@ -136,6 +138,7 @@ class ChinaIndexListSpider(Recorder):
             index_id = f'index_cn_{index_code}'
             response_df = response_df[['证券代码']]
             response_df['id'] = response_df['证券代码'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['entity_id'] = response_df['id']
             response_df['stock_id'] = response_df['证券代码'].apply(lambda x: china_stock_code_to_id(str(x)))
             response_df['index_id'] = index_id
             response_df.drop('证券代码', axis=1, inplace=True)
@@ -167,9 +170,9 @@ class ChinaIndexListSpider(Recorder):
             result_df = pd.concat([result_df, df])
 
         result_df = result_df.drop('样本股数量', axis=1)
-        result_df.columns = ['name', 'code', 'timestamp', 'base_point', 'online_date']
+        result_df.columns = ['name', 'code', 'timestamp', 'base_point', 'list_date']
         result_df['timestamp'] = result_df['timestamp'].apply(lambda x: x.replace('-', ''))
-        result_df['online_date'] = result_df['online_date'].apply(lambda x: x.replace('-', ''))
+        result_df['list_date'] = result_df['list_date'].apply(lambda x: x.replace('-', ''))
         result_df['category'] = 'csi'
         result_df = result_df.loc[result_df['code'].str.contains(r'^\d{6}$')]
 
@@ -208,7 +211,9 @@ class ChinaIndexListSpider(Recorder):
                 response_df = response_df[['证券代码']]
 
             response_df.columns = ['stock_code']
-            response_df['id'] = response_df['stock_code'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['id'] = response_df['stock_code'].apply(
+                lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
+            response_df['entity_id'] = response_df['id']
             response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
             response_df['index_id'] = index_id
             response_df.drop('stock_code', axis=1, inplace=True)
@@ -220,18 +225,19 @@ class ChinaIndexListSpider(Recorder):
 
     def persist_index(self, df) -> None:
         df['timestamp'] = df['timestamp'].apply(lambda x: to_pd_timestamp(x))
-        df['online_date'] = df['online_date'].apply(lambda x: to_pd_timestamp(x))
+        df['list_date'] = df['list_date'].apply(lambda x: to_pd_timestamp(x))
         df['id'] = df['code'].apply(lambda code: f'index_cn_{code}')
+        df['entity_id'] = df['id']
         df['exchange'] = 'cn'
-        df['type'] = 'index'
+        df['entity_type'] = 'index'
         df['is_delisted'] = False
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        init_securities(df, security_type='index', provider=self.provider)
+        init_entities(df, entity_type='index', provider=self.provider)
 
 
 if __name__ == '__main__':
-    spider = ChinaIndexListSpider(provider=Provider.EXCHANGE)
+    spider = ChinaIndexListSpider(provider='exchange')
     spider.run()

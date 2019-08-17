@@ -32,7 +32,7 @@ def macd(s, slow=26, fast=12, n=9):
 
 
 if __name__ == '__main__':
-    kdata = get_kdata(security_id='stock_sz_000338', start_timestamp='2019-01-01', end_timestamp='2019-05-25',
+    kdata = get_kdata(entity_id='stock_sz_000338', start_timestamp='2019-01-01', end_timestamp='2019-05-25',
                       provider='netease')
     kdata['diff'], kdata['dea'], kdata['m'] = macd(kdata['qfq_close'])
 

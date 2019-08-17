@@ -4,20 +4,20 @@ import io
 import re
 
 import demjson
-import requests
 import pandas as pd
+import requests
+from zvdata.api import init_entities, df_to_db
+from zvdata.recorder import Recorder
 
 from zvt.api.common import china_stock_code_to_id
-from zvt.api.technical import init_securities, df_to_db
-from zvt.domain import Provider, StockIndex, StockCategory
+from zvt.domain import StockIndex, StockCategory
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER
-from zvt.recorders.recorder import Recorder
 
 
 class ChinaETFListSpider(Recorder):
     data_schema = StockIndex
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10.0, provider=Provider.EXCHANGE) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10.0, provider='exchange') -> None:
         self.provider = provider
         super().__init__(batch_size, force_update, sleeping_time)
 
@@ -59,14 +59,15 @@ class ChinaETFListSpider(Recorder):
 
         df.columns = ['code', 'name']
         df['id'] = df['code'].apply(lambda code: f'index_{exchange}_{code}')
+        df['entity_id'] = df['id']
         df['exchange'] = exchange
-        df['type'] = 'index'
+        df['entity_type'] = 'index'
         df['category'] = StockCategory.etf.value
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        init_securities(df, security_type='index', provider=self.provider)
+        init_entities(df, entity_type='index', provider=self.provider)
 
     def download_sh_etf_component(self, df: pd.DataFrame):
         """
@@ -90,7 +91,9 @@ class ChinaETFListSpider(Recorder):
             etf_code = etf['FUND_ID']
             index_id = f'index_sh_{etf_code}'
             response_df = response_df[['instrumentId']]
-            response_df['id'] = response_df['instrumentId'].apply(lambda code: f'{index_id}_{china_stock_code_to_id(code)}')
+            response_df['id'] = response_df['instrumentId'].apply(
+                lambda code: f'{index_id}_{china_stock_code_to_id(code)}')
+            df['entity_id'] = df['id']
             response_df['stock_id'] = response_df['instrumentId'].apply(lambda code: china_stock_code_to_id(code))
             response_df['index_id'] = index_id
             response_df.drop('instrumentId', axis=1, inplace=True)
@@ -133,6 +136,7 @@ class ChinaETFListSpider(Recorder):
             response_df = response_df[['品种代码']]
 
             response_df['id'] = response_df['品种代码'].apply(lambda code: f'{index_id}_{china_stock_code_to_id(code)}')
+            response_df['entity_id'] = response_df['id']
             response_df['stock_id'] = response_df['品种代码'].apply(lambda code: china_stock_code_to_id(code))
             response_df['index_id'] = index_id
             response_df.drop('品种代码', axis=1, inplace=True)
@@ -177,6 +181,7 @@ class ChinaETFListSpider(Recorder):
         :param df: ETF 列表数据
         :return: 解析完成 ETF 对应指数代码的列表数据
         """
+
         def parse_index(text):
             if len(text) == 0:
                 return ''
@@ -191,5 +196,5 @@ class ChinaETFListSpider(Recorder):
 
 
 if __name__ == '__main__':
-    spider = ChinaETFListSpider(provider=Provider.EXCHANGE)
+    spider = ChinaETFListSpider(provider='exchange')
     spider.run()

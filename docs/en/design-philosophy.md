@@ -3,7 +3,7 @@
 
 比如投资标的的唯一标识,zvt里面定义如下
 ```
-{security_type}_{exchange}_{code}
+{entity_type}_{exchange}_{code}
 ```
 很自然的,你就知道stock_sz_000338,coin_binance_EOS/USDT代表什么.
 

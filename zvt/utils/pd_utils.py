@@ -20,18 +20,10 @@ def index_df(df, index='timestamp', inplace=True, drop=True, index_is_time=True)
     return df
 
 
-def index_df_with_security_time(df):
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df = df.set_index(['security_id', 'timestamp'])
-    df.index.names = ['security_id', 'timestamp']
-    df = df.sort_index(level=[0, 1])
-    return df
-
-
-def index_df_with_category_time(df, category):
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df = df.set_index([category, 'timestamp'])
-    df.index.names = [category, 'timestamp']
+def index_df_with_category_time(df, category='entity_id', time_field='timestamp'):
+    df[time_field] = pd.to_datetime(df[time_field])
+    df = df.set_index([category, time_field])
+    df.index.names = [category, time_field]
     df = df.sort_index(level=[0, 1])
     return df
 

@@ -1,14 +1,14 @@
 import pandas as pd
 
+from zvdata.api import init_entities
+from zvdata.recorder import Recorder
 from zvt.accounts.ccxt_account import CCXTAccount
-from zvt.api.technical import init_securities
-from zvt.domain import Provider, COIN_EXCHANGES, COIN_PAIRS, SecurityType
 from zvt.domain.coin_meta import Coin
-from zvt.recorders.recorder import Recorder
+from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
 
 
 class CoinMetaRecorder(Recorder):
-    provider = Provider.CCXT
+    provider = 'ccxt'
     data_schema = Coin
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, exchanges=COIN_EXCHANGES) -> None:
@@ -43,9 +43,10 @@ class CoinMetaRecorder(Recorder):
                     aa.append(market)
 
                     security_item = {
-                        'id': '{}_{}_{}'.format(SecurityType.coin.value, exchange_str, code),
+                        'id': '{}_{}_{}'.format('coin', exchange_str, code),
+                        'entity_id': '{}_{}_{}'.format('coin', exchange_str, code),
                         'exchange': exchange_str,
-                        'type': SecurityType.coin.value,
+                        'entity_type': 'coin',
                         'code': code,
                         'name': name
                     }
@@ -54,7 +55,7 @@ class CoinMetaRecorder(Recorder):
 
                 # 存储该交易所的数字货币列表
                 if not df.empty:
-                    init_securities(df=df, security_type=SecurityType.coin, provider=self.provider)
+                    init_entities(df=df, entity_type='coin', provider=self.provider)
                 self.logger.info("init_markets for {} success".format(exchange_str))
             except Exception as e:
                 self.logger.exception("init_markets for {} failed".format(exchange_str), e)

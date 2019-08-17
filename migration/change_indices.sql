@@ -19,9 +19,14 @@ create table indices1
 
 INSERT INTO indices1
 SELECT *
-FROM indices;
+FROM index;
 
 
-DROP TABLE indices;
+DROP TABLE index;
 ALTER TABLE indices1
   RENAME TO indices;
+
+update income_statement set report_period='season3' where report_period='seanson3'
+update finance_factor set report_period='season3' where report_period='seanson3'
+update balance_sheet set report_period='season3' where report_period='seanson3'
+update cash_flow_statement set report_period='season3' where report_period='seanson3'

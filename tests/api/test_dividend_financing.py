@@ -2,21 +2,22 @@ from ..context import init_context
 
 init_context()
 
-from zvt.api import fundamental
-from zvt.domain import get_db_session, StoreCategory, Provider, SPODetail, RightsIssueDetail, DividendFinancing
+from zvt.api.api import get_spo_detail, get_rights_issue_detail, get_dividend_financing
+from zvt.domain import SpoDetail, RightsIssueDetail, DividendFinancing
+from zvdata.domain import get_db_session
 from zvt.utils.time_utils import to_pd_timestamp
 
 session = get_db_session(provider='eastmoney',
-                         store_category=StoreCategory.dividend_financing)  # type: sqlalchemy.orm.Session
+                         db_name='dividend_financing')  # type: sqlalchemy.orm.Session
 
 
 # 增发详情
 def test_000778_spo_detial():
-    result = fundamental.get_spo_detail(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                        codes=['000778'], end_timestamp='2018-09-30',
-                                        order=SPODetail.timestamp.desc())
+    result = get_spo_detail(session=session, provider='eastmoney', return_type='domain',
+                            codes=['000778'], end_timestamp='2018-09-30',
+                            order=SpoDetail.timestamp.desc())
     assert len(result) == 4
-    latest: SPODetail = result[0]
+    latest: SpoDetail = result[0]
     assert latest.timestamp == to_pd_timestamp('2017-04-01')
     assert latest.spo_issues == 347600000
     assert latest.spo_price == 5.15
@@ -25,9 +26,9 @@ def test_000778_spo_detial():
 
 # 配股详情
 def test_000778_rights_issue_detail():
-    result = fundamental.get_rights_issue_detail(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                                 codes=['000778'], end_timestamp='2018-09-30',
-                                                 order=RightsIssueDetail.timestamp.desc())
+    result = get_rights_issue_detail(session=session, provider='eastmoney', return_type='domain',
+                                     codes=['000778'], end_timestamp='2018-09-30',
+                                     order=RightsIssueDetail.timestamp.desc())
     assert len(result) == 2
     latest: RightsIssueDetail = result[0]
     assert latest.timestamp == to_pd_timestamp('2001-09-10')
@@ -38,9 +39,9 @@ def test_000778_rights_issue_detail():
 
 # 分红融资
 def test_000778_dividend_financing():
-    result = fundamental.get_dividend_financing(session=session, provider=Provider.EASTMONEY, return_type='domain',
-                                                codes=['000778'], end_timestamp='2018-09-30',
-                                                order=DividendFinancing.timestamp.desc())
+    result = get_dividend_financing(session=session, provider='eastmoney', return_type='domain',
+                                    codes=['000778'], end_timestamp='2018-09-30',
+                                    order=DividendFinancing.timestamp.desc())
     assert len(result) == 22
     latest: DividendFinancing = result[1]
     assert latest.timestamp == to_pd_timestamp('2017')

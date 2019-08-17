@@ -4,9 +4,9 @@ from zvt.selectors.selector import TargetSelector
 
 
 class FundamentalSelector(TargetSelector):
-    def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
+    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                      end_timestamp):
-        factor = FinanceGrowthFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
+        factor = FinanceGrowthFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                                      codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
                                      end_timestamp=end_timestamp, keep_all_timestamp=True, provider='eastmoney')
         self.score_factors.append(factor)

@@ -62,12 +62,12 @@ open your browser:[127.0.0.1:8050](http://127.0.0.1:8050)
 set the factors for your trader,e.g,cross ma
 ```
 class MyMaTrader(StockTrader):
-    def init_selectors(self, security_list, security_type, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(security_list=security_list, security_type=security_type, exchanges=exchanges,
+    def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
+        myselector = TargetSelector(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
 
         myselector.add_filter_factor(
-            CrossMaFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
+            CrossMaFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp))
 
         self.selectors.append(myselector)
@@ -77,11 +77,11 @@ class MyMaTrader(StockTrader):
 set the targets as many as you want
 ```
     # single stock with cross ma factor
-    MyMaTrader(codes=['000338'], level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
+    MyMaTrader(codes=['000338'], level=IntervalLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
                end_timestamp='2019-06-30', trader_name='000338_ma_trader').run()
     
     # multiple stocks with bull factor
-    MyBullTrader(codes=SAMPLE_STOCK_CODES, level=TradingLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
+    MyBullTrader(codes=SAMPLE_STOCK_CODES, level=IntervalLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
                  end_timestamp='2019-06-30', trader_name='sample_stocks_bull_trader').run()
 ```
 

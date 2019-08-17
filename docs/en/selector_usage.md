@@ -8,16 +8,16 @@ selector是根据factor来对标的进行综合评价,生成**开多,开空,持�
 
 ```
 class TechnicalSelector(TargetSelector):
-    def __init__(self, security_list=None, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
+    def __init__(self, entity_ids=None, entity_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None,
                  the_timestamp=None, start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=-0.8,
-                 level=TradingLevel.LEVEL_1DAY,
+                 level=IntervalLevel.LEVEL_1DAY,
                  provider='joinquant') -> None:
-        super().__init__(security_list, security_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                          long_threshold, short_threshold, level, provider)
 
-    def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
+    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                      end_timestamp):
-        bull_factor = BullFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
+        bull_factor = BullFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                                  codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
                                  end_timestamp=end_timestamp, provider=self.provider, level=self.level)
 
@@ -40,9 +40,9 @@ from zvt.selectors.selector import TargetSelector
 
 
 class FundamentalSelector(TargetSelector):
-    def init_factors(self, security_list, security_type, exchanges, codes, the_timestamp, start_timestamp,
+    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                      end_timestamp):
-        factor = FinanceGrowthFactor(security_list=security_list, security_type=security_type, exchanges=exchanges,
+        factor = FinanceGrowthFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                                      codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
                                      end_timestamp=end_timestamp, keep_all_timestamp=True, provider=self.provider)
         self.score_factors.append(factor)

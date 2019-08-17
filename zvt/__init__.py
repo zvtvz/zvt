@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH
+from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
 from zvt.utils.zip_utils import unzip, zip_dir
 
 
@@ -46,5 +46,16 @@ def init_log():
 pd.set_option('expand_frame_repr', False)
 pd.set_option('mode.chained_assignment', 'raise')
 
-# init_schema()
 init_log()
+
+from zvdata.domain import init_context
+
+init_context(data_path=DATA_PATH, ui_path=UI_PATH, domain_module='zvt.domain', register_api=False)
+
+from zvt.domain import init_schema
+
+init_schema()
+
+from zvt.factors import init_factors
+
+init_factors()

@@ -4,8 +4,6 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.domain import Provider
-from zvt.recorders.common.china_stock_list_spider import ChinaStockListSpider
 from zvt.recorders.sina.meta.sina_china_stock_category_recorder import SinaChinaStockCategoryRecorder
 from zvt.recorders.sina.money_flow.sina_index_money_flow_recorder import SinaIndexMoneyFlowRecorder
 from zvt.utils.utils import init_process_log
@@ -19,8 +17,6 @@ sched = BackgroundScheduler()
 def run():
     while True:
         try:
-            ChinaStockListSpider(provider=Provider.SINA).run()
-
             SinaChinaStockCategoryRecorder().run()
 
             SinaIndexMoneyFlowRecorder().run()

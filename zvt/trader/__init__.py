@@ -12,19 +12,19 @@ class TradingSignalType(enum.Enum):
 
 
 class TradingSignal:
-    def __init__(self, security_id, the_timestamp, trading_level, trading_signal_type, position_pct=0, order_money=0):
+    def __init__(self, entity_id, the_timestamp, trading_level, trading_signal_type, position_pct=0, order_money=0):
         """
 
-        :param security_id:
-        :type security_id:
+        :param entity_id:
+        :type entity_id:
         :param the_timestamp:
         :type the_timestamp:
         :param trading_level:
-        :type trading_level: TradingLevel
+        :type trading_level: IntervalLevel
         :param trading_signal_type:
         :type trading_signal_type: TradingSignalType
         """
-        self.security_id = security_id
+        self.entity_id = entity_id
         self.the_timestamp = the_timestamp
         self.trading_level = trading_level
         self.trading_signal_type = trading_signal_type
@@ -36,8 +36,8 @@ class TradingSignal:
         self.order_money = order_money
 
     def __repr__(self) -> str:
-        return 'security_id:{},the_timestamp:{},trading_level:{},trading_signal_type:{},position_pct:{},order_money:{}'.format(
-            self.security_id, self.the_timestamp, self.trading_level, self.trading_signal_type.value, self.position_pct,
+        return 'entity_id:{},the_timestamp:{},trading_level:{},trading_signal_type:{},position_pct:{},order_money:{}'.format(
+            self.entity_id, self.the_timestamp, self.trading_level, self.trading_signal_type.value, self.position_pct,
             self.order_money)
 
 
