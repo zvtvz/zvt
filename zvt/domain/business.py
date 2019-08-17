@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Float, Integer
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # business data
-from zvt.domain.common import BusinessBase
+from zvdata.domain import register_schema
 
+BusinessBase = declarative_base()
 
 class Trader(BusinessBase):
     __tablename__ = 'trader'
@@ -14,8 +16,8 @@ class Trader(BusinessBase):
     # 机器人名字
     trader_name = Column(String(length=128))
 
-    security_list = Column(String(length=1024))
-    security_type = Column(String(length=128))
+    entity_ids = Column(String(length=1024))
+    entity_type = Column(String(length=128))
     exchanges = Column(String(length=128))
     codes = Column(String(length=128))
     start_timestamp = Column(DateTime)
@@ -32,7 +34,7 @@ class Trader(BusinessBase):
 
 # 一天只有一条记录
 class SimAccount(BusinessBase):
-    __tablename__ = 'sim_accounts'
+    __tablename__ = 'sim_account'
 
     id = Column(String(length=128), primary_key=True)
     # 时间
@@ -55,7 +57,7 @@ class SimAccount(BusinessBase):
 
 # 一天可有多条记录
 class Position(BusinessBase):
-    __tablename__ = 'positions'
+    __tablename__ = 'position'
 
     id = Column(String(length=128), primary_key=True)
     # 时间
@@ -63,9 +65,9 @@ class Position(BusinessBase):
     # 机器人名字
     trader_name = Column(String(length=128))
     # 证券id
-    security_id = Column(String(length=128))
+    entity_id = Column(String(length=128))
     # 账户id
-    sim_account_id = Column(Integer, ForeignKey('sim_accounts.id'))
+    sim_account_id = Column(Integer, ForeignKey('sim_account.id'))
     sim_account = relationship("SimAccount", back_populates="positions")
 
     # 做多数量
@@ -90,7 +92,7 @@ class Position(BusinessBase):
 
 
 class Order(BusinessBase):
-    __tablename__ = 'orders'
+    __tablename__ = 'order'
 
     id = Column(String(length=128), primary_key=True)
     # 时间
@@ -98,7 +100,7 @@ class Order(BusinessBase):
     # 机器人名字
     trader_name = Column(String(length=128))
     # 证券id
-    security_id = Column(String(length=128))
+    entity_id = Column(String(length=128))
     # 订单价格
     order_price = Column(Float)
     # 订单数量
@@ -110,3 +112,6 @@ class Order(BusinessBase):
 
     # 产生订单的selector/factor level
     level = Column(String(length=32))
+
+
+register_schema(providers=['zvt'], db_name='business', schema_base=BusinessBase)

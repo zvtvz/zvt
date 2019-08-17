@@ -4,18 +4,18 @@ import io
 
 import pandas as pd
 import requests
+from zvdata.api import init_entities
+from zvdata.recorder import Recorder
 
-from zvt.api.technical import init_securities
-from zvt.domain import Provider, Stock
+from zvt.domain import Stock
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
-from zvt.recorders.recorder import Recorder
 from zvt.utils.time_utils import to_pd_timestamp
 
 
 class ChinaStockListSpider(Recorder):
     data_schema = Stock
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider=Provider.EASTMONEY) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='eastmoney') -> None:
         self.provider = provider
         super().__init__(batch_size, force_update, sleeping_time)
 
@@ -54,14 +54,15 @@ class ChinaStockListSpider(Recorder):
             print(df[df['list_date'] == '-'])
             df['list_date'] = df['list_date'].apply(lambda x: to_pd_timestamp(x))
             df['exchange'] = exchange
-            df['type'] = 'stock'
-            df['id'] = df[['type', 'exchange', 'code']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
+            df['entity_type'] = 'stock'
+            df['id'] = df[['entity_type', 'exchange', 'code']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
+            df['entity_id'] = df['id']
             df['timestamp'] = df['list_date']
             df = df.dropna(axis=0, how='any')
             df = df.drop_duplicates(subset=('id'), keep='last')
-            init_securities(df, provider=self.provider)
+            init_entities(df, provider=self.provider)
 
 
 if __name__ == '__main__':
-    spider = ChinaStockListSpider(provider=Provider.EXCHANGE)
+    spider = ChinaStockListSpider(provider='eastmoney')
     spider.run()

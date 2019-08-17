@@ -3,8 +3,9 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.domain import SimAccount, TradingLevel, Order
-from zvt.reader.reader import DataReader
+from zvdata.reader import DataReader
+from zvdata.structs import IntervalLevel
+from zvt.domain import SimAccount, Order
 
 
 class AccountReader(DataReader):
@@ -14,9 +15,9 @@ class AccountReader(DataReader):
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = None,
                  filters: List = None,
-                 level: TradingLevel = TradingLevel.LEVEL_1DAY,
-                 real_time: bool = False,
-                 refresh_interval: int = 10,
+                 order: object = None,
+                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
+
                  trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
@@ -29,8 +30,8 @@ class AccountReader(DataReader):
             else:
                 self.filters = filter
         super().__init__(SimAccount, None, None, None, None, the_timestamp, start_timestamp,
-                         end_timestamp, columns, self.filters, 'zvt', level, real_time, refresh_interval,
-                         category_field='trader_name')
+                         end_timestamp, columns, filters, order, None, 'zvt', level, 'trader_name', 'timestamp',
+                         False, True)
 
 
 class OrderReader(DataReader):
@@ -40,9 +41,9 @@ class OrderReader(DataReader):
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = None,
                  filters: List = None,
-                 level: TradingLevel = None,
-                 real_time: bool = False,
-                 refresh_interval: int = 10,
+                 order: object = None,
+                 level: IntervalLevel = None,
+
                  trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
@@ -56,8 +57,8 @@ class OrderReader(DataReader):
                 self.filters = filter
 
         super().__init__(Order, None, None, None, None, the_timestamp, start_timestamp,
-                         end_timestamp, columns, self.filters, 'zvt', level, real_time, refresh_interval,
-                         category_field='trader_name')
+                         end_timestamp, columns, filters, order, None, 'zvt', level, 'trader_name', 'timestamp',
+                         False, True)
 
 
 if __name__ == '__main__':

@@ -74,7 +74,7 @@ timestamp
 ```
 In [11]: from zvt.domain import *  
          from zvt.api import fundamental
-In [12]: df = fundamental.get_top_ten_tradable_holder(start_timestamp='2018-09-30',filters=[TopTenTradableHolder.holder_name.like('%社保%')],order=TopTenTradableHolder.shareholding_ratio.desc())
+In [12]: df = get_top_ten_tradable_holder(start_timestamp='2018-09-30',filters=[TopTenTradableHolder.holder_name.like('%社保%')],order=TopTenTradableHolder.shareholding_ratio.desc())
 
 In [18]: df.tail()                                                                                                                                                                       
 Out[18]: 

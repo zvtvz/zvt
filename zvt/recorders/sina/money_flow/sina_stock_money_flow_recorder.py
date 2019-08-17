@@ -1,20 +1,46 @@
 # -*- coding: utf-8 -*-
-import logging
 import time
 
 import requests
 
-from zvt.domain import SecurityType, Provider, TradingLevel, StockMoneyFlow, Stock
-from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder, ApiWrapper
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.recorder import FixedCycleDataRecorder
+from zvdata.structs import IntervalLevel
+from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.domain import StockMoneyFlow, Stock
 from zvt.utils.utils import to_float
 
-logger = logging.getLogger(__name__)
 
+class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
+    entity_provider = 'sina'
+    entity_schema = Stock
 
-class MyApiWrapper(ApiWrapper):
-    def request(self, url=None, method='post', param=None, path_fields=None):
-        # security_item = param['security_item']
+    provider = 'sina'
+    data_schema = StockMoneyFlow
+
+    url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_lscjfb?page=1&num={}&sort=opendate&asc=0&daima={}'
+
+    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+                 force_update=False, sleeping_time=10, default_size=4000, one_shot=True, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, contain_unfinished_data=False,
+                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=15, close_minute=0,
+                 one_day_trading_minutes=4 * 60) -> None:
+
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
+                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
+                         one_day_trading_minutes)
+
+    def generate_url(self, code, number):
+        return self.url.format(number, code)
+
+    def get_data_map(self):
+        return {}
+
+    def record(self, entity, start, end, size, timestamps):
+        param = {
+            'url': self.generate_url(code='{}{}'.format(entity.exchange, entity.code), number=size),
+            'security_item': entity
+        }
 
         resp = requests.get(param['url'])
         # {opendate:"2019-04-29",trade:"10.8700",changeratio:"-0.0431338",turnover:"74.924",netamount:"-2903349.8500",
@@ -41,7 +67,7 @@ class MyApiWrapper(ApiWrapper):
             json_list = eval(resp.text)
         except Exception as e:
             resp.encoding = 'GBK'
-            logger.error(resp.text)
+            self.logger.error(resp.text)
             time.sleep(60 * 5)
 
         result_list = []
@@ -94,36 +120,6 @@ class MyApiWrapper(ApiWrapper):
         return result_list
 
 
-class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
-    meta_provider = Provider.SINA
-    meta_schema = Stock
-
-    provider = Provider.SINA
-    data_schema = StockMoneyFlow
-
-    url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_lscjfb?page=1&num={}&sort=opendate&asc=0&daima={}'
-    api_wrapper = MyApiWrapper()
-
-    def __init__(self, security_type=SecurityType.stock, exchanges=['sh', 'sz'], codes=None, batch_size=10,
-                 force_update=False, sleeping_time=10, fetching_style=TimeSeriesFetchingStyle.end_size,
-                 default_size=4000, contain_unfinished_data=False, level=TradingLevel.LEVEL_1DAY,
-                 one_shot=True) -> None:
-        super().__init__(security_type, exchanges, codes, batch_size, force_update, sleeping_time, fetching_style,
-                         default_size, contain_unfinished_data, level, one_shot)
-
-    def generate_url(self, code, number):
-        return self.url.format(number, code)
-
-    def generate_request_param(self, security_item, start, end, size, timestamp):
-        return {
-            'url': self.generate_url(code='{}{}'.format(security_item.exchange, security_item.code), number=size),
-            'security_item': security_item
-        }
-
-    def get_data_map(self):
-        return {}
-
-
 if __name__ == '__main__':
-    # SinaStockMoneyFlowRecorder(codes=['000338']).run()
-    SinaStockMoneyFlowRecorder().run()
+    SinaStockMoneyFlowRecorder(codes=['000338']).run()
+    # SinaStockMoneyFlowRecorder().run()

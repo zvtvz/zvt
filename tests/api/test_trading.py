@@ -1,23 +1,24 @@
+from zvdata.domain import get_db_session
+from zvt.api.api import get_holder_trading, get_manager_trading
 from ..context import init_context
 
 init_context()
 
 from typing import List
 
-from zvt.api import fundamental
-from zvt.domain import get_db_session, StoreCategory, Provider, HolderTrading, ManagerTrading
+from zvt.domain import HolderTrading, ManagerTrading
 
-session = get_db_session(provider='eastmoney', store_category=StoreCategory.trading)  # type: sqlalchemy.orm.Session
+session = get_db_session(provider='eastmoney', db_name='trading')  # type: sqlalchemy.orm.Session
 
 
 # 股东交易
 def test_000778_holder_trading():
-    result: List[HolderTrading] = fundamental.get_holder_trading(session=session, provider=Provider.EASTMONEY,
-                                                                 return_type='domain',
-                                                                 codes=['000778'],
-                                                                 end_timestamp='2018-09-30',
-                                                                 start_timestamp='2018-09-30',
-                                                                 order=HolderTrading.holding_pct.desc())
+    result: List[HolderTrading] = get_holder_trading(session=session, provider='eastmoney',
+                                                     return_type='domain',
+                                                     codes=['000778'],
+                                                     end_timestamp='2018-09-30',
+                                                     start_timestamp='2018-09-30',
+                                                     order=HolderTrading.holding_pct.desc())
     assert len(result) == 6
     assert result[0].holder_name == '新兴际华集团有限公司'
     assert result[0].change_pct == 0.0205
@@ -27,12 +28,12 @@ def test_000778_holder_trading():
 
 # 高管交易
 def test_000778_manager_trading():
-    result: List[ManagerTrading] = fundamental.get_manager_trading(session=session, provider=Provider.EASTMONEY,
-                                                                   return_type='domain',
-                                                                   codes=['000778'],
-                                                                   end_timestamp='2018-09-30',
-                                                                   start_timestamp='2017-09-30',
-                                                                   order=ManagerTrading.holding.desc())
+    result: List[ManagerTrading] = get_manager_trading(session=session, provider='eastmoney',
+                                                       return_type='domain',
+                                                       codes=['000778'],
+                                                       end_timestamp='2018-09-30',
+                                                       start_timestamp='2017-09-30',
+                                                       order=ManagerTrading.holding.desc())
     assert len(result) == 1
     assert result[0].trading_person == '巩国平'
     assert result[0].volume == 8400

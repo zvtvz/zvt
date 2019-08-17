@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Enum, Float
+from sqlalchemy import Column, String, DateTime, Float, Integer
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain import FinanceBase, enum_value, Integer
-from zvt.domain.common import ReportPeriod, Provider
+from zvdata.domain import register_schema, register_api
+from zvdata.structs import Mixin
+
+FinanceBase = declarative_base()
 
 
-class BalanceSheet(FinanceBase):
+@register_api(provider='eastmoney')
+class BalanceSheet(FinanceBase, Mixin):
     __tablename__ = 'balance_sheet'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    # 报告披露的时间
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
-    report_period = Column(Enum(ReportPeriod, values_callable=enum_value))
+    report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
     # 流动资产
@@ -446,17 +446,14 @@ class BalanceSheet(FinanceBase):
     # 负债和股东权益总计
 
 
-class IncomeStatement(FinanceBase):
+@register_api(provider='eastmoney')
+class IncomeStatement(FinanceBase, Mixin):
     __tablename__ = 'income_statement'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    # 报告披露的时间
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
-    report_period = Column(Enum(ReportPeriod, values_callable=enum_value))
+    report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
     # 营业总收入
@@ -607,17 +604,14 @@ class IncomeStatement(FinanceBase):
     fi_income_from_fair_value_change_of_fi_salable = Column(Float)
 
 
-class CashFlowStatement(FinanceBase):
+@register_api(provider='eastmoney')
+class CashFlowStatement(FinanceBase, Mixin):
     __tablename__ = 'cash_flow_statement'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    # 报告披露的时间
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
-    report_period = Column(Enum(ReportPeriod, values_callable=enum_value))
+    report_period = Column(String(length=32))
     report_date = Column(DateTime)
     # 经营活动产生的现金流量
     #
@@ -807,17 +801,14 @@ class CashFlowStatement(FinanceBase):
 
 
 # 主要财务指标
-class FinanceFactor(FinanceBase):
-    __tablename__ = 'finance_factors'
+@register_api(provider='eastmoney')
+class FinanceFactor(FinanceBase, Mixin):
+    __tablename__ = 'finance_factor'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    # 报告披露的时间
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
-    report_period = Column(Enum(ReportPeriod, values_callable=enum_value))
+    report_period = Column(String(length=32))
     report_date = Column(DateTime)
     # 每股指标
     #
@@ -950,3 +941,6 @@ class FinanceFactor(FinanceBase):
     broker_net_capital_assets_ratio = Column(Float)
     # 自营固定收益类证券规模/净资本
     broker_self_operated_fixed_income_securities_net_capital_ratio = Column(Float)
+
+
+register_schema(providers=['eastmoney'], db_name='finance', schema_base=FinanceBase)

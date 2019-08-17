@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
+import numbers
 import os
 from decimal import *
-from enum import Enum
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
 from zvt import LOG_PATH
-from zvt.utils.time_utils import to_time_str
 
 getcontext().prec = 16
 
@@ -75,11 +74,11 @@ def json_callback_param(the_str):
     return eval(the_str[the_str.index("(") + 1:the_str.index(")")])
 
 
-def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict):
+def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_func=lambda x: x):
     if not the_map:
         the_map = {}
         for k in the_dict:
-            the_map[k] = (k, lambda x: x)
+            the_map[k] = (k, default_func)
 
     for k, v in the_map.items():
         if isinstance(v, tuple):
@@ -87,7 +86,7 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict):
             the_func = v[1]
         else:
             field_in_dict = v
-            the_func = to_float
+            the_func = default_func
 
         the_value = the_dict.get(field_in_dict)
         if the_value is not None:
@@ -147,11 +146,8 @@ def read_csv(f, encoding, sep=None, na_values=None):
     return None
 
 
-def marshal_object_for_ui(object):
-    if isinstance(object, Enum):
-        return object.value
+def to_positive_number(number):
+    if isinstance(number, numbers.Number):
+        return abs(number)
 
-    if isinstance(object, pd.Timestamp):
-        return to_time_str(object)
-
-    return object
+    return 0

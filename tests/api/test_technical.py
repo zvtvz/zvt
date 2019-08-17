@@ -3,15 +3,15 @@ from ..context import init_context
 
 init_context()
 
-from zvt.api.technical import get_securities, get_securities_in_blocks
+from zvt.api.technical import get_entities, get_securities_in_blocks
 
 
 def test_basic_get_securities():
-    items = get_securities(security_type='stock', provider='eastmoney')
+    items = get_entities(entity_type='stock', provider='eastmoney')
     print(items)
-    items = get_securities(security_type='index', provider='eastmoney')
+    items = get_entities(entity_type='index', provider='eastmoney')
     print(items)
-    items = get_securities(security_type='coin', provider='ccxt')
+    items = get_entities(entity_type='coin', provider='ccxt')
     print(items)
 
 

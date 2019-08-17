@@ -5,23 +5,23 @@ import demjson
 import pandas as pd
 import requests
 
+from zvdata.api import df_to_db
+from zvdata.recorder import Recorder
 from zvt.api.common import china_stock_code_to_id
-from zvt.api.technical import get_securities, df_to_db
-from zvt.domain import Provider, StockIndex, StockCategory, SecurityType
-from zvt.domain.meta import Index
-from zvt.recorders.recorder import Recorder
-from zvt.utils.utils import init_process_log
+from zvt.api.technical import get_entities
+from zvt.domain import StockIndex, StockCategory
+from zvt.domain.stock_meta import Index
 
 
 class SinaChinaStockCategoryRecorder(Recorder):
-    provider = Provider.SINA
+    provider = 'sina'
     data_schema = StockIndex
 
     # 用于抓取行业/概念/地域列表
     category_map_url = {
         StockCategory.industry: 'http://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php',
-        StockCategory.concept: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=class',
-        StockCategory.area: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=area',
+        StockCategory.concept: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=class'
+        # StockCategory.area: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=area',
     }
 
     # 用于抓取行业包含的股票
@@ -30,8 +30,8 @@ class SinaChinaStockCategoryRecorder(Recorder):
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
-        self.indices = get_securities(session=self.session, security_type=SecurityType.index, exchanges=['cn'],
-                                      return_type='domain', provider=self.provider)
+        self.indices = get_entities(session=self.session, entity_type='index', exchanges=['cn'],
+                                    return_type='domain', provider=self.provider)
         self.index_ids = [index_item.id for index_item in self.indices]
 
     def run(self):
@@ -48,13 +48,14 @@ class SinaChinaStockCategoryRecorder(Recorder):
                 id = 'index_cn_{}'.format(code)
                 if id in self.index_ids:
                     continue
-                self.session.add(Index(id=id, type='index', exchange='cn', code=code, name=name,
+                self.session.add(Index(id=id, entity_type='index', exchange='cn', code=code, name=name,
                                        category=category.value))
             self.session.commit()
 
-        indices = get_securities(session=self.session, security_type=SecurityType.index,
-                                 return_type='domain', filters=[Index.category != StockCategory.main.value],
-                                 provider=self.provider)
+        indices = get_entities(session=self.session, entity_type='index',
+                               return_type='domain', filters=[
+                Index.category.in_([StockCategory.industry.value, StockCategory.concept.value])],
+                               provider=self.provider)
 
         for index_item in indices:
             for page in range(1, 5):
@@ -85,7 +86,7 @@ class SinaChinaStockCategoryRecorder(Recorder):
 
 
 if __name__ == '__main__':
-    init_process_log('sina_china_stock_category.log')
+    # init_process_log('sina_china_stock_category.log')
 
     recorder = SinaChinaStockCategoryRecorder()
     recorder.run()

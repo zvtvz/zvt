@@ -93,11 +93,12 @@ ENV/
 /tick
 /full
 /data/
-/ui/
 /datasample
 data.tar.gz
 /ve/
 .pytest_cache/
+/ui/
+# LibreOffice locks
+.~lock.*#
 
 zen/
-eastmoney/

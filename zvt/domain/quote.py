@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Float
+from sqlalchemy import Column, String, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain.common import Stock1DKdataBase, Index1DKdataBase, Stock1HKdataBase, Stock15MKdataBase, \
-    Coin15MKdataBase, Coin1HKdataBase, Coin1DKdataBase, Coin1MKdataBase, Coin5MKdataBase, Coin1WKKdataBase, \
-    Stock1MKdataBase, Stock5MKdataBase, Stock30MKdataBase, Stock1WKKdataBase, CoinTickKdataBase
+from zvdata.domain import register_schema
+from zvdata.structs import Mixin
 
 
-class StockKdataCommon(object):
-    id = Column(String(length=128), primary_key=True)
+class StockKdataCommon(Mixin):
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
-    # level = Column(Enum(TradingLevel, values_callable=enum_value))
+    # level = Column(Enum(IntervalLevel, values_callable=enum_value))
     level = Column(String(length=32))
 
     open = Column(Float)
@@ -35,11 +32,8 @@ class StockKdataCommon(object):
     factor = Column(Float)
 
 
-class KdataCommon(object):
-    id = Column(String(length=128), primary_key=True)
+class KdataCommon(Mixin):
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
     level = Column(String(length=32))
@@ -52,11 +46,8 @@ class KdataCommon(object):
     turnover = Column(Float)
 
 
-class TickCommon(object):
-    id = Column(String(length=128), primary_key=True)
+class TickCommon(Mixin):
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
     level = Column(String(length=32))
@@ -70,37 +61,73 @@ class TickCommon(object):
 
 
 # kdata schema rule
-# 1)name:{SecurityType.value.capitalize()}{TradingLevel.value.upper()}Kdata
+# 1)name:{entity_type}{level}Kdata
 # 2)one db file for one schema
-class Stock1WKKdata(Stock1WKKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_1wk_kdata'
 
 
-class Stock1DKdata(Stock1DKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_1d_kdata'
+Stock1mKdataBase = declarative_base()
 
 
-class Stock1HKdata(Stock1HKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_1h_kdata'
-
-
-class Stock30MKdata(Stock30MKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_30m_kdata'
-
-
-class Stock15MKdata(Stock15MKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_15m_kdata'
-
-
-class Stock5MKdata(Stock5MKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_5m_kdata'
-
-
-class Stock1MKdata(Stock1MKdataBase, StockKdataCommon):
+class Stock1mKdata(Stock1mKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1m_kdata'
 
 
-class Index1DKdata(Index1DKdataBase, KdataCommon):
+register_schema(providers=['joinquant'], db_name='stock_1m_kdata', schema_base=Stock1mKdataBase)
+
+Stock5MKdataBase = declarative_base()
+
+
+class Stock5mKdata(Stock5MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_5m_kdata'
+
+
+register_schema(providers=['joinquant'], db_name='stock_5m_kdata', schema_base=Stock5MKdataBase)
+
+Stock15MKdataBase = declarative_base()
+
+
+class Stock15mKdata(Stock15MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_15m_kdata'
+
+
+Stock30MKdataBase = declarative_base()
+
+
+class Stock30mKdata(Stock30MKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_30m_kdata'
+
+
+Stock1HKdataBase = declarative_base()
+
+
+class Stock1hKdata(Stock1HKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1h_kdata'
+
+
+register_schema(providers=['joinquant'], db_name='stock_1h_kdata', schema_base=Stock1HKdataBase)
+
+Stock1DKdataBase = declarative_base()
+
+
+class Stock1dKdata(Stock1DKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1d_kdata'
+
+
+register_schema(providers=['joinquant', 'netease'], db_name='stock_1d_kdata', schema_base=Stock1DKdataBase)
+
+Stock1WKKdataBase = declarative_base()
+
+
+class Stock1wkKdata(Stock1WKKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1wk_kdata'
+
+
+register_schema(providers=['joinquant', 'netease'], db_name='stock_1wk_kdata', schema_base=Stock1WKKdataBase)
+
+Index1DKdataBase = declarative_base()
+
+
+class Index1dKdata(Index1DKdataBase, KdataCommon):
     __tablename__ = 'index_1d_kdata'
     turnover_rate = Column(Float)
 
@@ -110,29 +137,67 @@ class Index1DKdata(Index1DKdataBase, KdataCommon):
     change_pct = Column(Float)
 
 
+register_schema(providers=['exchange'], db_name='index_1d_kdata', schema_base=Index1DKdataBase)
+
+CoinTickKdataBase = declarative_base()
+
+
 class CoinTickKdata(CoinTickKdataBase, TickCommon):
     __tablename__ = 'coin_tick_kdata'
 
 
-class Coin1MKdata(Coin1MKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_tick_kdata', schema_base=CoinTickKdataBase)
+
+Coin1mKdataBase = declarative_base()
+
+
+class Coin1mKdata(Coin1mKdataBase, KdataCommon):
     __tablename__ = 'coin_1m_kdata'
 
 
-class Coin5MKdata(Coin5MKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_1m_kdata', schema_base=Coin1mKdataBase)
+
+Coin5MKdataBase = declarative_base()
+
+
+class Coin5mKdata(Coin5MKdataBase, KdataCommon):
     __tablename__ = 'coin_5m_kdata'
 
 
-class Coin15MKdata(Coin15MKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_5m_kdata', schema_base=Coin5MKdataBase)
+
+Coin15MKdataBase = declarative_base()
+
+
+class Coin15mKdata(Coin15MKdataBase, KdataCommon):
     __tablename__ = 'coin_15m_kdata'
 
 
-class Coin1HKdata(Coin1HKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_15m_kdata', schema_base=Coin15MKdataBase)
+
+Coin1HKdataBase = declarative_base()
+
+
+class Coin1hKdata(Coin1HKdataBase, KdataCommon):
     __tablename__ = 'coin_1h_kdata'
 
 
-class Coin1DKdata(Coin1DKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_1h_kdata', schema_base=Coin1HKdataBase)
+
+Coin1DKdataBase = declarative_base()
+
+
+class Coin1dKdata(Coin1DKdataBase, KdataCommon):
     __tablename__ = 'coin_1d_kdata'
 
 
-class Coin1WKKdata(Coin1WKKdataBase, KdataCommon):
+register_schema(providers=['ccxt'], db_name='coin_1d_kdata', schema_base=Coin1DKdataBase)
+
+Coin1WKKdataBase = declarative_base()
+
+
+class Coin1wkKdata(Coin1WKKdataBase, KdataCommon):
     __tablename__ = 'coin_1wk_kdata'
+
+
+register_schema(providers=['ccxt'], db_name='coin_1wk_kdata', schema_base=Coin1WKKdataBase)

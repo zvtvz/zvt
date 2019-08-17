@@ -1,3 +1,4 @@
+# zvdata == 0.0.7
 Scrapy == 1.5.1
 requests == 2.20.1
 SQLAlchemy == 1.2.14
@@ -10,10 +11,8 @@ apscheduler == 3.4.0
 jqdatasdk
 demjson == 2.2.4
 marshmallow-sqlalchemy
-# matplotlib == 3.0.3
-# pyecharts == 1.1.0
 ccxt == 1.17.191
-dash==1.0.0
+dash==1.1.1
 dash-daq==0.1.0
 simplejson==3.16.0
 html5lib == 1.0.1

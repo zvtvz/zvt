@@ -3,8 +3,7 @@ import json
 
 import ccxt
 
-from zvt.domain import COIN_EXCHANGES
-from zvt.settings import HTTP_PROXY, HTTPS_PROXY
+from zvt.settings import HTTP_PROXY, HTTPS_PROXY, COIN_EXCHANGES
 
 
 class CCXTAccount(object):

@@ -67,7 +67,7 @@ class StoreCategory(enum.Enum):
 ```
 
 provider_map_category = {
-    Provider.EASTMONEY: [StoreCategory.meta,
+    'eastmoney': [StoreCategory.meta,
                          StoreCategory.finance,
                          StoreCategory.dividend_financing,
                          StoreCategory.holder,
@@ -115,7 +115,7 @@ class StockKdataCommon(object):
     security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
-    # level = Column(Enum(TradingLevel, values_callable=enum_value))
+    # level = Column(Enum(IntervalLevel, values_callable=enum_value))
     level = Column(String(length=32))
 
     open = Column(Float)
@@ -166,7 +166,7 @@ class MyApiWrapper(ApiWrapper):
         df['level'] = param['level']
 
         # remove the unfinished kdata
-        if is_in_trading(security_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
+        if is_in_trading(entity_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
             df = df.iloc[:-1, :]
 
         return df.to_dict(orient='records')
@@ -236,12 +236,12 @@ def on_finish(self, security_item):
 ```
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in TradingLevel])
+    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
     parser.add_argument('--codes', help='codes', default=SAMPLE_STOCK_CODES, nargs='+')
 
     args = parser.parse_args()
 
-    level = TradingLevel(args.level)
+    level = IntervalLevel(args.level)
     codes = args.codes
 
     init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))

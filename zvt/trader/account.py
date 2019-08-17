@@ -3,11 +3,13 @@
 import logging
 import math
 
+from zvdata.domain import get_db_session
+from zvdata.structs import IntervalLevel
 from zvt.api.business import get_account
-from zvt.api.common import decode_security_id, get_kdata_schema
+from zvt.api.common import decode_entity_id, get_kdata_schema
 from zvt.api.rules import get_trading_meta
 from zvt.api.technical import get_kdata
-from zvt.domain import get_db_session, StoreCategory, SecurityType, Order, Provider, TradingLevel
+from zvt.domain import Order
 from zvt.domain.business import SimAccount, Position
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
 from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError
@@ -40,35 +42,35 @@ class AccountService(TradingListener):
     logger = logging.getLogger(__name__)
     trader_name = None
 
-    def get_current_position(self, security_id):
+    def get_current_position(self, entity_id):
         pass
 
-    def order(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def order(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
               order_type=ORDER_TYPE_LONG, order_money=0):
         pass
 
     # 开多,对于某些品种只能开多，比如中国股票
-    def buy(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def buy(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
             order_money=0):
-        self.order(security_id, current_price, current_timestamp, order_amount, order_pct, order_price,
+        self.order(entity_id, current_price, current_timestamp, order_amount, order_pct, order_price,
                    order_type=ORDER_TYPE_LONG, order_money=order_money)
 
     # 开空
-    def sell(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def sell(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
              order_money=0):
-        self.order(security_id, current_price, current_timestamp, order_amount, order_pct, order_price,
+        self.order(entity_id, current_price, current_timestamp, order_amount, order_pct, order_price,
                    order_type=ORDER_TYPE_SHORT, order_money=order_money)
 
     # 平多
-    def close_long(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def close_long(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
                    order_money=0):
-        self.order(security_id, current_price, current_timestamp, order_amount, order_pct, order_price,
+        self.order(entity_id, current_price, current_timestamp, order_amount, order_pct, order_price,
                    order_type=ORDER_TYPE_CLOSE_LONG, order_money=order_money)
 
     # 平空
-    def close_short(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def close_short(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
                     order_money=0):
-        self.order(security_id, current_price, current_timestamp, order_amount, order_pct, order_price,
+        self.order(entity_id, current_price, current_timestamp, order_amount, order_pct, order_price,
                    order_type=ORDER_TYPE_CLOSE_SHORT, order_money=order_money)
 
     @staticmethod
@@ -84,40 +86,40 @@ class AccountService(TradingListener):
 
     def on_trading_signal(self, trading_signal: TradingSignal):
         self.logger.debug('trader:{} received trading signal:{}'.format(self.trader_name, trading_signal))
-        security_id = trading_signal.security_id
+        entity_id = trading_signal.entity_id
         current_timestamp = trading_signal.the_timestamp
         order_type = AccountService.trading_signal_to_order_type(trading_signal.trading_signal_type)
         trading_level = trading_signal.trading_level.value
         if order_type:
             try:
-                kdata = get_kdata(provider=self.provider, security_id=security_id, level=trading_level,
+                kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
                                   start_timestamp=current_timestamp, end_timestamp=current_timestamp,
                                   limit=1)
                 if kdata is not None and not kdata.empty:
                     # use qfq for stock
-                    security_type, _, _ = decode_security_id(kdata['security_id'][0])
+                    entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
 
-                    if security_type == SecurityType.stock:
+                    if entity_type == 'stock':
                         the_price = kdata['qfq_close'][0]
                     else:
                         the_price = kdata['close'][0]
 
                     if the_price:
-                        self.order(security_id=security_id, current_price=the_price,
+                        self.order(entity_id=entity_id, current_price=the_price,
                                    current_timestamp=current_timestamp, order_pct=trading_signal.position_pct,
                                    order_money=trading_signal.order_money,
                                    order_type=order_type)
                     else:
                         self.logger.warning(
-                            'ignore trading signal,wrong kdata,security_id:{},timestamp:{},kdata:{}'.format(security_id,
-                                                                                                            current_timestamp,
-                                                                                                            kdata.to_dict(
-                                                                                                                orient='records')))
+                            'ignore trading signal,wrong kdata,entity_id:{},timestamp:{},kdata:{}'.format(entity_id,
+                                                                                                          current_timestamp,
+                                                                                                          kdata.to_dict(
+                                                                                                              orient='records')))
 
                 else:
                     self.logger.warning(
-                        'ignore trading signal,could not get kdata,security_id:{},timestamp:{}'.format(security_id,
-                                                                                                       current_timestamp))
+                        'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
+                                                                                                     current_timestamp))
             except Exception as e:
                 self.logger.exception(e)
 
@@ -126,8 +128,8 @@ class SimAccountService(AccountService):
 
     def __init__(self, trader_name,
                  timestamp,
-                 provider=Provider.NETEASE,
-                 level=TradingLevel.LEVEL_1DAY,
+                 provider='netease',
+                 level=IntervalLevel.LEVEL_1DAY,
                  base_capital=1000000,
                  buy_cost=0.001,
                  sell_cost=0.001,
@@ -139,7 +141,7 @@ class SimAccountService(AccountService):
         self.slippage = slippage
         self.trader_name = trader_name
 
-        self.session = get_db_session('zvt', StoreCategory.business)
+        self.session = get_db_session('zvt', 'business')
         self.provider = provider
         self.level = level
         self.start_timestamp = timestamp
@@ -191,15 +193,15 @@ class SimAccountService(AccountService):
         self.latest_account['all_value'] = 0
         for position in self.latest_account['positions']:
             # use qfq for stock
-            security_type, _, _ = decode_security_id(position['security_id'])
-            data_schema = get_kdata_schema(security_type, level=self.level)
+            entity_type, _, _ = decode_entity_id(position['entity_id'])
+            data_schema = get_kdata_schema(entity_type, level=self.level)
 
-            kdata = get_kdata(provider=self.provider, level=self.level, security_id=position['security_id'],
+            kdata = get_kdata(provider=self.provider, level=self.level, entity_id=position['entity_id'],
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 
             # use qfq for stock
-            if security_type == SecurityType.stock:
+            if entity_type == 'stock':
                 closing_price = kdata['qfq_close'][0]
             else:
                 closing_price = kdata['close'][0]
@@ -217,7 +219,7 @@ class SimAccountService(AccountService):
                     self.latest_account['value'] += position['value']
             else:
                 self.logger.warning(
-                    'could not refresh close value for position:{},timestamp:{}'.format(position['security_id'],
+                    'could not refresh close value for position:{},timestamp:{}'.format(position['entity_id'],
                                                                                         timestamp))
 
         # remove the empty position
@@ -244,7 +246,7 @@ class SimAccountService(AccountService):
             position_domain = Position()
             fill_domain_from_dict(position_domain, position, None)
 
-            position_domain.id = '{}_{}_{}'.format(self.trader_name, position['security_id'],
+            position_domain.id = '{}_{}_{}'.format(self.trader_name, position['entity_id'],
                                                    to_time_str(timestamp, TIME_FORMAT_ISO8601))
             position_domain.timestamp = to_pd_timestamp(timestamp)
             position_domain.sim_account_id = the_id
@@ -261,17 +263,17 @@ class SimAccountService(AccountService):
         self.session.add(account_domain)
         self.session.commit()
 
-    def get_current_position(self, security_id):
+    def get_current_position(self, entity_id):
         """
         get current position to design whether order could make
 
-        :param security_id:
-        :type security_id: str
+        :param entity_id:
+        :type entity_id: str
         :return:
         :rtype: None
         """
         for position in self.latest_account['positions']:
-            if position['security_id'] == security_id:
+            if position['entity_id'] == entity_id:
                 return position
         return None
 
@@ -348,23 +350,23 @@ class SimAccountService(AccountService):
             current_position['short_amount'] -= order_amount
 
         # save the order info to db
-        order_id = '{}_{}_{}_{}'.format(self.trader_name, order_type, current_position['security_id'],
+        order_id = '{}_{}_{}_{}'.format(self.trader_name, order_type, current_position['entity_id'],
                                         to_time_str(timestamp, TIME_FORMAT_ISO8601))
         order = Order(id=order_id, timestamp=to_pd_timestamp(timestamp), trader_name=self.trader_name,
-                      security_id=current_position['security_id'], order_price=current_price, order_amount=order_amount,
+                      entity_id=current_position['entity_id'], order_price=current_price, order_amount=order_amount,
                       order_type=order_type,
                       status='success')
         self.session.add(order)
         self.session.commit()
 
-    def order(self, security_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
+    def order(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
               order_type=ORDER_TYPE_LONG, order_money=0):
         """
         下单
 
         Parameters
         ----------
-        security_id : str
+        entity_id : str
             交易标的id
 
         current_price : float
@@ -392,13 +394,13 @@ class SimAccountService(AccountService):
         # 市价交易,就是买卖是"当时"并"一定"能成交的
         # 简单起见，目前只支持这种方式
         if order_price == 0:
-            current_position = self.get_current_position(security_id=security_id)
+            current_position = self.get_current_position(entity_id=entity_id)
 
             if not current_position:
-                trading_t = get_trading_meta(security_id=security_id)['trading_t']
+                trading_t = get_trading_meta(entity_id=entity_id)['trading_t']
                 current_position = {
                     'trader_name': self.trader_name,
-                    'security_id': security_id,
+                    'entity_id': entity_id,
                     'long_amount': 0,
                     'available_long': 0,
                     'average_long_price': 0,
@@ -522,7 +524,7 @@ class SimAccountService(AccountService):
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", security_id,
+                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
                                                 current_position['available_long'], order_pct, order_amount)
                     else:
                         raise NotEnoughPositionError()
@@ -538,7 +540,7 @@ class SimAccountService(AccountService):
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", security_id,
+                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
                                                 current_position['available_long'], order_pct, order_amount)
                     else:
                         raise Exception("not enough position")

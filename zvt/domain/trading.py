@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Enum, Float
+from sqlalchemy import Column, String, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain.common import Provider, enum_value, TradingBase
+from zvdata.domain import register_schema, register_api
+from zvdata.structs import Mixin
+
+TradingBase = declarative_base()
 
 
-class ManagerTrading(TradingBase):
+@register_api(provider='eastmoney')
+class ManagerTrading(TradingBase, Mixin):
     __tablename__ = 'manager_trading'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     # 日期 变动人 变动数量(股) 交易均价(元) 结存股票(股) 交易方式 董监高管 高管职位 与高管关系
     # 2017-08-11 韦春 200 9.16 -- 竞价交易 刘韬 高管 兄弟姐妹
@@ -33,13 +35,11 @@ class ManagerTrading(TradingBase):
     relationship_with_manager = Column(String(length=32))
 
 
-class HolderTrading(TradingBase):
+@register_api(provider='eastmoney')
+class HolderTrading(TradingBase, Mixin):
     __tablename__ = 'holder_trading'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 股东名称
@@ -52,13 +52,11 @@ class HolderTrading(TradingBase):
     holding_pct = Column(Float)
 
 
-class BigDealTrading(TradingBase):
+@register_api(provider='eastmoney')
+class BigDealTrading(TradingBase, Mixin):
     __tablename__ = 'big_deal_trading'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 成交额
@@ -73,26 +71,22 @@ class BigDealTrading(TradingBase):
     compare_rate = Column(Float)
 
 
-class MarginTrading(TradingBase):
+@register_api(provider='eastmoney')
+class MarginTrading(TradingBase, Mixin):
     __tablename__ = 'margin_trading'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     margin_balance = Column(Float)
     short_balance = Column(Float)
 
 
-class DragonAndTiger(TradingBase):
+@register_api(provider='eastmoney')
+class DragonAndTiger(TradingBase, Mixin):
     __tablename__ = 'dragon_and_tiger'
 
-    id = Column(String(length=128), primary_key=True)
     provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
 
     # 异动原因
@@ -155,3 +149,6 @@ class DragonAndTiger(TradingBase):
     net_out_dep5_money_in = Column(Float)
     net_out_dep5_money_out = Column(Float)
     net_out_dep5_rate = Column(Float)
+
+
+register_schema(providers=['eastmoney'], db_name='trading', schema_base=TradingBase)

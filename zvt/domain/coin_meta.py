@@ -1,15 +1,15 @@
 # 数字货币
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.domain.common import CoinMetaBase
+from zvdata.domain import register_schema, register_entity
+from zvdata.structs import EntityMixin
+
+CoinMetaBase = declarative_base()
 
 
-class Coin(CoinMetaBase):
+@register_entity(entity_type='coin')
+class Coin(CoinMetaBase, EntityMixin):
     __tablename__ = 'coin'
 
-    id = Column(String(length=128), primary_key=True)
-    timestamp = Column(DateTime)
-    exchange = Column(String(length=32))
-    type = Column(String(length=64))
-    code = Column(String(length=32))
-    name = Column(String(length=32))
+
+register_schema(providers=['ccxt'], db_name='coin_meta', schema_base=CoinMetaBase)
