@@ -99,7 +99,7 @@ DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'
 ```
 
 东财数据: https://pan.baidu.com/s/1CMAlCRYwlhGVxS6drYUEgA 提取码: q2qn  
-日线数据(网易): https://pan.baidu.com/s/1KW0TOLSVtfI38w6TyT25Jg 提取码: m82d  
+日线数据(网易): https://pan.baidu.com/s/1kMhEVO0kH_Pn6wXKyqvJEA 提取码: ijxg  
 资金流，板块数据(新浪): https://pan.baidu.com/s/1eusW65sdK_WE4icnt8JS1g 提取码: uux3  
 市场概况，沪/深港通，融资融券数据(聚宽): https://pan.baidu.com/s/1ijrgjUd1WkRMONrwRQU-4w 提取码: dipd  
 
