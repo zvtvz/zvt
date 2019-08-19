@@ -95,6 +95,7 @@ ENV/
 /data/
 /datasample
 data.tar.gz
+/data
 /ve/
 .pytest_cache/
 /ui/

@@ -9,7 +9,7 @@
 
 ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
-#  🔖使用展示
+##  🔖使用展示
 
 ### 板块资金流分析
 <p align="center"><img src='./docs/imgs/data-usage/money-flow.gif'/></p>
@@ -56,7 +56,7 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 <p align="center"><img src='./docs/imgs/technical-selector-in-notebook.gif'/></p>
 
 整个框架有着极高的可扩展性，只需要写极少的代码就可以对各模块进行扩展，各模块的扩展教程待完善，也需要大家的贡献。
-#  ✨ 特性
+##  ✨ 特性
 
 - **丰富全面开箱即用且可持续增量更新的数据**
     - A股数据:行情,财务报表,大股东行为,高管交易,分红融资详情,个股板块资金流向,融资融券,龙虎榜等数据
@@ -71,10 +71,10 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 - 支持交易信号和策略使用到的factor的实时可视化
 - 支持多种实盘交易(实现中)
 
-#  🔰安装
+##  🔰安装
 
-## 快速开始(只需3部)
-### 1.clone代码
+### 快速开始(只需3部)
+#### 1.clone代码
 
 ```
 git clone https://github.com/zvtvz/zvt.git
@@ -85,14 +85,14 @@ git clone https://github.com/zvtvz/zvt.git
 pip3 install -r requirements.txt
 ```
 
-### 2.pycharm导入工程(推荐,你也可以使用其他ide)
+#### 2.pycharm导入工程(推荐,你也可以使用其他ide)
 
 解压data sample,用于快速跑测试
 ```
 python3 init_data_sample.py
 ```
 
-### 3.下载数据，运行
+#### 3.下载数据，运行
 更改DATA_PATH（否则会污染datasample,datasample只用于测试用）
 ```
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
@@ -118,16 +118,16 @@ python3 index.py
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 > 目前整个框架基本稳定下来,文档还比较欠缺,需要大家的贡献.
 
-# 💌请作者喝杯咖啡
+## 💌请作者喝杯咖啡
 
 如果你觉得项目对你有帮助,可以请作者喝杯咖啡  
-<img src="./docs/imgs/alipay-cn.png" width="21.7%" alt="Alipay">　　　　　
-<img src="./docs/imgs/wechat-cn.png" width="22%" alt="Wechat">
+<img src="./docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
+<img src="./docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
 
 有需要股票开户可以加我朋友微信,暗号:zvt  
-<img src="./docs/imgs/stock-kaihu.jpeg" width="22%" alt="Wechat">
+<img src="./docs/imgs/stock-kaihu.jpeg" width="25%" alt="Wechat">
 
-``
+
 # 💡 贡献
 
 期待能有更多的开发者参与到 zvt 的开发中来，我会保证尽快 Reivew PR 并且及时回复。但提交 PR 请确保
@@ -141,4 +141,8 @@ python3 index.py
 # 联系方式  
 
 QQ群:300911873  
+
+公众号(后续会不定时更新一些教程):  
+<img src="./docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
+
 目前没有微信群，如果有，肯定是骗子
