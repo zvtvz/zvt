@@ -128,7 +128,7 @@ python3 index.py
 <img src="./docs/imgs/stock-kaihu.jpeg" width="25%" alt="Wechat">
 
 
-# 💡 贡献
+## 💡 贡献
 
 期待能有更多的开发者参与到 zvt 的开发中来，我会保证尽快 Reivew PR 并且及时回复。但提交 PR 请确保
 
@@ -138,7 +138,7 @@ python3 index.py
 
 也非常欢迎开发者能为 zvt 提供更多的示例，共同来完善文档，文档项目位于 [zvt/docs](https://github.com/zvtvz/zvt/docs)
 
-# 联系方式  
+## 联系方式  
 
 QQ群:300911873  
 
