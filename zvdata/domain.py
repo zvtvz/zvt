@@ -77,6 +77,9 @@ def init_context(data_path: str, ui_path: str, domain_module: str, register_api:
     if not os.path.exists(data_path):
         os.makedirs(data_path)
 
+    if not os.path.exists(ui_path):
+        os.makedirs(ui_path)
+
     init_factor_schema()
 
 
