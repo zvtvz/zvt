@@ -7,7 +7,7 @@
 
 **Read this in other languages: [English](README-en.md).**  
 
-ZVT is a quant trading platform written after rethinking trading based on [fooltrader] (https://github.com/foolcage/fooltrader), 
+ZVT is a quant trading platform written after rethinking trading based on [fooltrader](https://github.com/foolcage/fooltrader), 
 which includes scalable data recorder, api, factor calculation, stock picking, backtesting, and unified visualization layer,
 focus on  **low frequency**, **multi-level**, **multi-targets** full market analysis and trading framework.
 
