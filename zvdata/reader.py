@@ -232,6 +232,10 @@ class DataReader(object):
             for listener in self.data_listeners:
                 listener.on_data_changed(self.data_df)
 
+            # update the normal_data too
+            self.normal_data = NormalData(df=self.data_df, category_field=self.category_field,
+                                          index_field=self.time_field, is_timeseries=True)
+
         return changed
 
     def register_data_listener(self, listener):
@@ -247,11 +251,11 @@ class DataReader(object):
             self.data_listeners.remove(listener)
 
     def data_drawer(self) -> Drawer:
-        # FIXME"refresh normal_data?
-        self.normal_data = NormalData(df=self.data_df, category_field=self.category_field,
-                                      index_field=self.time_field, is_timeseries=True)
-
         return Drawer(data=self.normal_data)
 
     def is_empty(self):
         return not df_is_not_null(self.data_df)
+
+
+class MultipleSchemaReader(object):
+    pass
