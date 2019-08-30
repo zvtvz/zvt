@@ -10,6 +10,12 @@ FinanceBase = declarative_base()
 
 @register_api(provider='eastmoney')
 class BalanceSheet(FinanceBase, Mixin):
+
+    @classmethod
+    def important_cols(cls):
+        return ['total_assets', 'total_liabilities', 'equity', 'cash_and_cash_equivalents', 'accounts_receivable',
+                'inventories', 'goodwill']
+
     __tablename__ = 'balance_sheet'
 
     provider = Column(String(length=32))
@@ -448,6 +454,12 @@ class BalanceSheet(FinanceBase, Mixin):
 
 @register_api(provider='eastmoney')
 class IncomeStatement(FinanceBase, Mixin):
+
+    @classmethod
+    def important_cols(cls):
+        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
+                'managing_costs', 'financing_costs']
+
     __tablename__ = 'income_statement'
 
     provider = Column(String(length=32))
@@ -606,6 +618,10 @@ class IncomeStatement(FinanceBase, Mixin):
 
 @register_api(provider='eastmoney')
 class CashFlowStatement(FinanceBase, Mixin):
+    @classmethod
+    def important_cols(cls):
+        return ['net_op_cash_flows', 'net_investing_cash_flows', 'net_financing_cash_flows', 'cash']
+
     __tablename__ = 'cash_flow_statement'
 
     provider = Column(String(length=32))
@@ -803,6 +819,11 @@ class CashFlowStatement(FinanceBase, Mixin):
 # 主要财务指标
 @register_api(provider='eastmoney')
 class FinanceFactor(FinanceBase, Mixin):
+    @classmethod
+    def important_cols(cls):
+        return ['basic_eps', 'total_op_income', 'net_profit', 'op_income_growth_yoy', 'net_profit_growth_yoy', 'roe',
+                'rota', 'gross_profit_margin', 'net_margin']
+
     __tablename__ = 'finance_factor'
 
     provider = Column(String(length=32))

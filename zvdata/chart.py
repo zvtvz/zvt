@@ -87,6 +87,7 @@ class Drawer(object):
                            **layout_params)
         if self.normal_data.is_timeseries and need_range_selector and len(self.normal_data.data_df) > 500:
             layout.xaxis = dict(
+                domain=[0.2, 0.9],
                 rangeselector=dict(
                     buttons=list([
                         dict(count=1,
@@ -150,6 +151,40 @@ class Drawer(object):
                          width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                          property_map=property_map, **kwargs)
 
+    def draw_compare(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None,
+                     width=None, height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
+        data = []
+        layout_params = {}
+        for entity_id, df in self.normal_data.entity_map_df.items():
+            _, _, code = decode_entity_id(entity_id)
+            for col in df.columns:
+                trace_name = '{}_{}'.format(code, col)
+                ydata = df.loc[:, col].values.tolist()
+
+                # set y axis
+                yaxis, layout, col_chart = self.get_yaxis_layout_chart(col, property_map)
+                if yaxis and layout:
+                    layout_params[f'yaxis{yaxis[-1]}'] = layout
+
+                if not col_chart:
+                    col_chart = chart
+
+                if col_chart == 'line':
+                    trace = go.Scatter(x=df.index, y=ydata, mode='lines', name=trace_name, yaxis=yaxis, **kwargs)
+                elif col_chart == 'scatter':
+                    trace = go.Scatter(x=df.index, y=ydata, mode='markers', name=trace_name, yaxis=yaxis, **kwargs)
+                elif col_chart == 'area':
+                    trace = go.Scatter(x=df.index, y=ydata, mode='none', fill='tonexty', name=trace_name, yaxis=yaxis,
+                                       **kwargs)
+                elif col_chart == 'bar':
+                    trace = go.Bar(x=df.index, y=ydata, name=trace_name, yaxis=yaxis, **kwargs)
+
+                data.append(trace)
+
+        return self.show(plotly_data=data, plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
+                         file_name=file_name, width=width,
+                         height=height, title=title, keep_ui_state=keep_ui_state, **layout_params)
+
     def draw_line(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
                   title=None, keep_ui_state=True, property_map=None, **kwargs):
         return self.draw_scatter(mode='lines', plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
@@ -165,36 +200,57 @@ class Drawer(object):
                                  width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                                  property_map=property_map, **kwargs)
 
-    def get_yaxis_layout(self, col, property_map):
+    def get_yaxis_layout_chart(self, col, property_map):
         yaxis = None
+        chart = None
         if property_map:
             props = property_map.get(col)
-            if props and props.get('y_axis') != 'y1':
-                yaxis = props.get('y_axis')
+            if props:
+                if props.get('y_axis') != 'y1':
+                    yaxis = props.get('y_axis')
+
+                chart = props.get('chart')
 
         layout = None
 
         if yaxis:
-            if int(yaxis[-1]) % 2 == 1:
+            i = int(yaxis[-1])
+            if i % 2 == 1:
                 layout = dict(
+                    title=col,
+                    titlefont=dict(
+                        color="#ff7f0e"
+                    ),
+                    tickfont=dict(
+                        color="#ff7f0e"
+                    ),
                     autorange=True,
                     fixedrange=False,
                     zeroline=False,
                     anchor="free",
                     overlaying="y",
-                    side="left"
+                    side="left",
+                    position=0.05 * (i - 1)
                 )
             else:
                 layout = dict(
+                    title=col,
+                    titlefont=dict(
+                        color="#d62728"
+                    ),
+                    tickfont=dict(
+                        color="#d62728"
+                    ),
                     autorange=True,
                     fixedrange=False,
                     zeroline=False,
                     anchor="free",
                     overlaying="y",
-                    side="right"
+                    side="right",
+                    position=0.9 + 0.05 * (i - 1)
                 )
 
-        return yaxis, layout
+        return yaxis, layout, chart
 
     def draw_scatter(self, mode='markers', plotly_layout=None, annotation_df=None, render='html', file_name=None,
                      width=None, height=None,
@@ -208,7 +264,7 @@ class Drawer(object):
                 ydata = df.loc[:, col].values.tolist()
 
                 # set y axis
-                yaxis, layout = self.get_yaxis_layout(col, property_map)
+                yaxis, layout = self.get_yaxis_layout_chart(col, property_map)
                 if yaxis and layout:
                     layout_params[f'yaxis{yaxis[-1]}'] = layout
 
@@ -230,7 +286,7 @@ class Drawer(object):
                 ydata = df.loc[:, col].values.tolist()
 
                 # set y axis
-                yaxis, layout = self.get_yaxis_layout(col, property_map)
+                yaxis, layout = self.get_yaxis_layout_chart(col, property_map)
                 if yaxis and layout:
                     layout_params[f'yaxis{yaxis[-1]}'] = layout
 

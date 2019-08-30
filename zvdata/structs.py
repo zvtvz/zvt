@@ -19,6 +19,10 @@ class Mixin(object):
     def important_cols(cls):
         return []
 
+    @classmethod
+    def time_field(cls):
+        return 'timestamp'
+
 
 class NormalMixin(Mixin):
     # the record created time in db
