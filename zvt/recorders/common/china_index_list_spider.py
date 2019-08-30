@@ -10,7 +10,7 @@ from zvdata.recorder import Recorder
 
 from zvt.api.common import china_stock_code_to_id
 from zvt.domain import StockIndex
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp
 
 
 class ChinaIndexListSpider(Recorder):

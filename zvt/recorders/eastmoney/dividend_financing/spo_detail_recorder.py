@@ -4,8 +4,8 @@ from zvt.api.api import get_dividend_financing, get_spo_detail
 from zvt.domain import SpoDetail, DividendFinancing
 
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
-from zvt.utils.pd_utils import df_is_not_null
-from zvt.utils.time_utils import now_pd_timestamp
+from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.time_utils import now_pd_timestamp
 
 
 class SPODetailRecorder(EastmoneyPageabeDataRecorder):

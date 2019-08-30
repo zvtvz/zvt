@@ -16,7 +16,7 @@ from zvt.factors.technical_factor import TechnicalFactor
 from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 logger = logging.getLogger(__name__)
 

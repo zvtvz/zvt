@@ -8,7 +8,7 @@ from zvt.api.common import china_stock_code_to_id
 from zvt.api.technical import get_entities
 from zvt.domain import StockIndex, StockCategory
 from zvt.domain.stock_meta import Index
-from zvt.utils.utils import json_callback_param
+from zvdata.utils.utils import json_callback_param
 
 
 class ChinaStockCategoryRecorder(Recorder):

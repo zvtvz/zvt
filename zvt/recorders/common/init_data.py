@@ -1,7 +1,7 @@
 import pandas as pd
 
 from zvdata.api import init_entities
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp
 
 CHINA_STOCK_MAIN_INDEX = [{'id': 'index_cn_000001',
                            'entity_id': 'index_cn_000001',

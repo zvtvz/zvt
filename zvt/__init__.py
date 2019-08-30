@@ -5,15 +5,6 @@ import os
 import pandas as pd
 
 from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
-from zvt.utils.zip_utils import unzip, zip_dir
-
-
-def load_data():
-    unzip(DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH)
-
-
-def upload_data():
-    zip_dir(DATA_SAMPLE_PATH, zip_file_name='datasample.zip')
 
 
 def init_log():

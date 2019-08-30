@@ -5,8 +5,8 @@ import requests
 from zvt.api.common import data_exist, generate_kdata_id
 from zvt.domain import IntervalLevel, EntityType
 from zvt.recorders.recorder import TimeSeriesFetchingStyle, FixedCycleDataRecorder
-from zvt.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_MINUTE
-from zvt.utils.utils import json_callback_param, to_float
+from zvdata.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_MINUTE
+from zvdata.utils.utils import json_callback_param, to_float
 
 
 def eastmoney_map_zvt_trading_level(trading_level: IntervalLevel):

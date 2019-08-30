@@ -14,8 +14,8 @@ from zvt.api.rules import is_in_trading
 from zvt.api.technical import get_kdata
 from zvt.domain import Stock
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
-from zvt.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
-from zvt.utils.utils import init_process_log, read_csv
+from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.utils import init_process_log, read_csv
 
 
 class JQChinaStockKdataRecorder(FixedCycleDataRecorder):

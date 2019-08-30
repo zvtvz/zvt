@@ -3,7 +3,7 @@ from zvdata.utils.utils import to_float
 from zvt.api.common import to_report_period_type
 from zvt.domain.holder import TopTenHolder
 from zvt.recorders.eastmoney.common import EastmoneyTimestampsDataRecorder, get_fc
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+from zvdata.utils.time_utils import to_time_str, to_pd_timestamp
 
 
 class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):

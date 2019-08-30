@@ -13,8 +13,8 @@ from zvt.domain import Order
 from zvt.domain.business import SimAccount, Position
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
 from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
-from zvt.utils.utils import fill_domain_from_dict
+from zvdata.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
+from zvdata.utils.utils import fill_domain_from_dict
 
 ORDER_TYPE_LONG = 'order_long'
 ORDER_TYPE_SHORT = 'order_short'

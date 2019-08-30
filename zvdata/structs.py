@@ -15,6 +15,10 @@ class Mixin(object):
     # the meaning could be different for different case,most of time it means 'happen time'
     timestamp = Column(DateTime)
 
+    @classmethod
+    def important_cols(cls):
+        return []
+
 
 class NormalMixin(Mixin):
     # the record created time in db

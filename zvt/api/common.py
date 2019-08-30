@@ -12,8 +12,8 @@ from zvdata.structs import IntervalLevel
 from zvt.domain import ReportPeriod, CompanyType
 from zvt.domain.quote import *
 from zvt.domain.stock_meta import Index, Stock, StockIndex
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
 
 def has_report_period(schema_name):

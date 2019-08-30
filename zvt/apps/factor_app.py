@@ -4,9 +4,9 @@ import dash_html_components as html
 from dash import dash
 from dash.dependencies import Input, Output
 
+from zvdata.app import app
 from zvdata.factor import factor_cls_registry, Factor
 from zvdata.sedes import UiComposable
-from zvt.app import app
 
 
 def generate_composer_id(factor_name):

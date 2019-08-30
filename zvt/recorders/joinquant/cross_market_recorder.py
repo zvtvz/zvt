@@ -4,7 +4,7 @@ from zvdata.recorder import TimeSeriesDataRecorder
 from zvdata.utils.utils import multiple_number
 from zvt.domain import Index, CrossMarketSummary
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
-from zvt.utils.time_utils import to_time_str
+from zvdata.utils.time_utils import to_time_str
 
 
 class StockSummaryRecorder(TimeSeriesDataRecorder):

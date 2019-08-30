@@ -7,7 +7,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.structs import IntervalLevel
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.domain import StockMoneyFlow, Stock
-from zvt.utils.utils import to_float
+from zvdata.utils.utils import to_float
 
 
 class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):

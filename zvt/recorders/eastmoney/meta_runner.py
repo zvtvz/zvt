@@ -9,7 +9,7 @@ from zvt.domain import Provider
 from zvt.recorders.common.china_stock_list_spider import ChinaStockListSpider
 from zvt.recorders.eastmoney.meta.china_stock_category_recorder import ChinaStockCategoryRecorder
 from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import ChinaStockMetaRecorder
-from zvt.utils.utils import init_process_log
+from zvdata.utils.utils import init_process_log
 
 logger = logging.getLogger(__name__)
 

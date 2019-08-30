@@ -7,8 +7,8 @@ from zvdata.structs import IntervalLevel
 from zvt.api.common import generate_kdata_id
 from zvt.api.technical import get_kdata
 from zvt.domain import Stock1dKdata, Stock
-from zvt.utils.time_utils import get_year_quarters, is_same_date, to_pd_timestamp
-from zvt.utils.utils import to_float
+from zvdata.utils.time_utils import get_year_quarters, is_same_date, to_pd_timestamp
+from zvdata.utils.utils import to_float
 
 
 # this recorder is deprecated,because sina hfq factor could not get now

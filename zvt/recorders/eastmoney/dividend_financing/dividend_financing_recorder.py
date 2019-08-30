@@ -2,7 +2,7 @@
 from zvt.api.api import get_dividend_financing
 from zvt.domain.dividend_financing import DividendFinancing
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
-from zvt.utils.utils import second_item_to_float
+from zvdata.utils.utils import second_item_to_float
 
 
 class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):

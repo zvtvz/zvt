@@ -9,7 +9,7 @@ from zvdata.recorder import Recorder
 
 from zvt.domain import Stock
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp
 
 
 class ChinaStockListSpider(Recorder):

@@ -5,8 +5,8 @@ from zvt.domain import RightsIssueDetail, DividendFinancing
 
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
 from zvt.settings import SAMPLE_STOCK_CODES
-from zvt.utils.pd_utils import df_is_not_null
-from zvt.utils.time_utils import now_pd_timestamp
+from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.time_utils import now_pd_timestamp
 
 
 class RightsIssueDetailRecorder(EastmoneyPageabeDataRecorder):

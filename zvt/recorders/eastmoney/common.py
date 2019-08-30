@@ -7,7 +7,7 @@ from zvdata.api import get_count, get_data
 from zvdata.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvt.api.common import get_company_type
 from zvt.domain import CompanyType, Stock
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 

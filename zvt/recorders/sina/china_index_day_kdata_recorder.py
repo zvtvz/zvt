@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.structs import IntervalLevel
 from zvt.api.common import generate_kdata_id
 from zvt.domain import Index, Index1dKdata
-from zvt.utils.time_utils import get_year_quarters, is_same_date
+from zvdata.utils.time_utils import get_year_quarters, is_same_date
 
 
 class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
