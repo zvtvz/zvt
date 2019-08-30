@@ -13,7 +13,7 @@ from dash.dependencies import Input, Output, State
 from zvdata.app import app
 from zvdata.chart import Drawer
 from zvdata.domain import global_providers, get_schemas, get_schema_by_name, get_schema_columns
-from zvdata.normal_data import NormalData, ChartType
+from zvdata.normal_data import NormalData, IntentType
 from zvdata.reader import DataReader
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp, TIME_FORMAT_DAY
@@ -86,7 +86,7 @@ layout = html.Div(
                         'chart': {
                             'options': [
                                 {'label': chart_type.value, 'value': chart_type.value}
-                                for chart_type in ChartType
+                                for chart_type in NormalData.get_charts_by_intent(IntentType.compare_self)
                             ]
                         }
                     },
@@ -182,8 +182,8 @@ def properties_to_readers(properties, codes, start_date, end_date) -> List[DataR
 
     for prop in properties:
         provider = prop['provider']
-        schema = prop['schema']
-        key = (provider, schema)
+        schema_name = prop['schema']
+        key = (provider, schema_name)
         if key not in provider_schema_map_cols:
             provider_schema_map_cols[key] = []
 
@@ -192,17 +192,13 @@ def properties_to_readers(properties, codes, start_date, end_date) -> List[DataR
     readers = []
     for item, columns in provider_schema_map_cols.items():
         provider = item[0]
-        schema = item[1]
+        schema_name = item[1]
 
-        # TODO:better way to get time_field
-        # if has_report_period(schema_name=schema):
-        #     time_field = 'report_date'
-        # else:
-        #     time_field = 'timestamp'
+        schema = get_schema_by_name(schema_name)
 
-        readers.append(DataReader(data_schema=get_schema_by_name(schema), provider=provider, codes=codes,
+        readers.append(DataReader(data_schema=schema, provider=provider, codes=codes,
                                   columns=columns, start_timestamp=start_date, end_timestamp=end_date,
-                                  time_field='timestamp'))
+                                  time_field=schema.time_field()))
 
     return readers
 
@@ -230,7 +226,7 @@ def update_data_table(n_clicks, properties, codes: str, start_date, end_date):
             data_df = readers[0].data_df
             for reader in readers[1:]:
                 if df_is_not_null(reader.data_df):
-                    data_df = data_df.join(reader.data_df)
+                    data_df = data_df.join(reader.data_df, how='outer')
 
             global current_df
             current_df = data_df
@@ -332,10 +328,11 @@ def split_filter_part(filter_part, operators=operators_df):
      Input('data-table-content', "page_size"),
      Input('data-table-content', "sort_by"),
      Input('data-table-content', "filter_query"),
-     Input('chart-selector', "value")],
-    state=[State('col-setting-table', 'data'),
-           State('col-setting-table', 'columns')])
-def update_table_and_graph(page_current, page_size, sort_by, filter, chart, rows, columns):
+     Input('intent-selector', "value"),
+     Input('chart-selector', "value"),
+     Input('col-setting-table', 'data'),
+     Input('col-setting-table', 'columns')])
+def update_table_and_graph(page_current, page_size, sort_by, filter, intent, chart, rows, columns):
     if chart:
         property_map = {}
         for row in rows:
@@ -371,8 +368,12 @@ def update_table_and_graph(page_current, page_size, sort_by, filter, chart, rows
         #         inplace=False
         #     )
 
-        graph_data, graph_layout = Drawer(NormalData(dff)).draw(chart=chart, property_map=property_map, render=None,
-                                                                keep_ui_state=False)
+        if intent in (IntentType.compare_self.value, IntentType.compare_to_other.value):
+            graph_data, graph_layout = Drawer(NormalData(dff)).draw_compare(chart=chart, property_map=property_map,
+                                                                            render=None, keep_ui_state=False)
+        else:
+            graph_data, graph_layout = Drawer(NormalData(dff)).draw(chart=chart, property_map=property_map, render=None,
+                                                                    keep_ui_state=False)
 
         table_data = dff.iloc[page_current * page_size: (page_current + 1) * page_size
                      ].to_dict('records')
