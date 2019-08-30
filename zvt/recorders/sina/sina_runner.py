@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt.recorders.sina.meta.sina_china_stock_category_recorder import SinaChinaStockCategoryRecorder
 from zvt.recorders.sina.money_flow.sina_index_money_flow_recorder import SinaIndexMoneyFlowRecorder
-from zvt.utils.utils import init_process_log
+from zvdata.utils.utils import init_process_log
 
 logger = logging.getLogger(__name__)
 

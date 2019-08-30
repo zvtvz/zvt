@@ -9,8 +9,8 @@ from zvdata.chart import Drawer
 from zvdata.factor import FilterFactor, ScoreFactor
 from zvdata.normal_data import NormalData
 from zvdata.structs import IntervalLevel
-from zvt.utils.pd_utils import index_df, df_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp
+from zvdata.utils.pd_utils import index_df, df_is_not_null
+from zvdata.utils.time_utils import to_pd_timestamp
 
 
 class TargetSelector(object):

@@ -9,7 +9,7 @@ from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema, generate_kdata_id
 from zvt.domain import Coin
 from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
-from zvt.utils.utils import init_process_log
+from zvdata.utils.utils import init_process_log
 
 logger = logging.getLogger(__name__)
 

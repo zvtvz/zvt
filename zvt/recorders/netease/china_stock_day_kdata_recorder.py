@@ -12,7 +12,7 @@ from zvt.api.technical import get_kdata
 from zvt.domain import Stock1dKdata, Stock
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 from zvt.utils import utils
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
+from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
 
 
 class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):

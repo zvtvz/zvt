@@ -5,7 +5,7 @@ from zvdata.utils.utils import multiple_number
 from zvt.domain import Index
 from zvt.domain.macro import StockSummary
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
-from zvt.utils.time_utils import to_time_str
+from zvdata.utils.time_utils import to_time_str
 
 # 聚宽编码
 # 322001	上海市场

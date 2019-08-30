@@ -10,8 +10,8 @@ from zvt.api.common import generate_kdata_id
 from zvt.api.technical import get_kdata
 from zvt.domain import Index, Index1dKdata
 from zvt.recorders.consts import EASTMONEY_ETF_NET_VALUE_HEADER
-from zvt.utils.time_utils import to_time_str
-from zvt.utils.utils import init_process_log
+from zvdata.utils.time_utils import to_time_str
+from zvdata.utils.utils import init_process_log
 
 
 class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):

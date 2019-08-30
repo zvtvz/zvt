@@ -5,7 +5,7 @@ import pandas as pd
 
 from zvt.selectors.zvt_selector import TechnicalSelector
 from zvt.trader.trader import Trader
-from zvt.utils.utils import marshal_object_for_ui
+from zvdata.utils.utils import marshal_object_for_ui
 
 
 class SingleCoinTrader(Trader):

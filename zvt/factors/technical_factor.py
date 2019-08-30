@@ -7,7 +7,7 @@ from zvdata.structs import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null
 from zvt.api.common import get_kdata_schema
 from zvt.api.computing import ma, macd
-from zvt.utils.pd_utils import index_df_with_category_time
+from zvdata.utils.pd_utils import index_df_with_category_xfield
 
 
 class TechnicalFactor(FilterFactor):
@@ -110,7 +110,7 @@ class TechnicalFactor(FilterFactor):
         df = df.iloc[-size:, ]
         df = df.reset_index()
         df[self.category_field] = category
-        df = index_df_with_category_time(df)
+        df = index_df_with_category_xfield(df)
 
         self.depth_df = self.depth_df.append(df)
         self.depth_df = self.depth_df.sort_index(level=[0, 1])

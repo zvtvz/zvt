@@ -9,8 +9,8 @@ from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
-from zvt.utils.pd_utils import index_df
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+from zvdata.utils.pd_utils import index_df
+from zvdata.utils.time_utils import to_time_str, to_pd_timestamp
 
 
 class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
