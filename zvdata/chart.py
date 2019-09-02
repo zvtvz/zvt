@@ -247,7 +247,7 @@ class Drawer(object):
                     anchor="free",
                     overlaying="y",
                     side="right",
-                    position=0.9 + 0.05 * (i - 1)
+                    position=1.0 - 0.05 * (i - 1)
                 )
 
         return yaxis, layout, chart
