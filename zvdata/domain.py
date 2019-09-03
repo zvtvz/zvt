@@ -9,16 +9,23 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
 from zvdata.structs import EntityMixin
+from zvdata.utils.utils import add_to_map_list
 
 logger = logging.getLogger(__name__)
 
 # provider_dbname -> engine
 _db_engine_map = {}
+
 # provider_dbname -> session
 _db_session_map = {}
 
+# all registered providers
 global_providers = []
+
+# all registered entity types
 global_entity_types = []
+
+# all registered schemas
 global_schemas = []
 
 # provider -> [db_name1,db_name2...]
@@ -34,9 +41,17 @@ dbname_map_schemas = {
 }
 
 # entity_type -> schema
-entity_type_map_schema = {
+global_entity_schema = {
 
 }
+
+# entity_type -> schema
+entity_map_schemas = {
+
+}
+
+# global sessions
+global_sessions = {}
 
 context = {}
 
@@ -180,7 +195,16 @@ def get_db_session(provider: str,
     :return:
     :rtype:
     """
-    return get_db_session_factory(provider, db_name, data_schema)()
+    if data_schema:
+        db_name = get_db_name(data_schema=data_schema)
+
+    session_key = '{}_{}'.format(provider, db_name)
+
+    session = global_sessions.get(session_key)
+    if not session:
+        session = get_db_session_factory(provider, db_name, data_schema)()
+        global_sessions[session_key] = session
+    return session
 
 
 def get_db_session_factory(provider: str,
@@ -361,7 +385,9 @@ def register_entity(entity_type: str = None):
 
             if entity_type_ not in global_entity_types:
                 global_entity_types.append(entity_type_)
-            entity_type_map_schema[entity_type_] = cls
+            global_entity_schema[entity_type_] = cls
+
+            add_to_map_list(the_map=entity_map_schemas, key=entity_type, value=cls)
         return cls
 
     return register
@@ -369,7 +395,8 @@ def register_entity(entity_type: str = None):
 
 def register_schema(providers: List[str],
                     db_name: str,
-                    schema_base: DeclarativeMeta):
+                    schema_base: DeclarativeMeta,
+                    entity_type: str = 'stock'):
     """
     function for register schema,please declare them before register
 
@@ -379,6 +406,8 @@ def register_schema(providers: List[str],
     :type db_name:
     :param schema_base:
     :type schema_base:
+    :param entity_type: the schema related entity_type
+    :type entity_type:
     :return:
     :rtype:
     """
@@ -389,6 +418,7 @@ def register_schema(providers: List[str],
             if dbname_map_schemas.get(db_name):
                 schemas = dbname_map_schemas[db_name]
             global_schemas.append(cls)
+            add_to_map_list(the_map=entity_map_schemas, key=entity_type, value=cls)
             schemas.append(cls)
 
     dbname_map_schemas[db_name] = schemas

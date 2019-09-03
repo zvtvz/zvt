@@ -185,3 +185,14 @@ def multiple_number(number, factor):
         return number * factor
     except:
         return number
+
+
+def add_to_map_list(the_map, key, value):
+    result = []
+    if key in the_map:
+        result = the_map[key]
+    else:
+        the_map[key] = result
+
+    if value not in result:
+        result.append(value)

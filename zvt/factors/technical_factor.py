@@ -2,15 +2,15 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata.factor import FilterFactor
+from zvdata.factor import Factor
 from zvdata.structs import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import index_df_with_category_xfield
 from zvt.api.common import get_kdata_schema
 from zvt.api.computing import ma, macd
-from zvdata.utils.pd_utils import index_df_with_category_xfield
 
 
-class TechnicalFactor(FilterFactor):
+class TechnicalFactor(Factor):
     def __init__(self,
                  entity_ids: List[str] = None,
                  entity_type: str = 'stock',
@@ -47,7 +47,7 @@ class TechnicalFactor(FilterFactor):
                          trip_timestamp, auto_load, keep_all_timestamp=False,
                          fill_method=None, effective_number=None)
 
-    def depth_computing(self):
+    def do_compute(self):
         if df_is_not_null(self.data_df):
             self.depth_df = self.data_df.reset_index(level='timestamp')
 
@@ -131,7 +131,6 @@ class TechnicalFactor(FilterFactor):
 
 
 class CrossMaFactor(TechnicalFactor):
-
     def __init__(self,
                  entity_ids: List[str] = None,
                  entity_type: str = 'stock',
@@ -160,15 +159,15 @@ class CrossMaFactor(TechnicalFactor):
                          time_field='timestamp', auto_load=auto_load, fq='qfq', indicators=['ma', 'ma'],
                          indicators_param=[{'window': short_window}, {'window': long_window}], valid_window=long_window)
 
-    def compute(self):
-        super().compute()
+    def do_compute(self):
+        super().do_compute()
         s = self.depth_df['ma{}'.format(self.short_window)] > self.depth_df['ma{}'.format(self.long_window)]
         self.result_df = s.to_frame(name='score')
 
     def on_category_data_added(self, category, added_data: pd.DataFrame):
         super().on_category_data_added(category, added_data)
         # TODO:improve it to just computing the added data
-        self.compute()
+        self.do_compute()
 
 
 class BullFactor(TechnicalFactor):
@@ -186,7 +185,6 @@ class BullFactor(TechnicalFactor):
                  limit: int = None,
                  provider: str = 'joinquant',
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-
                  category_field: str = 'entity_id',
                  auto_load: bool = True,
                  indicators=['macd'],
@@ -197,8 +195,8 @@ class BullFactor(TechnicalFactor):
                          time_field='timestamp', auto_load=auto_load, fq='qfq', indicators=indicators,
                          indicators_param=indicators_param, valid_window=valid_window)
 
-    def compute(self):
-        super().compute()
+    def do_compute(self):
+        super().do_compute()
         s = (self.depth_df['diff'] > 0) & (self.depth_df['dea'] > 0)
         self.result_df = s.to_frame(name='score')
 

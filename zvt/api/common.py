@@ -9,36 +9,11 @@ from sqlalchemy import exists, and_
 from zvdata.api import decode_entity_id
 from zvdata.domain import get_db_session
 from zvdata.structs import IntervalLevel
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt.domain import ReportPeriod, CompanyType
 from zvt.domain.quote import *
 from zvt.domain.stock_meta import Index, Stock, StockIndex
-from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
-
-
-def has_report_period(schema_name):
-    if schema_name in ['BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceFactor']:
-        return True
-    return False
-
-
-def get_important_column(schema_name):
-    if schema_name == 'FinanceFactor':
-        return ['basic_eps', 'total_op_income', 'net_profit', 'op_income_growth_yoy', 'net_profit_growth_yoy', 'roe',
-                'rota', 'gross_profit_margin', 'net_margin']
-
-    if schema_name == 'BalanceSheet':
-        return ['total_assets', 'total_liabilities', 'equity', 'cash_and_cash_equivalents', 'accounts_receivable',
-                'inventories', 'goodwill']
-
-    if schema_name == 'IncomeStatement':
-        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
-                'managing_costs', 'financing_costs']
-
-    if schema_name == 'CashFlowStatement':
-        return ['net_op_cash_flows', 'net_investing_cash_flows', 'net_financing_cash_flows', 'cash']
-
-    return []
 
 
 def get_kdata_schema(entity_type: str,

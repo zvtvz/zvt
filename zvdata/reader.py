@@ -117,6 +117,8 @@ class DataReader(object):
                     self.columns.append(eval('data_schema.{}'.format(col)))
 
             time_col = eval('self.data_schema.{}'.format(self.time_field))
+
+            # always add category_column and time_field for normalizing
             self.columns = list(set(self.columns) | {self.category_column, time_col})
 
         self.data_listeners: List[DataListener] = []
