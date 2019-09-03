@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.factors.finance_factor import *
+from zvt.factors.fundamental_factor import *
 from zvt.factors.technical_factor import *
 
 
