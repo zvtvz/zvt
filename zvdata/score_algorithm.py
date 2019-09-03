@@ -18,7 +18,6 @@ class QuantileScorer(Scorer):
         self.score_levels = score_levels
 
     def compute(self, input_df):
-        self.score_levels = self.breadth_computing_param['score_levels']
         self.score_levels.sort(reverse=True)
 
         quantile_df = input_df.groupby(level=1).quantile(self.score_levels)
@@ -26,7 +25,7 @@ class QuantileScorer(Scorer):
 
         self.logger.info('factor:{},quantile:\n{}'.format(self.factor_name, quantile_df))
 
-        result_df = self.depth_df.copy()
+        result_df = input_df.copy()
         result_df.reset_index(inplace=True, level='entity_id')
         result_df['quantile'] = None
         for timestamp in quantile_df.index.levels[0]:
@@ -53,7 +52,7 @@ class QuantileScorer(Scorer):
                 if original_value >= score_map.get(score):
                     return score
 
-        for factor in self.factors:
+        for factor in input_df.columns.to_list():
             result_df[factor] = result_df.apply(lambda x: calculate_score(x, factor, x['quantile']),
                                                 axis=1)
 
