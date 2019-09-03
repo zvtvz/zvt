@@ -200,8 +200,10 @@ class TargetSelector(object):
         df[targets] = targets
         df = df.reset_index()
 
-        drawer = Drawer(NormalData(df=df, annotation_df=annotation_df, category_field=targets, index_field='timestamp',
-                                   is_timeseries=True))
+        if df_is_not_null(df):
+            drawer = Drawer(
+                NormalData(df=df, annotation_df=annotation_df, category_field=targets, index_field='timestamp',
+                           is_timeseries=True))
 
-        drawer.draw(chart=chart, render=render, file_name=file_name,
-                    width=width, height=height, title=title, keep_ui_state=keep_ui_state)
+            drawer.draw(chart=chart, render=render, file_name=file_name,
+                        width=width, height=height, title=title, keep_ui_state=keep_ui_state)
