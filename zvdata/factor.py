@@ -70,12 +70,6 @@ class Factor(DataReader, DataListener, Jsonable, UiComposable, metaclass=Meta):
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10) -> None:
-        if columns:
-            if type(columns[0]) is str:
-                self.factors = columns
-            else:
-                self.factors = [item.key for item in columns]
-
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level,
                          category_field, time_field, trip_timestamp, auto_load)
