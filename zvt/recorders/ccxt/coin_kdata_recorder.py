@@ -2,7 +2,7 @@
 import argparse
 
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import generate_kdata_id, to_ccxt_trading_level, get_kdata_schema

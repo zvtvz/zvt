@@ -3,7 +3,7 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata.factor import Factor
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.pd_utils import index_df_with_category_xfield
 from zvt.api.common import get_kdata_schema

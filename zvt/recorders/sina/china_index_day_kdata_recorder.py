@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvt.api.common import generate_kdata_id
 from zvt.domain import Index, Index1dKdata
 from zvdata.utils.time_utils import get_year_quarters, is_same_date

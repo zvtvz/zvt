@@ -1,16 +1,25 @@
 import operator
+from enum import Enum
 from itertools import accumulate
 from typing import List
 
 import pandas as pd
 from pandas import DataFrame
 
+from zvdata import IntervalLevel
 from zvdata.chart import Drawer
-from zvdata.factor import FilterFactor, ScoreFactor
+from zvdata.factor import FilterFactor, ScoreFactor, Factor
 from zvdata.normal_data import NormalData
-from zvdata.structs import IntervalLevel
 from zvdata.utils.pd_utils import index_df, df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp
+
+
+class TargetType(Enum):
+    # open_long 代表开多，并应该平掉相应标的的空单
+    open_long = 'open_long'
+    # open_short 代表开空，并应该平掉相应标的的多单
+    open_short = 'open_short'
+    # 其他情况就是保持当前的持仓
 
 
 class TargetSelector(object):
@@ -23,7 +32,7 @@ class TargetSelector(object):
                  start_timestamp=None,
                  end_timestamp=None,
                  long_threshold=0.8,
-                 short_threshold=-0.8,
+                 short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY,
                  provider='eastmoney') -> None:
         self.entity_ids = entity_ids
@@ -53,23 +62,27 @@ class TargetSelector(object):
 
         self.open_long_df: DataFrame = None
         self.open_short_df: DataFrame = None
-        self.keep_long_df: DataFrame = None
-        self.keep_short_df: DataFrame = None
 
         self.init_factors(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges, codes=codes,
-                          the_timestamp=the_timestamp, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+                          the_timestamp=the_timestamp, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                          level=self.level)
 
-    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                     end_timestamp):
+    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+                     level):
         pass
 
     def add_filter_factor(self, factor: FilterFactor):
+        self.check_factor(factor)
         self.filter_factors.append(factor)
         return self
 
     def add_score_factor(self, factor: ScoreFactor):
+        self.check_factor(factor)
         self.score_factors.append(factor)
         return self
+
+    def check_factor(self, factor: Factor):
+        assert factor.level == self.level
 
     def move_on(self, to_timestamp=None, kdata_use_begin_time=False, timeout=20):
         if self.score_factors:
@@ -120,15 +133,11 @@ class TargetSelector(object):
 
         self.generate_targets()
 
-    def get_targets(self, timestamp, target_type='open_long') -> pd.DataFrame:
-        if target_type == 'open_long':
+    def get_targets(self, timestamp, target_type: TargetType = TargetType.open_long) -> pd.DataFrame:
+        if target_type == TargetType.open_long:
             df = self.open_long_df
-        if target_type == 'open_short':
+        if target_type == TargetType.open_short:
             df = self.open_short_df
-        if target_type == 'keep_long':
-            df = self.keep_long_df
-        if target_type == 'keep_short':
-            df = self.keep_short_df
 
         if df_is_not_null(df):
             if timestamp in df.index:
@@ -137,16 +146,10 @@ class TargetSelector(object):
         return []
 
     def get_open_long_targets(self, timestamp):
-        return self.get_targets(timestamp=timestamp, target_type='open_long')
+        return self.get_targets(timestamp=timestamp, target_type=TargetType.open_long)
 
     def get_open_short_targets(self, timestamp):
-        return self.get_targets(timestamp=timestamp, target_type='open_short')
-
-    def get_keep_long_targets(self, timestamp):
-        return self.get_targets(timestamp=timestamp, target_type='keep_long')
-
-    def get_keep_short_targets(self, timestamp):
-        return self.get_targets(timestamp=timestamp, target_type='keep_short')
+        return self.get_targets(timestamp=timestamp, target_type=TargetType.open_short)
 
     # overwrite it to generate targets
     def generate_targets(self):
@@ -169,8 +172,6 @@ class TargetSelector(object):
         self.open_long_df = self.normalize_result_df(long_result)
         self.open_short_df = self.normalize_result_df(short_result)
 
-        # TODO:keep_long,keep_short algorithm
-
     def get_result_df(self):
         return self.open_long_df
 
@@ -182,7 +183,6 @@ class TargetSelector(object):
         return df
 
     def draw(self,
-             chart='table',
              render='html',
              file_name=None,
              width=None,
@@ -190,20 +190,18 @@ class TargetSelector(object):
              title=None,
              keep_ui_state=True,
              annotation_df=None,
-             targets='open_long'):
+             target_type: TargetType = TargetType.open_long):
 
-        if targets == 'open_long':
+        if target_type == TargetType.open_long:
             df = self.open_long_df.copy()
-        elif targets == 'open_short':
-            df = self.open_long_df.copy()
+        elif target_type == TargetType.open_short:
+            df = self.open_short_df.copy()
 
-        df[targets] = targets
-        df = df.reset_index()
+        df['target_type'] = target_type.value
 
         if df_is_not_null(df):
             drawer = Drawer(
-                NormalData(df=df, annotation_df=annotation_df, category_field=targets, index_field='timestamp',
-                           is_timeseries=True))
+                NormalData(df=df, annotation_df=annotation_df, index_field='timestamp', is_timeseries=True))
 
-            drawer.draw(chart=chart, render=render, file_name=file_name,
-                        width=width, height=height, title=title, keep_ui_state=keep_ui_state)
+            drawer.draw_table(render=render, file_name=file_name, width=width, height=height, title=title,
+                              keep_ui_state=keep_ui_state)

@@ -10,7 +10,7 @@ from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.score_algorithm import Scorer
 from zvdata.sedes import Jsonable, UiComposable
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 
 
 class FactorType(enum.Enum):

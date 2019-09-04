@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from ..context import init_context
 
 init_context()

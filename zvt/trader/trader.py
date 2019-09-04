@@ -6,17 +6,17 @@ from typing import List, Union
 import pandas as pd
 import simplejson
 
+from zvdata import IntervalLevel
 from zvdata.domain import get_db_session
-from zvdata.structs import IntervalLevel
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.business import get_trader
 from zvt.api.common import get_one_day_trading_minutes, decode_entity_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date
 from zvt.domain import business
+from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import TechnicalFactor
-from zvt.selectors.selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
-from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,6 @@ class Trader(object):
             self.trader_name = type(self).__name__.lower()
 
         self.trading_signal_listeners = []
-        self.state_listeners = []
 
         self.selectors: List[TargetSelector] = []
 

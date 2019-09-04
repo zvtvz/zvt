@@ -8,7 +8,7 @@ import requests
 from jqdatasdk import auth, get_price, logout
 
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvt.api.common import generate_kdata_id, to_jq_entity_id, get_kdata_schema, to_jq_trading_level
 from zvt.api.rules import is_in_trading
 from zvt.api.technical import get_kdata

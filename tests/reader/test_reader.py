@@ -12,7 +12,7 @@ from zvt.domain import Stock1dKdata
 from zvdata.utils.time_utils import to_time_str
 
 from zvdata.reader import DataReader
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 
 
 def test_china_stock_reader():

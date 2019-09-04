@@ -4,7 +4,7 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata.factor import Factor
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvt.domain import FinanceFactor
 
 

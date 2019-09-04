@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.domain import get_db_session
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema

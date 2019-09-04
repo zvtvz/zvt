@@ -1,12 +1,28 @@
 # -*- coding: utf-8 -*-
-from zvdata.structs import IntervalLevel
-from zvt.factors.technical_factor import CrossMaFactor
+from zvdata import IntervalLevel
+from zvt.factors.target_selector import TargetSelector
+from zvt.factors.technical_factor import CrossMaFactor, BullFactor
 from ..context import init_context
 
 init_context()
 
-from zvt.selectors.technical_selector import TechnicalSelector
-from zvt.selectors.selector import TargetSelector
+
+class TechnicalSelector(TargetSelector):
+
+    def __init__(self, entity_ids=None, entity_type='stock', exchanges=['sh', 'sz'], codes=None, the_timestamp=None,
+                 start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
+                 level=IntervalLevel.LEVEL_1DAY, provider='joinquant') -> None:
+        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+                         long_threshold, short_threshold, level, provider)
+
+    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
+                     end_timestamp, level):
+        bull_factor = BullFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+                                 codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
+                                 end_timestamp=end_timestamp, provider='joinquant', level=level,
+                                 auto_load=True)
+
+        self.filter_factors = [bull_factor]
 
 
 def test_cross_ma_selector():
@@ -59,11 +75,5 @@ def test_technical_selector():
     targets = selector.get_open_long_targets('2019-06-19')
 
     assert 'stock_sz_000338' in targets
-
-    assert 'stock_sz_002572' not in targets
-
-    targets = selector.get_keep_long_targets('2019-06-19')
-
-    assert 'stock_sz_000338' not in targets
 
     assert 'stock_sz_002572' not in targets

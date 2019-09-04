@@ -2,7 +2,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.domain import register_schema, register_entity
-from zvdata.structs import EntityMixin
+from zvdata import EntityMixin
 
 CoinMetaBase = declarative_base()
 

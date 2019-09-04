@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
+from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import CrossMaFactor, BullFactor
-from zvt.selectors.selector import TargetSelector
+
 from zvt.settings import SAMPLE_STOCK_CODES
-from zvt.trader.impls import StockTrader
+from zvt.trader.trader import Trader
+
+
+class StockTrader(Trader):
+    entity_type = 'stock'
 
 
 # make sure run init_data_sample.py to init the data sample at first
