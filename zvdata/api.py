@@ -6,7 +6,7 @@ from sqlalchemy import func, exists, and_
 from sqlalchemy.orm import Query, Session
 
 from zvdata.domain import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null, index_df
 from zvdata.utils.time_utils import to_pd_timestamp
 

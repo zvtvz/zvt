@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-from zvdata.structs import EntityMixin
+from zvdata import EntityMixin
 from zvdata.utils.utils import add_to_map_list
 
 logger = logging.getLogger(__name__)
@@ -287,7 +287,7 @@ from typing import List, Union
 import pandas as pd
 from sqlalchemy.orm import Session
 from zvdata.api import get_data
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 '''
 api_template = '''
 {}

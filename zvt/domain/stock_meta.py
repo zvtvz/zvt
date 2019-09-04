@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from zvdata.domain import register_schema, register_api, register_entity
-from zvdata.structs import EntityMixin
+from zvdata import EntityMixin
 
 StockMetaBase = declarative_base()
 

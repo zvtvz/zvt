@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.domain import register_schema, register_api
-from zvdata.structs import Mixin
+from zvdata import Mixin
 
 MoneyFlowBase = declarative_base()
 

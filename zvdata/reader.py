@@ -9,7 +9,7 @@ import pandas as pd
 from zvdata.api import get_data
 from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import index_df_with_category_xfield, df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, to_time_str, now_pd_timestamp
 

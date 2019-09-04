@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.time_utils import day_offset_today
 from ...context import init_context
 

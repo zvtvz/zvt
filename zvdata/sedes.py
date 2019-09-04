@@ -14,7 +14,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql.elements import BinaryExpression
 
 from zvdata.domain import context, table_name_to_domain_name
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.time_utils import to_time_str
 
 

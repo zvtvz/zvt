@@ -1,5 +1,5 @@
 from zvdata.domain import get_db_session
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from ..context import init_context
 
 init_context()

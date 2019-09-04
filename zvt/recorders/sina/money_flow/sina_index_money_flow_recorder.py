@@ -5,7 +5,7 @@ import requests
 
 from zvdata.domain import get_db_session
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvt.api.technical import get_entities
 from zvt.domain import IndexMoneyFlow, StockCategory, Index
 from zvdata.utils.time_utils import to_pd_timestamp

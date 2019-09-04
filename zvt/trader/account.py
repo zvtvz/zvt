@@ -4,7 +4,7 @@ import logging
 import math
 
 from zvdata.domain import get_db_session
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvt.api.business import get_account
 from zvt.api.common import decode_entity_id, get_kdata_schema
 from zvt.api.rules import get_trading_meta

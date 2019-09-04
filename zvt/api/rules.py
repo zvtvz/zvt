@@ -2,7 +2,7 @@
 import logging
 
 import pandas as pd
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.time_utils import to_pd_timestamp
 
 from zvt.api.common import decode_entity_id

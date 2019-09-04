@@ -4,7 +4,7 @@ import time
 import requests
 
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.structs import IntervalLevel
+from zvdata import IntervalLevel
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.domain import StockMoneyFlow, Stock
 from zvdata.utils.utils import to_float
