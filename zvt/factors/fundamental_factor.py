@@ -3,8 +3,8 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata.factor import Factor
 from zvdata import IntervalLevel
+from zvdata.factor import Factor
 from zvt.domain import FinanceFactor
 
 
@@ -48,7 +48,8 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = [FinanceFactor.roe,
                                   FinanceFactor.op_income_growth_yoy,
-                                  FinanceFactor.net_profit_growth_yoy],
+                                  FinanceFactor.net_profit_growth_yoy,
+                                  FinanceFactor.report_period],
                  filters: List = [FinanceFactor.roe > 0.03,
                                   FinanceFactor.op_income_growth_yoy >= 0.1,
                                   FinanceFactor.net_profit_growth_yoy >= 0.1],
@@ -64,13 +65,30 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  # 3 years
-                 window='1095d') -> None:
+                 window='1095d',
+                 count=12) -> None:
         self.window = window
+        self.count = count
         super().__init__(FinanceFactor, entity_ids, 'stock', ['sh', 'sz'], codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number)
 
     def do_compute(self):
+        def filter_df(df):
+            se = pd.Series(index=df.index)
+            for index, row in df.iterrows():
+                if row.report_period == 'year':
+                    se[index] = (row.roe >= 0.12)
+                elif row.report_period == 'season3':
+                    se[index] = (row.roe >= 0.09)
+                elif row.report_period == 'half_year':
+                    se[index] = (row.roe >= 0.08)
+                else:
+                    se[index] = (row.roe >= 0.03)
+            return se
+
+        self.depth_df = self.data_df.loc[lambda df: filter_df(df), :]
+
         self.depth_df = pd.DataFrame(index=self.data_df.index, columns=['count'], data=1)
 
         self.depth_df = self.depth_df.reset_index(level=1)
@@ -84,7 +102,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
 
         self.logger.info('factor:{},depth_df:\n{}'.format(self.factor_name, self.depth_df))
 
-        self.result_df = self.depth_df.apply(lambda x: x >= 12)
+        self.result_df = self.depth_df.apply(lambda x: x >= self.count)
 
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))
 
