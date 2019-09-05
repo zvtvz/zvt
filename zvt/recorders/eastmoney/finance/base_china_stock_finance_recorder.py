@@ -3,7 +3,7 @@ from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
 from zvdata.api import get_data
 from zvdata.utils.pd_utils import df_is_not_null
-from zvt.api.api import get_finance_factors
+from zvt.api.api import get_finance_factor
 from zvt.api.common import to_jq_entity_id, to_jq_report_period
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
@@ -130,7 +130,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                 for the_data in the_data_list:
                     self.fill_timestamp_with_jq(entity, the_data)
             else:
-                df = get_finance_factors(entity_id=entity.id,
+                df = get_finance_factor(entity_id=entity.id,
                                          columns=[FinanceFactor.timestamp, FinanceFactor.report_date, FinanceFactor.id],
                                          filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
                                                   FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),

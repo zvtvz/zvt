@@ -55,6 +55,7 @@ class IntervalLevel(enum.Enum):
     LEVEL_4HOUR = '4h'
     LEVEL_1DAY = '1d'
     LEVEL_1WEEK = '1wk'
+    LEVEL_1MON = '1mon'
 
     def to_pd_freq(self):
         if self == IntervalLevel.LEVEL_1MIN:
@@ -144,6 +145,8 @@ class IntervalLevel(enum.Enum):
             return 24 * 60 * 60 * 1000
         if self == IntervalLevel.LEVEL_1WEEK:
             return 7 * 24 * 60 * 60 * 1000
+        if self == IntervalLevel.LEVEL_1MON:
+            return 31 * 7 * 24 * 60 * 60 * 1000
 
     def __ge__(self, other):
         if self.__class__ is other.__class__:

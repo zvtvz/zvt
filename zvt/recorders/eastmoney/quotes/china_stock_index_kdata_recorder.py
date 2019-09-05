@@ -1,0 +1,92 @@
+# -*- coding: utf-8 -*-
+
+import requests
+
+from zvdata import IntervalLevel
+from zvdata.api import get_entities
+from zvdata.domain import get_db_session
+from zvdata.recorder import FixedCycleDataRecorder
+from zvdata.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
+from zvdata.utils.utils import json_callback_param, to_float
+from zvt.api.common import generate_kdata_id, get_kdata_schema
+from zvt.domain import Index, StockCategory
+
+
+def level_flag(level: IntervalLevel):
+    level = IntervalLevel(level)
+    if level == IntervalLevel.LEVEL_1WEEK:
+        return 102
+    if level == IntervalLevel.LEVEL_1MON:
+        return 103
+
+    assert False
+
+
+# 抓取行业的周线,月线数据，用于中期选行业
+class ChinaStockIndexKdataRecorder(FixedCycleDataRecorder):
+    entity_provider: str = 'eastmoney'
+    entity_schema = Index
+
+    provider = 'eastmoney'
+    url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.{}&cb=fsdata1567673076&klt={}&fqt=0&lmt={}&end={}&iscca=1&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&fsdata1567673076=fsdata1567673076'
+
+    def __init__(self, entity_type='index', entity_ids=None, codes=None, batch_size=10,
+                 force_update=False, sleeping_time=10, default_size=10000, one_shot=True, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, contain_unfinished_data=False,
+                 level=IntervalLevel.LEVEL_1WEEK, kdata_use_begin_time=False, close_hour=0, close_minute=0,
+                 one_day_trading_minutes=24 * 60) -> None:
+        self.data_schema = get_kdata_schema(entity_type=entity_type, level=level)
+        super().__init__(entity_type, None, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
+                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
+                         one_day_trading_minutes)
+
+    def init_entities(self):
+        self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
+
+        self.entities = get_entities(session=self.entity_session, entity_type='index',
+                                     exchanges=self.exchanges,
+                                     codes=self.codes,
+                                     entity_ids=self.entity_ids,
+                                     return_type='domain', provider=self.provider,
+                                     # 只抓概念和行业
+                                     filters=[Index.category.in_(
+                                         [StockCategory.industry.value, StockCategory.concept.value])])
+
+    def record(self, entity, start, end, size, timestamps):
+        the_url = self.url.format("{}".format(entity.code), level_flag(self.level), size,
+                                  now_time_str(fmt=TIME_FORMAT_DAY1))
+
+        resp = requests.get(the_url)
+        results = json_callback_param(resp.text)
+
+        kdatas = []
+
+        if results:
+            klines = results['data']['klines']
+
+            for result in klines:
+                # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
+                # time,open,close,high,low,volume,amount
+                fields = result.split(',')
+                the_timestamp = to_pd_timestamp(fields[0])
+                the_id = generate_kdata_id(entity_id=entity.id, timestamp=the_timestamp, level=self.level)
+
+                kdatas.append(self.data_schema(id=the_id,
+                                               timestamp=the_timestamp,
+                                               entity_id=entity.id,
+                                               code=entity.code,
+                                               name=entity.name,
+                                               level=self.level.value,
+                                               open=to_float(fields[1]),
+                                               close=to_float(fields[2]),
+                                               high=to_float(fields[3]),
+                                               low=to_float(fields[4]),
+                                               volume=to_float(fields[5]),
+                                               turnover=to_float(fields[6])))
+        return kdatas
+
+
+if __name__ == '__main__':
+    recorder = ChinaStockIndexKdataRecorder(level=IntervalLevel.LEVEL_1MON)
+    recorder.run()

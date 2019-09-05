@@ -6,7 +6,7 @@ import plotly.graph_objs as go
 import simplejson
 
 from zvt.api.common import decode_entity_id
-from zvt.api.technical import get_current_price
+from zvt.api.quote import get_current_price
 from zvt.domain import business
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.reader.business_reader import OrderReader, AccountReader

@@ -3,7 +3,7 @@ from ..context import init_context
 
 init_context()
 
-from zvt.api.technical import get_entities, get_securities_in_blocks
+from zvt.api.quote import get_entities, get_securities_in_blocks
 
 
 def test_basic_get_securities():

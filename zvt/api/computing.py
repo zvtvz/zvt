@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.api.technical import get_kdata
+from zvt.api.quote import get_kdata
 
 
 def ma(s, window=5):

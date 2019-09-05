@@ -8,7 +8,7 @@ from jqdatasdk import auth, get_price, logout
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
 from zvt.api.common import generate_kdata_id, to_jq_entity_id
-from zvt.api.technical import get_kdata
+from zvt.api.quote import get_kdata
 from zvt.domain import Stock1dKdata, Stock
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 from zvt.utils import utils

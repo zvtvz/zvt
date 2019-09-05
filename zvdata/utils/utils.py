@@ -72,7 +72,8 @@ def pct_to_float(the_str, default=None):
 
 
 def json_callback_param(the_str):
-    return eval(the_str[the_str.index("(") + 1:the_str.index(")")])
+    json_str = the_str[the_str.index("(") + 1:the_str.index(")")].replace('null', 'None')
+    return eval(json_str)
 
 
 def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_func=lambda x: x):

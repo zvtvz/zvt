@@ -10,6 +10,7 @@ import pandas as pd
 from dash import dash
 from dash.dependencies import Input, Output, State
 
+from zvdata import IntervalLevel
 from zvdata.app import app
 from zvdata.chart import Drawer
 from zvdata.domain import global_providers, get_schemas, get_schema_by_name, get_schema_columns
@@ -33,6 +34,12 @@ layout = html.Div(
 
                 # schema selector
                 dcc.Dropdown(id='schema-selector', placeholder='select schema'),
+
+                # level selector
+                dcc.Dropdown(id='level-selector', placeholder='select level',
+                             options=[{'label': level.value, 'value': level.value} for level in
+                                      IntervalLevel],
+                             value=IntervalLevel.LEVEL_1DAY.value),
 
                 # column selector
                 html.Div(id='schema-column-selector-container', children=None),
@@ -177,7 +184,7 @@ def update_selected_properties(selected_cols, provider, schema_name, options, va
     raise dash.exceptions.PreventUpdate()
 
 
-def properties_to_readers(properties, codes, start_date, end_date) -> List[DataReader]:
+def properties_to_readers(properties, level, codes, start_date, end_date) -> List[DataReader]:
     provider_schema_map_cols = {}
 
     for prop in properties:
@@ -196,7 +203,7 @@ def properties_to_readers(properties, codes, start_date, end_date) -> List[DataR
 
         schema = get_schema_by_name(schema_name)
 
-        readers.append(DataReader(data_schema=schema, provider=provider, codes=codes,
+        readers.append(DataReader(data_schema=schema, provider=provider, codes=codes, level=level,
                                   columns=columns, start_timestamp=start_date, end_timestamp=end_date,
                                   time_field=schema.time_field()))
 
@@ -211,16 +218,17 @@ def properties_to_readers(properties, codes, start_date, end_date) -> List[DataR
      Output('intent-selector', 'value')],
     [Input('btn-load-data', 'n_clicks')],
     state=[State('properties-selector', 'value'),
+           State('level-selector', 'value'),
            State('input-code-filter', 'value'),
            State('date-picker-range', 'start_date'),
            State('date-picker-range', 'end_date')])
-def update_data_table(n_clicks, properties, codes: str, start_date, end_date):
+def update_data_table(n_clicks, properties, level, codes: str, start_date, end_date):
     if n_clicks and properties:
         props = []
         for prop in properties:
             props.append(json.loads(prop))
 
-        readers = properties_to_readers(properties=props, codes=codes, start_date=start_date,
+        readers = properties_to_readers(properties=props, level=level, codes=codes, start_date=start_date,
                                         end_date=end_date)
         if readers:
             data_df = readers[0].data_df
@@ -231,7 +239,11 @@ def update_data_table(n_clicks, properties, codes: str, start_date, end_date):
             global current_df
             current_df = data_df
 
-            normal_data = NormalData(data_df)
+            if not df_is_not_null(current_df):
+                return 'no data,please reselect!', [], '', [
+                    {'label': 'compare_self', 'value': 'compare_self'}], 'compare_self'
+
+            normal_data = NormalData(current_df)
             data_table = Drawer(data=normal_data).draw_data_table(id='data-table-content')
 
             # generate col setting table
@@ -256,7 +268,7 @@ def update_data_table(n_clicks, properties, codes: str, start_date, end_date):
 
 
         else:
-            return 'no data,please reselect!', None, '', [
+            return 'no data,please reselect!', [], '', [
                 {'label': 'compare_self', 'value': 'compare_self'}], 'compare_self'
 
     raise dash.exceptions.PreventUpdate()
