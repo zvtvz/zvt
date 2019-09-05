@@ -9,7 +9,7 @@ import dash_core_components as dcc
 
 from dash.dependencies import Input, Output
 
-from zvt.apps import factor_app, trader_app
+from zvt.apps import trader_app
 
 from zvdata.app import app
 from zvdata.apps import data_app
@@ -29,12 +29,12 @@ def serve_layout():
                     className='custom-tab',
                     selected_className='custom-tab--selected'
                 ),
-                dcc.Tab(
-                    label='factor',
-                    value='factor',
-                    className='custom-tab',
-                    selected_className='custom-tab--selected'
-                ),
+                # dcc.Tab(
+                #     label='factor',
+                #     value='factor',
+                #     className='custom-tab',
+                #     selected_className='custom-tab--selected'
+                # ),
                 dcc.Tab(
                     label='trader',
                     value='trader', className='custom-tab',
@@ -54,8 +54,8 @@ app.layout = serve_layout
 def render_content(tab):
     if tab == 'data':
         return data_app.layout
-    elif tab == 'factor':
-        return factor_app.layout
+    # elif tab == 'factor':
+    #     return factor_app.layout
     elif tab == 'trader':
         return trader_app.serve_layout()
 

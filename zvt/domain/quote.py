@@ -2,8 +2,8 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata.domain import register_schema
 from zvdata import Mixin
+from zvdata.domain import register_schema
 
 
 class StockKdataCommon(Mixin):
@@ -115,14 +115,14 @@ class Stock1dKdata(Stock1DKdataBase, StockKdataCommon):
 
 register_schema(providers=['joinquant', 'netease'], db_name='stock_1d_kdata', schema_base=Stock1DKdataBase)
 
-Stock1WKKdataBase = declarative_base()
+Stock1wkKdataBase = declarative_base()
 
 
-class Stock1wkKdata(Stock1WKKdataBase, StockKdataCommon):
+class Stock1wkKdata(Stock1wkKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1wk_kdata'
 
 
-register_schema(providers=['joinquant', 'netease'], db_name='stock_1wk_kdata', schema_base=Stock1WKKdataBase)
+register_schema(providers=['joinquant', 'netease'], db_name='stock_1wk_kdata', schema_base=Stock1wkKdataBase)
 
 Index1DKdataBase = declarative_base()
 
@@ -138,6 +138,36 @@ class Index1dKdata(Index1DKdataBase, KdataCommon):
 
 
 register_schema(providers=['exchange'], db_name='index_1d_kdata', schema_base=Index1DKdataBase)
+
+Index1wkKdataBase = declarative_base()
+
+
+class Index1wkKdata(Index1wkKdataBase, KdataCommon):
+    __tablename__ = 'index_1wk_kdata'
+    turnover_rate = Column(Float)
+
+    # ETF 累计净值（货币 ETF 为七日年化)
+    cumulative_net_value = Column(Float)
+    # ETF 净值增长率
+    change_pct = Column(Float)
+
+
+register_schema(providers=['eastmoney'], db_name='index_1wk_kdata', schema_base=Index1wkKdataBase)
+
+Index1monKdataBase = declarative_base()
+
+
+class Index1monKdata(Index1monKdataBase, KdataCommon):
+    __tablename__ = 'index_1mon_kdata'
+    turnover_rate = Column(Float)
+
+    # ETF 累计净值（货币 ETF 为七日年化)
+    cumulative_net_value = Column(Float)
+    # ETF 净值增长率
+    change_pct = Column(Float)
+
+
+register_schema(providers=['eastmoney'], db_name='index_1mon_kdata', schema_base=Index1monKdataBase)
 
 CoinTickKdataBase = declarative_base()
 

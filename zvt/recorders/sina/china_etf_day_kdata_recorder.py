@@ -7,7 +7,7 @@ import requests
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
 from zvt.api.common import generate_kdata_id
-from zvt.api.technical import get_kdata
+from zvt.api.quote import get_kdata
 from zvt.domain import Index, Index1dKdata
 from zvt.recorders.consts import EASTMONEY_ETF_NET_VALUE_HEADER
 from zvdata.utils.time_utils import to_time_str

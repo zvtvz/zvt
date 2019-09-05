@@ -2,7 +2,7 @@ from ..context import init_context
 
 init_context()
 
-from zvt.api.api import get_balance_sheet, get_income_statement, get_cash_flow_statement, get_finance_factors
+from zvt.api.api import get_balance_sheet, get_income_statement, get_cash_flow_statement, get_finance_factor
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, CashFlowStatement
 from zvdata.domain import get_db_session
 from zvdata.utils.time_utils import to_time_str
@@ -28,7 +28,7 @@ def test_000001_finance_factor():
                           '1997-06-30', '1996-12-31', '1996-06-30', '1995-12-31', '1995-06-30', '1994-12-31',
                           '1994-06-30', '1993-12-31', '1993-06-30', '1992-12-31', '1991-12-31', '1990-12-31',
                           '1989-12-31']
-    result = get_finance_factors(session=session, provider='eastmoney', return_type='domain',
+    result = get_finance_factor(session=session, provider='eastmoney', return_type='domain',
                                  codes=['000001'], end_timestamp='2018-12-30',
                                  order=FinanceFactor.report_date.desc(), time_field='report_date')
     assert len(correct_timestamps) == len(result)
@@ -272,7 +272,7 @@ def test_000778_finance_factor():
                           '2002-03-31', '2001-12-31', '2001-06-30', '2000-12-31', '2000-06-30', '1999-12-31',
                           '1999-06-30', '1998-12-31', '1998-06-30', '1997-12-31', '1997-06-30', '1996-12-31',
                           '1995-12-31', '1994-12-31']
-    result = get_finance_factors(session=session, provider='eastmoney', return_type='domain',
+    result = get_finance_factor(session=session, provider='eastmoney', return_type='domain',
                                  codes=['000778'], end_timestamp='2018-12-30',
                                  order=FinanceFactor.report_date.desc(), time_field='report_date')
     assert len(correct_timestamps) == len(result)

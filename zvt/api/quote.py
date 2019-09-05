@@ -1,11 +1,30 @@
 # -*- coding: utf-8 -*-
+from typing import Union
+
+from zvdata import IntervalLevel
 from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.domain import get_db_session
-from zvdata import IntervalLevel
-
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
+from zvt.domain import StockCategory
 from zvt.domain.stock_meta import Index
+
+
+def get_indices(provider: str = 'sina',
+                block_category: Union[str, StockCategory] = 'concept',
+                return_type: str = 'df') -> object:
+    if type(block_category) == StockCategory:
+        block_category = block_category.value
+
+    session = get_db_session(provider=provider, data_schema=Index)
+
+    filters = [Index.category == block_category]
+    blocks = get_entities(entity_type='index', provider=provider, filters=filters,
+                          session=session, return_type=return_type)
+    return blocks
+
+
+get_blocks = get_indices
 
 
 def get_securities_in_blocks(block_names=['HS300_'], block_category='concept', provider='eastmoney'):
