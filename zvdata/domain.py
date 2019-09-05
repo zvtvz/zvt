@@ -71,7 +71,7 @@ def init_factor_schema():
     register_schema(providers=['zvdata'], db_name='core', schema_base=BusinessBase)
 
 
-def init_context(data_path: str, ui_path: str, domain_module: str, register_api: bool = False) -> None:
+def init_context(data_path: str, ui_path: str, log_path: str, domain_module: str, register_api: bool = False) -> None:
     """
     now we just support sqlite engine for storing the data,you need to set the path for the db
 
@@ -79,6 +79,8 @@ def init_context(data_path: str, ui_path: str, domain_module: str, register_api:
     :type data_path:
     :param ui_path: the path for storing render html
     :type ui_path:
+    :param log_path: the path for logs
+    :type log_path:
     :param domain_module: the module name of your domains
     :type domain_module:
     :param register_api: whether register the api
@@ -86,6 +88,7 @@ def init_context(data_path: str, ui_path: str, domain_module: str, register_api:
     """
     context['data_path'] = data_path
     context['ui_path'] = ui_path
+    context['log_path'] = log_path
     context['domain_module'] = domain_module
     context['register_api'] = register_api
 

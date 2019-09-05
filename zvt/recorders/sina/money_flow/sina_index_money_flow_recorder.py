@@ -44,6 +44,7 @@ class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
                                      codes=self.codes,
                                      entity_ids=self.entity_ids,
                                      return_type='domain', provider=self.provider,
+                                     # 只抓概念和行业
                                      filters=[Index.category.in_(
                                          [StockCategory.industry.value, StockCategory.concept.value])])
 
