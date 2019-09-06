@@ -13,6 +13,15 @@ class Scorer(object):
         return input_df
 
 
+class RankScorer(Scorer):
+    def __init__(self, ascending=True) -> None:
+        self.ascending = ascending
+
+    def compute(self, input_df) -> pd.DataFrame:
+        result_df = input_df.groupby(level=1).rank(ascending=self.ascending, pct=True)
+        return result_df
+
+
 class QuantileScorer(Scorer):
     def __init__(self, score_levels=[0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]) -> None:
         self.score_levels = score_levels
