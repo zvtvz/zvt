@@ -12,6 +12,7 @@ from zvdata.factor import FilterFactor, ScoreFactor, Factor
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.api.quote import get_securities_in_blocks
 
 
 class TargetType(Enum):
@@ -34,12 +35,14 @@ class TargetSelector(object):
                  long_threshold=0.8,
                  short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY,
-                 provider='eastmoney') -> None:
+                 provider='eastmoney',
+                 block_selector=None) -> None:
         self.entity_ids = entity_ids
         self.entity_type = entity_type
         self.exchanges = exchanges
         self.codes = codes
         self.provider = provider
+        self.block_selector: TargetSelector = block_selector
 
         if the_timestamp:
             self.the_timestamp = to_pd_timestamp(the_timestamp)
@@ -85,12 +88,17 @@ class TargetSelector(object):
         assert factor.level == self.level
 
     def move_on(self, to_timestamp=None, kdata_use_begin_time=False, timeout=20):
+        if self.block_selector:
+            self.block_selector.move_on(to_timestamp=to_timestamp, kdata_use_begin_time=kdata_use_begin_time,
+                                        timeout=timeout)
+
         if self.score_factors:
             for factor in self.score_factors:
                 factor.move_on(to_timestamp, timeout=timeout)
         if self.filter_factors:
             for factor in self.filter_factors:
                 factor.move_on(to_timestamp, timeout=timeout)
+
         self.run()
 
     def run(self):
@@ -151,6 +159,19 @@ class TargetSelector(object):
     def get_open_short_targets(self, timestamp):
         return self.get_targets(timestamp=timestamp, target_type=TargetType.open_short)
 
+    def in_block(self, df, target_type: TargetType = TargetType.open_long):
+        se = pd.Series(index=df.index)
+        for index, row in df.iterrows():
+            blocks = self.block_selector.get_targets(index[1], target_type=target_type)
+
+            se[index] = False
+            if blocks:
+                securities = get_securities_in_blocks(provider=self.block_selector.provider, ids=blocks)
+                if index[0] in securities:
+                    se[index] = True
+
+        return se
+
     # overwrite it to generate targets
     def generate_targets(self):
         if df_is_not_null(self.filter_result) and df_is_not_null(self.score_result):
@@ -168,6 +189,14 @@ class TargetSelector(object):
         else:
             long_result = self.filter_result[self.filter_result.score]
             short_result = self.filter_result[~self.filter_result.score]
+
+        # filter in blocks
+        if self.block_selector:
+            if df_is_not_null(self.block_selector.open_long_df):
+                long_result = long_result[lambda df: self.in_block(long_result, target_type=TargetType.open_long)]
+
+            if df_is_not_null(self.block_selector.open_short_df):
+                short_result = short_result[lambda df: self.in_block(short_result, target_type=TargetType.open_short)]
 
         self.open_long_df = self.normalize_result_df(long_result)
         self.open_short_df = self.normalize_result_df(short_result)
