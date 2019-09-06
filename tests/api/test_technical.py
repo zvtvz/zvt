@@ -16,6 +16,6 @@ def test_basic_get_securities():
 
 
 def test_get_security_blocks():
-    hs300 = get_securities_in_blocks(block_names=['HS300_'])
+    hs300 = get_securities_in_blocks(names=['HS300_'])
     assert len(hs300) == 300
     assert 'stock_sz_000338' in hs300

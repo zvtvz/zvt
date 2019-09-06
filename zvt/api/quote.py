@@ -6,13 +6,25 @@ from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.domain import get_db_session
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
-from zvt.domain import StockCategory
+from zvt.domain import StockCategory, IndexMoneyFlow
 from zvt.domain.stock_meta import Index
 
 
 def get_indices(provider: str = 'sina',
                 block_category: Union[str, StockCategory] = 'concept',
                 return_type: str = 'df') -> object:
+    """
+    get indices/blocks on block_category
+
+    :param provider:
+    :type provider:
+    :param block_category:
+    :type block_category:
+    :param return_type:
+    :type return_type:
+    :return:
+    :rtype:
+    """
     if type(block_category) == StockCategory:
         block_category = block_category.value
 
@@ -27,17 +39,33 @@ def get_indices(provider: str = 'sina',
 get_blocks = get_indices
 
 
-def get_securities_in_blocks(block_names=['HS300_'], block_category='concept', provider='eastmoney'):
+def get_securities_in_blocks(provider='eastmoney',
+                             block_category: Union[str, StockCategory] = 'concept',
+                             names=['HS300_'], codes=None):
     session = get_db_session(provider=provider, data_schema=Index)
 
     filters = [Index.category == block_category]
+
+    # add name filters
     name_filters = None
-    for block_name in block_names:
-        if name_filters:
-            name_filters |= (Index.name == block_name)
-        else:
-            name_filters = (Index.name == block_name)
+    if names:
+        for block_name in names:
+            if name_filters:
+                name_filters |= (Index.name == block_name)
+            else:
+                name_filters = (Index.name == block_name)
     filters.append(name_filters)
+
+    # add code filters
+    code_filters = None
+    if codes:
+        for code in codes:
+            if code_filters:
+                code_filters |= (Index.code == code)
+            else:
+                code_filters = (Index.code == code)
+    filters.append(name_filters)
+
     blocks = get_entities(entity_type='index', provider='eastmoney',
                           filters=filters, return_type='domain', session=session)
     securities = []
@@ -82,4 +110,16 @@ def get_current_price(entity_ids=None, entity_type='coin'):
 
 
 if __name__ == '__main__':
-    get_entities(provider='linkedin', entity_type='user', limit=10)
+    money_flow_session = get_db_session(provider='sina', data_schema=IndexMoneyFlow)
+
+    entities = get_entities(entity_type='index',
+                            return_type='domain', provider='sina',
+                            # 只抓概念和行业
+                            filters=[Index.category.in_(
+                                [StockCategory.industry.value, StockCategory.concept.value])])
+
+    for entity in entities:
+        sql = 'UPDATE index_money_flow SET name="{}" where code="{}"'.format(
+            entity.name, entity.code)
+        money_flow_session.execute(sql)
+        money_flow_session.commit()

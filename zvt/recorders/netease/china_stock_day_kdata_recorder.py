@@ -5,14 +5,14 @@ import pandas as pd
 import requests
 from jqdatasdk import auth, get_price, logout
 
-from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
+from zvdata.recorder import FixedCycleDataRecorder
+from zvdata.utils import utils
+from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
 from zvt.api.common import generate_kdata_id, to_jq_entity_id
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock1dKdata, Stock
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
-from zvt.utils import utils
-from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
 
 
 class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):

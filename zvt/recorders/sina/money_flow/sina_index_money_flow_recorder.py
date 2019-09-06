@@ -3,13 +3,13 @@ import time
 
 import requests
 
+from zvdata import IntervalLevel
 from zvdata.domain import get_db_session
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata import IntervalLevel
-from zvt.api.quote import get_entities
-from zvt.domain import IndexMoneyFlow, StockCategory, Index
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float
+from zvt.api.quote import get_entities
+from zvt.domain import IndexMoneyFlow, StockCategory, Index
 
 
 # 实时资金流
@@ -86,6 +86,7 @@ class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
         result_list = []
         for item in json_list:
             result_list.append({
+                'name': entity.name,
                 'timestamp': to_pd_timestamp(item['opendate']),
                 'close': to_float(item['avg_price']),
                 'change_pct': to_float(item['avg_changeratio']),
