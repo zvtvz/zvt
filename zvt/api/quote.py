@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Union
+from typing import Union, List
 
 from zvdata import IntervalLevel
 from zvdata.api import get_entities, decode_entity_id, get_data
@@ -39,34 +39,31 @@ def get_indices(provider: str = 'sina',
 get_blocks = get_indices
 
 
-def get_securities_in_blocks(provider='eastmoney',
-                             block_category: Union[str, StockCategory] = 'concept',
-                             names=['HS300_'], codes=None):
+def in_filters(col, values):
+    filters = None
+    if values:
+        for value in values:
+            if filters:
+                filters |= (col == value)
+            else:
+                filters = (col == value)
+    return filters
+
+
+def get_securities_in_blocks(provider: str = 'eastmoney',
+                             categories: List[Union[str, StockCategory]] = ['concept', 'industry'],
+                             names=None, codes=None, ids=None):
     session = get_db_session(provider=provider, data_schema=Index)
 
-    filters = [Index.category == block_category]
+    categories = [StockCategory(category).value for category in categories]
+
+    filters = [Index.category.in_(categories)]
 
     # add name filters
-    name_filters = None
     if names:
-        for block_name in names:
-            if name_filters:
-                name_filters |= (Index.name == block_name)
-            else:
-                name_filters = (Index.name == block_name)
-    filters.append(name_filters)
+        filters.append(Index.name.in_(names))
 
-    # add code filters
-    code_filters = None
-    if codes:
-        for code in codes:
-            if code_filters:
-                code_filters |= (Index.code == code)
-            else:
-                code_filters = (Index.code == code)
-    filters.append(name_filters)
-
-    blocks = get_entities(entity_type='index', provider='eastmoney',
+    blocks = get_entities(entity_ids=ids, codes=codes, entity_type='index', provider=provider,
                           filters=filters, return_type='domain', session=session)
     securities = []
     for block in blocks:
