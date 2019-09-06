@@ -4,13 +4,13 @@ from typing import List, Union
 
 import pandas as pd
 
+from zvdata import IntervalLevel
 from zvdata.chart import Drawer
 from zvdata.domain import get_db_session, FactorDomain
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.score_algorithm import Scorer
 from zvdata.sedes import Jsonable, UiComposable
-from zvdata import IntervalLevel
 
 
 class FactorType(enum.Enum):
@@ -93,7 +93,7 @@ class Factor(DataReader, DataListener, Jsonable, UiComposable, metaclass=Meta):
         self.register_data_listener(self)
 
     def pre_compute(self):
-        pass
+        self.depth_df = self.data_df
 
     def do_compute(self):
         pass
@@ -219,7 +219,7 @@ class ScoreFactor(Factor):
                          effective_number)
 
     def do_compute(self):
-        self.result_df = self.scorer.compute(self.data_df)
+        self.result_df = self.scorer.compute(input_df=self.depth_df)
 
     def after_compute(self):
         self.fill_gap()

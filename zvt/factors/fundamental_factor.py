@@ -4,8 +4,10 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata import IntervalLevel
-from zvdata.factor import Factor
-from zvt.domain import FinanceFactor
+from zvdata.factor import Factor, ScoreFactor
+from zvdata.score_algorithm import Scorer, RankScorer
+from zvdata.utils.pd_utils import index_df_with_category_xfield
+from zvt.domain import FinanceFactor, IndexMoneyFlow
 
 
 class FinanceBaseFactor(Factor):
@@ -107,6 +109,38 @@ class GoodCompanyFactor(FinanceBaseFactor):
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))
 
 
+class IndexMoneyFlowFactor(ScoreFactor):
+    def __init__(self,
+                 the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = [IndexMoneyFlow.net_inflows, IndexMoneyFlow.net_inflow_rate,
+                                  IndexMoneyFlow.net_main_inflows, IndexMoneyFlow.net_main_inflow_rate],
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 provider: str = 'sina',
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 trip_timestamp: bool = True,
+                 auto_load: bool = True,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = 10,
+                 scorer: Scorer = RankScorer(ascending=True)) -> None:
+        super().__init__(IndexMoneyFlow, None, 'index', None, None, the_timestamp, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
+                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
+
+    def pre_compute(self):
+        self.depth_df = self.data_df.copy()
+        self.depth_df = self.depth_df.groupby(level=1).rolling(window=20).mean()
+        self.depth_df = self.depth_df.reset_index(level=0, drop=True)
+        self.depth_df = self.depth_df.reset_index()
+        self.depth_df = index_df_with_category_xfield(self.depth_df)
+
+
 if __name__ == '__main__':
-    f1 = GoodCompanyFactor(start_timestamp='2000-01-01')
-    print(f1.data_df)
+    f1 = IndexMoneyFlowFactor(start_timestamp='2019-01-01')
+    print(f1.result_df)
