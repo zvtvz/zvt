@@ -14,6 +14,8 @@ from zvt.domain import Index, StockCategory
 
 def level_flag(level: IntervalLevel):
     level = IntervalLevel(level)
+    if level == IntervalLevel.LEVEL_1DAY:
+        return 101
     if level == IntervalLevel.LEVEL_1WEEK:
         return 102
     if level == IntervalLevel.LEVEL_1MON:
@@ -22,8 +24,8 @@ def level_flag(level: IntervalLevel):
     assert False
 
 
-# 抓取行业的周线,月线数据，用于中期选行业
-class ChinaStockIndexKdataRecorder(FixedCycleDataRecorder):
+# 抓取行业的日线,周线,月线数据，用于中期选行业
+class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     entity_provider: str = 'eastmoney'
     entity_schema = Index
 
@@ -65,28 +67,30 @@ class ChinaStockIndexKdataRecorder(FixedCycleDataRecorder):
         if results:
             klines = results['data']['klines']
 
-            for result in klines:
+            # TODO: ignore the last unfinished kdata now,could control it better if need
+            for result in klines[:-1]:
                 # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
-                # time,open,close,high,low,volume,amount
+                # time,open,close,high,low,volume,turnover
                 fields = result.split(',')
                 the_timestamp = to_pd_timestamp(fields[0])
+
                 the_id = generate_kdata_id(entity_id=entity.id, timestamp=the_timestamp, level=self.level)
 
-                kdatas.append(self.data_schema(id=the_id,
-                                               timestamp=the_timestamp,
-                                               entity_id=entity.id,
-                                               code=entity.code,
-                                               name=entity.name,
-                                               level=self.level.value,
-                                               open=to_float(fields[1]),
-                                               close=to_float(fields[2]),
-                                               high=to_float(fields[3]),
-                                               low=to_float(fields[4]),
-                                               volume=to_float(fields[5]),
-                                               turnover=to_float(fields[6])))
+                kdatas.append(dict(id=the_id,
+                                   timestamp=the_timestamp,
+                                   entity_id=entity.id,
+                                   code=entity.code,
+                                   name=entity.name,
+                                   level=self.level.value,
+                                   open=to_float(fields[1]),
+                                   close=to_float(fields[2]),
+                                   high=to_float(fields[3]),
+                                   low=to_float(fields[4]),
+                                   volume=to_float(fields[5]),
+                                   turnover=to_float(fields[6])))
         return kdatas
 
 
 if __name__ == '__main__':
-    recorder = ChinaStockIndexKdataRecorder(level=IntervalLevel.LEVEL_1MON)
+    recorder = ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON)
     recorder.run()

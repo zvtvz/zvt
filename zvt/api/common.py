@@ -6,9 +6,9 @@ from typing import Union
 import pandas as pd
 from sqlalchemy import exists, and_
 
+from zvdata import IntervalLevel
 from zvdata.api import decode_entity_id
 from zvdata.domain import get_db_session
-from zvdata import IntervalLevel
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt.domain import ReportPeriod, CompanyType
@@ -141,7 +141,7 @@ def get_open_time(entity_id: str):
 
 
 def generate_kdata_id(entity_id, timestamp, level):
-    if level == IntervalLevel.LEVEL_1DAY:
+    if level >= IntervalLevel.LEVEL_1DAY:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))
     else:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))

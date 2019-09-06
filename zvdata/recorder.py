@@ -6,9 +6,9 @@ from typing import List
 import pandas as pd
 from sqlalchemy.orm import Session
 
+from zvdata import IntervalLevel
 from zvdata.api import get_entities, get_data
 from zvdata.domain import get_db_session
-from zvdata import IntervalLevel
 from zvdata.utils.time_utils import is_same_date, now_pd_timestamp, to_pd_timestamp, TIME_FORMAT_DAY, to_time_str
 from zvdata.utils.utils import fill_domain_from_dict
 
@@ -179,7 +179,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
         {'original_field':('domain_field',transform_func)}
 
         """
-        raise NotImplementedError
+        return {}
 
     def record(self, entity, start, end, size, timestamps):
         """
