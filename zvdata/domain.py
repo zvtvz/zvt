@@ -243,6 +243,10 @@ def get_db_session_factory(provider: str,
     return session
 
 
+def get_providers():
+    return global_providers
+
+
 def get_schemas(provider: str) -> List[DeclarativeMeta]:
     """
     get domain schemas supported by the provider
@@ -260,6 +264,10 @@ def get_schemas(provider: str) -> List[DeclarativeMeta]:
                 if schemas1:
                     schemas += schemas1
     return schemas
+
+
+def get_entity_types():
+    return global_entity_types
 
 
 def get_schema_by_name(name: str) -> DeclarativeMeta:

@@ -39,7 +39,7 @@ pd.set_option('mode.chained_assignment', 'raise')
 
 init_log()
 
-from zvdata.domain import init_context
+from zvdata.domain import *
 
 init_context(data_path=DATA_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain', register_api=False)
 
