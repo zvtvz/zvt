@@ -173,7 +173,7 @@ def get_db_engine(provider: str,
     if data_schema:
         db_name = get_db_name(data_schema=data_schema)
 
-    db_path = os.path.join(context['data_path'], '{}_{}.db'.format(provider, db_name))
+    db_path = os.path.join(context['data_path'], '{}_{}.db?check_same_thread=False'.format(provider, db_name))
 
     engine_key = '{}_{}'.format(provider, db_name)
     db_engine = _db_engine_map.get(engine_key)
@@ -185,7 +185,8 @@ def get_db_engine(provider: str,
 
 def get_db_session(provider: str,
                    db_name: str = None,
-                   data_schema: object = None) -> Session:
+                   data_schema: object = None,
+                   force_new: bool = False) -> Session:
     """
     get db session of the (provider,db_name) or (provider,data_schema)
 
@@ -195,6 +196,9 @@ def get_db_session(provider: str,
     :type db_name:
     :param data_schema:
     :type data_schema:
+    :param force_new:
+    :type force_new:
+
     :return:
     :rtype:
     """
@@ -202,6 +206,9 @@ def get_db_session(provider: str,
         db_name = get_db_name(data_schema=data_schema)
 
     session_key = '{}_{}'.format(provider, db_name)
+
+    if force_new:
+        return get_db_session_factory(provider, db_name, data_schema)()
 
     session = global_sessions.get(session_key)
     if not session:
