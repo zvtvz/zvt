@@ -1,8 +1,8 @@
 from zvdata.domain import get_db_session
 from zvt.api.api import get_top_ten_holder, get_top_ten_tradable_holder
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 from typing import List
 

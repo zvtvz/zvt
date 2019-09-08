@@ -1,8 +1,8 @@
 from zvdata.domain import get_db_session
 from zvdata import IntervalLevel
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 from zvt.api import quote
 

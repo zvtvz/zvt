@@ -2,9 +2,9 @@
 from zvdata import IntervalLevel
 from zvt.recorders.ccxt.coin_kdata_recorder import CoinKdataRecorder
 from zvt.recorders.ccxt.coin_meta_recorder import CoinMetaRecorder
-from ...context import init_context
+from ...context import init_test_context
 
-init_context()
+init_test_context()
 
 
 def test_coin_meta_recorder():

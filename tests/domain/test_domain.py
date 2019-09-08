@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 from zvdata.domain import global_schemas, get_schemas
 

@@ -1,6 +1,6 @@
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 from zvt.api.api import get_spo_detail, get_rights_issue_detail, get_dividend_financing
 from zvt.domain import SpoDetail, RightsIssueDetail, DividendFinancing

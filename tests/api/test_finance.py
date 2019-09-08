@@ -1,6 +1,6 @@
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 from zvt.api.api import get_balance_sheet, get_income_statement, get_cash_flow_statement, get_finance_factor
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, CashFlowStatement

@@ -2,9 +2,9 @@
 from zvdata import IntervalLevel
 from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import CrossMaFactor, BullFactor
-from ..context import init_context
+from ..context import init_test_context
 
-init_context()
+init_test_context()
 
 
 class TechnicalSelector(TargetSelector):

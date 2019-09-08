@@ -4,6 +4,7 @@ import os
 
 import pandas as pd
 
+from zvdata.domain import *
 from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
 
 
@@ -39,9 +40,12 @@ pd.set_option('mode.chained_assignment', 'raise')
 
 init_log()
 
-from zvdata.domain import *
-
-init_context(data_path=DATA_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain', register_api=False)
+if os.getenv('TESTING_ZVT'):
+    init_context(data_path=DATA_SAMPLE_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain',
+                 register_api=False)
+else:
+    init_context(data_path=DATA_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain',
+                 register_api=False)
 
 from zvt.domain import init_schema
 
