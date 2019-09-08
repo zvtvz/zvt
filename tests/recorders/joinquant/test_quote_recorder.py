@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from zvdata import IntervalLevel
 from zvdata.utils.time_utils import day_offset_today
-from ...context import init_context
+from ...context import init_test_context
 
-init_context()
+init_test_context()
 
 from zvt.settings import SAMPLE_STOCK_CODES
 from zvt.recorders.joinquant.quotes.jq_china_stock__kdata_recorder import JQChinaStockKdataRecorder
