@@ -1,56 +1,49 @@
 ## 安装
 
-> 由于项目可定制和扩展的地方较多,目前pip install只适合用于示范,更多功能解锁,请直接clone代码并参考相关文档
+#### 1.clone代码
 
-```
-pip install zvt
-```
-如果安装过
-```
-pip install -U zvt
-```
-如果想直接撸源码(**推荐方式**)
 ```
 git clone https://github.com/zvtvz/zvt.git
 ```
-**以下假设在项目root目录下操作**
 
-## 初始化项目环境
+**以下操作都在项目root目录下进行**
 
-- python>=3.6(建议使用virtualenv)
+#### 2.环境
 
-- 安装项目依赖
+设置项目的virtual env(python>=3.6),安装依赖
 ```
 pip install -r requirements.txt
 ```
 
-**以下假设环境已经ready** 
-
-## 初始化数据
+解压data sample
 ```
 python init_data_sample.py
 ```
-该脚本解压自带的数据sample,项目中的tests和examples对其有依赖
 
-使用自己的data,请更改settings.py
-
+#### 3.下载主要数据
+更改DATA_PATH（否则会污染datasample,datasample只包含少量数据，用于跑测试案例）
 ```
 # please change the path to your real store path
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
-
+DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 ```
 
-如何获取全量数据并维护数据的更新,请参考[数据使用](./data_usage.md)
+东财数据: https://pan.baidu.com/s/1CMAlCRYwlhGVxS6drYUEgA 提取码: q2qn  
+日线数据(网易): https://pan.baidu.com/s/1kMhEVO0kH_Pn6wXKyqvJEA 提取码: ijxg  
+资金流，板块数据(新浪): https://pan.baidu.com/s/1eusW65sdK_WE4icnt8JS1g 提取码: uux3  
+市场概况，沪/深港通，融资融券数据(聚宽): https://pan.baidu.com/s/1ijrgjUd1WkRMONrwRQU-4w 提取码: dipd  
 
-## 运行主界面
-```
-python main.py
-```
-也可pycharm中直接运行zvt/main.py
+把下载的数据解压到DATA_PATH
 
-> 在命令行下直接python main.py这种方式,默认会把main.py所在的目录放到PYTHONPATH下,而如果main.py是在zvt目录下,zvt package的加载是有问题的,所以在zvt的外层放了一个main.py
+>更多数据使用,请参考[数据使用](./data_usage.md)
+
+#### ４.运行主程序
+
+```
+python3 zvt/index.py
+```
 
 在浏览器中打开:[127.0.0.1:8050](http://127.0.0.1:8050)
+
 
 ## 运行策略
 [trader examples](https://github.com/zvtvz/zvt/tree/master/examples/trader)

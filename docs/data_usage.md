@@ -1,90 +1,114 @@
-## 目前支持的数据
+## 数据结构
 
-### 股票数据
-|名称|dataschema|provider|comments| download|
-|-----------|--------|--------|-----|-----|
-|个股资料|Stock|eastmoney,sina|个股和板块为多对多的关系|
-|板块资料|Index|eastmoney,sina|板块有行业,概念,区域三个分类的维度,不同的provider分类会有所不同,个股和板块为多对多的关系|
-|个股行情|Stock{level}Kdata|joinquant,netease,eastmoney|支持1,5,15,30,60分钟, 日线,周线级别|
-|指数日线行情|Index1DKdata|eastmoney,sina,joinquant|指数本质上也是一种板块,指数对应板块资料中的标的|
-|个股资金流|MoneyFlow|eastmoney,sina,joinquant||
-|板块资金流|MoneyFlow|eastmoney,sina,joinquant|对应板块资料里面的标的|
-|分红融资数据|DividendFinancing|eastmoney|企业最后的底线就是能不能给投资者赚钱,此为年度统计信息|
-|分红明细|DividendDetail|eastmoney||
-|融资明细|SPODetail|eastmoney||
-|配股明细|RightsIssueDetail|eastmoney||
-|主要财务指标|FinanceFactor|eastmoney||
-|资产负债表|BalanceSheet|eastmoney||
-|利润表|IncomeStatement|eastmoney||
-|现金流量表|CashFlowStatement|eastmoney||
-|十大股东|TopTenHolder|eastmoney||
-|十大流通股东|TopTenTradableHolder|eastmoney||
-|机构持股|InstitutionalInvestorHolder|eastmoney||
-|高管交易|ManagerTrading|eastmoney||
-|大股东交易|HolderTrading|eastmoney||
-|大宗交易|BigDealTrading|eastmoney||
-|融资融券|MarginTrading|eastmoney||
-|龙虎榜数据|DragonAndTiger|eastmoney||
+zvt数据最重要的概念如下：
+- ### provider
 
-### 数字货币数据
+数据提供商
 
-|名称|dataschema|provider|comments| download|
-|-----------|--------|--------|-----|-----|
-|货币资料|Coin|ccxt||
-|行情|Coin{level}Kdata|ccxt|支持tick,1,5,15,30,60分钟, 日线,周线级别|
+- ### data_schema
 
-### 期货数据
-> 待支持
+数据的定义，对应sql的table
 
+- ### entity_type
+实体类型，目前代表各种投资标的
 
-## 使用示例
+## 查询系统注册数据
+数据都是 **自注册** 和 **可扩展** 的，你可以通过下面的方式进行查询:
+
+### 查询注册的provider
+```
+In [1]: from zvt import *
+In [2]: get_providers()
+Out[2]: 
+['zvdata',
+ 'zvt',
+ 'ccxt',
+ 'eastmoney',
+ 'exchange',
+ 'joinquant',
+ 'sina',
+ 'netease']
+```
+
+### 查询provider提供的schema
+```
+In [5]: get_schemas(provider='eastmoney')
+Out[5]: 
+[zvt.domain.dividend_financing.DividendFinancing,
+ zvt.domain.dividend_financing.DividendDetail,
+ zvt.domain.dividend_financing.SpoDetail,
+ zvt.domain.dividend_financing.RightsIssueDetail,
+ zvt.domain.finance.BalanceSheet,
+ zvt.domain.finance.IncomeStatement,
+ zvt.domain.finance.CashFlowStatement,
+ zvt.domain.finance.FinanceFactor,
+ zvt.domain.holder.TopTenTradableHolder,
+ zvt.domain.holder.TopTenHolder,
+ zvt.domain.holder.InstitutionalInvestorHolder,
+ zvt.domain.stock_meta.StockIndex,
+ zvt.domain.stock_meta.Index,
+ zvt.domain.stock_meta.Stock,
+ zvt.domain.quote.Index1wkKdata,
+ zvt.domain.quote.Index1monKdata,
+ zvt.domain.trading.ManagerTrading,
+ zvt.domain.trading.HolderTrading,
+ zvt.domain.trading.BigDealTrading,
+ zvt.domain.trading.MarginTrading,
+ zvt.domain.trading.DragonAndTiger]
+```
+
+schema具体字段的含义目前可以直接查看源码，里面每个字段都有注释。
+
+### 查询注册的entity_type
+```
+In [2]: get_entity_types()    
+Out[2]: ['coin', 'index', 'stock']
+```
+
+## 使用数据的方式
+有了provider,data_schema和entity_type，我们就可以以一种统一的方式来对数据进行操作。
 
 ### 个股K线
 ```
-In [5]: from zvt.api import technical
-In [6]: df= technical.get_kdata(security_id='stock_sz_000338',provider='joinquant')
-In [7]: df.tail()                                                                                                                                                                        
-Out[7]: 
-                                    id   provider  timestamp      security_id    code  name level   open  hfq_open   qfq_open  close  hfq_close  qfq_close   high  hfq_high   qfq_high    low  hfq_low    qfq_low       volume      turnover change_pct turnover_rate  factor
-timestamp                                                                                                                                                                                                                                                                    
-2019-06-25  stock_sz_000338_2019-06-25  joinquant 2019-06-25  stock_sz_000338  000338  潍柴动力    1d  12.55    235.41  12.549845  12.28     230.35  12.280094  12.56    235.60  12.559974  12.08   226.60  12.080179   75627481.0  9.256614e+08       None          None  18.758
-2019-06-26  stock_sz_000338_2019-06-26  joinquant 2019-06-26  stock_sz_000338  000338  潍柴动力    1d  12.20    228.85  12.200128  12.25     229.79  12.250240  12.38    232.22  12.379785  12.12   227.35  12.120162   39932435.0  4.891142e+08       None          None  18.758
-2019-06-27  stock_sz_000338_2019-06-27  joinquant 2019-06-27  stock_sz_000338  000338  潍柴动力    1d  12.25    229.79  12.250240  12.25     229.79  12.250240  12.25    229.79  12.250240  12.25   229.79  12.250240          0.0  0.000000e+00       None          None  18.758
-2019-06-28  stock_sz_000338_2019-06-28  joinquant 2019-06-28  stock_sz_000338  000338  潍柴动力    1d  12.23    229.41  12.229982  12.29     230.54  12.290223  12.44    233.35  12.440026  12.23   229.41  12.229982   43280844.0  5.325563e+08       None          None  18.758
-2019-07-01  stock_sz_000338_2019-07-01  joinquant 2019-07-01  stock_sz_000338  000338  潍柴动力    1d  12.50    234.48  12.500267  12.89     241.79  12.889967  12.95    242.92  12.950208  12.41   232.79  12.410172  101787878.0  1.291295e+09       None          None  18.758
-
+In [4]: from zvt.api import *
+In [5]: get_kdata(provider='joinquant',entity_id='stock_sz_000338')
+Out[5]: 
+                                    id        entity_id  timestamp   provider    code  name level   open  hfq_open   qfq_open  close  hfq_close  qfq_close   high  hfq_high   qfq_high    low  hfq_low    qfq_low      volume      turnover  change_pct  turnover_rate     factor
+timestamp
+2007-04-30  stock_sz_000338_2007-04-30  stock_sz_000338 2007-04-30  joinquant  000338  潍柴动力    1d  70.00     70.00   3.649141  64.93      64.93   3.384839  71.00     71.00   3.701272  62.88    62.88   3.277972  20737497.0  1.365189e+09    217.1959        11.8154   1.000000
+2007-05-08  stock_sz_000338_2007-05-08  stock_sz_000338 2007-05-08  joinquant  000338  潍柴动力    1d  66.60     66.60   3.471897  64.00      64.00   3.336358  68.00     68.00   3.544880  62.88    62.88   3.277972   8629889.0  5.563198e+08     -1.4323         4.9170   1.000000
+2007-05-09  stock_sz_000338_2007-05-09  stock_sz_000338 2007-05-09  joinquant  000338  潍柴动力    1d  63.32     63.32   3.300909  62.00      62.00   3.232097  63.88     63.88   3.330102  59.60    59.60   3.106983   9382251.0  5.782065e+08     -3.1250         5.3456   1.000000
+2007-05-10  stock_sz_000338_2007-05-10  stock_sz_000338 2007-05-10  joinquant  000338  潍柴动力    1d  61.50     61.50   3.206031  62.49      62.49   3.257641  64.48     64.48   3.361380  61.01    61.01   3.180487   4772011.0  2.999226e+08      0.7903         2.7189   1.000000
 ```
 
 ### 数字货币k线
 ```
-In [10]: df= technical.get_kdata(security_id='coin_binance_EOS/USDT',provider='ccxt')                                                                                                    
-In [10]: df.tail()                                                                                                                                                                       
-Out[10]: 
-                                          id provider  timestamp            security_id      code      name level    open   close    high     low       volume turnover
-timestamp                                                                                                                                                              
-2019-06-26  coin_binance_EOS/USDT_2019-06-26     ccxt 2019-06-26  coin_binance_EOS/USDT  EOS/USDT  EOS/USDT    1d  7.1736  6.8096  7.4475  6.1000  16934720.29     None
-2019-06-27  coin_binance_EOS/USDT_2019-06-27     ccxt 2019-06-27  coin_binance_EOS/USDT  EOS/USDT  EOS/USDT    1d  6.8082  5.9663  6.8557  5.6329  20215677.51     None
-2019-06-28  coin_binance_EOS/USDT_2019-06-28     ccxt 2019-06-28  coin_binance_EOS/USDT  EOS/USDT  EOS/USDT    1d  5.9742  6.2182  6.2918  5.7625  12172080.98     None
-2019-06-29  coin_binance_EOS/USDT_2019-06-29     ccxt 2019-06-29  coin_binance_EOS/USDT  EOS/USDT  EOS/USDT    1d  6.2206  6.3302  6.3915  5.9566   7403462.75     None
-2019-06-30  coin_binance_EOS/USDT_2019-06-30     ccxt 2019-06-30  coin_binance_EOS/USDT  EOS/USDT  EOS/USDT    1d  6.3282  5.7926  6.3966  5.6894   8043978.96     None
+In [7]: get_kdata(entity_id='coin_binance_EOS/USDT',provider='ccxt')
+Out[7]: 
+                                          id              entity_id  timestamp provider      code      name level     open    close     high      low       volume turnover
+timestamp
+2018-05-28  coin_binance_EOS/USDT_2018-05-28  coin_binance_EOS/USDT 2018-05-28     ccxt  EOS/USDT  EOS/USDT    1d  12.4900  11.4788  12.6500  11.2800   3494258.32     None
+2018-05-29  coin_binance_EOS/USDT_2018-05-29  coin_binance_EOS/USDT 2018-05-29     ccxt  EOS/USDT  EOS/USDT    1d  11.4853  12.1112  12.4650  10.7000   6709192.34     None
+2018-05-30  coin_binance_EOS/USDT_2018-05-30  coin_binance_EOS/USDT 2018-05-30     ccxt  EOS/USDT  EOS/USDT    1d  12.1113  11.8968  12.8200  11.6206   6514864.18     None
+2018-05-31  coin_binance_EOS/USDT_2018-05-31  coin_binance_EOS/USDT 2018-05-31     ccxt  EOS/USDT  EOS/USDT    1d  11.8712  12.2353  12.7400  11.8116   6540020.80     None
+2018-06-01  coin_binance_EOS/USDT_2018-06-01  coin_binance_EOS/USDT 2018-06-01     ccxt  EOS/USDT  EOS/USDT    1d  12.2351  12.2048  12.3889  11.8354   5946136.88     None
 
 ```
 
 ### 社保持仓
 ```
-In [11]: from zvt.domain import *  
-         from zvt.api import fundamental
+In [11]: from zvt.domain import *
 In [12]: df = get_top_ten_tradable_holder(start_timestamp='2018-09-30',filters=[TopTenTradableHolder.holder_name.like('%社保%')],order=TopTenTradableHolder.shareholding_ratio.desc())
 
-In [18]: df.tail()                                                                                                                                                                       
-Out[18]: 
-                                                         id provider  timestamp      security_id    code         report_period report_date holder_code  holder_name  shareholding_numbers  shareholding_ratio     change  change_ratio
-timestamp                                                                                                                                                                                                                             
-2019-03-31  stock_sz_000778_2019-03-31 00:00:00_全国社保基金五零三组合     None 2019-03-31  stock_sz_000778  000778  ReportPeriod.season1  2019-03-31    70010503  全国社保基金五零三组合            60000000.0              0.0153  1000000.0        0.0169
-2019-03-31  stock_sz_002572_2019-03-31 00:00:00_全国社保基金一零九组合     None 2019-03-31  stock_sz_002572  002572  ReportPeriod.season1  2019-03-31    70010109  全国社保基金一零九组合             7520000.0              0.0118 -8013000.0       -0.5159
-2019-03-31  stock_sz_000338_2019-03-31 00:00:00_全国社保基金一零二组合     None 2019-03-31  stock_sz_000338  000338  ReportPeriod.season1  2019-03-31    70010102  全国社保基金一零二组合            44000000.0              0.0071 -6000000.0       -0.1200
-2019-03-31  stock_sz_000338_2019-03-31 00:00:00_全国社保基金一零一组合     None 2019-03-31  stock_sz_000338  000338  ReportPeriod.season1  2019-03-31    70010101  全国社保基金一零一组合            36850000.0              0.0060        NaN           NaN
-2019-03-31  stock_sz_000778_2019-03-31 00:00:00_全国社保基金四一三组合     None 2019-03-31  stock_sz_000778  000778  ReportPeriod.season1  2019-03-31    70010413  全国社保基金四一三组合            17800000.0              0.0045        NaN           NaN
+In [9]: df.tail()
+Out[9]: 
+                                                         id        entity_id  timestamp provider    code report_period report_date holder_code  holder_name  shareholding_numbers  shareholding_ratio     change  change_ratio
+timestamp
+2019-03-31  stock_sz_000778_2019-03-31 00:00:00_全国社保基金四一三组合  stock_sz_000778 2019-03-31     None  000778       season1  2019-03-31    70010413  全国社保基金四一三组合            17800000.0              0.0045        NaN           NaN
+2019-03-31  stock_sz_002572_2019-03-31 00:00:00_全国社保基金一零九组合  stock_sz_002572 2019-03-31     None  002572       season1  2019-03-31    70010109  全国社保基金一零九组合             7520000.0              0.0118 -8013000.0       -0.5159
+2019-06-30  stock_sz_000778_2019-06-30 00:00:00_全国社保基金五零三组合  stock_sz_000778 2019-06-30     None  000778     half_year  2019-06-30    70010503  全国社保基金五零三组合            60000000.0              0.0153        NaN           NaN
+2019-06-30  stock_sz_000338_2019-06-30 00:00:00_全国社保基金一零一组合  stock_sz_000338 2019-06-30     None  000338     half_year  2019-06-30    70010101  全国社保基金一零一组合            35250000.0              0.0057 -1600000.0       -0.0434
+2019-06-30  stock_sz_000001_2019-06-30 00:00:00_全国社保基金一零四组合  stock_sz_000001 2019-06-30     None  000001     half_year  2019-06-30    70010104  全国社保基金一零四组合            55170000.0              0.0032        NaN           NaN
 
 ```
 
@@ -118,9 +142,25 @@ Out[31]:
 
 ```
 
-更多api和相应的数据，可查看代码:  
-[*data schema*](https://github.com/zvtvz/zvt/tree/master/zvt/domain)  
-[*data api*](https://github.com/zvtvz/zvt/tree/master/zvt/api)  
+### 统一的方式get_data
+以上api的调用最后都是通过get_data来实现的，你也可以直接使用get_data
+```
+In [13]: df=get_data(provider='eastmoney',data_schema=FinanceFactor,filters=[FinanceFactor.roe>=0.15,FinanceFactor.report_date==pd.Timestamp('2018-12-31')],columns=[FinanceFactor.code,F
+    ...: inanceFactor.timestamp,FinanceFactor.report_date,FinanceFactor.roe])
+
+In [14]: df
+Out[14]: 
+              code  timestamp report_date     roe
+timestamp                                        
+2019-01-30  000055 2019-01-30  2018-12-31  0.5317
+2019-01-31  600738 2019-01-31  2018-12-31  0.6221
+2019-02-01  300748 2019-02-01  2018-12-31  0.1620
+2019-02-02  603225 2019-02-02  2018-12-31  0.1924
+2019-02-16  600276 2019-02-16  2018-12-31  0.2360
+2019-02-18  300776 2019-02-18  2018-12-31  0.7122
+
+```
+
 
 filters参数的使用请参考[*sqlalchemy*](https://docs.sqlalchemy.org/en/13/orm/query.html),SQL能做的查询都能做
 
