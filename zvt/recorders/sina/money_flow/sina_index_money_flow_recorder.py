@@ -18,10 +18,14 @@ from zvt.domain import IndexMoneyFlow, StockCategory, Index
 
 
 class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
+    # entity的信息从哪里来
     entity_provider = 'sina'
+    # entity的schema
     entity_schema = Index
 
+    # 记录的信息从哪里来
     provider = 'sina'
+    # 记录的schema
     data_schema = IndexMoneyFlow
 
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_zjlrqs?page=1&num={}&sort=opendate&asc=0&bankuai={}%2F{}'
