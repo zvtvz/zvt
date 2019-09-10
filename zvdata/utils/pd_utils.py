@@ -8,6 +8,10 @@ def df_is_not_null(df: pd.DataFrame):
     return df is not None and isinstance(df, pd.DataFrame) and not df.empty
 
 
+def se_is_not_null(se: pd.Series):
+    return se is not None and isinstance(se, pd.Series) and not se.empty
+
+
 def index_df(df, index='timestamp', inplace=True, drop=True, index_is_time=True):
     if inplace:
         df.set_index(index, drop=drop, inplace=inplace)
