@@ -3,12 +3,14 @@
 import math
 from typing import Union
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import exists, and_
 
 from zvdata import IntervalLevel
 from zvdata.api import decode_entity_id
 from zvdata.domain import get_db_session
+from zvdata.utils.pd_utils import se_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt.domain import ReportPeriod, CompanyType
@@ -163,25 +165,6 @@ def stock_id_in_index(stock_id, index_id, session=None, data_schema=StockIndex, 
             session.close()
 
 
-# joinquant related transform
-def to_jq_entity_id(security_item):
-    if security_item.entity_type == 'stock':
-        if security_item.exchange == 'sh':
-            return '{}.XSHG'.format(security_item.code)
-        if security_item.exchange == 'sz':
-            return '{}.XSHE'.format(security_item.code)
-
-
-def to_jq_trading_level(trading_level: IntervalLevel):
-    if trading_level < IntervalLevel.LEVEL_1HOUR:
-        return trading_level.value
-
-    if trading_level == IntervalLevel.LEVEL_1HOUR:
-        return '60m'
-    if trading_level == IntervalLevel.LEVEL_1DAY:
-        return '1d'
-
-
 def to_jq_report_period(timestamp):
     the_date = to_pd_timestamp(timestamp)
     report_period = to_report_period_type(timestamp)
@@ -200,6 +183,73 @@ def to_jq_report_period(timestamp):
 # ccxt related transform
 def to_ccxt_trading_level(trading_level: IntervalLevel):
     return trading_level.value
+
+
+def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
+    def to_close(s):
+        if se_is_not_null(s):
+            return s[-1]
+
+    def to_open(s):
+        if se_is_not_null(s):
+            return s[0]
+
+    def to_high(s):
+        return np.max(s)
+
+    def to_low(s):
+        return np.min(s)
+
+    def to_sum(s):
+        return np.sum(s)
+
+    original_level = kdata_df['level'][0]
+    entity_id = kdata_df['entity_id'][0]
+    provider = kdata_df['provider'][0]
+    name = kdata_df['name'][0]
+    code = kdata_df['code'][0]
+
+    entity_type, _, _ = decode_entity_id(entity_id=entity_id)
+
+    assert IntervalLevel(original_level) <= IntervalLevel.LEVEL_1DAY
+    assert IntervalLevel(original_level) < IntervalLevel(to_level)
+
+    df: pd.DataFrame = None
+    if to_level == IntervalLevel.LEVEL_1WEEK:
+        # loffset='-2'　用周五作为时间标签
+        if entity_type == 'stock':
+            df = kdata_df.resample('W', loffset=pd.DateOffset(days=-2)).apply({'close': to_close,
+                                                                               'open': to_open,
+                                                                               'high': to_high,
+                                                                               'low': to_low,
+
+                                                                               'qfq_close': to_close,
+                                                                               'qfq_open': to_open,
+                                                                               'qfq_high': to_high,
+                                                                               'qfq_low': to_low,
+
+                                                                               'hfq_close': to_close,
+                                                                               'hfq_open': to_open,
+                                                                               'hfq_high': to_high,
+                                                                               'hfq_low': to_low,
+
+                                                                               'volume': to_sum,
+                                                                               'turnover': to_sum})
+        else:
+            df = kdata_df.resample('W', loffset=pd.DateOffset(days=-2)).apply({'close': to_close,
+                                                                               'open': to_open,
+                                                                               'high': to_high,
+                                                                               'low': to_low,
+                                                                               'volume': to_sum,
+                                                                               'turnover': to_sum})
+    df = df.dropna()
+    # id        entity_id  timestamp   provider    code  name level
+    df['entity_id'] = entity_id
+    df['provider'] = provider
+    df['code'] = code
+    df['name'] = name
+
+    return df
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ from ...context import init_test_context
 init_test_context()
 
 from zvt.settings import SAMPLE_STOCK_CODES
-from zvt.recorders.joinquant.quotes.jq_china_stock__kdata_recorder import JQChinaStockKdataRecorder
+from zvt.recorders.joinquant.quotes.jq_china_stock_kdata_recorder import JQChinaStockKdataRecorder
 
 
 def test_1d_kdata_recorder():

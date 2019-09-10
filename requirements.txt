@@ -16,3 +16,4 @@ dash==1.1.1
 dash-daq==0.1.0
 simplejson==3.16.0
 html5lib == 1.0.1
+schedule == 0.6.0

@@ -1,43 +1,62 @@
 # -*- coding: utf-8 -*-
 import argparse
-import io
 from datetime import timedelta
 
 import pandas as pd
-import requests
 from jqdatasdk import auth, get_price, logout
 
-from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
-from zvt.api.common import generate_kdata_id, to_jq_entity_id, get_kdata_schema, to_jq_trading_level
-from zvt.api.rules import is_in_trading
-from zvt.api.quote import get_kdata
-from zvt.domain import Stock
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
+from zvdata.recorder import FixedCycleDataRecorder
+from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
-from zvdata.utils.utils import init_process_log, read_csv
+from zvdata.utils.utils import init_process_log
+from zvt.api.common import generate_kdata_id, get_kdata_schema
+from zvt.api.quote import get_kdata
+from zvt.api.rules import is_in_trading
+from zvt.domain import Stock
+from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
+from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
 
 
 class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
+    # 复用eastmoney的股票列表
     entity_provider = 'eastmoney'
     entity_schema = Stock
 
+    # 数据来自jq
     provider = 'joinquant'
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, one_shot=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, contain_unfinished_data=False,
-                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=15, close_minute=0,
+    def __init__(self,
+                 entity_ids=None,
+                 codes=None,
+                 batch_size=10,
+                 force_update=False,
+                 sleeping_time=5,
+                 default_size=2000,
+                 one_shot=False,
+                 fix_duplicate_way='ignore',
+                 start_timestamp=None,
+                 end_timestamp=None,
+                 contain_unfinished_data=False,
+                 level=IntervalLevel.LEVEL_1DAY,
+                 kdata_use_begin_time=False,
+                 close_hour=15,
+                 close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
-        self.data_schema = get_kdata_schema(entity_type=entity_type, level=level)
+        # 周线以上级别用日线来合成
+        assert level <= IntervalLevel.LEVEL_1DAY
+
+        self.data_schema = get_kdata_schema(entity_type='stock', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__('stock', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
                          contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
                          one_day_trading_minutes)
 
+        # 读取已经保存的最新factor,更新时有变化才需要重新计算前复权价格
         self.current_factors = {}
+
         for security_item in self.entities:
             kdata = get_kdata(entity_id=security_item.id, provider=self.provider,
                               level=self.level.value, order=self.data_schema.timestamp.desc(),
@@ -49,9 +68,6 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                 self.logger.info('{} latest factor:{}'.format(security_item.id, kdata[0].factor))
 
         auth(JQ_ACCOUNT, JQ_PASSWD)
-
-    def get_data_map(self):
-        return {}
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)
@@ -72,7 +88,7 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                            frequency='daily',
                            fields=['factor', 'open', 'close', 'low', 'high'],
                            skip_paused=True, fq='post')
-            if df is not None and not df.empty:
+            if df_is_not_null(df):
                 # fill hfq data
                 for kdata in kdatas:
                     time_str = to_time_str(kdata.timestamp)
@@ -99,29 +115,6 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                                                                      self.level.value)
                 self.logger.info(sql)
                 self.session.execute(sql)
-                self.session.commit()
-
-            # use netease provider to get turnover_rate
-            query_url = 'http://quotes.money.163.com/service/chddata.html?code={}{}&start={}&end={}&fields=PCHG;TURNOVER'
-
-            if entity.exchange == 'sh':
-                exchange_flag = 0
-            else:
-                exchange_flag = 1
-
-            url = query_url.format(exchange_flag, entity.code, to_time_str(start), to_time_str(end))
-            response = requests.get(url=url)
-
-            df = read_csv(io.BytesIO(response.content), encoding='GB2312', na_values='None')
-            df['日期'] = pd.to_datetime(df['日期'])
-            df.set_index('日期', drop=True, inplace=True)
-
-            if df is not None and not df.empty:
-                # fill turnover_rate, pct_change
-                for kdata in kdatas:
-                    if kdata.timestamp in df.index:
-                        kdata.turnover_rate = df.loc[kdata.timestamp, '换手率']
-                        kdata.change_pct = df.loc[kdata.timestamp, '涨跌幅']
                 self.session.commit()
 
     def on_finish(self):
