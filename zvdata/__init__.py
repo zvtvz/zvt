@@ -79,6 +79,15 @@ class IntervalLevel(enum.Enum):
 
         one_day_trading_seconds = one_day_trading_minutes * 60
 
+        if self == IntervalLevel.LEVEL_1DAY:
+            return None, time_delta.days
+
+        if self == IntervalLevel.LEVEL_1WEEK:
+            return None, int(math.ceil(time_delta.days / 5)) + 1
+
+        if self == IntervalLevel.LEVEL_1MON:
+            return None, int(math.ceil(time_delta.days / 30)) + 1
+
         if time_delta.days > 0:
             seconds = (time_delta.days + 1) * one_day_trading_seconds
             return None, int(math.ceil(seconds / self.to_second())) + 1

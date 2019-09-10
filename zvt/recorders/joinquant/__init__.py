@@ -10,6 +10,10 @@ def to_jq_trading_level(trading_level: IntervalLevel):
         return '60m'
     if trading_level == IntervalLevel.LEVEL_1DAY:
         return '1d'
+    if trading_level == IntervalLevel.LEVEL_1WEEK:
+        return '1w'
+    if trading_level == IntervalLevel.LEVEL_1MON:
+        return '1M'
 
 
 def to_jq_entity_id(security_item):
