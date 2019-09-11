@@ -98,6 +98,7 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                         kdata.hfq_high = df.loc[time_str, 'high']
                         kdata.hfq_low = df.loc[time_str, 'low']
                         kdata.factor = df.loc[time_str, 'factor']
+                self.session.add_all(kdatas)
                 self.session.commit()
 
                 latest_factor = df.factor[-1]
