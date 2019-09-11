@@ -83,7 +83,7 @@ class IntervalLevel(enum.Enum):
             return None, time_delta.days
 
         if self == IntervalLevel.LEVEL_1WEEK:
-            return None, int(math.ceil(time_delta.days / 5)) + 1
+            return None, int(math.ceil(time_delta.days / 7)) + 1
 
         if self == IntervalLevel.LEVEL_1MON:
             return None, int(math.ceil(time_delta.days / 30)) + 1
