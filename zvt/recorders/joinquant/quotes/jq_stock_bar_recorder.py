@@ -28,7 +28,7 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                  entity_ids=None,
                  codes=None,
                  batch_size=10,
-                 force_update=False,
+                 force_update=True,
                  sleeping_time=5,
                  default_size=2000,
                  one_shot=True,
@@ -65,7 +65,7 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                                order=self.data_schema.timestamp.asc(),
                                return_type='domain',
                                session=self.session,
-                               filters=[self.data_schema.timestamp <= self.last_timestamp])
+                               filters=[self.data_schema.timestamp < self.last_timestamp])
             if kdatas:
                 # fill hfq data
                 for kdata in kdatas:
@@ -73,6 +73,7 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                     kdata.qfq_close = kdata.qfq_close * self.factor
                     kdata.qfq_high = kdata.qfq_high * self.factor
                     kdata.qfq_low = kdata.qfq_low * self.factor
+                self.session.add_all(kdatas)
                 self.session.commit()
 
     def on_finish(self):
@@ -85,7 +86,6 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                       count=size,
                       unit=self.jq_trading_level,
                       fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
-                      fq_ref_date=None,
                       include_now=False)
         df['name'] = entity.name
         df.rename(columns={'money': 'turnover'}, inplace=True)
@@ -115,11 +115,12 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                                end_timestamp=check_date, limit=1, level=self.level)
 
         if df_is_not_null(current_df):
-            c1 = current_df.iloc[0, :]['qfq_close']
-            c2 = check_df['close'][0]
-            if c1 != c2:
-                self.factor = c2 / c1
-                self.last_timestamp = check_date
+            old = current_df.iloc[0, :]['qfq_close']
+            new = check_df['close'][0]
+            # 相同时间的close不同，表明前复权需要重新计算
+            if old != new:
+                self.factor = new / old
+                self.last_timestamp = pd.Timestamp(check_date)
 
         return df.to_dict(orient='records')
 
@@ -127,7 +128,7 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1wk', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=['000338', '000001'], nargs='+')
+    parser.add_argument('--codes', help='codes', default=['000338'], nargs='+')
 
     args = parser.parse_args()
 
