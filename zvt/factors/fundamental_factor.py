@@ -111,12 +111,13 @@ class GoodCompanyFactor(FinanceBaseFactor):
 
 class IndexMoneyFlowFactor(ScoreFactor):
     def __init__(self,
+                 codes=None,
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = [IndexMoneyFlow.net_inflows, IndexMoneyFlow.net_inflow_rate,
                                   IndexMoneyFlow.net_main_inflows, IndexMoneyFlow.net_main_inflow_rate],
-                 filters: List = None,
+                 filters: List = [],
                  order: object = None,
                  limit: int = None,
                  provider: str = 'sina',
@@ -129,7 +130,7 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
-        super().__init__(IndexMoneyFlow, None, 'index', None, None, the_timestamp, start_timestamp,
+        super().__init__(IndexMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
 
@@ -143,4 +144,3 @@ class IndexMoneyFlowFactor(ScoreFactor):
 
 if __name__ == '__main__':
     f1 = IndexMoneyFlowFactor(start_timestamp='2019-01-01')
-    print(f1.result_df)
