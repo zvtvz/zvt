@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from examples.factors.technical_selector import TechnicalSelector
 from zvdata import now_pd_timestamp, IntervalLevel
+from zvt.api import get_blocks
 from zvt.factors import IndexMoneyFlowFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.settings import SAMPLE_STOCK_CODES
@@ -17,13 +18,15 @@ class IndexSelector(TargetSelector):
     def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
         index_factor = IndexMoneyFlowFactor(start_timestamp=start_timestamp, end_timestamp=end_timestamp, level=level,
-                                            provider='sina')
+                                            provider='sina', codes=codes)
         self.score_factors.append(index_factor)
 
 
 if __name__ == '__main__':
+    df = get_blocks(provider='sina', block_category='industry')
+
     index_selector = IndexSelector(entity_type='index', exchanges=None, start_timestamp='2019-01-01',
-                                   end_timestamp=now_pd_timestamp())
+                                   end_timestamp=now_pd_timestamp(), codes=df['code'].to_list())
     index_selector.run()
 
     # index_selector.draw()

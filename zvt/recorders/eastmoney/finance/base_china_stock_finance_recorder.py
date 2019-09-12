@@ -4,10 +4,11 @@ from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 from zvdata.api import get_data
 from zvdata.utils.pd_utils import df_is_not_null
 from zvt.api.api import get_finance_factor
-from zvt.api.common import to_jq_entity_id, to_jq_report_period
+from zvt.api.common import to_jq_report_period
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
+from zvt.recorders.joinquant import to_jq_entity_id
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 from zvdata.utils.pd_utils import index_df
 from zvdata.utils.time_utils import to_time_str, to_pd_timestamp
