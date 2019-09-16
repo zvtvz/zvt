@@ -7,7 +7,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from zvdata import IntervalLevel
 from zvdata.utils.utils import init_process_log
 from zvt.recorders.joinquant.quotes.jq_stock_bar_recorder import JQChinaStockBarRecorder
-from zvt.settings import SAMPLE_STOCK_CODES
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +18,8 @@ sched = BackgroundScheduler()
 def run():
     while True:
         try:
-            JQChinaStockBarRecorder(level=IntervalLevel.LEVEL_1WEEK, codes=SAMPLE_STOCK_CODES).run()
-            JQChinaStockBarRecorder(level=IntervalLevel.LEVEL_1MON, codes=SAMPLE_STOCK_CODES).run()
+            JQChinaStockBarRecorder(level=IntervalLevel.LEVEL_1WEEK).run()
+            JQChinaStockBarRecorder(level=IntervalLevel.LEVEL_1MON).run()
 
             break
         except Exception as e:
