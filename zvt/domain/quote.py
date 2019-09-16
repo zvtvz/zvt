@@ -65,6 +65,7 @@ class TickCommon(Mixin):
 # 2)one db file for one schema
 
 
+# 股票1分钟k线
 Stock1mKdataBase = declarative_base()
 
 
@@ -74,6 +75,7 @@ class Stock1mKdata(Stock1mKdataBase, StockKdataCommon):
 
 register_schema(providers=['joinquant'], db_name='stock_1m_kdata', schema_base=Stock1mKdataBase)
 
+# 股票5分钟k线
 Stock5MKdataBase = declarative_base()
 
 
@@ -83,6 +85,7 @@ class Stock5mKdata(Stock5MKdataBase, StockKdataCommon):
 
 register_schema(providers=['joinquant'], db_name='stock_5m_kdata', schema_base=Stock5MKdataBase)
 
+# 股票15分钟k线
 Stock15MKdataBase = declarative_base()
 
 
@@ -90,6 +93,9 @@ class Stock15mKdata(Stock15MKdataBase, StockKdataCommon):
     __tablename__ = 'stock_15m_kdata'
 
 
+# register_schema(providers=['joinquant'], db_name='stock_15m_kdata', schema_base=Stock15MKdataBase)
+
+# 股票30分钟k线
 Stock30MKdataBase = declarative_base()
 
 
@@ -97,6 +103,9 @@ class Stock30mKdata(Stock30MKdataBase, StockKdataCommon):
     __tablename__ = 'stock_30m_kdata'
 
 
+# register_schema(providers=['joinquant'], db_name='stock_30m_kdata', schema_base=Stock30MKdataBase)
+
+# 股票1小时k线
 Stock1HKdataBase = declarative_base()
 
 
@@ -106,6 +115,7 @@ class Stock1hKdata(Stock1HKdataBase, StockKdataCommon):
 
 register_schema(providers=['joinquant'], db_name='stock_1h_kdata', schema_base=Stock1HKdataBase)
 
+# 股票日k线
 Stock1DKdataBase = declarative_base()
 
 
@@ -115,6 +125,7 @@ class Stock1dKdata(Stock1DKdataBase, StockKdataCommon):
 
 register_schema(providers=['joinquant', 'netease'], db_name='stock_1d_kdata', schema_base=Stock1DKdataBase)
 
+# 股票周k线
 Stock1wkKdataBase = declarative_base()
 
 
@@ -122,8 +133,19 @@ class Stock1wkKdata(Stock1wkKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1wk_kdata'
 
 
-register_schema(providers=['joinquant', 'netease'], db_name='stock_1wk_kdata', schema_base=Stock1wkKdataBase)
+register_schema(providers=['joinquant'], db_name='stock_1wk_kdata', schema_base=Stock1wkKdataBase)
 
+# 股票月k线
+Stock1monKdataBase = declarative_base()
+
+
+class Stock1monKdata(Stock1monKdataBase, StockKdataCommon):
+    __tablename__ = 'stock_1mon_kdata'
+
+
+register_schema(providers=['joinquant'], db_name='stock_1mon_kdata', schema_base=Stock1monKdataBase)
+
+# 指数日k线
 Index1DKdataBase = declarative_base()
 
 
@@ -142,6 +164,7 @@ register_schema(providers=['exchange'], db_name='index_1d_kdata', schema_base=In
 Index1wkKdataBase = declarative_base()
 
 
+# 指数周k线
 class Index1wkKdata(Index1wkKdataBase, KdataCommon):
     __tablename__ = 'index_1wk_kdata'
     turnover_rate = Column(Float)
@@ -154,6 +177,7 @@ class Index1wkKdata(Index1wkKdataBase, KdataCommon):
 
 register_schema(providers=['eastmoney'], db_name='index_1wk_kdata', schema_base=Index1wkKdataBase)
 
+# 指数月k线
 Index1monKdataBase = declarative_base()
 
 
@@ -169,6 +193,7 @@ class Index1monKdata(Index1monKdataBase, KdataCommon):
 
 register_schema(providers=['eastmoney'], db_name='index_1mon_kdata', schema_base=Index1monKdataBase)
 
+# 数字货币tick
 CoinTickKdataBase = declarative_base()
 
 
@@ -194,7 +219,7 @@ class Coin5mKdata(Coin5MKdataBase, KdataCommon):
     __tablename__ = 'coin_5m_kdata'
 
 
-register_schema(providers=['ccxt'], db_name='coin_5m_kdata', schema_base=Coin5MKdataBase)
+# register_schema(providers=['ccxt'], db_name='coin_5m_kdata', schema_base=Coin5MKdataBase)
 
 Coin15MKdataBase = declarative_base()
 
@@ -203,7 +228,7 @@ class Coin15mKdata(Coin15MKdataBase, KdataCommon):
     __tablename__ = 'coin_15m_kdata'
 
 
-register_schema(providers=['ccxt'], db_name='coin_15m_kdata', schema_base=Coin15MKdataBase)
+# register_schema(providers=['ccxt'], db_name='coin_15m_kdata', schema_base=Coin15MKdataBase)
 
 Coin1HKdataBase = declarative_base()
 
