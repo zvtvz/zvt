@@ -122,6 +122,9 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         if self.start_timestamp:
             start = max(self.start_timestamp, to_pd_timestamp(start))
 
+        # if self.level < IntervalLevel.LEVEL_1HOUR:
+        #     start = '2019-01-01'
+
         end = now_pd_timestamp()
 
         start_timestamp = to_time_str(start)
