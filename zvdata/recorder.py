@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from zvdata import IntervalLevel
 from zvdata.api import get_entities, get_data
 from zvdata.domain import get_db_session
-from zvdata.utils.time_utils import is_same_date, now_pd_timestamp, to_pd_timestamp, TIME_FORMAT_DAY, to_time_str
+from zvdata.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
+    evaluate_size_from_timestamp
 from zvdata.utils.utils import fill_domain_from_dict
 
 
@@ -128,13 +129,13 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                  force_update=False,
                  sleeping_time=5,
                  default_size=2000,
-                 one_shot=False,
+                 real_time=False,
                  fix_duplicate_way='add',
                  start_timestamp=None,
                  end_timestamp=None) -> None:
 
         self.default_size = default_size
-        self.one_shot = one_shot
+        self.real_time = real_time
         self.fix_duplicate_way = fix_duplicate_way
 
         self.start_timestamp = to_pd_timestamp(start_timestamp)
@@ -245,6 +246,8 @@ class TimeSeriesDataRecorder(RecorderForEntities):
             self.logger.info('ignore the data {}:{} saved before'.format(self.data_schema, the_id))
             return None
 
+        updated = False
+
         if not items:
             timestamp_str = original_data[self.get_original_time_field()]
             timestamp = None
@@ -259,9 +262,10 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                                            timestamp=timestamp)
         else:
             domain_item = items[0]
+            updated = True
 
         fill_domain_from_dict(domain_item, original_data, self.get_data_map())
-        return domain_item
+        return updated, domain_item
 
     def persist(self, entity, domain_list):
         """
@@ -298,17 +302,17 @@ class TimeSeriesDataRecorder(RecorderForEntities):
     def run(self):
         finished_items = []
         unfinished_items = self.entities
-        raising_exeption = None
+        raising_exception = None
         while True:
             for entity_item in unfinished_items:
                 try:
-                    latest_timestamp, end_timestamp, size, timestamps = self.evaluate_start_end_size_timestamps(
+                    start_timestamp, end_timestamp, size, timestamps = self.evaluate_start_end_size_timestamps(
                         entity_item)
 
                     if timestamps:
                         self.logger.info('entity_id:{},evaluate_start_end_size_timestamps result:{},{},{},{}-{}'.format(
                             entity_item.id,
-                            latest_timestamp,
+                            start_timestamp,
                             end_timestamp,
                             size,
                             timestamps[0],
@@ -316,7 +320,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                     else:
                         self.logger.info('entity_id:{},evaluate_start_end_size_timestamps result:{},{},{},{}'.format(
                             entity_item.id,
-                            latest_timestamp,
+                            start_timestamp,
                             end_timestamp,
                             size,
                             timestamps))
@@ -328,18 +332,24 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                             "finish recording {} for entity_id:{},latest_timestamp:{}".format(
                                 self.data_schema,
                                 entity_item.id,
-                                latest_timestamp))
+                                start_timestamp))
                         self.on_finish_entity(entity_item)
                         continue
 
-                    original_list = self.record(entity_item, start=latest_timestamp, end=end_timestamp, size=size,
+                    original_list = self.record(entity_item, start=start_timestamp, end=end_timestamp, size=size,
                                                 timestamps=timestamps)
+
+                    all_duplicated = True
 
                     if original_list:
                         domain_list = []
                         duplicate_count = 0
                         for original_item in original_list:
-                            domain_item = self.generate_domain(entity_item, original_item)
+                            updated, domain_item = self.generate_domain(entity_item, original_item)
+
+                            if not updated:
+                                all_duplicated = False
+
                             # handle the case  generate_domain_id generate duplicate id
                             if domain_item:
                                 duplicate = [item for item in domain_list if item.id == domain_item.id]
@@ -359,19 +369,38 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                         else:
                             self.logger.info('just get {} duplicated data in this cycle'.format(len(original_list)))
 
-                    # no  more data or force set to one shot means finished
-                    if not original_list or self.one_shot:
+                    # could not get more data
+                    entity_finished = False
+                    if not original_list or all_duplicated:
+                        # not realtime
+                        if not self.real_time:
+                            entity_finished = True
+
+                        # realtime and to the close time
+                        if self.real_time and \
+                                (self.close_hour is not None) and \
+                                (self.close_minute is not None):
+                            current_timestamp = pd.Timestamp.now()
+                            if current_timestamp.hour >= self.close_hour:
+                                if current_timestamp.minute - self.close_minute >= 5:
+                                    self.logger.info(
+                                        '{} now is the close time:{}'.format(entity_item.id, current_timestamp))
+
+                                    entity_finished = True
+
+                    # add finished entity to finished_items
+                    if entity_finished:
                         finished_items.append(entity_item)
 
                         latest_saved_record = self.get_latest_saved_record(entity=entity_item)
                         if latest_saved_record:
-                            latest_timestamp = eval('latest_saved_record[0].{}'.format(self.get_evaluated_time_field()))
+                            start_timestamp = eval('latest_saved_record[0].{}'.format(self.get_evaluated_time_field()))
 
                         self.logger.info(
                             "finish recording {} for entity_id:{},latest_timestamp:{}".format(
                                 self.data_schema,
                                 entity_item.id,
-                                latest_timestamp))
+                                start_timestamp))
                         self.on_finish_entity(entity_item)
                         continue
 
@@ -379,7 +408,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                 except Exception as e:
                     self.logger.exception(
                         "recording data for entity_id:{},{},error:{}".format(entity_item.id, self.data_schema, e))
-                    raising_exeption = e
+                    raising_exception = e
                     finished_items = unfinished_items
                     break
 
@@ -390,8 +419,8 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 
         self.on_finish()
 
-        if raising_exeption:
-            raise raising_exeption
+        if raising_exception:
+            raise raising_exception
 
 
 class FixedCycleDataRecorder(TimeSeriesDataRecorder):
@@ -401,25 +430,23 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
                  entity_ids=None,
                  codes=None,
                  batch_size=10,
-                 force_update=False,
+                 force_update=True,
                  sleeping_time=10,
                  default_size=2000,
-                 one_shot=False,
-                 fix_duplicate_way='add',
+                 real_time=False,
+                 fix_duplicate_way='ignore',
                  start_timestamp=None,
                  end_timestamp=None,
-                 contain_unfinished_data=False,
+                 # child add
                  level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False,
                  close_hour=0,
                  close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
 
         self.level = IntervalLevel(level)
-        # FIXME:should remove unfinished data when recording,always set it to False now
-        self.contain_unfinished_data = contain_unfinished_data
         self.kdata_use_begin_time = kdata_use_begin_time
         self.close_hour = close_hour
         self.close_minute = close_minute
@@ -442,83 +469,19 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
         if latest_saved_record:
-            latest_timestamp = latest_saved_record[0].timestamp
+            # the latest saved timestamp
+            latest_saved_timestamp = latest_saved_record[0].timestamp
         else:
-            latest_timestamp = entity.timestamp
+            # the list date
+            latest_saved_timestamp = entity.timestamp
 
-        if not latest_timestamp:
-            return latest_timestamp, None, self.default_size, None
+        if not latest_saved_timestamp:
+            return None, None, self.default_size, None
 
-        current_time = pd.Timestamp.now()
-        time_delta = current_time - latest_timestamp
+        size = evaluate_size_from_timestamp(start_timestamp=latest_saved_timestamp, level=self.level,
+                                            one_day_trading_minutes=self.one_day_trading_minutes)
 
-        if self.level == IntervalLevel.LEVEL_1DAY:
-            if is_same_date(current_time, latest_timestamp):
-                return latest_timestamp, None, 0, None
-            return latest_timestamp, None, time_delta.days + 1, None
-
-        # to today,check closing time
-        # 0,0 means never stop,e.g,coin
-        if (self.close_hour != 0 and self.close_minute != 0) and time_delta.days == 0:
-            if latest_timestamp.hour == self.close_hour and latest_timestamp.minute == self.close_minute:
-                return latest_timestamp, None, 0, None
-
-        if self.kdata_use_begin_time:
-            touching_timestamp = latest_timestamp + pd.Timedelta(seconds=self.level.to_second())
-        else:
-            touching_timestamp = latest_timestamp
-
-        waiting_seconds, size = self.level.count_from_timestamp(touching_timestamp,
-                                                                one_day_trading_minutes=self.one_day_trading_minutes)
-        if not self.one_shot and waiting_seconds and (waiting_seconds > 30):
-            t = waiting_seconds / 2
-            self.logger.info(
-                'level:{},recorded_time:{},touching_timestamp:{},current_time:{},next_ok_time:{},just sleep:{} seconds'.format(
-                    self.level.value,
-                    latest_timestamp,
-                    touching_timestamp,
-                    current_time,
-                    touching_timestamp + pd.Timedelta(
-                        seconds=self.level.to_second()),
-                    t))
-            time.sleep(t)
-
-        return latest_timestamp, None, size, None
-
-    def persist(self, entity, domain_list):
-        if domain_list:
-            if domain_list[0].timestamp >= domain_list[-1].timestamp:
-                first_timestamp = domain_list[-1].timestamp
-                last_timestamp = domain_list[0].timestamp
-            else:
-                first_timestamp = domain_list[0].timestamp
-                last_timestamp = domain_list[-1].timestamp
-
-            self.logger.info(
-                "persist {} for entity_id:{},time interval:[{},{}]".format(
-                    self.data_schema, entity.id, first_timestamp, last_timestamp))
-
-            current_timestamp = now_pd_timestamp()
-
-            saving_datas = domain_list
-
-            # FIXME:remove this logic
-            # FIXME:should remove unfinished data when recording,always set it to False now
-            if is_same_date(current_timestamp, last_timestamp) and self.contain_unfinished_data:
-                if current_timestamp.hour >= self.close_hour and current_timestamp.minute >= self.close_minute + 2:
-                    # after the closing time of the day,we think the last data is finished
-                    saving_datas = domain_list
-                else:
-                    # ignore unfinished kdata
-                    saving_datas = domain_list[:-1]
-                    self.logger.info(
-                        "ignore kdata for entity_id:{},level:{},timestamp:{},current_timestamp".format(
-                            entity.id,
-                            self.level,
-                            last_timestamp, current_timestamp))
-
-            self.session.add_all(saving_datas)
-            self.session.commit()
+        return latest_saved_timestamp, None, size, None
 
 
 class TimestampsDataRecorder(TimeSeriesDataRecorder):
@@ -532,12 +495,12 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
                  force_update=False,
                  sleeping_time=5,
                  default_size=2000,
-                 one_shot=False,
+                 real_time=False,
                  fix_duplicate_way='add',
                  start_timestamp=None,
                  end_timestamp=None) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
         self.security_timestamps_map = {}
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:

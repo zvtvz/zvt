@@ -29,13 +29,12 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
                  codes=None,
                  batch_size=10,
                  force_update=True,
-                 sleeping_time=5,
+                 sleeping_time=10,
                  default_size=2000,
-                 one_shot=True,
+                 real_time=False,
                  fix_duplicate_way='ignore',
                  start_timestamp=None,
                  end_timestamp=None,
-                 contain_unfinished_data=False,
                  level=IntervalLevel.LEVEL_1WEEK,
                  kdata_use_begin_time=False,
                  close_hour=15,
@@ -48,9 +47,9 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
         self.jq_trading_level = to_jq_trading_level(level)
 
         super().__init__('stock', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
-                         one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
+                         kdata_use_begin_time, close_hour, close_minute, one_day_trading_minutes)
+
         self.factor = 0
         self.last_timestamp = None
 

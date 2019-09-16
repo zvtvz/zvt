@@ -77,6 +77,19 @@ def json_callback_param(the_str):
 
 
 def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_func=lambda x: x):
+    """
+    use field map and related func to fill properties from the dict to the domain
+
+
+    :param the_domain:
+    :type the_domain: DeclarativeMeta
+    :param the_dict:
+    :type the_dict: dict
+    :param the_map:
+    :type the_map: dict
+    :param default_func:
+    :type default_func: function
+    """
     if not the_map:
         the_map = {}
         for k in the_dict:

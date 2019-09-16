@@ -33,13 +33,13 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
     data_schema = StockSummary
 
     def __init__(self, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, one_shot=False,
+                 force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add') -> None:
         # 上海A股,深圳市场,深圳成指,中小板,创业板
         codes = ['000001', '399106', '399001', '399005', '399006']
         super().__init__('index', ['cn'], None, codes, batch_size,
                          force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way)
+                         default_size, real_time, fix_duplicate_way)
 
         auth(JQ_ACCOUNT, JQ_PASSWD)
 

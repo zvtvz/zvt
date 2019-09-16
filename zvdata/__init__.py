@@ -5,8 +5,6 @@ import math
 import pandas as pd
 from sqlalchemy import Column, String, DateTime
 
-from zvdata.utils.time_utils import now_pd_timestamp
-
 
 class Mixin(object):
     id = Column(String, primary_key=True)
@@ -26,7 +24,7 @@ class Mixin(object):
 
 class NormalMixin(Mixin):
     # the record created time in db
-    created_timestamp = Column(DateTime, default=now_pd_timestamp())
+    created_timestamp = Column(DateTime, default=pd.Timestamp.now())
     # the record updated time in db, some recorder would check it for whether need to refresh
     updated_timestamp = Column(DateTime)
 
@@ -40,7 +38,7 @@ class EntityMixin(Mixin):
 
 class NormalEntityMixin(EntityMixin):
     # the record created time in db
-    created_timestamp = Column(DateTime, default=now_pd_timestamp())
+    created_timestamp = Column(DateTime, default=pd.Timestamp.now())
     # the record updated time in db, some recorder would check it for whether need to refresh
     updated_timestamp = Column(DateTime)
 
@@ -111,22 +109,6 @@ class IntervalLevel(enum.Enum):
             return pd_timestamp.floor('4h')
         if self >= IntervalLevel.LEVEL_1DAY:
             return pd_timestamp.floor('1d')
-
-    def is_last_data_of_day(self, hour, minute, pd_timestamp):
-        if self == IntervalLevel.LEVEL_1MIN:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 1 == minute
-        if self == IntervalLevel.LEVEL_5MIN:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 5 == minute
-        if self == IntervalLevel.LEVEL_15MIN:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 15 == minute
-        if self == IntervalLevel.LEVEL_30MIN:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 30 == minute
-        if self == IntervalLevel.LEVEL_1HOUR:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 60 == minute
-        if self == IntervalLevel.LEVEL_4HOUR:
-            return pd_timestamp.hour == hour and pd_timestamp.minute + 240 == minute
-        if self >= IntervalLevel.LEVEL_1DAY:
-            return True
 
     def to_minute(self):
         return int(self.to_second() / 60)

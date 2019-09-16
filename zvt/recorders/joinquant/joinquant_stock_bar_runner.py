@@ -5,7 +5,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata.utils.utils import init_process_log
-from zvt.recorders.joinquant.quotes.jq_china_stock_kdata_recorder import JQChinaStockKdataRecorder
+from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JQChinaStockKdataRecorder
 
 logger = logging.getLogger(__name__)
 

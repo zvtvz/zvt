@@ -23,10 +23,10 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
     timestamp_path_fields = ['ReportDate']
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, one_shot=False,
+                 force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add') -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way)
+                         default_size, real_time, fix_duplicate_way)
 
         auth(JQ_ACCOUNT, JQ_PASSWD)
 

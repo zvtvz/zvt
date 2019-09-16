@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import argparse
-from datetime import timedelta
 
 import pandas as pd
 from jqdatasdk import auth, get_price, logout
@@ -8,11 +7,10 @@ from jqdatasdk import auth, get_price, logout
 from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.pd_utils import df_is_not_null
-from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2
 from zvdata.utils.utils import init_process_log
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
-from zvt.api.rules import is_in_trading
 from zvt.domain import Stock
 from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
@@ -30,29 +28,27 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                  entity_ids=None,
                  codes=None,
                  batch_size=10,
-                 force_update=False,
-                 sleeping_time=5,
+                 force_update=True,
+                 sleeping_time=10,
                  default_size=2000,
-                 one_shot=False,
+                 real_time=False,
                  fix_duplicate_way='ignore',
                  start_timestamp=None,
                  end_timestamp=None,
-                 contain_unfinished_data=False,
                  level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False,
                  close_hour=15,
                  close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
-        # 周线以上级别用日线来合成
+        # 周线以上级别请使用jq_stock_bar_recorder
         assert level <= IntervalLevel.LEVEL_1DAY
 
         self.data_schema = get_kdata_schema(entity_type='stock', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 
         super().__init__('stock', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
-                         one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
+                         kdata_use_begin_time, close_hour, close_minute, one_day_trading_minutes)
 
         # 读取已经保存的最新factor,更新时有变化才需要重新计算前复权价格
         self.current_factors = {}
@@ -126,10 +122,12 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         if self.start_timestamp:
             start = max(self.start_timestamp, to_pd_timestamp(start))
 
-        end = now_pd_timestamp() + timedelta(days=1)
+        end = now_pd_timestamp()
 
         start_timestamp = to_time_str(start)
-        end_timestamp = to_time_str(end)
+
+        # 聚宽get_price函数必须指定结束时间，否则会有未来数据
+        end_timestamp = to_time_str(end, fmt=TIME_FORMAT_MINUTE2)
         # 不复权
         df = get_price(to_jq_entity_id(entity), start_date=to_time_str(start_timestamp),
                        end_date=end_timestamp,
@@ -144,10 +142,6 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df['provider'] = 'joinquant'
         df['level'] = self.level.value
-
-        # remove the unfinished kdata
-        if is_in_trading(entity_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
-            df = df.iloc[:-1, :]
 
         return df.to_dict(orient='records')
 

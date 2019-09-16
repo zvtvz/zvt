@@ -24,12 +24,12 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
           'symbol={}{}&scale=240&&datalen={}&ma=no'
 
     def __init__(self, entity_type='index', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=10, default_size=2000, one_shot=True, fix_duplicate_way='add',
+                 force_update=False, sleeping_time=10, default_size=2000, real_time=True, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, contain_unfinished_data=False,
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=0, close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, one_shot, fix_duplicate_way, start_timestamp, end_timestamp,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
                          contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
                          one_day_trading_minutes)
 
