@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
+import math
 
 import arrow
 import pandas as pd
 import tzlocal
+
+from zvdata import IntervalLevel
 
 CHINA_TZ = 'Asia/Shanghai'
 
@@ -16,6 +19,8 @@ TIME_FORMAT_DAY1 = 'YYYYMMDD'
 TIME_FORMAT_MINUTE = 'YYYYMMDDHHmm'
 
 TIME_FORMAT_MINUTE1 = 'HH:mm'
+
+TIME_FORMAT_MINUTE2 = "YYYY-MM-DD HH:mm:ss"
 
 
 # ms(int) or second(float) or str
@@ -95,6 +100,53 @@ def date_and_time(the_date, the_time):
     time_str = '{}T{}:00.000'.format(to_time_str(the_date), the_time)
 
     return to_pd_timestamp(time_str)
+
+
+def next_timestamp(current_timestamp: pd.Timestamp, level: IntervalLevel) -> pd.Timestamp:
+    current_timestamp = to_pd_timestamp(current_timestamp)
+    return current_timestamp + pd.Timedelta(seconds=level.to_second())
+
+
+def evaluate_size_from_timestamp(start_timestamp,
+                                 level: IntervalLevel,
+                                 one_day_trading_minutes,
+                                 end_timestamp: pd.Timestamp = None):
+    """
+    given from timestamp,level,one_day_trading_minutes,this func evaluate size of kdata to current.
+    it maybe a little bigger than the real size for fetching all the kdata.
+
+    :param start_timestamp:
+    :type start_timestamp: pd.Timestamp
+    :param level:
+    :type level: IntervalLevel
+    :param one_day_trading_minutes:
+    :type one_day_trading_minutes: int
+    """
+    if not end_timestamp:
+        end_timestamp = pd.Timestamp.now()
+    else:
+        end_timestamp = to_pd_timestamp(end_timestamp)
+
+    time_delta = end_timestamp - to_pd_timestamp(start_timestamp)
+
+    one_day_trading_seconds = one_day_trading_minutes * 60
+
+    if level == IntervalLevel.LEVEL_1DAY:
+        return time_delta.days + 1
+
+    if level == IntervalLevel.LEVEL_1WEEK:
+        return int(math.ceil(time_delta.days / 7)) + 1
+
+    if level == IntervalLevel.LEVEL_1MON:
+        return int(math.ceil(time_delta.days / 30)) + 1
+
+    if time_delta.days > 0:
+        seconds = (time_delta.days + 1) * one_day_trading_seconds
+        return int(math.ceil(seconds / level.to_second())) + 1
+    else:
+        seconds = time_delta.total_seconds()
+        return min(int(math.ceil(seconds / level.to_second())) + 1,
+                   one_day_trading_seconds / level.to_second() + 1)
 
 
 if __name__ == '__main__':

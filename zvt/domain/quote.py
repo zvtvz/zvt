@@ -57,7 +57,7 @@ class TickCommon(Mixin):
     volume = Column(Float)
     turnover = Column(Float)
     direction = Column(String(length=32))
-    orderType = Column(String(length=32))
+    order_type = Column(String(length=32))
 
 
 # kdata schema rule

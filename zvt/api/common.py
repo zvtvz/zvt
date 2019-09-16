@@ -180,11 +180,6 @@ def to_jq_report_period(timestamp):
     assert False
 
 
-# ccxt related transform
-def to_ccxt_trading_level(trading_level: IntervalLevel):
-    return trading_level.value
-
-
 def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
     def to_close(s):
         if se_is_not_null(s):

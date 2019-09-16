@@ -18,7 +18,7 @@ def test_coin_meta_recorder():
 
 def test_1d_kdata_recorder():
     recorder = CoinKdataRecorder(exchanges=['binance'], codes=['EOS/USDT'], level=IntervalLevel.LEVEL_1DAY,
-                                 one_shot=True)
+                                 real_time=False)
     try:
         recorder.run()
     except:
@@ -27,7 +27,7 @@ def test_1d_kdata_recorder():
 
 def test_1h_kdata_recorder():
     recorder = CoinKdataRecorder(exchanges=['binance'], codes=['EOS/USDT'], level=IntervalLevel.LEVEL_1HOUR,
-                                 one_shot=True)
+                                 real_time=False)
     try:
         recorder.run()
     except:
