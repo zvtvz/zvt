@@ -233,9 +233,11 @@ class TimeSeriesDataRecorder(RecorderForEntities):
         :param original_data:
         """
 
+        updated = False
+
         # if the domain is directly generated in record method, we just return it
         if isinstance(original_data, self.data_schema):
-            return original_data
+            return updated, original_data
 
         the_id = self.generate_domain_id(entity, original_data)
 
@@ -244,9 +246,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 
         if items and not self.force_update:
             self.logger.info('ignore the data {}:{} saved before'.format(self.data_schema, the_id))
-            return None
-
-        updated = False
+            return updated, None
 
         if not items:
             timestamp_str = original_data[self.get_original_time_field()]
