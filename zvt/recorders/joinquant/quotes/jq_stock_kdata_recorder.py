@@ -5,9 +5,11 @@ import pandas as pd
 from jqdatasdk import auth, get_price, logout
 
 from zvdata import IntervalLevel
+from zvdata.api import df_to_db
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.pd_utils import df_is_not_null
-from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2
+from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2, \
+    TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvdata.utils.utils import init_process_log
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
@@ -137,16 +139,29 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                        frequency=self.jq_trading_level,
                        fields=['open', 'close', 'low', 'high', 'volume', 'money'],
                        skip_paused=True, fq=None)
-        df.index.name = 'timestamp'
-        df.reset_index(inplace=True)
-        df['name'] = entity.name
-        df.rename(columns={'money': 'turnover'}, inplace=True)
+        if df_is_not_null(df):
+            df.index.name = 'timestamp'
+            df.reset_index(inplace=True)
+            df['name'] = entity.name
+            df.rename(columns={'money': 'turnover'}, inplace=True)
 
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df['provider'] = 'joinquant'
-        df['level'] = self.level.value
+            df['entity_id'] = entity.id
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['provider'] = 'joinquant'
+            df['level'] = self.level.value
+            df['code'] = entity.code
 
-        return df.to_dict(orient='records')
+            def generate_kdata_id(se):
+                if self.level >= IntervalLevel.LEVEL_1DAY:
+                    return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
+                else:
+                    return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_ISO8601))
+
+            df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
+
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force=self.force_update)
+
+        return None
 
 
 if __name__ == '__main__':
@@ -160,4 +175,4 @@ if __name__ == '__main__':
     codes = args.codes
 
     init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
+    JQChinaStockKdataRecorder(level='5m', sleeping_time=0, codes=['000338']).run()

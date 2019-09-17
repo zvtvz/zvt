@@ -10,7 +10,7 @@ from zvdata import IntervalLevel
 from zvdata.api import get_entities, get_data
 from zvdata.domain import get_db_session
 from zvdata.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
-    evaluate_size_from_timestamp
+    evaluate_size_from_timestamp, is_finished_kdata_timestamp
 from zvdata.utils.utils import fill_domain_from_dict
 
 
@@ -146,19 +146,22 @@ class TimeSeriesDataRecorder(RecorderForEntities):
     def get_latest_saved_record(self, entity):
         order = eval('self.data_schema.{}.desc()'.format(self.get_evaluated_time_field()))
 
-        return get_data(entity_id=entity.id,
-                        provider=self.provider,
-                        data_schema=self.data_schema,
-                        order=order,
-                        limit=1,
-                        return_type='domain',
-                        session=self.session)
+        records = get_data(entity_id=entity.id,
+                           provider=self.provider,
+                           data_schema=self.data_schema,
+                           order=order,
+                           limit=1,
+                           return_type='domain',
+                           session=self.session)
+        if records:
+            return records[0]
+        return None
 
     def evaluate_start_end_size_timestamps(self, entity):
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
         if latest_saved_record:
-            latest_timestamp = eval('latest_saved_record[0].{}'.format(self.get_evaluated_time_field()))
+            latest_timestamp = eval('latest_saved_record.{}'.format(self.get_evaluated_time_field()))
         else:
             latest_timestamp = entity.timestamp
 
@@ -394,7 +397,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 
                         latest_saved_record = self.get_latest_saved_record(entity=entity_item)
                         if latest_saved_record:
-                            start_timestamp = eval('latest_saved_record[0].{}'.format(self.get_evaluated_time_field()))
+                            start_timestamp = eval('latest_saved_record.{}'.format(self.get_evaluated_time_field()))
 
                         self.logger.info(
                             "finish recording {} for entity_id:{},latest_timestamp:{}".format(
@@ -455,14 +458,21 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def get_latest_saved_record(self, entity):
         order = eval('self.data_schema.{}.desc()'.format(self.get_evaluated_time_field()))
 
-        return get_data(entity_id=entity.id,
-                        provider=self.provider,
-                        data_schema=self.data_schema,
-                        order=order,
-                        limit=1,
-                        return_type='domain',
-                        session=self.session,
-                        level=self.level.value)
+        records = get_data(entity_id=entity.id,
+                           provider=self.provider,
+                           data_schema=self.data_schema,
+                           order=order,
+                           limit=2,
+                           return_type='domain',
+                           session=self.session,
+                           level=self.level.value)
+        if records:
+            # just keep one unfinished kdata
+            if not is_finished_kdata_timestamp(records[-1].timestamp, level=self.level):
+                self.session.delete(records[-1])
+                return records[0]
+
+        return records[-1]
 
     def evaluate_start_end_size_timestamps(self, entity):
         # get latest record
@@ -470,7 +480,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 
         if latest_saved_record:
             # the latest saved timestamp
-            latest_saved_timestamp = latest_saved_record[0].timestamp
+            latest_saved_timestamp = latest_saved_record.timestamp
         else:
             # the list date
             latest_saved_timestamp = entity.timestamp
@@ -520,8 +530,8 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
         latest_record = self.get_latest_saved_record(entity=entity)
 
         if latest_record:
-            self.logger.info('latest record timestamp:{}'.format(latest_record[0].timestamp))
-            timestamps = [t for t in timestamps if t > latest_record[0].timestamp]
+            self.logger.info('latest record timestamp:{}'.format(latest_record.timestamp))
+            timestamps = [t for t in timestamps if t > latest_record.timestamp]
 
             if timestamps:
                 return timestamps[0], timestamps[-1], len(timestamps), timestamps
