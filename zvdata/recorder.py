@@ -471,8 +471,8 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
             if not is_finished_kdata_timestamp(records[-1].timestamp, level=self.level):
                 self.session.delete(records[-1])
                 return records[0]
-
-        return records[-1]
+            return records[-1]
+        return None
 
     def evaluate_start_end_size_timestamps(self, entity):
         # get latest record
