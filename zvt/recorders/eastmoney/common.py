@@ -5,9 +5,9 @@ import requests
 
 from zvdata.api import get_count, get_data
 from zvdata.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
+from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.api.common import get_company_type
 from zvt.domain import CompanyType, Stock
-from zvdata.utils.time_utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -208,7 +208,8 @@ class EastmoneyMoreDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
             "pageSize": 1
         }
         results = call_eastmoney_api(self.url, param=param, path_fields=self.path_fields)
-        return self.generate_domain(security_item, results[0])
+        _, result = self.generate_domain(security_item, results[0])
+        return result
 
     def evaluate_start_end_size_timestamps(self, entity):
         # get latest record
@@ -219,8 +220,9 @@ class EastmoneyMoreDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
                                  return_type='domain',
                                  session=self.session)
         if latest_record:
-            if not self.get_remote_latest_record(entity) or (
-                    latest_record[0].id == self.get_remote_latest_record(entity).id):
+            remote_record = self.get_remote_latest_record(entity)
+            if not remote_record or (
+                    latest_record[0].id == remote_record.id):
                 return None, None, 0, None
             else:
                 return None, None, 10, None
