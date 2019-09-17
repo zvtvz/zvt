@@ -102,4 +102,4 @@ data.tar.gz
 # LibreOffice locks
 .~lock.*#
 
-zen/
+# zen/
