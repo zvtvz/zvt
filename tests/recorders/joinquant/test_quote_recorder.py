@@ -46,10 +46,10 @@ def test_1h_kdata_recorder():
         assert False
 
 
-# def test_5m_kdata_recorder():
-#     recorder = JQChinaStockKdataRecorder(codes=['000338'], sleeping_time=0, level=IntervalLevel.LEVEL_5MIN,
-#                                          real_time=False)
-#     try:
-#         recorder.run()
-#     except:
-#         assert False
+def test_5m_kdata_recorder():
+    recorder = JQChinaStockKdataRecorder(codes=['000338'], sleeping_time=0, level=IntervalLevel.LEVEL_5MIN,
+                                         real_time=False)
+    try:
+        recorder.run()
+    except:
+        assert False

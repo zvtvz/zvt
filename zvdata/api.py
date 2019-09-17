@@ -5,8 +5,8 @@ import pandas as pd
 from sqlalchemy import func, exists, and_
 from sqlalchemy.orm import Query, Session
 
-from zvdata.domain import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
 from zvdata import IntervalLevel
+from zvdata.domain import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
 from zvdata.utils.pd_utils import df_is_not_null, index_df
 from zvdata.utils.time_utils import to_pd_timestamp
 
@@ -45,6 +45,7 @@ def common_filter(query: Query,
 
 
 def get_data(data_schema,
+             ids: List[str] = None,
              entity_ids: List[str] = None,
              entity_id: str = None,
              codes: List[str] = None,
@@ -90,6 +91,8 @@ def get_data(data_schema,
         query = query.filter(data_schema.code.in_(codes))
     if entity_ids:
         query = query.filter(data_schema.entity_id.in_(entity_ids))
+    if ids:
+        query = query.filter(data_schema.id.in_(ids))
 
     # we always store different level in different schema,the level param is not useful now
     if level:
@@ -151,12 +154,34 @@ def decode_entity_id(entity_id: str):
     return entity_type, exchange, code
 
 
-def df_to_db(df, data_schema, provider):
+def df_to_db(df, data_schema, provider, force=False):
+    if not df_is_not_null(df):
+        return
+
     db_engine = get_db_engine(provider, data_schema=data_schema)
 
-    current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider)
-    if df_is_not_null(current):
-        df = df[~df['id'].isin(current['id'])]
+    if force:
+        session = get_db_session(provider=provider, data_schema=data_schema)
+        ids = df["id"].tolist()
+        # count = len(ids)
+        # start = 0
+        # while True:
+        #     end = min(count, start + 5000)
+        #     sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids[start:end])}'
+        #     session.execute(sql)
+        #     session.commit()
+        #     if end == count:
+        #         break
+        #     start = end
+        sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
+
+        session.execute(sql)
+        session.commit()
+
+    else:
+        current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider)
+        if df_is_not_null(current):
+            df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
 

@@ -149,5 +149,12 @@ def evaluate_size_from_timestamp(start_timestamp,
                    one_day_trading_seconds / level.to_second() + 1)
 
 
+def is_finished_kdata_timestamp(timestamp, level: IntervalLevel):
+    timestamp = to_pd_timestamp(timestamp)
+    if level.floor_timestamp(timestamp) == timestamp:
+        return True
+    return False
+
+
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))
