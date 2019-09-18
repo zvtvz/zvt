@@ -2,8 +2,8 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata.factor import Factor
 from zvdata import IntervalLevel
+from zvdata.factor import Factor
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.pd_utils import index_df_with_category_xfield
 from zvt.api.common import get_kdata_schema
@@ -49,8 +49,6 @@ class TechnicalFactor(Factor):
 
     def do_compute(self):
         if df_is_not_null(self.data_df):
-            self.depth_df = self.data_df.reset_index(level='timestamp')
-
             for idx, indicator in enumerate(self.indicators):
                 if indicator == 'ma':
                     window = self.indicators_param[idx].get('window')
@@ -58,11 +56,17 @@ class TechnicalFactor(Factor):
                     col = 'ma{}'.format(window)
                     self.indicator_cols.add(col)
 
-                    for entity_id, df in self.depth_df.groupby('entity_id'):
-                        if self.entity_type == 'stock':
-                            self.depth_df.loc[entity_id, col] = ma(df['qfq_close'], window=window)
-                        else:
-                            self.depth_df.loc[entity_id, col] = ma(df['close'], window=window)
+                    if self.entity_type == 'stock' and self.fq == 'qfq':
+                        df = self.depth_df['qfq_close'].groupby(level=0).rolling(window=window,
+                                                                                 min_periods=window).mean()
+                    else:
+                        df = self.depth_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+
+                    df = df.reset_index(level=0, drop=True)
+
+                    self.depth_df[col] = df
+                    # self.depth_df = pd.concat([self.depth_df, df], axis=1, sort=False)
+
                 if indicator == 'macd':
                     slow = self.indicators_param[idx].get('slow')
                     fast = self.indicators_param[idx].get('fast')
@@ -72,17 +76,25 @@ class TechnicalFactor(Factor):
                     self.indicator_cols.add('dea')
                     self.indicator_cols.add('macd')
 
-                    for entity_id, df in self.depth_df.groupby('entity_id'):
-                        if self.entity_type == 'stock' and self.fq == 'qfq':
-                            diff, dea, m = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
-                        else:
-                            diff, dea, m = macd(df['close'], slow=slow, fast=fast, n=n)
+                    # for entity_id, df in self.depth_df.groupby('entity_id'):
+                    #     if self.entity_type == 'stock' and self.fq == 'qfq':
+                    #         diff, dea, m = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
+                    #     else:
+                    #         diff, dea, m = macd(df['close'], slow=slow, fast=fast, n=n)
+                    #
+                    #     self.depth_df.loc[entity_id, 'diff'] = diff
+                    #     self.depth_df.loc[entity_id, 'dea'] = dea
+                    #     self.depth_df.loc[entity_id, 'macd'] = m
 
-                        self.depth_df.loc[entity_id, 'diff'] = diff
-                        self.depth_df.loc[entity_id, 'dea'] = dea
-                        self.depth_df.loc[entity_id, 'macd'] = m
+                    if self.entity_type == 'stock' and self.fq == 'qfq':
+                        df = self.depth_df.groupby(level=0)['qfq_close'].apply(
+                            lambda x: macd(x, slow=slow, fast=fast, n=n, return_type='df'))
+                    else:
+                        df = self.depth_df.groupby(level=0)['close'].apply(
+                            lambda x: macd(x, slow=slow, fast=fast, n=n, return_type='df'))
+                    self.depth_df = pd.concat([self.depth_df, df], axis=1, sort=False)
 
-            self.depth_df = self.depth_df.set_index('timestamp', append=True)
+            # self.depth_df = self.depth_df.set_index('timestamp', append=True)
 
     def on_category_data_added(self, category, added_data: pd.DataFrame):
         size = len(added_data)
@@ -202,7 +214,13 @@ class BullFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    factor1 = BullFactor(codes=['000338'], start_timestamp='2018-01-01', end_timestamp='2019-02-01')
-    factor1.load_data()
-
-    factor1.draw_depth()
+    factor = TechnicalFactor(entity_type='stock',
+                             codes=['000338', '000778'],
+                             start_timestamp='2019-01-01',
+                             end_timestamp='2019-06-10',
+                             level=IntervalLevel.LEVEL_1DAY,
+                             provider='joinquant',
+                             indicators=['macd'],
+                             indicators_param=[{'slow': 26, 'fast': 12, 'n': 9}],
+                             auto_load=True)
+    print(factor.depth_df)

@@ -129,8 +129,7 @@ class Drawer(object):
         if render == 'html':
             plotly.offline.plot(figure_or_data={'data': plotly_data,
                                                 'layout': plotly_layout
-                                                },
-                                filename=get_ui_path(file_name))
+                                                }, filename=get_ui_path(file_name))
 
         elif render == 'notebook':
             plotly.offline.init_notebook_mode(connected=True)
@@ -436,11 +435,9 @@ class Drawer(object):
                         fill_color=['#000080', '#000080'] + ['#0066cc'] * len(self.normal_data.data_df.columns),
                         align='left',
                         font=dict(color='white', size=13)),
-            cells=dict(values=values,
-                       fill=dict(color='#F5F8FF'),
-                       align='left'), **kwargs)
+            cells=dict(values=values, fill=dict(color='#F5F8FF'), align='left'), **kwargs)
 
-        return self.show(plotly_data=data, plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
+        return self.show(plotly_data=[data], plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 

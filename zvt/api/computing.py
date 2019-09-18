@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
+
 from zvt.api.quote import get_kdata
 
 
@@ -19,7 +21,7 @@ def ema(s, window=12):
     return s.ewm(span=window, adjust=False, min_periods=window).mean()
 
 
-def macd(s, slow=26, fast=12, n=9):
+def macd(s, slow=26, fast=12, n=9, return_type='se'):
     ema_fast = ema(s, window=fast)
 
     ema_slow = ema(s, window=slow)
@@ -28,7 +30,10 @@ def macd(s, slow=26, fast=12, n=9):
     dea = diff.ewm(span=n, adjust=False).mean()
     m = (diff - dea) * 2
 
-    return diff, dea, m
+    if return_type == 'se':
+        return diff, dea, m
+    else:
+        return pd.DataFrame({'diff': diff, 'dea': dea, 'macd': m})
 
 
 if __name__ == '__main__':
