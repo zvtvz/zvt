@@ -263,7 +263,7 @@ class Drawer(object):
                 ydata = df.loc[:, col].values.tolist()
 
                 # set y axis
-                yaxis, layout = self.get_yaxis_layout_chart(col, property_map)
+                yaxis, layout, _ = self.get_yaxis_layout_chart(col, property_map)
                 if yaxis and layout:
                     layout_params[f'yaxis{yaxis[-1]}'] = layout
 
@@ -285,7 +285,7 @@ class Drawer(object):
                 ydata = df.loc[:, col].values.tolist()
 
                 # set y axis
-                yaxis, layout = self.get_yaxis_layout_chart(col, property_map)
+                yaxis, layout, _ = self.get_yaxis_layout_chart(col, property_map)
                 if yaxis and layout:
                     layout_params[f'yaxis{yaxis[-1]}'] = layout
 
