@@ -173,7 +173,10 @@ def df_to_db(df, data_schema, provider, force=False):
         #     if end == count:
         #         break
         #     start = end
-        sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
+        if len(ids) == 1:
+            sql = f'delete from {data_schema.__tablename__} where id = {ids[0]}'
+        else:
+            sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
 
         session.execute(sql)
         session.commit()
