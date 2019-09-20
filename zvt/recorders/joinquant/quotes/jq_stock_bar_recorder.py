@@ -81,11 +81,16 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         # 不复权
-        df = get_bars(to_jq_entity_id(entity),
-                      count=size,
-                      unit=self.jq_trading_level,
-                      fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
-                      include_now=False)
+        try:
+            df = get_bars(to_jq_entity_id(entity),
+                          count=size,
+                          unit=self.jq_trading_level,
+                          fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
+                          include_now=False)
+        except Exception as e:
+            # just ignore the error,for some new stocks not in the index
+            self.logger.exception(e)
+            return None
         df['name'] = entity.name
         df.rename(columns={'money': 'turnover'}, inplace=True)
 
