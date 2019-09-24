@@ -5,11 +5,11 @@ import time
 import pandas as pd
 import requests
 
-from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
+from zvdata.recorder import FixedCycleDataRecorder
+from zvdata.utils.time_utils import get_year_quarters, is_same_date
 from zvt.api.common import generate_kdata_id
 from zvt.domain import Index, Index1dKdata
-from zvdata.utils.time_utils import get_year_quarters, is_same_date
 
 
 class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
@@ -26,9 +26,8 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=0, close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
-                         one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, contain_unfinished_data, level, kdata_use_begin_time, one_day_trading_minutes)
 
     def get_data_map(self):
         return {}

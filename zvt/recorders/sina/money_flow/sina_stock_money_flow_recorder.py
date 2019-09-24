@@ -3,11 +3,11 @@ import time
 
 import requests
 
-from zvdata.recorder import FixedCycleDataRecorder
 from zvdata import IntervalLevel
+from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
-from zvt.domain import StockMoneyFlow, Stock
 from zvdata.utils.utils import to_float
+from zvt.domain import StockMoneyFlow, Stock
 
 
 class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
@@ -26,8 +26,8 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
                  one_day_trading_minutes=4 * 60) -> None:
 
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, contain_unfinished_data, level, kdata_use_begin_time,
                          one_day_trading_minutes)
 
     def generate_url(self, code, number):

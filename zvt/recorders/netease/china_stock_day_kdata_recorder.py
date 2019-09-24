@@ -9,9 +9,10 @@ from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils import utils
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY1, now_time_str, to_pd_timestamp
-from zvt.api.common import generate_kdata_id, to_jq_entity_id
+from zvt.api.common import generate_kdata_id
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock1dKdata, Stock
+from zvt.recorders.joinquant import to_jq_entity_id
 from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 
 
@@ -30,9 +31,8 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
                  one_day_trading_minutes=24 * 60) -> None:
 
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
-                         one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, contain_unfinished_data, level, kdata_use_begin_time, one_day_trading_minutes)
 
         self.current_factors = {}
         for security_item in self.entities:
