@@ -39,8 +39,8 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                  one_day_trading_minutes=24 * 60) -> None:
         self.data_schema = get_kdata_schema(entity_type=entity_type, level=level)
         super().__init__(entity_type, None, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, contain_unfinished_data, level, kdata_use_begin_time,
                          one_day_trading_minutes)
 
     def init_entities(self):

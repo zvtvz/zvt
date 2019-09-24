@@ -37,9 +37,8 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_TICK)
 
         super().__init__('coin', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         IntervalLevel.LEVEL_TICK,
-                         kdata_use_begin_time, close_hour, close_minute, one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, IntervalLevel.LEVEL_TICK, kdata_use_begin_time, one_day_trading_minutes)
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)

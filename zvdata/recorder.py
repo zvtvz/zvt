@@ -132,10 +132,16 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                  real_time=False,
                  fix_duplicate_way='add',
                  start_timestamp=None,
-                 end_timestamp=None) -> None:
+                 end_timestamp=None,
+                 close_hour=0,
+                 close_minute=0) -> None:
 
         self.default_size = default_size
         self.real_time = real_time
+
+        self.close_hour = close_hour
+        self.close_minute = close_minute
+
         self.fix_duplicate_way = fix_duplicate_way
 
         self.start_timestamp = to_pd_timestamp(start_timestamp)
@@ -440,19 +446,18 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
                  fix_duplicate_way='ignore',
                  start_timestamp=None,
                  end_timestamp=None,
+                 close_hour=0,
+                 close_minute=0,
                  # child add
                  level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False,
-                 close_hour=0,
-                 close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
 
         self.level = IntervalLevel(level)
         self.kdata_use_begin_time = kdata_use_begin_time
-        self.close_hour = close_hour
-        self.close_minute = close_minute
         self.one_day_trading_minutes = one_day_trading_minutes
 
     def get_latest_saved_record(self, entity):

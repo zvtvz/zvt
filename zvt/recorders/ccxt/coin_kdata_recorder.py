@@ -40,8 +40,8 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
         self.ccxt_trading_level = to_ccxt_trading_level(level)
 
         super().__init__('coin', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
-                         kdata_use_begin_time, close_hour, close_minute, one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, close_hour, close_minute,
+                         end_timestamp, level, kdata_use_begin_time, one_day_trading_minutes)
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)

@@ -36,8 +36,8 @@ class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=15, close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
         super().__init__('index', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         contain_unfinished_data, level, kdata_use_begin_time, close_hour, close_minute,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, contain_unfinished_data, level, kdata_use_begin_time,
                          one_day_trading_minutes)
 
     def init_entities(self):

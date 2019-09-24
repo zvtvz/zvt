@@ -49,8 +49,8 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         self.jq_trading_level = to_jq_trading_level(level)
 
         super().__init__('stock', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
-                         kdata_use_begin_time, close_hour, close_minute, one_day_trading_minutes)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
         # 读取已经保存的最新factor,更新时有变化才需要重新计算前复权价格
         self.current_factors = {}
