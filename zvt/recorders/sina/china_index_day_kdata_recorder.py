@@ -22,12 +22,12 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
 
     def __init__(self, entity_type='index', exchanges=['cn'], entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=10, default_size=2000, real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, contain_unfinished_data=False,
+                 start_timestamp=None, end_timestamp=None,
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=0, close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute, contain_unfinished_data, level, kdata_use_begin_time, one_day_trading_minutes)
+                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
     def get_data_map(self):
         return {}
