@@ -174,7 +174,7 @@ def df_to_db(df, data_schema, provider, force=False):
         #         break
         #     start = end
         if len(ids) == 1:
-            sql = f'delete from {data_schema.__tablename__} where id = {ids[0]}'
+            sql = f'delete from {data_schema.__tablename__} where id = "{ids[0]}"'
         else:
             sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
 
