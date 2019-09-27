@@ -48,7 +48,11 @@ class TechnicalFactor(Factor):
                          fill_method=None, effective_number=None)
 
     def do_compute(self):
-        if df_is_not_null(self.data_df):
+        """
+        calculate tech indicators  self.depth_df
+
+        """
+        if df_is_not_null(self.depth_df) and self.indicators:
             for idx, indicator in enumerate(self.indicators):
                 if indicator == 'ma':
                     window = self.indicators_param[idx].get('window')
@@ -104,20 +108,20 @@ class TechnicalFactor(Factor):
             if indicator == 'ma':
                 window = self.indicators_param[idx].get('window')
 
-                if self.entity_type == 'stock':
+                if self.entity_type == 'stock' and self.fq == 'qfq':
                     df['ma{}'.format(window)] = ma(df['qfq_close'], window=window)
                 else:
                     df['ma{}'.format(window)] = ma(df['close'], window=window)
 
-            if indicator == 'macd':
+            if indicator == 'macd' and self.fq == 'qfq':
                 slow = self.indicators_param[idx].get('slow')
                 fast = self.indicators_param[idx].get('fast')
                 n = self.indicators_param[idx].get('n')
 
                 if self.entity_type == 'stock':
-                    df['diff'], df['dea'], df['m'] = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
+                    df['diff'], df['dea'], df['macd'] = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
                 else:
-                    df['diff'], df['dea'], df['m'] = macd(df['close'], slow=slow, fast=fast, n=n)
+                    df['diff'], df['dea'], df['macd'] = macd(df['close'], slow=slow, fast=fast, n=n)
 
         df = df.iloc[-size:, ]
         df = df.reset_index()

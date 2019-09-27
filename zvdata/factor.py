@@ -6,11 +6,10 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.chart import Drawer
-from zvdata.domain import get_db_session, FactorDomain
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.score_algorithm import Scorer
-from zvdata.sedes import Jsonable, UiComposable
+from zvdata.sedes import Jsonable
 
 
 class FactorType(enum.Enum):
@@ -43,7 +42,7 @@ class Meta(type):
         return cls
 
 
-class Factor(DataReader, DataListener, Jsonable, UiComposable, metaclass=Meta):
+class Factor(DataReader, DataListener, Jsonable):
     factor_type: FactorType = None
 
     def __init__(self,
@@ -73,12 +72,6 @@ class Factor(DataReader, DataListener, Jsonable, UiComposable, metaclass=Meta):
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level,
                          category_field, time_field, trip_timestamp, auto_load)
-
-        register_instance(self.__class__, self)
-
-        # using to do db operations
-        self.session = get_db_session(provider='zvdata',
-                                      data_schema=FactorDomain)
 
         self.factor_name = type(self).__name__.lower()
 
