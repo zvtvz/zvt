@@ -38,7 +38,7 @@ class FinanceBaseFactor(Factor):
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number)
+                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, persist)
 
 
 class GoodCompanyFactor(FinanceBaseFactor):
@@ -134,12 +134,14 @@ class IndexMoneyFlowFactor(ScoreFactor):
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
 
-    def pre_compute(self):
+    def do_compute(self):
         self.depth_df = self.data_df.copy()
         self.depth_df = self.depth_df.groupby(level=1).rolling(window=20).mean()
         self.depth_df = self.depth_df.reset_index(level=0, drop=True)
         self.depth_df = self.depth_df.reset_index()
         self.depth_df = index_df_with_category_xfield(self.depth_df)
+
+        super().do_compute()
 
 
 if __name__ == '__main__':
