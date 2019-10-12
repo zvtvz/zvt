@@ -5,8 +5,8 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.factor import Factor, ScoreFactor
-from zvdata.score_algorithm import Scorer, RankScorer
-from zvdata.utils.pd_utils import index_df_with_category_xfield
+from zvdata.scorer import Scorer, RankScorer
+from zvdata.utils.pd_utils import normal_index_df
 from zvt.domain import FinanceFactor, IndexMoneyFlow
 
 
@@ -139,7 +139,7 @@ class IndexMoneyFlowFactor(ScoreFactor):
         self.depth_df = self.depth_df.groupby(level=1).rolling(window=20).mean()
         self.depth_df = self.depth_df.reset_index(level=0, drop=True)
         self.depth_df = self.depth_df.reset_index()
-        self.depth_df = index_df_with_category_xfield(self.depth_df)
+        self.depth_df = normal_index_df(self.depth_df)
 
         super().do_compute()
 

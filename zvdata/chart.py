@@ -6,7 +6,7 @@ import plotly
 import plotly.graph_objs as go
 
 from zvdata.api import decode_entity_id
-from zvdata.domain import context
+from zvdata.contract import context
 from zvdata.normal_data import NormalData, TableType
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601

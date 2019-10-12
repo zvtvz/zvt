@@ -4,7 +4,7 @@ init_test_context()
 
 from zvt.api.api import get_spo_detail, get_rights_issue_detail, get_dividend_financing
 from zvt.domain import SpoDetail, RightsIssueDetail, DividendFinancing
-from zvdata.domain import get_db_session
+from zvdata.contract import get_db_session
 from zvdata.utils.time_utils import to_pd_timestamp
 
 session = get_db_session(provider='eastmoney',

@@ -4,7 +4,7 @@ import requests
 
 from zvdata import IntervalLevel
 from zvdata.api import get_entities
-from zvdata.domain import get_db_session
+from zvdata.contract import get_db_session
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
 from zvdata.utils.utils import json_callback_param, to_float

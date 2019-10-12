@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # business data
-from zvdata.domain import register_schema
+from zvdata.contract import register_schema
 
 BusinessBase = declarative_base()
 

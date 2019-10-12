@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from zvdata.domain import *
+from zvdata.contract import *
 from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
 
 

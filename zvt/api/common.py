@@ -9,7 +9,7 @@ from sqlalchemy import exists, and_
 
 from zvdata import IntervalLevel
 from zvdata.api import decode_entity_id
-from zvdata.domain import get_db_session
+from zvdata.contract import get_db_session
 from zvdata.utils.pd_utils import se_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601

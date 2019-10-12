@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import Mixin
-from zvdata.domain import register_schema
+from zvdata.contract import register_schema
 
 
 class StockKdataCommon(Mixin):

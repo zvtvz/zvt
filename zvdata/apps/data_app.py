@@ -13,7 +13,7 @@ from dash.dependencies import Input, Output, State
 from zvdata import IntervalLevel
 from zvdata.app import app
 from zvdata.chart import Drawer
-from zvdata.domain import global_providers, get_schemas, get_schema_by_name, get_schema_columns
+from zvdata.contract import global_providers, get_schemas, get_schema_by_name, get_schema_columns
 from zvdata.normal_data import NormalData, IntentType
 from zvdata.reader import DataReader
 from zvdata.utils.pd_utils import df_is_not_null

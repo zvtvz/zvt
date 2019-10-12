@@ -4,10 +4,44 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.factor import Factor
+from zvdata.scorer import Transformer
 from zvdata.utils.pd_utils import df_is_not_null
-from zvdata.utils.pd_utils import index_df_with_category_xfield
+from zvdata.utils.pd_utils import normal_index_df
 from zvt.api.common import get_kdata_schema
 from zvt.api.computing import ma, macd
+
+
+class MaTransformer(Transformer):
+    def __init__(self, windows=[5, 10]) -> None:
+        self.windows = windows
+
+    def transform(self, df) -> pd.DataFrame:
+        for window in self.windows:
+            col = 'ma{}'.format(window)
+            self.indicator_cols.append(col)
+
+            ma_df = df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            df[col] = ma_df
+
+        return df
+
+
+class MacdTransformer(Transformer):
+    def __init__(self, slow=26, fast=12, n=9) -> None:
+        self.slow = slow
+        self.fast = fast
+        self.n = n
+
+        self.indicator_cols.append('diff')
+        self.indicator_cols.append('dea')
+        self.indicator_cols.append('macd')
+
+    def transform(self, df) -> pd.DataFrame:
+        macd_df = df.groupby(level=0)['close'].apply(
+            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
+
+        df = pd.concat([df, macd_df], axis=1, sort=False)
+        return df
 
 
 class TechnicalFactor(Factor):
@@ -30,16 +64,10 @@ class TechnicalFactor(Factor):
                  trip_timestamp: bool = True,
                  auto_load: bool = True,
                  # child added arguments
-                 fq='qfq',
-                 indicators=['ma', 'macd'],
-                 indicators_param=[{'window': 5}, {'slow': 26, 'fast': 12, 'n': 9}],
-                 valid_window=26
+                 transformers: List[Transformer] = [MacdTransformer()]
                  ) -> None:
-        self.fq = fq
-        self.indicators = indicators
-        self.indicators_param = indicators_param
         self.data_schema = get_kdata_schema(entity_type, level=level)
-        self.valid_window = valid_window
+        self.transformers = transformers
         self.indicator_cols = set()
 
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
@@ -49,60 +77,19 @@ class TechnicalFactor(Factor):
 
     def do_compute(self):
         """
-        calculate tech indicators  self.depth_df
+        calculate tech indicators  using self.transformers
 
         """
-        if df_is_not_null(self.depth_df) and self.indicators:
-            for idx, indicator in enumerate(self.indicators):
-                if indicator == 'ma':
-                    window = self.indicators_param[idx].get('window')
+        if df_is_not_null(self.depth_df) and self.transformers:
+            for transformer in self.transformers:
+                self.depth_df = transformer.transform(self.depth_df)
 
-                    col = 'ma{}'.format(window)
-                    self.indicator_cols.add(col)
+    def on_data_added(self, data: pd.DataFrame):
+        return super().on_data_added(data)
 
-                    if self.entity_type == 'stock' and self.fq == 'qfq':
-                        df = self.depth_df['qfq_close'].groupby(level=0).rolling(window=window,
-                                                                                 min_periods=window).mean()
-                    else:
-                        df = self.depth_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
-
-                    df = df.reset_index(level=0, drop=True)
-
-                    self.depth_df[col] = df
-                    # self.depth_df = pd.concat([self.depth_df, df], axis=1, sort=False)
-
-                if indicator == 'macd':
-                    slow = self.indicators_param[idx].get('slow')
-                    fast = self.indicators_param[idx].get('fast')
-                    n = self.indicators_param[idx].get('n')
-
-                    self.indicator_cols.add('diff')
-                    self.indicator_cols.add('dea')
-                    self.indicator_cols.add('macd')
-
-                    # for entity_id, df in self.depth_df.groupby('entity_id'):
-                    #     if self.entity_type == 'stock' and self.fq == 'qfq':
-                    #         diff, dea, m = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
-                    #     else:
-                    #         diff, dea, m = macd(df['close'], slow=slow, fast=fast, n=n)
-                    #
-                    #     self.depth_df.loc[entity_id, 'diff'] = diff
-                    #     self.depth_df.loc[entity_id, 'dea'] = dea
-                    #     self.depth_df.loc[entity_id, 'macd'] = m
-
-                    if self.entity_type == 'stock' and self.fq == 'qfq':
-                        df = self.depth_df.groupby(level=0)['qfq_close'].apply(
-                            lambda x: macd(x, slow=slow, fast=fast, n=n, return_type='df'))
-                    else:
-                        df = self.depth_df.groupby(level=0)['close'].apply(
-                            lambda x: macd(x, slow=slow, fast=fast, n=n, return_type='df'))
-                    self.depth_df = pd.concat([self.depth_df, df], axis=1, sort=False)
-
-            # self.depth_df = self.depth_df.set_index('timestamp', append=True)
-
-    def on_category_data_added(self, category, added_data: pd.DataFrame):
+    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
         size = len(added_data)
-        df = self.data_df.loc[category].iloc[-self.valid_window - size:]
+        df = self.data_df.loc[entity].iloc[-self.valid_window - size:]
 
         for idx, indicator in enumerate(self.indicators):
             if indicator == 'ma':
@@ -125,8 +112,8 @@ class TechnicalFactor(Factor):
 
         df = df.iloc[-size:, ]
         df = df.reset_index()
-        df[self.category_field] = category
-        df = index_df_with_category_xfield(df)
+        df[self.category_field] = entity
+        df = normal_index_df(df)
 
         self.depth_df = self.depth_df.append(df)
         self.depth_df = self.depth_df.sort_index(level=[0, 1])
@@ -180,8 +167,8 @@ class CrossMaFactor(TechnicalFactor):
         s = self.depth_df['ma{}'.format(self.short_window)] > self.depth_df['ma{}'.format(self.long_window)]
         self.result_df = s.to_frame(name='score')
 
-    def on_category_data_added(self, category, added_data: pd.DataFrame):
-        super().on_category_data_added(category, added_data)
+    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
+        super().on_entity_data_added(entity, added_data)
         # TODO:improve it to just computing the added data
         self.do_compute()
 

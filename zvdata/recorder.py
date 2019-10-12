@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from zvdata import IntervalLevel
 from zvdata.api import get_entities, get_data
-from zvdata.domain import get_db_session
+from zvdata.contract import get_db_session
 from zvdata.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
     evaluate_size_from_timestamp, is_finished_kdata_timestamp
 from zvdata.utils.utils import fill_domain_from_dict
