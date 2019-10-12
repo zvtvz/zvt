@@ -3,7 +3,17 @@ import logging
 
 import pandas as pd
 
-from zvdata.utils.pd_utils import index_df_with_category_xfield
+from zvdata.utils.pd_utils import normal_index_df
+
+
+class Transformer(object):
+    indicator_cols = []
+
+    def __init__(self, valid_window=0) -> None:
+        self.valid_window = valid_window
+
+    def transform(self, df) -> pd.DataFrame:
+        return df
 
 
 class Scorer(object):
@@ -66,8 +76,8 @@ class QuantileScorer(Scorer):
                                                 axis=1)
 
         result_df = result_df.reset_index()
-        result_df = index_df_with_category_xfield(result_df, category_field=self.category_field,
-                                                  xfield=self.time_field)
+        result_df = normal_index_df(result_df, category_field=self.category_field,
+                                    xfield=self.time_field)
         result_df = result_df.loc[:, self.factors]
 
         result_df = result_df.loc[~result_df.index.duplicated(keep='first')]

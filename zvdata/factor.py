@@ -8,7 +8,7 @@ from zvdata import IntervalLevel
 from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
-from zvdata.score_algorithm import Scorer
+from zvdata.scorer import Scorer
 from zvdata.sedes import Jsonable
 
 
@@ -60,7 +60,6 @@ class Factor(DataReader, DataListener, Jsonable):
                  limit: int = None,
                  provider: str = 'eastmoney',
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
                  trip_timestamp: bool = True,
@@ -79,20 +78,20 @@ class Factor(DataReader, DataListener, Jsonable):
         self.fill_method = fill_method
         self.effective_number = effective_number
 
-        self.depth_df: pd.DataFrame = None
+        self.pipe_df: pd.DataFrame = None
 
         self.result_df: pd.DataFrame = None
 
         self.register_data_listener(self)
 
     def pre_compute(self):
-        self.depth_df = self.data_df
+        self.pipe_df = self.normal_data.data_df
 
     def do_compute(self):
         pass
 
     def after_compute(self):
-        pass
+        self.fill_gap()
 
     def compute(self):
         """
@@ -110,10 +109,10 @@ class Factor(DataReader, DataListener, Jsonable):
         return self.result_df
 
     def get_depth_df(self):
-        return self.depth_df
+        return self.pipe_df
 
     def depth_drawer(self) -> Drawer:
-        drawer = Drawer(NormalData(df=self.depth_df, index_field=self.time_field, is_timeseries=True))
+        drawer = Drawer(NormalData(df=self.pipe_df, index_field=self.time_field, is_timeseries=True))
         return drawer
 
     def result_drawer(self) -> Drawer:
@@ -145,7 +144,7 @@ class Factor(DataReader, DataListener, Jsonable):
     def on_data_loaded(self, data: pd.DataFrame):
         self.compute()
 
-    def on_data_changed(self, data: pd.DataFrame):
+    def on_data_added(self, data: pd.DataFrame):
         """
         overwrite it for computing fast
 
@@ -155,13 +154,13 @@ class Factor(DataReader, DataListener, Jsonable):
         """
         self.compute()
 
-    def on_category_data_added(self, category, added_data: pd.DataFrame):
+    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
         """
         overwrite it for computing fast
 
         Parameters
         ----------
-        category :
+        entity :
         added_data :
         """
         self.compute()
@@ -212,10 +211,7 @@ class ScoreFactor(Factor):
                          effective_number)
 
     def do_compute(self):
-        self.result_df = self.scorer.compute(input_df=self.depth_df)
-
-    def after_compute(self):
-        self.fill_gap()
+        self.result_df = self.scorer.compute(input_df=self.pipe_df)
 
 
 class StateFactor(Factor):

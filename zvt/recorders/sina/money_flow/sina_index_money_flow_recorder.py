@@ -4,7 +4,7 @@ import time
 import requests
 
 from zvdata import IntervalLevel
-from zvdata.domain import get_db_session
+from zvdata.contract import get_db_session
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float

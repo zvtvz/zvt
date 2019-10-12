@@ -116,7 +116,7 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_fun
 
 def init_process_log(file_name, log_dir=None):
     if not log_dir:
-        from zvdata.domain import context
+        from zvdata.contract import context
         log_dir = context['log_path']
 
     root_logger = logging.getLogger()

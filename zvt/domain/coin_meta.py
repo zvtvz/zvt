@@ -1,7 +1,7 @@
 # 数字货币
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata.domain import register_schema, register_entity
+from zvdata.contract import register_schema, register_entity
 from zvdata import EntityMixin
 
 CoinMetaBase = declarative_base()

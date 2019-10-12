@@ -1,6 +1,6 @@
 import os
 
-from zvdata.domain import generate_api, init_context
+from zvdata.contract import generate_api, init_context
 from zvt import DATA_PATH, UI_PATH, LOG_PATH
 
 init_context(data_path=DATA_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain', register_api=True)

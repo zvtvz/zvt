@@ -12,30 +12,40 @@ def se_is_not_null(se: pd.Series):
     return se is not None and isinstance(se, pd.Series) and not se.empty
 
 
-def index_df(df, index='timestamp', inplace=True, drop=True, index_is_time=True):
+def index_df(df, index='timestamp', inplace=True, drop=True, time_field='timestamp'):
+    if time_field:
+        df[time_field] = pd.to_datetime(df[time_field])
+
     if inplace:
         df.set_index(index, drop=drop, inplace=inplace)
     else:
         df = df.set_index(index, drop=drop, inplace=inplace)
 
-    if index_is_time:
-        df.index = pd.to_datetime(df.index)
-    df = df.sort_index()
-    return df
+    df.index.names = index
 
-
-def index_df_with_category_xfield(df, category_field='entity_id', xfield='timestamp', is_timeseries=True):
-    if xfield and is_timeseries:
-        df[xfield] = pd.to_datetime(df[xfield])
-
-    if xfield:
-        df = df.set_index([category_field, xfield])
-        df.index.names = [category_field, xfield]
-        df = df.sort_index(level=[0, 1])
-    else:
-        df = df.set_index(category_field)
+    if type(index) == str:
         df = df.sort_index()
+    elif type(index) == list:
+        level = list(range(len(index)))
+        df = df.sort_index(level=level)
     return df
+
+
+def normal_index_df(df, index=['entity_id', 'timestamp'], drop=True):
+    if is_normal_df(df):
+        return df
+
+    return index_df(df=df, index=index, drop=drop, time_field='timestamp')
+
+
+def is_normal_df(df):
+    if df_is_not_null(df):
+        names = df.index.names
+
+        if len(names) == 2 and names[0] == 'entity_id' and names[1] == 'timestamp':
+            return True
+
+    return False
 
 
 def df_subset(df, columns=None):

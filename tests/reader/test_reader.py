@@ -3,7 +3,6 @@ from ..context import init_test_context
 
 init_test_context()
 
-import plotly.graph_objs as go
 import time
 
 from zvt.api.rules import iterate_timestamps
@@ -20,9 +19,9 @@ def test_china_stock_reader():
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10')
 
-    categories = data_reader.get_categories()
+    categories = data_reader.normal_data.entity_ids
 
-    df = data_reader.get_data_df()
+    df = data_reader.normal_data.data_df
 
     assert 'stock_sz_002572' in categories
     assert 'stock_sz_000338' in categories
@@ -36,9 +35,9 @@ def test_china_stock_reader():
                                         level=IntervalLevel.LEVEL_1DAY,
                                         start_timestamp='2019-06-11',
                                         end_timestamp='2019-06-14'):
-        data_reader.move_on(to_timestamp=timestamp, timeout=0)
+        data_reader.move_on(to_timestamp=timestamp)
 
-        df = data_reader.get_data_df()
+        df = data_reader.normal_data.data_df
 
         assert ('stock_sz_002572', timestamp) in df.index
         assert ('stock_sz_000338', to_time_str(timestamp)) in df.index
@@ -52,9 +51,9 @@ def test_reader_move_on():
                              start_timestamp='2019-06-13',
                              end_timestamp='2019-06-14')
 
-    data_reader.move_on(to_timestamp='2019-06-15', timeout=0)
-    assert ('stock_sz_002572', '2019-06-15') not in data_reader.get_data_df().index
-    assert ('stock_sz_000338', '2019-06-15') not in data_reader.get_data_df().index
+    data_reader.move_on(to_timestamp='2019-06-15')
+    assert ('stock_sz_002572', '2019-06-15') not in data_reader.normal_data.data_df.index
+    assert ('stock_sz_000338', '2019-06-15') not in data_reader.normal_data.data_df.index
 
     start_time = time.time()
     changed = data_reader.move_on(to_timestamp='2019-06-16', timeout=5)

@@ -13,12 +13,6 @@ from zvdata.utils.utils import add_to_map_list
 
 logger = logging.getLogger(__name__)
 
-# provider_dbname -> engine
-_db_engine_map = {}
-
-# provider_dbname -> session
-_db_session_map = {}
-
 # all registered providers
 global_providers = []
 
@@ -28,30 +22,36 @@ global_entity_types = []
 # all registered schemas
 global_schemas = []
 
-# provider -> [db_name1,db_name2...]
-provider_map_dbnames = {
-}
-
-# db_name -> [declarative_base1,declarative_base2...]
-dbname_map_base = {
-}
-
-# db_name -> [declarative_meta1,declarative_meta2...]
-dbname_map_schemas = {
-}
-
 # entity_type -> schema
 global_entity_schema = {
 
 }
 
-# entity_type -> schema
-entity_map_schemas = {
-
-}
-
 # global sessions
 global_sessions = {}
+
+# provider_dbname -> engine
+_db_engine_map = {}
+
+# provider_dbname -> session
+_db_session_map = {}
+
+# provider -> [db_name1,db_name2...]
+_provider_map_dbnames = {
+}
+
+# db_name -> [declarative_base1,declarative_base2...]
+_dbname_map_base = {
+}
+
+# db_name -> [declarative_meta1,declarative_meta2...]
+_dbname_map_schemas = {
+}
+
+# entity_type -> schema
+_entity_map_schemas = {
+
+}
 
 context = {}
 
@@ -135,7 +135,7 @@ def get_db_name(data_schema: DeclarativeMeta) -> str:
     :return:
     :rtype:
     """
-    for db_name, base in dbname_map_base.items():
+    for db_name, base in _dbname_map_base.items():
         if issubclass(data_schema, base):
             return db_name
 
@@ -243,10 +243,10 @@ def get_schemas(provider: str) -> List[DeclarativeMeta]:
     :rtype:
     """
     schemas = []
-    for provider1, dbs in provider_map_dbnames.items():
+    for provider1, dbs in _provider_map_dbnames.items():
         if provider == provider1:
             for dbname in dbs:
-                schemas1 = dbname_map_schemas.get(dbname)
+                schemas1 = _dbname_map_schemas.get(dbname)
                 if schemas1:
                     schemas += schemas1
     return schemas
@@ -391,7 +391,7 @@ def register_entity(entity_type: str = None):
                 global_entity_types.append(entity_type_)
             global_entity_schema[entity_type_] = cls
 
-            add_to_map_list(the_map=entity_map_schemas, key=entity_type, value=cls)
+            add_to_map_list(the_map=_entity_map_schemas, key=entity_type, value=cls)
         return cls
 
     return register
@@ -419,23 +419,23 @@ def register_schema(providers: List[str],
     for item in schema_base._decl_class_registry.items():
         cls = item[1]
         if type(cls) == DeclarativeMeta:
-            if dbname_map_schemas.get(db_name):
-                schemas = dbname_map_schemas[db_name]
+            if _dbname_map_schemas.get(db_name):
+                schemas = _dbname_map_schemas[db_name]
             global_schemas.append(cls)
-            add_to_map_list(the_map=entity_map_schemas, key=entity_type, value=cls)
+            add_to_map_list(the_map=_entity_map_schemas, key=entity_type, value=cls)
             schemas.append(cls)
 
-    dbname_map_schemas[db_name] = schemas
+    _dbname_map_schemas[db_name] = schemas
 
     for provider in providers:
         # track in in  _providers
         if provider not in global_providers:
             global_providers.append(provider)
 
-        if not provider_map_dbnames.get(provider):
-            provider_map_dbnames[provider] = []
-        provider_map_dbnames[provider].append(db_name)
-        dbname_map_base[db_name] = schema_base
+        if not _provider_map_dbnames.get(provider):
+            _provider_map_dbnames[provider] = []
+        _provider_map_dbnames[provider].append(db_name)
+        _dbname_map_base[db_name] = schema_base
 
         # create the db & table
         engine = get_db_engine(provider, db_name=db_name)

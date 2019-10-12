@@ -3,15 +3,24 @@ from typing import List, Union
 
 import pandas as pd
 from sqlalchemy import func, exists, and_
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import Query, Session
 
 from zvdata import IntervalLevel
-from zvdata.domain import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
+from zvdata.contract import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
 from zvdata.utils.pd_utils import df_is_not_null, index_df
 from zvdata.utils.time_utils import to_pd_timestamp
 
 
-def get_entity_schema(entity_type):
+def get_entity_schema(entity_type: str) -> object:
+    """
+    get entity schema from name
+
+    :param entity_type:
+    :type entity_type:
+    :return:
+    :rtype:
+    """
     return global_entity_schema[entity_type]
 
 
@@ -60,7 +69,6 @@ def get_data(data_schema,
              order=None,
              limit: int = None,
              index: str = 'timestamp',
-             index_is_time: bool = True,
              time_field: str = 'timestamp'):
     assert data_schema is not None
     assert provider is not None
@@ -76,6 +84,7 @@ def get_data(data_schema,
         if type(columns[0]) == str:
             columns_ = []
             for col in columns:
+                assert isinstance(col, str)
                 columns_.append(eval('data_schema.{}'.format(col)))
             columns = columns_
 
@@ -112,7 +121,7 @@ def get_data(data_schema,
     if return_type == 'df':
         df = pd.read_sql(query.statement, query.session.bind)
         if df_is_not_null(df):
-            return index_df(df, drop=False, index=index, index_is_time=index_is_time)
+            return index_df(df, drop=False, index=index, time_field=time_field)
         return df
     elif return_type == 'domain':
         return query.all()
@@ -154,13 +163,27 @@ def decode_entity_id(entity_id: str):
     return entity_type, exchange, code
 
 
-def df_to_db(df, data_schema, provider, force=False):
+def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, force_update: bool = False) -> object:
+    """
+    store the df to db
+
+    :param df:
+    :type df:
+    :param data_schema:
+    :type data_schema:
+    :param provider:
+    :type provider:
+    :param force_update:
+    :type force_update:
+    :return:
+    :rtype:
+    """
     if not df_is_not_null(df):
         return
 
     db_engine = get_db_engine(provider, data_schema=data_schema)
 
-    if force:
+    if force_update:
         session = get_db_session(provider=provider, data_schema=data_schema)
         ids = df["id"].tolist()
         # count = len(ids)
