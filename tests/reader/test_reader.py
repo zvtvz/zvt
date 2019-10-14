@@ -19,9 +19,9 @@ def test_china_stock_reader():
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10')
 
-    categories = data_reader.normal_data.entity_ids
+    categories = data_reader.data_df.index.levels[0].to_list()
 
-    df = data_reader.normal_data.data_df
+    df = data_reader.data_df
 
     assert 'stock_sz_002572' in categories
     assert 'stock_sz_000338' in categories
@@ -37,7 +37,7 @@ def test_china_stock_reader():
                                         end_timestamp='2019-06-14'):
         data_reader.move_on(to_timestamp=timestamp)
 
-        df = data_reader.normal_data.data_df
+        df = data_reader.data_df
 
         assert ('stock_sz_002572', timestamp) in df.index
         assert ('stock_sz_000338', to_time_str(timestamp)) in df.index
@@ -52,13 +52,12 @@ def test_reader_move_on():
                              end_timestamp='2019-06-14')
 
     data_reader.move_on(to_timestamp='2019-06-15')
-    assert ('stock_sz_002572', '2019-06-15') not in data_reader.normal_data.data_df.index
-    assert ('stock_sz_000338', '2019-06-15') not in data_reader.normal_data.data_df.index
+    assert ('stock_sz_002572', '2019-06-15') not in data_reader.data_df.index
+    assert ('stock_sz_000338', '2019-06-15') not in data_reader.data_df.index
 
     start_time = time.time()
     changed = data_reader.move_on(to_timestamp='2019-06-16', timeout=5)
-    assert changed == False
-    assert time.time() - start_time > 5
+    assert time.time() - start_time < 5
 
 
 def test_reader_draw():

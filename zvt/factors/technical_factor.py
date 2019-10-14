@@ -15,15 +15,15 @@ class MaTransformer(Transformer):
     def __init__(self, windows=[5, 10]) -> None:
         self.windows = windows
 
-    def transform(self, df) -> pd.DataFrame:
+    def transform(self, input_df) -> pd.DataFrame:
         for window in self.windows:
             col = 'ma{}'.format(window)
             self.indicator_cols.append(col)
 
-            ma_df = df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
-            df[col] = ma_df
+            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            input_df[col] = ma_df
 
-        return df
+        return input_df
 
 
 class MacdTransformer(Transformer):
@@ -36,12 +36,12 @@ class MacdTransformer(Transformer):
         self.indicator_cols.append('dea')
         self.indicator_cols.append('macd')
 
-    def transform(self, df) -> pd.DataFrame:
-        macd_df = df.groupby(level=0)['close'].apply(
+    def transform(self, input_df) -> pd.DataFrame:
+        macd_df = input_df.groupby(level=0)['close'].apply(
             lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
 
-        df = pd.concat([df, macd_df], axis=1, sort=False)
-        return df
+        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
+        return input_df
 
 
 class TechnicalFactor(Factor):
@@ -61,7 +61,6 @@ class TechnicalFactor(Factor):
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
                  auto_load: bool = True,
                  # child added arguments
                  transformers: List[Transformer] = [MacdTransformer()]
@@ -72,7 +71,7 @@ class TechnicalFactor(Factor):
 
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         trip_timestamp, auto_load, keep_all_timestamp=False,
+                         auto_load, keep_all_timestamp=False,
                          fill_method=None, effective_number=None)
 
     def do_compute(self):
@@ -80,14 +79,14 @@ class TechnicalFactor(Factor):
         calculate tech indicators  using self.transformers
 
         """
-        if df_is_not_null(self.depth_df) and self.transformers:
+        if df_is_not_null(self.pipe_df) and self.transformers:
             for transformer in self.transformers:
-                self.depth_df = transformer.transform(self.depth_df)
+                self.pipe_df = transformer.transform(self.pipe_df)
 
-    def on_data_added(self, data: pd.DataFrame):
-        return super().on_data_added(data)
+    def on_data_changed(self, data: pd.DataFrame):
+        return super().on_data_changed(data)
 
-    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
+    def on_entity_data_changed(self, entity, added_data: pd.DataFrame):
         size = len(added_data)
         df = self.data_df.loc[entity].iloc[-self.valid_window - size:]
 
@@ -115,13 +114,13 @@ class TechnicalFactor(Factor):
         df[self.category_field] = entity
         df = normal_index_df(df)
 
-        self.depth_df = self.depth_df.append(df)
-        self.depth_df = self.depth_df.sort_index(level=[0, 1])
+        self.pipe_df = self.pipe_df.append(df)
+        self.pipe_df = self.pipe_df.sort_index(level=[0, 1])
 
-    def draw_depth(self, chart='kline', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                   width=None, height=None, title=None, keep_ui_state=True, **kwargs):
-        return super().draw_depth('kline', plotly_layout, render, file_name, width, height, title, keep_ui_state,
-                                  indicators=self.indicator_cols, **kwargs)
+    def draw_pipe(self, chart='kline', plotly_layout=None, annotation_df=None, render='html', file_name=None,
+                  width=None, height=None, title=None, keep_ui_state=True, **kwargs):
+        return super().draw_pipe('kline', plotly_layout, render, file_name, width, height, title, keep_ui_state,
+                                 indicators=self.indicator_cols, **kwargs)
 
     def __json__(self):
         result = super().__json__()
@@ -164,11 +163,11 @@ class CrossMaFactor(TechnicalFactor):
 
     def do_compute(self):
         super().do_compute()
-        s = self.depth_df['ma{}'.format(self.short_window)] > self.depth_df['ma{}'.format(self.long_window)]
+        s = self.pipe_df['ma{}'.format(self.short_window)] > self.pipe_df['ma{}'.format(self.long_window)]
         self.result_df = s.to_frame(name='score')
 
-    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
-        super().on_entity_data_added(entity, added_data)
+    def on_entity_data_changed(self, entity, added_data: pd.DataFrame):
+        super().on_entity_data_changed(entity, added_data)
         # TODO:improve it to just computing the added data
         self.do_compute()
 
@@ -200,7 +199,7 @@ class BullFactor(TechnicalFactor):
 
     def do_compute(self):
         super().do_compute()
-        s = (self.depth_df['diff'] > 0) & (self.depth_df['dea'] > 0)
+        s = (self.pipe_df['diff'] > 0) & (self.pipe_df['dea'] > 0)
         self.result_df = s.to_frame(name='score')
 
 

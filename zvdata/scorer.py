@@ -9,17 +9,14 @@ from zvdata.utils.pd_utils import normal_index_df
 class Transformer(object):
     indicator_cols = []
 
-    def __init__(self, valid_window=0) -> None:
-        self.valid_window = valid_window
-
-    def transform(self, df) -> pd.DataFrame:
-        return df
+    def transform(self, input_df) -> pd.DataFrame:
+        return input_df
 
 
 class Scorer(object):
     logger = logging.getLogger(__name__)
 
-    def compute(self, input_df) -> pd.DataFrame:
+    def score(self, input_df) -> pd.DataFrame:
         return input_df
 
 
@@ -27,7 +24,7 @@ class RankScorer(Scorer):
     def __init__(self, ascending=True) -> None:
         self.ascending = ascending
 
-    def compute(self, input_df) -> pd.DataFrame:
+    def score(self, input_df) -> pd.DataFrame:
         result_df = input_df.groupby(level=1).rank(ascending=self.ascending, pct=True)
         return result_df
 
@@ -36,7 +33,7 @@ class QuantileScorer(Scorer):
     def __init__(self, score_levels=[0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]) -> None:
         self.score_levels = score_levels
 
-    def compute(self, input_df):
+    def score(self, input_df):
         self.score_levels.sort(reverse=True)
 
         quantile_df = input_df.groupby(level=1).quantile(self.score_levels)

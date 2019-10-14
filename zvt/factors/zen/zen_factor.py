@@ -39,7 +39,6 @@ class ZenStateFactor(TechnicalFactor, StateFactor):
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
                  auto_load: bool = True,
                  fq='qfq',
                  short_window=5,
@@ -48,7 +47,7 @@ class ZenStateFactor(TechnicalFactor, StateFactor):
         self.long_window = long_window
 
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         columns, filters, order, limit, provider, level, category_field, time_field, trip_timestamp,
+                         columns, filters, order, limit, provider, level, category_field, time_field,
                          auto_load, fq=fq, indicators=['ma', 'ma'],
                          indicators_param=[{'window': short_window}, {'window': long_window}], valid_window=long_window)
 
@@ -59,9 +58,9 @@ class ZenStateFactor(TechnicalFactor, StateFactor):
         short_ma_col = 'ma{}'.format(self.short_window)
         long_ma_col = 'ma{}'.format(self.long_window)
 
-        self.depth_df['score'] = self.depth_df[short_ma_col] > self.depth_df[long_ma_col]
+        self.pipe_df['score'] = self.pipe_df[short_ma_col] > self.pipe_df[long_ma_col]
 
-        for entity_id, df in self.depth_df.groupby('entity_id'):
+        for entity_id, df in self.pipe_df.groupby('entity_id'):
             count = 0
             area = 0
             current_state = None
@@ -86,24 +85,24 @@ class ZenStateFactor(TechnicalFactor, StateFactor):
                 # 计算维持状态的 次数 和相应的 面积
                 if current_state == state:
                     count = count + 1
-                    area += abs(self.depth_df.loc[index, long_ma_col] - self.depth_df.loc[index, short_ma_col])
+                    area += abs(self.pipe_df.loc[index, long_ma_col] - self.pipe_df.loc[index, short_ma_col])
                 else:
                     # change state,set pre state total count
                     if count > 0:
-                        self.depth_df.loc[pre_index, pre_col_total] = count
+                        self.pipe_df.loc[pre_index, pre_col_total] = count
                     current_state = state
                     count = 1
-                    area = abs(self.depth_df.loc[index, long_ma_col] - self.depth_df.loc[index, short_ma_col])
+                    area = abs(self.pipe_df.loc[index, long_ma_col] - self.pipe_df.loc[index, short_ma_col])
 
-                self.depth_df.loc[index, col_current] = count
-                self.depth_df.loc[index, col_area] = area
+                self.pipe_df.loc[index, col_current] = count
+                self.pipe_df.loc[index, col_area] = area
 
                 pre_index = index
                 pre_col_total = col_total
 
                 # 短期均线　长期均线的距离
-                # self.depth_df.loc[index, 'distance'] = abs(self.depth_df.loc[index, short_ma_col] - self.depth_df.loc[
-                #     index, long_ma_col]) / self.depth_df.loc[index, long_ma_col]
+                # self.pipe_df.loc[index, 'distance'] = abs(self.pipe_df.loc[index, short_ma_col] - self.pipe_df.loc[
+                #     index, long_ma_col]) / self.pipe_df.loc[index, long_ma_col]
 
             self.logger.info('finish calculating :{}'.format(entity_id))
 

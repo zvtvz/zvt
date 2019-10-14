@@ -49,7 +49,7 @@ class CrossMaFactor(TechnicalFactor):
 
     def compute(self):
         super().compute()
-        s = self.depth_df['ma{}'.format(self.short_window)] > self.depth_df['ma{}'.format(self.long_window)]
+        s = self.pipe_df['ma{}'.format(self.short_window)] > self.pipe_df['ma{}'.format(self.long_window)]
         self.result_df = s.to_frame(name='score')
 
     def on_category_data_added(self, category, added_data: pd.DataFrame):

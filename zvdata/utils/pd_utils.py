@@ -21,11 +21,10 @@ def index_df(df, index='timestamp', inplace=True, drop=True, time_field='timesta
     else:
         df = df.set_index(index, drop=drop, inplace=inplace)
 
-    df.index.names = index
-
     if type(index) == str:
         df = df.sort_index()
     elif type(index) == list:
+        df.index.names = index
         level = list(range(len(index)))
         df = df.sort_index(level=level)
     return df

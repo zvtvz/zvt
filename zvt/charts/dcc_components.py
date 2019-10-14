@@ -45,12 +45,12 @@ def get_trading_signals_figure(order_reader: OrderReader,
     security_factor = TechnicalFactor(entity_type=entity_type, entity_ids=[entity_id],
                                       level=level, provider=provider)
 
-    if df_is_not_null(security_factor.normal_data.data_df):
-        print(security_factor.normal_data.data_df.tail())
+    if df_is_not_null(security_factor.data_df):
+        print(security_factor.data_df.tail())
 
     # generate the annotation df
     order_reader.move_on(timeout=0)
-    df = order_reader.normal_data.data_df.copy()
+    df = order_reader.data_df.copy()
     if df_is_not_null(df):
         df['value'] = df['order_price']
         df['flag'] = df['order_type'].apply(lambda x: order_type_flag(x))
@@ -79,7 +79,7 @@ def get_trader_detail_figures(trader_domain: business.Trader,
                 }))
 
     order_reader.move_on(timeout=0)
-    df_orders = order_reader.normal_data.data_df.copy()
+    df_orders = order_reader.data_df.copy()
 
     if df_is_not_null(df_orders):
         grouped = df_orders.groupby('entity_id')
@@ -113,7 +113,7 @@ def get_trader_detail_figures(trader_domain: business.Trader,
                 df['color'] = df['order_type'].apply(lambda x: order_type_color(x))
             print(df.tail())
 
-            data, layout = security_factor.draw_depth(render=None, annotation_df=df, height=620)
+            data, layout = security_factor.draw_pipe(render=None, annotation_df=df, height=620)
             if trader_domain.real_time:
                 result = get_current_price(entity_ids=[entity_id])
                 bid_ask = result.get(entity_id)
