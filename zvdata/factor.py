@@ -76,10 +76,10 @@ class Factor(DataReader, DataListener, Jsonable):
                  need_persist: bool = True) -> None:
         self.need_persist = need_persist
         if need_persist:
-            self.pipe_df = get_data(provider=self.provider,
-                                    data_schema=self.pipe_schema,
+            self.pipe_df = get_data(provider='zvt',
+                                    data_schema=self.factor_schema,
                                     start_timestamp=start_timestamp,
-                                    index=[self.category_field, self.time_field])
+                                    index=[category_field, time_field])
 
             if df_is_not_null(self.pipe_df):
                 self.logger.info('input start_timestamp:{}'.format(start_timestamp))

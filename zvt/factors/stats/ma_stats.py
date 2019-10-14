@@ -1,55 +1,60 @@
 # -*- coding: utf-8 -*-
 import argparse
-import os
-from enum import Enum
 from typing import List, Union
 
 import pandas as pd
+from sqlalchemy import Column, String, Float, Integer
+from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import IntervalLevel
-from zvdata.factor import StateFactor
+from zvdata import IntervalLevel, Mixin
+from zvdata.scorer import Transformer
 from zvdata.utils.time_utils import now_pd_timestamp
-from zvt import DATA_PATH
+from zvt import register_schema
 from zvt.api import get_entities, Stock
-from zvt.factors.technical_factor import TechnicalFactor
+from zvt.factors.technical_factor import TechnicalFactor, MaTransformer
+
+# 均线状态统计
+MaStateStatsBase = declarative_base()
 
 
-class ZenState(Enum):
-    trending_up = 'trending_up'
-    trending_down = 'trending_down'
-    shaking = 'shaking'
+class MaStateStats(MaStateStatsBase, Mixin):
+    __tablename__ = 'ma_state_stats'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    ma5 = Column(Float)
+    ma10 = Column(Float)
+    score = Column(Float)
+
+    down_current_count = Column(Integer)
+    down_current_area = Column(Float)
+    down_total_count = Column(Integer)
+
+    up_total_count = Column(Integer)
+    up_current_count = Column(Float)
+    up_current_area = Column(Integer)
 
 
-class ZenStateFactor(TechnicalFactor, StateFactor):
-    states = [ZenState.trending_up, ZenState.trending_up, ZenState.shaking]
+register_schema(providers=['zvt'], db_name='ma_stats', schema_base=MaStateStatsBase)
 
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'joinquant',
-                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 auto_load: bool = True,
-                 fq='qfq',
-                 short_window=5,
-                 long_window=10) -> None:
-        self.short_window = short_window
-        self.long_window = long_window
 
-        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, fq=fq, indicators=['ma', 'ma'],
-                         indicators_param=[{'window': short_window}, {'window': long_window}], valid_window=long_window)
+class MaStateStas(TechnicalFactor):
+    factor_schema = MaStateStats
+
+    def __init__(self, entity_ids: List[str] = None, entity_type: str = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'], codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
+                 order: object = None, limit: int = None, provider: str = 'joinquant',
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', auto_load: bool = True, valid_window: int = 250,
+                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = 10,
+                 transformers: List[Transformer] = [MaTransformer()], need_persist: bool = True) -> None:
+        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
+                         auto_load, valid_window, keep_all_timestamp, fill_method, effective_number, transformers,
+                         need_persist)
 
     def do_compute(self):
         # call this to calculating the declared indicators
@@ -108,6 +113,7 @@ class ZenStateFactor(TechnicalFactor, StateFactor):
 
 
 if __name__ == '__main__':
+    print(MaStateStats)
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
     parser.add_argument('--start', help='start code', default='000001')
@@ -124,22 +130,6 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = ZenStateFactor(codes=codes, start_timestamp='2005-01-01',
-                            end_timestamp=now_pd_timestamp(),
-                            level=level)
-
-    if not os.path.exists(os.path.join(DATA_PATH, 'zen')):
-        os.makedirs(os.path.join(DATA_PATH, 'zen'))
-
-    path = os.path.join(DATA_PATH, 'zen', f'{start}_{end}_{level}.csv')
-
-    factor.depth_df[['ma5',
-                     'ma10',
-                     'score',
-                     'down_current_count',
-                     'down_current_area',
-                     'down_total_count',
-                     'up_total_count',
-                     'up_current_count',
-                     'up_current_area']
-    ].to_csv(path)
+    factor = MaStateStas(codes=codes, start_timestamp='2005-01-01',
+                         end_timestamp=now_pd_timestamp(),
+                         level=level)
