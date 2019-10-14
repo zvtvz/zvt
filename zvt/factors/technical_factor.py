@@ -5,10 +5,8 @@ import pandas as pd
 from zvdata import IntervalLevel
 from zvdata.factor import Factor
 from zvdata.scorer import Transformer
-from zvdata.utils.pd_utils import df_is_not_null
-from zvdata.utils.pd_utils import normal_index_df
 from zvt.api.common import get_kdata_schema
-from zvt.api.computing import ma, macd
+from zvt.api.computing import macd
 
 
 class MaTransformer(Transformer):
@@ -21,6 +19,7 @@ class MaTransformer(Transformer):
             self.indicator_cols.append(col)
 
             ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            ma_df = ma_df.reset_index(level=0, drop=True)
             input_df[col] = ma_df
 
         return input_df
@@ -45,6 +44,7 @@ class MacdTransformer(Transformer):
 
 
 class TechnicalFactor(Factor):
+
     def __init__(self,
                  entity_ids: List[str] = None,
                  entity_type: str = 'stock',
@@ -58,64 +58,23 @@ class TechnicalFactor(Factor):
                  order: object = None,
                  limit: int = None,
                  provider: str = 'joinquant',
-                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
                  auto_load: bool = True,
-                 # child added arguments
-                 transformers: List[Transformer] = [MacdTransformer()]
-                 ) -> None:
+                 valid_window: int = 250,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = 10,
+                 transformers: List[Transformer] = [MacdTransformer()],
+                 need_persist: bool = True) -> None:
         self.data_schema = get_kdata_schema(entity_type, level=level)
-        self.transformers = transformers
         self.indicator_cols = set()
 
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, keep_all_timestamp=False,
-                         fill_method=None, effective_number=None)
-
-    def do_compute(self):
-        """
-        calculate tech indicators  using self.transformers
-
-        """
-        if df_is_not_null(self.pipe_df) and self.transformers:
-            for transformer in self.transformers:
-                self.pipe_df = transformer.transform(self.pipe_df)
-
-    def on_data_changed(self, data: pd.DataFrame):
-        return super().on_data_changed(data)
-
-    def on_entity_data_changed(self, entity, added_data: pd.DataFrame):
-        size = len(added_data)
-        df = self.data_df.loc[entity].iloc[-self.valid_window - size:]
-
-        for idx, indicator in enumerate(self.indicators):
-            if indicator == 'ma':
-                window = self.indicators_param[idx].get('window')
-
-                if self.entity_type == 'stock' and self.fq == 'qfq':
-                    df['ma{}'.format(window)] = ma(df['qfq_close'], window=window)
-                else:
-                    df['ma{}'.format(window)] = ma(df['close'], window=window)
-
-            if indicator == 'macd' and self.fq == 'qfq':
-                slow = self.indicators_param[idx].get('slow')
-                fast = self.indicators_param[idx].get('fast')
-                n = self.indicators_param[idx].get('n')
-
-                if self.entity_type == 'stock':
-                    df['diff'], df['dea'], df['macd'] = macd(df['qfq_close'], slow=slow, fast=fast, n=n)
-                else:
-                    df['diff'], df['dea'], df['macd'] = macd(df['close'], slow=slow, fast=fast, n=n)
-
-        df = df.iloc[-size:, ]
-        df = df.reset_index()
-        df[self.category_field] = entity
-        df = normal_index_df(df)
-
-        self.pipe_df = self.pipe_df.append(df)
-        self.pipe_df = self.pipe_df.sort_index(level=[0, 1])
+                         auto_load, valid_window, keep_all_timestamp, fill_method, effective_number, transformers,
+                         need_persist)
 
     def draw_pipe(self, chart='kline', plotly_layout=None, annotation_df=None, render='html', file_name=None,
                   width=None, height=None, title=None, keep_ui_state=True, **kwargs):
