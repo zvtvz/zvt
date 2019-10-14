@@ -10,7 +10,7 @@ def test_ma_transformer():
 
     t = MaTransformer(windows=[5, 10])
 
-    result_df = t.transform(df=df)
+    result_df = t.transform()
 
     print(result_df)
 
@@ -21,6 +21,6 @@ def test_MacdTransformer():
 
     t = MacdTransformer()
 
-    result_df = t.transform(df=df)
+    result_df = t.transform()
 
     print(result_df)

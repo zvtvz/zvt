@@ -91,7 +91,7 @@ def generate_factor_details_callback(factor_name):
             factor: Factor = factor_cls(*factor_args)
             factor.load_data()
 
-            factor_data, factor_layout = factor.draw_depth(render=None)
+            factor_data, factor_layout = factor.draw_pipe(render=None)
 
             return dcc.Graph(
                 id=f'{factor_name}_draw_{factor.id()}',

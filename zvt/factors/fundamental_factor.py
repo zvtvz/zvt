@@ -28,7 +28,7 @@ class FinanceBaseFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
+
                  auto_load: bool = True,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
@@ -38,7 +38,7 @@ class FinanceBaseFactor(Factor):
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, persist)
+                          auto_load, keep_all_timestamp, fill_method, effective_number, persist)
 
 
 class GoodCompanyFactor(FinanceBaseFactor):
@@ -61,7 +61,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
+
                  auto_load: bool = True,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
@@ -73,7 +73,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
         self.count = count
         super().__init__(FinanceFactor, entity_ids, 'stock', ['sh', 'sz'], codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number)
+                          auto_load, keep_all_timestamp, fill_method, effective_number)
 
     def do_compute(self):
         def filter_df(df):
@@ -89,22 +89,22 @@ class GoodCompanyFactor(FinanceBaseFactor):
                     se[index] = (row.roe >= 0.03)
             return se
 
-        self.depth_df = self.data_df.loc[lambda df: filter_df(df), :]
+        self.pipe_df = self.data_df.loc[lambda df: filter_df(df), :]
 
-        self.depth_df = pd.DataFrame(index=self.data_df.index, columns=['count'], data=1)
+        self.pipe_df = pd.DataFrame(index=self.data_df.index, columns=['count'], data=1)
 
-        self.depth_df = self.depth_df.reset_index(level=1)
+        self.pipe_df = self.pipe_df.reset_index(level=1)
 
-        self.depth_df = self.depth_df.groupby(level=0).rolling(window=self.window, on=self.time_field).count()
+        self.pipe_df = self.pipe_df.groupby(level=0).rolling(window=self.window, on=self.time_field).count()
 
-        self.depth_df = self.depth_df.reset_index(level=0, drop=True)
-        self.depth_df = self.depth_df.set_index(self.time_field, append=True)
+        self.pipe_df = self.pipe_df.reset_index(level=0, drop=True)
+        self.pipe_df = self.pipe_df.set_index(self.time_field, append=True)
 
-        self.depth_df = self.depth_df.loc[(slice(None), slice(self.start_timestamp, self.end_timestamp)), :]
+        self.pipe_df = self.pipe_df.loc[(slice(None), slice(self.start_timestamp, self.end_timestamp)), :]
 
-        self.logger.info('factor:{},depth_df:\n{}'.format(self.factor_name, self.depth_df))
+        self.logger.info('factor:{},depth_df:\n{}'.format(self.factor_name, self.pipe_df))
 
-        self.result_df = self.depth_df.apply(lambda x: x >= self.count)
+        self.result_df = self.pipe_df.apply(lambda x: x >= self.count)
 
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))
 
@@ -124,7 +124,7 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
+
                  auto_load: bool = True,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
@@ -132,14 +132,14 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
         super().__init__(IndexMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         trip_timestamp, auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
+                          auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
 
     def do_compute(self):
-        self.depth_df = self.data_df.copy()
-        self.depth_df = self.depth_df.groupby(level=1).rolling(window=20).mean()
-        self.depth_df = self.depth_df.reset_index(level=0, drop=True)
-        self.depth_df = self.depth_df.reset_index()
-        self.depth_df = normal_index_df(self.depth_df)
+        self.pipe_df = self.data_df.copy()
+        self.pipe_df = self.pipe_df.groupby(level=1).rolling(window=20).mean()
+        self.pipe_df = self.pipe_df.reset_index(level=0, drop=True)
+        self.pipe_df = self.pipe_df.reset_index()
+        self.pipe_df = normal_index_df(self.pipe_df)
 
         super().do_compute()
 

@@ -244,8 +244,7 @@ def get_entities(
         order: object = None,
         limit: int = None,
         provider: str = None,
-        index: str = 'code',
-        index_is_time: bool = False) -> object:
+        index: str = 'code') -> object:
     assert provider in global_providers
 
     if not entity_schema:
@@ -263,4 +262,4 @@ def get_entities(
     return get_data(data_schema=entity_schema, entity_ids=entity_ids, entity_id=None, codes=codes, level=None,
                     provider=provider, columns=columns, return_type=return_type, start_timestamp=start_timestamp,
                     end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, index_is_time=index_is_time)
+                    index=index)

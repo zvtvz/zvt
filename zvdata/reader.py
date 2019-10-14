@@ -10,8 +10,9 @@ from zvdata import IntervalLevel
 from zvdata.api import get_data
 from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
-from zvdata.utils.pd_utils import normal_index_df, df_is_not_null
-from zvdata.utils.time_utils import to_pd_timestamp, to_time_str, now_pd_timestamp
+from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.domain import Stock1dKdata
 
 
 class DataListener(object):
@@ -24,7 +25,7 @@ class DataListener(object):
         """
         raise NotImplementedError
 
-    def on_data_added(self, data: pd.DataFrame) -> object:
+    def on_data_changed(self, data: pd.DataFrame) -> object:
         """
 
         Parameters
@@ -33,7 +34,7 @@ class DataListener(object):
         """
         raise NotImplementedError
 
-    def on_entity_data_added(self, entity: str, added_data: pd.DataFrame) -> object:
+    def on_entity_data_changed(self, entity: str, added_data: pd.DataFrame) -> object:
         """
 
         Parameters
@@ -64,8 +65,8 @@ class DataReader(object):
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = False,
-                 auto_load: bool = True) -> None:
+                 auto_load: bool = True,
+                 valid_window: int = 250) -> None:
         self.data_schema = data_schema
 
         self.the_timestamp = the_timestamp
@@ -104,10 +105,12 @@ class DataReader(object):
 
         self.category_field = category_field
         self.time_field = time_field
-        self.trip_timestamp = trip_timestamp
         self.auto_load = auto_load
+        self.valid_window = valid_window
 
-        self.category_column = eval('self.data_schema.{}'.format(self.category_field))
+        self.category_col = eval('self.data_schema.{}'.format(self.category_field))
+        self.time_col = eval('self.data_schema.{}'.format(self.time_field))
+
         self.columns = columns
 
         # we store the data in a multiple index(category_column,timestamp) Dataframe
@@ -118,106 +121,91 @@ class DataReader(object):
                 for col in columns:
                     self.columns.append(eval('data_schema.{}'.format(col)))
 
-            time_col = eval('self.data_schema.{}'.format(self.time_field))
-
             # always add category_column and time_field for normalizing
-            self.columns = list(set(self.columns) | {self.category_column, time_col})
+            self.columns = list(set(self.columns) | {self.category_col, self.time_col})
 
         self.data_listeners: List[DataListener] = []
 
-        self.normal_data: NormalData = None
+        self.data_df: pd.DataFrame = None
 
         if self.auto_load:
             self.load_data()
 
     def load_data(self):
         if self.entity_ids:
-            df = get_data(data_schema=self.data_schema, entity_ids=self.entity_ids,
-                          provider=self.provider, columns=self.columns,
-                          start_timestamp=self.start_timestamp,
-                          end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
-                          limit=self.limit,
-                          level=self.level,
-                          index=[self.category_field, self.time_field],
-                          time_field=self.time_field)
+            self.data_df = get_data(data_schema=self.data_schema, entity_ids=self.entity_ids,
+                                    provider=self.provider, columns=self.columns,
+                                    start_timestamp=self.start_timestamp,
+                                    end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
+                                    limit=self.limit,
+                                    level=self.level,
+                                    index=[self.category_field, self.time_field],
+                                    time_field=self.time_field)
         else:
-            df = get_data(data_schema=self.data_schema, codes=self.codes,
-                          provider=self.provider, columns=self.columns,
-                          start_timestamp=self.start_timestamp,
-                          end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
-                          limit=self.limit,
-                          level=self.level,
-                          index=[self.category_field, self.time_field],
-                          time_field=self.time_field)
-
-        if self.trip_timestamp:
-            if self.level == IntervalLevel.LEVEL_1DAY:
-                df[self.time_field] = df[self.time_field].apply(
-                    lambda x: to_pd_timestamp(to_time_str(x)))
-
-        self.normal_data = NormalData(df=df, category_field=self.category_field,
-                                      index_field=self.time_field, is_timeseries=True)
+            self.data_df = get_data(data_schema=self.data_schema, codes=self.codes,
+                                    provider=self.provider, columns=self.columns,
+                                    start_timestamp=self.start_timestamp,
+                                    end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
+                                    limit=self.limit,
+                                    level=self.level,
+                                    index=[self.category_field, self.time_field],
+                                    time_field=self.time_field)
 
         for listener in self.data_listeners:
-            listener.on_data_loaded(self.normal_data.data_df)
+            listener.on_data_loaded(self.data_df)
 
     def move_on(self, to_timestamp: Union[str, pd.Timestamp] = None,
-                timeout: int = 20) -> bool:
+                timeout: int = 20) -> object:
         """
-        get the data happened before to_timestamp,if not set,get all the data which means to now
+        1)get the data happened before to_timestamp,if not set,get all the data which means to now
+        2)remove the data outside valid_window for saving memory,after move_on you should know that the data_df has changed
 
-        Parameters
-        ----------
-        to_timestamp :
-        timeout : the time waiting the data ready in seconds
 
-        Returns
-        -------
-        whether got data
+        :param to_timestamp:
+        :type to_timestamp:
+        :param timeout:
+        :type timeout: int
+        :return:
+        :rtype:
         """
-        if self.normal_data.empty():
+        if not df_is_not_null(self.data_df):
             self.load_data()
-            return False
+            return
 
-        changed = False
         start_time = time.time()
 
         # FIXME:we suppose history data should be there at first
         has_got = []
-        for entity_id in self.normal_data.entity_ids:
+        dfs = []
+        for entity_id, df in self.data_df.groupby(level=0):
             if entity_id in has_got:
                 continue
-            if len(has_got) == len(self.normal_data.entity_ids):
+            if len(has_got) == len(self.data_df.index.levels[0]):
                 break
 
-            df = self.normal_data.entity_map_df.get(entity_id)
             recorded_timestamp = df['timestamp'].max()
+            df = df.iloc[-self.valid_window:]
 
-            category_filter = [self.category_column == entity_id]
+            added_filter = [self.category_col == entity_id, self.time_col > recorded_timestamp]
             if self.filters:
-                filters = self.filters + category_filter
+                filters = self.filters + added_filter
             else:
-                filters = category_filter
+                filters = added_filter
 
-            got_df = get_data(data_schema=self.data_schema, provider=self.provider, columns=self.columns,
-                              start_timestamp=recorded_timestamp,
-                              end_timestamp=to_timestamp, filters=filters, level=self.level,
-                              index=[self.category_field, self.time_field])
+            added_df = get_data(data_schema=self.data_schema, provider=self.provider, columns=self.columns,
+                                end_timestamp=to_timestamp, filters=filters, level=self.level,
+                                index=[self.category_field, self.time_field])
 
-            if df_is_not_null(got_df):
-                would_added = got_df[got_df['timestamp'] != recorded_timestamp]
-                if not would_added.empty:
-                    added = normal_index_df(would_added, index=[self.category_field, self.time_field])
+            if df_is_not_null(added_df):
+                self.logger.info('entity_id:{},added:\n{}'.format(entity_id, added_df))
 
-                    self.logger.info('entity_id:{},added:\n{}'.format(entity_id, added))
+                for listener in self.data_listeners:
+                    listener.on_entity_data_changed(entity=entity_id, added_data=added_df)
+                # if got data,just move to another entity_id
+                has_got.append(entity_id)
+                df = df.append(added_df)
 
-                    self.normal_data.add_data(entity_id=entity_id, df=added)
-
-                    for listener in self.data_listeners:
-                        listener.on_entity_data_added(entity=entity_id, added_data=added)
-                    changed = True
-                    # if got data,just move to another entity_id
-                    has_got.append(entity_id)
+            dfs.append(df)
 
             cost_time = time.time() - start_time
             if cost_time > timeout:
@@ -227,26 +215,37 @@ class DataReader(object):
                                                                                               now_pd_timestamp()))
                 break
 
-        if changed:
-            for listener in self.data_listeners:
-                listener.on_data_added(self.normal_data.data_df)
+        if dfs:
+            self.data_df = pd.concat(dfs)
+            self.data_df.sort_index(level=[0, 1])
 
-        return changed
+            for listener in self.data_listeners:
+                listener.on_data_changed(self.data_df)
 
     def register_data_listener(self, listener):
         if listener not in self.data_listeners:
             self.data_listeners.append(listener)
 
         # notify it once after registered
-        if df_is_not_null(self.normal_data.data_df):
-            listener.on_data_loaded(self.normal_data.data_df)
+        if df_is_not_null(self.data_df):
+            listener.on_data_loaded(self.data_df)
 
     def deregister_data_listener(self, listener):
         if listener in self.data_listeners:
             self.data_listeners.remove(listener)
 
     def data_drawer(self) -> Drawer:
-        return Drawer(data=self.normal_data)
+        return Drawer(data=NormalData(df=self.data_df))
 
     def empty(self):
-        return self.normal_data.empty()
+        return not df_is_not_null(self.data_df)
+
+
+if __name__ == '__main__':
+    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
+                             start_timestamp='2017-01-01',
+                             end_timestamp='2019-06-10')
+
+    for timestamp in pd.date_range(start='2019-06-10', end='2019-10-10'):
+        data_reader.move_on(timestamp)
+        print(data_reader.data_df.iloc[0])

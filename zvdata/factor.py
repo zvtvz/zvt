@@ -5,11 +5,13 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata import IntervalLevel
+from zvdata.api import get_data, df_to_db
 from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
-from zvdata.scorer import Scorer
+from zvdata.scorer import Transformer, Scorer
 from zvdata.sedes import Jsonable
+from zvdata.utils.pd_utils import df_is_not_null
 
 
 class FactorType(enum.Enum):
@@ -45,6 +47,8 @@ class Meta(type):
 class Factor(DataReader, DataListener, Jsonable):
     factor_type: FactorType = None
 
+    factor_schema = None
+
     def __init__(self,
                  data_schema: object,
                  entity_ids: List[str] = None,
@@ -62,36 +66,58 @@ class Factor(DataReader, DataListener, Jsonable):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
                  auto_load: bool = True,
+                 valid_window: int = 250,
                  # child added arguments
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
-                 effective_number: int = 10) -> None:
+                 effective_number: int = 10,
+                 transformers: List[Transformer] = [],
+                 need_persist: bool = True) -> None:
+        self.need_persist = need_persist
+        if need_persist:
+            self.pipe_df = get_data(provider=self.provider,
+                                    data_schema=self.pipe_schema,
+                                    start_timestamp=start_timestamp,
+                                    index=[self.category_field, self.time_field])
+
+            if df_is_not_null(self.pipe_df):
+                self.logger.info('input start_timestamp:{}'.format(start_timestamp))
+                start_timestamp = self.pipe_df.iloc[-1]['timestamp']
+                self.logger.info('factor start_timestamp:{}'.format(start_timestamp))
+
+        else:
+            self.pipe_df: pd.DataFrame = None
+
+        self.result_df: pd.DataFrame = None
+
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level,
-                         category_field, time_field, trip_timestamp, auto_load)
+                         category_field, time_field, auto_load, valid_window)
 
         self.factor_name = type(self).__name__.lower()
 
         self.keep_all_timestamp = keep_all_timestamp
         self.fill_method = fill_method
         self.effective_number = effective_number
-
-        self.pipe_df: pd.DataFrame = None
-
-        self.result_df: pd.DataFrame = None
+        self.transformers = transformers
 
         self.register_data_listener(self)
 
     def pre_compute(self):
-        self.pipe_df = self.normal_data.data_df
+        self.pipe_df = self.data_df
 
     def do_compute(self):
-        pass
+        if df_is_not_null(self.pipe_df) and self.transformers:
+            for transformer in self.transformers:
+                self.pipe_df = transformer.transform(self.pipe_df)
+
+        if self.need_persist:
+            self.persist_result()
 
     def after_compute(self):
         self.fill_gap()
+        self.persist_result()
 
     def compute(self):
         """
@@ -108,22 +134,22 @@ class Factor(DataReader, DataListener, Jsonable):
     def get_result_df(self):
         return self.result_df
 
-    def get_depth_df(self):
+    def get_pipe_df(self):
         return self.pipe_df
 
-    def depth_drawer(self) -> Drawer:
-        drawer = Drawer(NormalData(df=self.pipe_df, index_field=self.time_field, is_timeseries=True))
+    def pipe_drawer(self) -> Drawer:
+        drawer = Drawer(NormalData(df=self.pipe_df))
         return drawer
 
     def result_drawer(self) -> Drawer:
-        return Drawer(NormalData(df=self.result_df, index_field=self.time_field, is_timeseries=True))
+        return Drawer(NormalData(df=self.result_df))
 
-    def draw_depth(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                   width=None, height=None,
-                   title=None, keep_ui_state=True, **kwargs):
-        return self.depth_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
-                                        render=render, file_name=file_name,
-                                        width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
+    def draw_pipe(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
+                  width=None, height=None,
+                  title=None, keep_ui_state=True, **kwargs):
+        return self.pipe_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
+                                       render=render, file_name=file_name,
+                                       width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
 
     def draw_result(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
                     width=None, height=None,
@@ -142,11 +168,14 @@ class Factor(DataReader, DataListener, Jsonable):
             self.result_df = self.result_df.fillna(method=self.fill_method, limit=self.effective_number)
 
     def on_data_loaded(self, data: pd.DataFrame):
+        # the pipe_df has been loaded from db
+        if self.need_persist and df_is_not_null(self.pipe_df):
+            return
         self.compute()
 
-    def on_data_added(self, data: pd.DataFrame):
+    def on_data_changed(self, data: pd.DataFrame):
         """
-        overwrite it for computing fast
+        overwrite it for computing after data added
 
         Parameters
         ----------
@@ -154,23 +183,32 @@ class Factor(DataReader, DataListener, Jsonable):
         """
         self.compute()
 
-    def on_entity_data_added(self, entity, added_data: pd.DataFrame):
+    def on_entity_data_changed(self, entity, added_data: pd.DataFrame):
         """
-        overwrite it for computing fast
+        overwrite it for computing after entity data added
 
         Parameters
         ----------
         entity :
         added_data :
         """
-        self.compute()
-
-    # TODO:
-    def persist(self):
         pass
 
-    def load(self):
-        pass
+    def persist_result(self):
+        df_to_db(df=self.pipe_df, data_schema=self.factor_schema, provider='zvt')
+
+    def get_latest_saved_pipe(self):
+        order = eval('self.factor_schema.{}.desc()'.format(self.time_field))
+
+        records = get_data(provider=self.provider,
+                           data_schema=self.pipe_schema,
+                           order=order,
+                           limit=1,
+                           return_type='domain',
+                           session=self.session)
+        if records:
+            return records[0]
+        return None
 
 
 class FilterFactor(Factor):
@@ -180,38 +218,25 @@ class FilterFactor(Factor):
 class ScoreFactor(Factor):
     factor_type = FactorType.score
 
-    def __init__(self,
-                 data_schema: object,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None, provider: str = 'eastmoney',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 trip_timestamp: bool = True,
-                 auto_load: bool = True,
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10,
-                 # child added arguments
-                 scorer: Scorer = Scorer()) -> None:
+    def __init__(self, data_schema: object, entity_ids: List[str] = None, entity_type: str = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'], codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
+                 order: object = None, limit: int = None, provider: str = 'eastmoney',
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', auto_load: bool = True, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = 10, transformers: List[Transformer] = [],
+                 scorer: Scorer = None) -> None:
         self.scorer = scorer
-
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level,
-                         category_field, time_field, trip_timestamp, auto_load, keep_all_timestamp, fill_method,
-                         effective_number)
+                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
+                         auto_load, keep_all_timestamp, fill_method, effective_number, transformers)
 
     def do_compute(self):
-        self.result_df = self.scorer.compute(input_df=self.pipe_df)
+        super().do_compute()
+
+        if df_is_not_null(self.pipe_df) and self.scorer:
+            self.result_df = self.scorer.score(self.data_df)
 
 
 class StateFactor(Factor):
