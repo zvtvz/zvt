@@ -13,6 +13,11 @@ class Transformer(object):
         return input_df
 
 
+class Accumulator(object):
+    def acc(self, input_df, acc_df) -> pd.DataFrame:
+        return acc_df
+
+
 class Scorer(object):
     logger = logging.getLogger(__name__)
 

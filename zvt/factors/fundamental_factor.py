@@ -28,7 +28,6 @@ class FinanceBaseFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-
                  auto_load: bool = True,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',

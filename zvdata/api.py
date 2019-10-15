@@ -7,7 +7,8 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import Query, Session
 
 from zvdata import IntervalLevel
-from zvdata.contract import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers
+from zvdata.contract import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers, \
+    get_schema_columns
 from zvdata.utils.pd_utils import df_is_not_null, index_df
 from zvdata.utils.time_utils import to_pd_timestamp
 
@@ -183,6 +184,15 @@ def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, forc
 
     db_engine = get_db_engine(provider, data_schema=data_schema)
 
+    schema_cols = get_schema_columns(data_schema)
+    cols = set(df.columns.tolist()) & set(schema_cols)
+
+    if not cols:
+        print('wrong cols')
+        return
+
+    df = df[cols]
+
     if force_update:
         session = get_db_session(provider=provider, data_schema=data_schema)
         ids = df["id"].tolist()
@@ -263,3 +273,11 @@ def get_entities(
                     provider=provider, columns=columns, return_type=return_type, start_timestamp=start_timestamp,
                     end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
                     index=index)
+
+
+def get_entity_ids(entity_type='stock', exchanges=['sz', 'sh'], codes=None, provider='eastmoney'):
+    df = get_entities(entity_type=entity_type, exchanges=exchanges, codes=codes,
+                      provider=provider)
+    if df_is_not_null(df):
+        return df['entity_id'].to_list()
+    return None
