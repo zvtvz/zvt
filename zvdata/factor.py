@@ -77,9 +77,9 @@ class Factor(DataReader, DataListener, Jsonable):
                  need_persist: bool = True,
                  dry_run: bool = False) -> None:
 
-        super().init_fields(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                            end_timestamp, columns, filters, order, limit, provider, level,
-                            category_field, time_field, auto_load, valid_window)
+        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, provider, level,
+                         category_field, time_field, auto_load, valid_window)
 
         self.factor_name = type(self).__name__.lower()
 
@@ -110,7 +110,14 @@ class Factor(DataReader, DataListener, Jsonable):
                                           start_timestamp=self.start_timestamp,
                                           index=[self.category_field, self.time_field])
 
-        self.load_data(df_is_not_null(self.factor_df))
+        if df_is_not_null(self.factor_df):
+            dfs = []
+            for entity_id, df in self.data_df.groupby(level=0):
+                if entity_id in self.factor_df.index.levels[0]:
+                    df = df[df.timestamp >= self.factor_df.loc[(entity_id,)].index[0]]
+                dfs.append(df)
+
+            self.data_df = pd.concat(dfs)
 
         self.register_data_listener(self)
 

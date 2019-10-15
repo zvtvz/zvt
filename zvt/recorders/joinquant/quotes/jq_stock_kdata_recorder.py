@@ -159,7 +159,7 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
 
             df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
 
-            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force=self.force_update)
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
 
@@ -175,4 +175,4 @@ if __name__ == '__main__':
     codes = args.codes
 
     init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level='5m', sleeping_time=0, codes=['000338']).run()
+    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
