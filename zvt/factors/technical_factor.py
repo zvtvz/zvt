@@ -4,7 +4,7 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.factor import Factor
-from zvdata.scorer import Transformer
+from zvdata.scorer import Transformer, Accumulator
 from zvt.api.common import get_kdata_schema
 from zvt.api.computing import macd
 
@@ -67,14 +67,15 @@ class TechnicalFactor(Factor):
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  transformers: List[Transformer] = [MacdTransformer()],
-                 need_persist: bool = True) -> None:
+                 accumulator: Accumulator = None,
+                 need_persist: bool = True,
+                 dry_run: bool = True) -> None:
         self.data_schema = get_kdata_schema(entity_type, level=level)
         self.indicator_cols = set()
-
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, valid_window, keep_all_timestamp, fill_method, effective_number, transformers,
-                         need_persist)
+                         auto_load, valid_window, keep_all_timestamp, fill_method, effective_number,
+                         transformers, accumulator, need_persist, dry_run)
 
     def draw_pipe(self, chart='kline', plotly_layout=None, annotation_df=None, render='html', file_name=None,
                   width=None, height=None, title=None, keep_ui_state=True, **kwargs):

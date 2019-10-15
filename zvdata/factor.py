@@ -9,7 +9,7 @@ from zvdata.api import get_data, df_to_db
 from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
-from zvdata.scorer import Transformer, Scorer
+from zvdata.scorer import Transformer, Scorer, Accumulator
 from zvdata.sedes import Jsonable
 from zvdata.utils.pd_utils import df_is_not_null
 
@@ -73,27 +73,13 @@ class Factor(DataReader, DataListener, Jsonable):
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  transformers: List[Transformer] = [],
-                 need_persist: bool = True) -> None:
-        self.need_persist = need_persist
-        if need_persist:
-            self.pipe_df = get_data(provider='zvt',
-                                    data_schema=self.factor_schema,
-                                    start_timestamp=start_timestamp,
-                                    index=[category_field, time_field])
+                 accumulator: Accumulator = None,
+                 need_persist: bool = True,
+                 dry_run: bool = False) -> None:
 
-            if df_is_not_null(self.pipe_df):
-                self.logger.info('input start_timestamp:{}'.format(start_timestamp))
-                start_timestamp = self.pipe_df.iloc[-1]['timestamp']
-                self.logger.info('factor start_timestamp:{}'.format(start_timestamp))
-
-        else:
-            self.pipe_df: pd.DataFrame = None
-
-        self.result_df: pd.DataFrame = None
-
-        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level,
-                         category_field, time_field, auto_load, valid_window)
+        super().init_fields(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
+                            end_timestamp, columns, filters, order, limit, provider, level,
+                            category_field, time_field, auto_load, valid_window)
 
         self.factor_name = type(self).__name__.lower()
 
@@ -101,6 +87,30 @@ class Factor(DataReader, DataListener, Jsonable):
         self.fill_method = fill_method
         self.effective_number = effective_number
         self.transformers = transformers
+        self.accumulator = accumulator
+
+        self.need_persist = need_persist
+        self.dry_run = dry_run
+
+        # 计算因子的结果，可持久化
+        self.factor_df: pd.DataFrame = None
+        # 中间结果，不持久化
+        self.pipe_df: pd.DataFrame = None
+        # result_df是用于选股的标准df
+        self.result_df: pd.DataFrame = None
+
+        # 如果是accumulate类的运算，需要利用之前的factor_df,比如全市场的一些统计信息
+        if self.need_persist:
+            # 如果只是为了计算因子，只需要读取valid_window的factor_df
+            if self.dry_run:
+                self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema)
+            else:
+                self.factor_df = get_data(provider='zvt',
+                                          data_schema=self.factor_schema,
+                                          start_timestamp=self.start_timestamp,
+                                          index=[self.category_field, self.time_field])
+
+        self.load_data(df_is_not_null(self.factor_df))
 
         self.register_data_listener(self)
 
@@ -108,16 +118,22 @@ class Factor(DataReader, DataListener, Jsonable):
         self.pipe_df = self.data_df
 
     def do_compute(self):
+        # 无状态的转换运算
         if df_is_not_null(self.pipe_df) and self.transformers:
             for transformer in self.transformers:
                 self.pipe_df = transformer.transform(self.pipe_df)
 
-        if self.need_persist:
-            self.persist_result()
+        # 有状态的累加运算
+        if df_is_not_null(self.pipe_df) and self.accumulator:
+            self.factor_df = self.accumulator.acc(self.pipe_df, self.factor_df)
+        else:
+            self.factor_df = self.pipe_df
 
     def after_compute(self):
         self.fill_gap()
-        self.persist_result()
+
+        if self.need_persist:
+            self.persist_result()
 
     def compute(self):
         """
@@ -168,9 +184,6 @@ class Factor(DataReader, DataListener, Jsonable):
             self.result_df = self.result_df.fillna(method=self.fill_method, limit=self.effective_number)
 
     def on_data_loaded(self, data: pd.DataFrame):
-        # the pipe_df has been loaded from db
-        if self.need_persist and df_is_not_null(self.pipe_df):
-            return
         self.compute()
 
     def on_data_changed(self, data: pd.DataFrame):
@@ -195,7 +208,7 @@ class Factor(DataReader, DataListener, Jsonable):
         pass
 
     def persist_result(self):
-        df_to_db(df=self.pipe_df, data_schema=self.factor_schema, provider='zvt')
+        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt')
 
     def get_latest_saved_pipe(self):
         order = eval('self.factor_schema.{}.desc()'.format(self.time_field))
@@ -226,11 +239,14 @@ class ScoreFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', auto_load: bool = True, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = 10, transformers: List[Transformer] = [],
+                 need_persist: bool = True,
+                 dry_run: bool = True,
                  scorer: Scorer = None) -> None:
         self.scorer = scorer
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, keep_all_timestamp, fill_method, effective_number, transformers)
+                         auto_load, keep_all_timestamp, fill_method, effective_number, transformers, need_persist,
+                         dry_run)
 
     def do_compute(self):
         super().do_compute()
