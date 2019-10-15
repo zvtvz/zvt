@@ -13,8 +13,9 @@ from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import register_schema
 from zvt.api import get_entities, Stock
 from zvt.factors.technical_factor import TechnicalFactor, MaTransformer
-
 # 均线状态统计
+from zvt.settings import SAMPLE_STOCK_CODES
+
 MaStateStatsBase = declarative_base()
 
 
@@ -92,9 +93,10 @@ class MaAccumulator(Accumulator):
                     count = 1
                     # 增量计算，需要累加之前的结果
                     if df_is_not_null(acc_df):
-                        acc_col_current = acc_df.iloc[-1][col_current]
-                        if not pd.isna(acc_col_current):
-                            count = acc_col_current + 1
+                        if entity_id in acc_df.index.levels[0]:
+                            acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][col_current]
+                            if not pd.isna(acc_col_current):
+                                count = acc_col_current + 1
 
                     area = abs(input_df.loc[index, long_ma_col] - input_df.loc[index, short_ma_col])
 
@@ -163,12 +165,12 @@ class MaStateStas(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    print(MaStateStats)
+    print('start')
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
     parser.add_argument('--start', help='start code', default='000001')
-    parser.add_argument('--end', help='end code', default='000005')
+    parser.add_argument('--end', help='end code', default='000003')
 
     args = parser.parse_args()
 
@@ -181,6 +183,6 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = MaStateStas(codes=codes, start_timestamp='2005-01-01',
+    factor = MaStateStas(codes=SAMPLE_STOCK_CODES, start_timestamp='2005-01-01',
                          end_timestamp=now_pd_timestamp(),
                          level=level)

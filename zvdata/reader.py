@@ -67,32 +67,6 @@ class DataReader(object):
                  time_field: str = 'timestamp',
                  auto_load: bool = True,
                  valid_window: int = 250) -> None:
-
-        self.init_fields(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level,
-                         category_field, time_field, auto_load, valid_window)
-        if self.auto_load:
-            self.load_data()
-
-    def init_fields(self, data_schema: object,
-                    entity_ids: List[str] = None,
-                    entity_type: str = 'stock',
-                    exchanges: List[str] = ['sh', 'sz'],
-                    codes: List[str] = None,
-                    the_timestamp: Union[str, pd.Timestamp] = None,
-                    start_timestamp: Union[str, pd.Timestamp] = '2018-01-01',
-                    end_timestamp: Union[str, pd.Timestamp] = now_pd_timestamp(),
-                    columns: List = None,
-                    filters: List = None,
-                    order: object = None,
-                    limit: int = None,
-                    provider: str = 'joinquant',
-                    level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-                    category_field: str = 'entity_id',
-                    time_field: str = 'timestamp',
-                    auto_load: bool = True,
-                    valid_window: int = 250,
-                    load_window: bool = False):
         self.data_schema = data_schema
 
         self.the_timestamp = the_timestamp
@@ -133,7 +107,6 @@ class DataReader(object):
         self.time_field = time_field
         self.auto_load = auto_load
         self.valid_window = valid_window
-        self.load_window = load_window
 
         self.category_col = eval('self.data_schema.{}'.format(self.category_field))
         self.time_col = eval('self.data_schema.{}'.format(self.time_field))
@@ -155,6 +128,9 @@ class DataReader(object):
 
         self.data_df: pd.DataFrame = None
 
+        if self.auto_load:
+            self.load_data()
+
     def load_window_df(self, provider, data_schema):
         window_df = None
         if not self.entity_ids:
@@ -174,31 +150,28 @@ class DataReader(object):
                 dfs.append(df)
         if dfs:
             window_df = pd.concat(dfs)
-            window_df.sort_index(level=[0, 1])
+            window_df = window_df.sort_index(level=[0, 1])
         return window_df
 
-    def load_data(self, load_window=False):
-        if load_window:
-            self.data_df = self.load_window_df(provider=self.provider, data_schema=self.data_schema)
+    def load_data(self):
+        if self.entity_ids:
+            self.data_df = get_data(data_schema=self.data_schema, entity_ids=self.entity_ids,
+                                    provider=self.provider, columns=self.columns,
+                                    start_timestamp=self.start_timestamp,
+                                    end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
+                                    limit=self.limit,
+                                    level=self.level,
+                                    index=[self.category_field, self.time_field],
+                                    time_field=self.time_field)
         else:
-            if self.entity_ids:
-                self.data_df = get_data(data_schema=self.data_schema, entity_ids=self.entity_ids,
-                                        provider=self.provider, columns=self.columns,
-                                        start_timestamp=self.start_timestamp,
-                                        end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
-                                        limit=self.limit,
-                                        level=self.level,
-                                        index=[self.category_field, self.time_field],
-                                        time_field=self.time_field)
-            else:
-                self.data_df = get_data(data_schema=self.data_schema, codes=self.codes,
-                                        provider=self.provider, columns=self.columns,
-                                        start_timestamp=self.start_timestamp,
-                                        end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
-                                        limit=self.limit,
-                                        level=self.level,
-                                        index=[self.category_field, self.time_field],
-                                        time_field=self.time_field)
+            self.data_df = get_data(data_schema=self.data_schema, codes=self.codes,
+                                    provider=self.provider, columns=self.columns,
+                                    start_timestamp=self.start_timestamp,
+                                    end_timestamp=self.end_timestamp, filters=self.filters, order=self.order,
+                                    limit=self.limit,
+                                    level=self.level,
+                                    index=[self.category_field, self.time_field],
+                                    time_field=self.time_field)
 
         for listener in self.data_listeners:
             listener.on_data_loaded(self.data_df)
