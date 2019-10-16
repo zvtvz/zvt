@@ -56,7 +56,7 @@ def test_reader_move_on():
     assert ('stock_sz_000338', '2019-06-15') not in data_reader.data_df.index
 
     start_time = time.time()
-    changed = data_reader.move_on(to_timestamp='2019-06-16', timeout=5)
+    data_reader.move_on(to_timestamp='2019-06-20', timeout=5)
     assert time.time() - start_time < 5
 
 

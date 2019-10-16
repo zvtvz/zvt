@@ -7,14 +7,14 @@ from sqlalchemy import Column, String, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import IntervalLevel, Mixin
-from zvdata.scorer import Transformer, Accumulator
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import register_schema
 from zvt.api import get_entities, Stock
-from zvt.factors.technical_factor import TechnicalFactor, MaTransformer
+from zvt.factors.algorithm import MaTransformer
+from zvt.factors.factor import Accumulator, Transformer
 # 均线状态统计
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.factors.technical_factor import TechnicalFactor
 
 MaStateStatsBase = declarative_base()
 
@@ -142,8 +142,8 @@ class MaStateStas(TechnicalFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 auto_load: bool = True,
-                 valid_window: int = 10,
+
+                 computing_window: int = 10,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
@@ -160,7 +160,7 @@ class MaStateStas(TechnicalFactor):
 
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, valid_window, keep_all_timestamp, fill_method, effective_number, transformers, acc,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformers, acc,
                          need_persist, dry_run)
 
 
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
     parser.add_argument('--start', help='start code', default='000001')
-    parser.add_argument('--end', help='end code', default='000003')
+    parser.add_argument('--end', help='end code', default='002000')
 
     args = parser.parse_args()
 
@@ -183,6 +183,6 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = MaStateStas(codes=SAMPLE_STOCK_CODES, start_timestamp='2005-01-01',
+    factor = MaStateStas(codes=codes, start_timestamp='2005-01-01',
                          end_timestamp=now_pd_timestamp(),
                          level=level)

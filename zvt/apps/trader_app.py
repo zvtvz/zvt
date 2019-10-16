@@ -6,7 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from zvt.api.business import get_trader
-from zvdata.app import app
+from zvt.app import app
 from zvt.charts.dcc_components import get_trader_detail_figures
 from zvt.domain import business
 from zvt.reader.business_reader import AccountReader, OrderReader

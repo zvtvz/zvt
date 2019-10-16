@@ -9,10 +9,9 @@ import dash_core_components as dcc
 
 from dash.dependencies import Input, Output
 
-from zvt.apps import trader_app
+from zvt.apps import trader_app, data_app
 
-from zvdata.app import app
-from zvdata.apps import data_app
+from zvt.app import app
 
 
 def serve_layout():

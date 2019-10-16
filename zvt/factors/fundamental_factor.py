@@ -4,8 +4,8 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata import IntervalLevel
-from zvdata.factor import Factor, ScoreFactor
-from zvdata.scorer import Scorer, RankScorer
+from zvt.factors.factor import Factor, ScoreFactor
+from zvt.factors.algorithm import Scorer, RankScorer
 from zvdata.utils.pd_utils import normal_index_df
 from zvt.domain import FinanceFactor, IndexMoneyFlow
 
@@ -28,7 +28,7 @@ class FinanceBaseFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 auto_load: bool = True,
+
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10) -> None:
@@ -37,7 +37,7 @@ class FinanceBaseFactor(Factor):
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                          auto_load, keep_all_timestamp, fill_method, effective_number, persist)
+                           keep_all_timestamp, fill_method, effective_number, persist)
 
 
 class GoodCompanyFactor(FinanceBaseFactor):
@@ -61,7 +61,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
 
-                 auto_load: bool = True,
+
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
@@ -72,7 +72,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
         self.count = count
         super().__init__(FinanceFactor, entity_ids, 'stock', ['sh', 'sz'], codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                          auto_load, keep_all_timestamp, fill_method, effective_number)
+                           keep_all_timestamp, fill_method, effective_number)
 
     def do_compute(self):
         def filter_df(df):
@@ -124,14 +124,14 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
 
-                 auto_load: bool = True,
+
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
         super().__init__(IndexMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                          auto_load, keep_all_timestamp, fill_method, effective_number, scorer)
+                           keep_all_timestamp, fill_method, effective_number, scorer)
 
     def do_compute(self):
         self.pipe_df = self.data_df.copy()

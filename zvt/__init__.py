@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
 
 import pandas as pd
 
@@ -23,7 +21,7 @@ def init_log():
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
-        "%(levelname)s  %(threadName)s  %(asctime)s  %(name)s:%(lineno)s  %(funcName)s  %(message)s")
+        "%(levelname)s  %(threadName)s  %(asctime)s  %(name)s:%(filename)s:%(lineno)s  %(funcName)s  %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 
@@ -50,7 +48,3 @@ else:
 from zvt.domain import init_schema
 
 init_schema()
-
-from zvt.factors import init_factors
-
-init_factors()
