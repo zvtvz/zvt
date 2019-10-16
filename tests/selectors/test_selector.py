@@ -19,8 +19,7 @@ class TechnicalSelector(TargetSelector):
                      end_timestamp, level):
         bull_factor = BullFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
                                  codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
-                                 end_timestamp=end_timestamp, provider='joinquant', level=level,
-                                 auto_load=True)
+                                 end_timestamp=end_timestamp, provider='joinquant', level=level)
 
         self.filter_factors = [bull_factor]
 
@@ -40,7 +39,7 @@ def test_cross_ma_selector():
                                          entity_type=entity_type,
                                          start_timestamp=start_timestamp,
                                          end_timestamp=end_timestamp,
-                                         level=IntervalLevel.LEVEL_1DAY, auto_load=True))
+                                         level=IntervalLevel.LEVEL_1DAY))
     my_selector.run()
     print(my_selector.open_long_df)
     print(my_selector.open_short_df)

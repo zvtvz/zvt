@@ -311,13 +311,12 @@ def get_{}(
         order=None,
         limit: int = None,
         index: str = 'timestamp',
-        index_is_time: bool = True,
         time_field: str = 'timestamp'):
     return get_data(data_schema={}, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
                     columns=columns, return_type=return_type, start_timestamp=start_timestamp,
                     end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, index_is_time=index_is_time, time_field=time_field)
+                    index=index, time_field=time_field)
 '''
 
 
@@ -365,7 +364,6 @@ def generate_api(api_path: str, tmp_api_dir: str) -> object:
 
         for api_file in api_files:
             with open(api_file) as infile:
-                print()
                 outfile.write(infile.read())
             os.remove(api_file)
 

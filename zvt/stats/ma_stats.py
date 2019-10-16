@@ -3,42 +3,16 @@ import argparse
 from typing import List, Union
 
 import pandas as pd
-from sqlalchemy import Column, String, Float, Integer
-from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import IntervalLevel, Mixin
+from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
-from zvt import register_schema
 from zvt.api import get_entities, Stock
+from zvt.domain.stats.ma_stats import MaStateStats
 from zvt.factors.algorithm import MaTransformer
 from zvt.factors.factor import Accumulator, Transformer
 # 均线状态统计
 from zvt.factors.technical_factor import TechnicalFactor
-
-MaStateStatsBase = declarative_base()
-
-
-class MaStateStats(MaStateStatsBase, Mixin):
-    __tablename__ = 'ma_state_stats'
-
-    code = Column(String(length=32))
-    name = Column(String(length=32))
-
-    ma5 = Column(Float)
-    ma10 = Column(Float)
-    score = Column(Float)
-
-    down_current_count = Column(Integer)
-    down_current_area = Column(Float)
-    down_total_count = Column(Integer)
-
-    up_total_count = Column(Integer)
-    up_current_count = Column(Float)
-    up_current_area = Column(Integer)
-
-
-register_schema(providers=['zvt'], db_name='ma_stats', schema_base=MaStateStatsBase)
 
 
 class MaAccumulator(Accumulator):

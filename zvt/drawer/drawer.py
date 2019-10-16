@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 
 from zvdata.api import decode_entity_id
 from zvdata.contract import context
-from zvdata.normal_data import NormalData, TableType
+from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
 from zvdata.utils.utils import to_positive_number
@@ -22,9 +22,6 @@ def get_ui_path(name):
 class Drawer(object):
     def __init__(self, data: NormalData = None) -> None:
         self.normal_data: NormalData = data
-
-    def refresh_data(self, data: NormalData = None):
-        self.normal_data = data
 
     def get_plotly_annotations(self):
         annotation_df = self.normal_data.annotation_df
@@ -444,7 +441,7 @@ class Drawer(object):
     def draw_data_table(self, id=None):
         cols = self.normal_data.data_df.index.names + self.normal_data.data_df.columns.tolist()
 
-        df = self.normal_data.data_df.reset_index()
+        df = self.normal_data.data_df.reset_index(drop=True)
 
         return dash_table.DataTable(
             id=id,
@@ -459,9 +456,3 @@ class Drawer(object):
             page_current=0,
             page_size=5,
         )
-
-
-if __name__ == '__main__':
-    for table_type in TableType:
-        drawer = Drawer(data=NormalData(NormalData.sample(table_type=table_type)))
-        drawer.draw_table()

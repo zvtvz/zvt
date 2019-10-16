@@ -117,7 +117,7 @@ class BullFactor(TechnicalFactor):
 
     def do_compute(self):
         super().do_compute()
-        s = (self.facor_df['diff'] > 0) & (self.facor_df['dea'] > 0)
+        s = (self.factor_df['diff'] > 0) & (self.factor_df['dea'] > 0)
         self.result_df = s.to_frame(name='score')
 
 
