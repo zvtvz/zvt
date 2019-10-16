@@ -5,7 +5,7 @@ DATA_SAMPLE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample.zip'))
 
 # please change the path to your real store path
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
+DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
 UI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ui'))
 

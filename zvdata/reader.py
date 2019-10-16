@@ -11,7 +11,7 @@ from zvdata.api import get_data, get_entity_ids
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.charts.chart import Drawer
+from zvt.drawer.drawer import Drawer
 from zvt.domain import Stock1dKdata
 
 

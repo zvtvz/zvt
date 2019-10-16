@@ -11,7 +11,7 @@ from zvdata.api import get_data, df_to_db
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.utils.pd_utils import df_is_not_null
-from zvt.charts.chart import Drawer
+from zvt.drawer.drawer import Drawer
 from zvt.sedes import Jsonable
 
 
