@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy.sql.elements import BinaryExpression
 
-from zvdata.sedes import CustomJsonEncoder, CustomJsonDecoder
+from zvt.sedes import CustomJsonEncoder, CustomJsonDecoder
 from zvt.domain import Stock1dKdata
 
 

@@ -37,6 +37,7 @@ class Recorder(object):
         :param sleeping_time:sleeping seconds for recoding loop
         :type sleeping_time:int
         """
+        self.logger = logging.getLogger(self.__class__.__name__)
 
         assert self.provider is not None
         assert self.data_schema is not None

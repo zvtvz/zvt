@@ -1,27 +1,43 @@
 # -*- coding: utf-8 -*-
-import logging
 
 import pandas as pd
 
 from zvdata.utils.pd_utils import normal_index_df
+from zvt.api.computing import macd
+from zvt.factors.factor import Scorer, Transformer
 
 
-class Transformer(object):
-    indicator_cols = []
+class MaTransformer(Transformer):
+    def __init__(self, windows=[5, 10]) -> None:
+        self.windows = windows
 
     def transform(self, input_df) -> pd.DataFrame:
+        for window in self.windows:
+            col = 'ma{}'.format(window)
+            self.indicator_cols.append(col)
+
+            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            ma_df = ma_df.reset_index(level=0, drop=True)
+            input_df[col] = ma_df
+
         return input_df
 
 
-class Accumulator(object):
-    def acc(self, input_df, acc_df) -> pd.DataFrame:
-        return acc_df
+class MacdTransformer(Transformer):
+    def __init__(self, slow=26, fast=12, n=9) -> None:
+        self.slow = slow
+        self.fast = fast
+        self.n = n
 
+        self.indicator_cols.append('diff')
+        self.indicator_cols.append('dea')
+        self.indicator_cols.append('macd')
 
-class Scorer(object):
-    logger = logging.getLogger(__name__)
+    def transform(self, input_df) -> pd.DataFrame:
+        macd_df = input_df.groupby(level=0)['close'].apply(
+            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
 
-    def score(self, input_df) -> pd.DataFrame:
+        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
         return input_df
 
 
@@ -78,8 +94,7 @@ class QuantileScorer(Scorer):
                                                 axis=1)
 
         result_df = result_df.reset_index()
-        result_df = normal_index_df(result_df, category_field=self.category_field,
-                                    xfield=self.time_field)
+        result_df = normal_index_df(result_df)
         result_df = result_df.loc[:, self.factors]
 
         result_df = result_df.loc[~result_df.index.duplicated(keep='first')]

@@ -8,10 +8,10 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.api import get_data, get_entity_ids
-from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.charts.chart import Drawer
 from zvt.domain import Stock1dKdata
 
 
@@ -65,8 +65,9 @@ class DataReader(object):
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 auto_load: bool = True,
-                 valid_window: int = 250) -> None:
+                 computing_window: int = 250) -> None:
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         self.data_schema = data_schema
 
         self.the_timestamp = the_timestamp
@@ -105,8 +106,7 @@ class DataReader(object):
 
         self.category_field = category_field
         self.time_field = time_field
-        self.auto_load = auto_load
-        self.valid_window = valid_window
+        self.computing_window = computing_window
 
         self.category_col = eval('self.data_schema.{}'.format(self.category_field))
         self.time_col = eval('self.data_schema.{}'.format(self.time_field))
@@ -128,8 +128,7 @@ class DataReader(object):
 
         self.data_df: pd.DataFrame = None
 
-        if self.auto_load:
-            self.load_data()
+        self.load_data()
 
     def load_window_df(self, provider, data_schema):
         window_df = None
@@ -145,7 +144,7 @@ class DataReader(object):
                           index=[self.category_field, self.time_field],
                           order=data_schema.timestamp.desc(),
                           entity_id=entity_id,
-                          limit=self.valid_window)
+                          limit=self.computing_window)
             if df_is_not_null(df):
                 dfs.append(df)
         if dfs:
@@ -154,6 +153,9 @@ class DataReader(object):
         return window_df
 
     def load_data(self):
+        self.logger.info('load_data start')
+        start_time = time.time()
+
         if self.entity_ids:
             self.data_df = get_data(data_schema=self.data_schema, entity_ids=self.entity_ids,
                                     provider=self.provider, columns=self.columns,
@@ -172,6 +174,8 @@ class DataReader(object):
                                     level=self.level,
                                     index=[self.category_field, self.time_field],
                                     time_field=self.time_field)
+        cost_time = time.time() - start_time
+        self.logger.info('load_data finish cost_time:{}'.format(cost_time))
 
         for listener in self.data_listeners:
             listener.on_data_loaded(self.data_df)
@@ -179,8 +183,9 @@ class DataReader(object):
     def move_on(self, to_timestamp: Union[str, pd.Timestamp] = None,
                 timeout: int = 20) -> object:
         """
+        using continual fetching data in realtime
         1)get the data happened before to_timestamp,if not set,get all the data which means to now
-        2)remove the data outside valid_window for saving memory,after move_on you should know that the data_df has changed
+        2)if computing_window set,the data_df would be cut for saving memory
 
 
         :param to_timestamp:
@@ -206,7 +211,9 @@ class DataReader(object):
                     continue
 
                 recorded_timestamp = df['timestamp'].max()
-                df = df.iloc[-self.valid_window:]
+
+                if self.computing_window:
+                    df = df.iloc[-self.computing_window:]
 
                 added_filter = [self.category_col == entity_id, self.time_col > recorded_timestamp]
                 if self.filters:

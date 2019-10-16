@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 import enum
+import logging
+import time
 from typing import List, Union
 
 import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.api import get_data, df_to_db
-from zvdata.chart import Drawer
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
-from zvdata.scorer import Transformer, Scorer, Accumulator
-from zvdata.sedes import Jsonable
 from zvdata.utils.pd_utils import df_is_not_null
+from zvt.charts.chart import Drawer
+from zvt.sedes import Jsonable
+
+
+class Transformer(object):
+    indicator_cols = []
+
+    def transform(self, input_df) -> pd.DataFrame:
+        return input_df
+
+
+class Accumulator(object):
+    def acc(self, input_df, acc_df) -> pd.DataFrame:
+        return acc_df
+
+
+class Scorer(object):
+    logger = logging.getLogger(__name__)
+
+    def score(self, input_df) -> pd.DataFrame:
+        return input_df
 
 
 class FactorType(enum.Enum):
@@ -20,33 +40,10 @@ class FactorType(enum.Enum):
     state = 'state'
 
 
-# factor class registry
-factor_cls_registry = {}
-
-# factor instance registry
-factor_instance_registry = {}
-
-
-def register_instance(cls, instance):
-    if cls.__name__ not in ('Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor'):
-        factor_instance_registry[cls.__name__] = instance
-
-
-def register_class(target_class):
-    if target_class.__name__ not in ('Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor'):
-        factor_cls_registry[target_class.__name__] = target_class
-
-
-class Meta(type):
-    def __new__(meta, name, bases, class_dict):
-        cls = type.__new__(meta, name, bases, class_dict)
-        register_class(cls)
-        return cls
-
-
 class Factor(DataReader, DataListener, Jsonable):
     factor_type: FactorType = None
 
+    # define the schema for persist
     factor_schema = None
 
     def __init__(self,
@@ -66,8 +63,7 @@ class Factor(DataReader, DataListener, Jsonable):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 auto_load: bool = True,
-                 valid_window: int = 250,
+                 computing_window: int = 250,
                  # child added arguments
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
@@ -79,7 +75,7 @@ class Factor(DataReader, DataListener, Jsonable):
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level,
-                         category_field, time_field, auto_load, valid_window)
+                         category_field, time_field, computing_window)
 
         self.factor_name = type(self).__name__.lower()
 
@@ -148,8 +144,18 @@ class Factor(DataReader, DataListener, Jsonable):
 
         """
         self.pre_compute()
+
+        self.logger.info('do_compute start')
+        start_time = time.time()
         self.do_compute()
+        cost_time = time.time() - start_time
+        self.logger.info('do_compute finish,cost_time:{}'.format(cost_time))
+
+        self.logger.info('after_compute start')
+        start_time = time.time()
         self.after_compute()
+        cost_time = time.time() - start_time
+        self.logger.info('after_compute finish,cost_time:{}'.format(cost_time))
 
     def __repr__(self) -> str:
         return self.result_df.__repr__()
@@ -244,7 +250,7 @@ class ScoreFactor(Factor):
                  end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
                  order: object = None, limit: int = None, provider: str = 'eastmoney',
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', auto_load: bool = True, keep_all_timestamp: bool = False,
+                 time_field: str = 'timestamp', keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = 10, transformers: List[Transformer] = [],
                  need_persist: bool = True,
                  dry_run: bool = True,
@@ -252,7 +258,7 @@ class ScoreFactor(Factor):
         self.scorer = scorer
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         auto_load, keep_all_timestamp, fill_method, effective_number, transformers, need_persist,
+                         keep_all_timestamp, fill_method, effective_number, transformers, need_persist,
                          dry_run)
 
     def do_compute(self):

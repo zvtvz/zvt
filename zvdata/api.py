@@ -215,7 +215,7 @@ def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, forc
         session.commit()
 
     else:
-        current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider)
+        current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider, ids=df['id'].tolist())
         if df_is_not_null(current):
             df = df[~df['id'].isin(current['id'])]
 
