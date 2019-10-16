@@ -4,7 +4,7 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvt.api.common import get_kdata_schema
-from zvt.factors.algorithm import MacdTransformer
+from zvt.factors.algorithm import MacdTransformer, MaTransformer
 from zvt.factors.factor import Factor, Transformer, Accumulator
 
 
@@ -25,19 +25,17 @@ class TechnicalFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 computing_window: int = 250,
+                 computing_window: int = None,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
-                 transformers: List[Transformer] = [MacdTransformer()],
+                 transformer: Transformer = MacdTransformer(),
                  accumulator: Accumulator = None,
                  need_persist: bool = False,
                  dry_run: bool = True) -> None:
         self.data_schema = get_kdata_schema(entity_type, level=level)
 
-        self.indicator_cols = []
-        for transformer in transformers:
-            self.indicator_cols += transformer.indicator_cols
+        self.indicator_cols = transformer.indicator_cols
 
         if not columns:
             if entity_type == 'stock':
@@ -48,12 +46,7 @@ class TechnicalFactor(Factor):
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          computing_window, keep_all_timestamp, fill_method, effective_number,
-                         transformers, accumulator, need_persist, dry_run)
-
-    def pre_compute(self):
-        self.data_df.rename(columns={'qfq_open': 'open', 'qfq_close': 'close', 'qfq_high': 'high', 'qfq_low': 'low', },
-                            inplace=True)
-        super().pre_compute()
+                         transformer, accumulator, need_persist, dry_run)
 
     def __json__(self):
         result = super().__json__()
@@ -61,3 +54,90 @@ class TechnicalFactor(Factor):
         return result
 
     for_json = __json__  # supported by simplejson
+
+
+class CrossMaFactor(TechnicalFactor):
+    def __init__(self,
+                 entity_ids: List[str] = None,
+                 entity_type: str = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'],
+                 codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 provider: str = 'joinquant',
+                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
+                 need_persist: bool = False,
+                 dry_run: bool = False,
+                 # child added arguments
+                 short_window=5,
+                 long_window=10) -> None:
+        self.short_window = short_window
+        self.long_window = long_window
+
+        transformer = MaTransformer(windows=[short_window, long_window])
+
+        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+                         columns, filters, order, limit, provider, level, 'entity_id', 'timestamp', long_window,
+                         False, None, None, transformer, None, need_persist, dry_run)
+
+    def do_compute(self):
+        super().do_compute()
+        s = self.factor_df['ma{}'.format(self.short_window)] > self.factor_df['ma{}'.format(self.long_window)]
+        self.result_df = s.to_frame(name='score')
+
+
+class BullFactor(TechnicalFactor):
+    def __init__(self,
+                 entity_ids: List[str] = None,
+                 entity_type: str = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'],
+                 codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 provider: str = 'joinquant',
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 need_persist: bool = False, dry_run: bool = False) -> None:
+        transformer = MacdTransformer()
+
+        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+                         columns, filters, order, limit, provider, level, category_field, time_field, 26,
+                         False, None, None, transformer, None, need_persist, dry_run)
+
+    def do_compute(self):
+        super().do_compute()
+        s = (self.facor_df['diff'] > 0) & (self.facor_df['dea'] > 0)
+        self.result_df = s.to_frame(name='score')
+
+
+if __name__ == '__main__':
+    factor = TechnicalFactor(entity_type='stock',
+                             codes=['000338'],
+                             start_timestamp='2019-01-01',
+                             end_timestamp='2019-06-10',
+                             level=IntervalLevel.LEVEL_1DAY,
+                             provider='joinquant',
+                             computing_window=26,
+                             transformer=MacdTransformer())
+
+    print(factor.get_factor_df().tail())
+
+    factor.move_on(to_timestamp='2019-06-17')
+    diff = factor.get_factor_df()['diff']
+    dea = factor.get_factor_df()['dea']
+    macd = factor.get_factor_df()['macd']
+
+    assert round(diff.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.06
+    assert round(dea.loc[('stock_sz_000338', '2019-06-17')], 2) == -0.03
+    assert round(macd.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.19

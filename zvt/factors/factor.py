@@ -68,7 +68,7 @@ class Factor(DataReader, DataListener, Jsonable):
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
-                 transformers: List[Transformer] = [],
+                 transformer: Transformer = None,
                  accumulator: Accumulator = None,
                  need_persist: bool = True,
                  dry_run: bool = False) -> None:
@@ -82,7 +82,7 @@ class Factor(DataReader, DataListener, Jsonable):
         self.keep_all_timestamp = keep_all_timestamp
         self.fill_method = fill_method
         self.effective_number = effective_number
-        self.transformers = transformers
+        self.transformer = transformer
         self.accumulator = accumulator
 
         self.need_persist = need_persist
@@ -118,13 +118,13 @@ class Factor(DataReader, DataListener, Jsonable):
         self.register_data_listener(self)
 
     def pre_compute(self):
-        self.pipe_df = self.data_df
+        if df_is_not_null(self.pipe_df):
+            self.pipe_df = self.data_df
 
     def do_compute(self):
         # 无状态的转换运算
-        if df_is_not_null(self.pipe_df) and self.transformers:
-            for transformer in self.transformers:
-                self.pipe_df = transformer.transform(self.pipe_df)
+        if df_is_not_null(self.data_df) and self.transformer:
+            self.pipe_df = self.transformer.transform(self.data_df)
 
         # 有状态的累加运算
         if df_is_not_null(self.pipe_df) and self.accumulator:
@@ -165,6 +165,9 @@ class Factor(DataReader, DataListener, Jsonable):
 
     def get_pipe_df(self):
         return self.pipe_df
+
+    def get_factor_df(self):
+        return self.factor_df
 
     def pipe_drawer(self) -> Drawer:
         drawer = Drawer(NormalData(df=self.pipe_df))
@@ -251,14 +254,14 @@ class ScoreFactor(Factor):
                  order: object = None, limit: int = None, provider: str = 'eastmoney',
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = 10, transformers: List[Transformer] = [],
+                 fill_method: str = 'ffill', effective_number: int = 10, transformer: Transformer = None,
                  need_persist: bool = True,
                  dry_run: bool = True,
                  scorer: Scorer = None) -> None:
         self.scorer = scorer
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         keep_all_timestamp, fill_method, effective_number, transformers, need_persist,
+                         keep_all_timestamp, fill_method, effective_number, transformer, need_persist,
                          dry_run)
 
     def do_compute(self):

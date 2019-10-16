@@ -155,12 +155,12 @@ class MaStateStas(TechnicalFactor):
         self.short_window = short_window
         self.long_window = long_window
 
-        transformers: List[Transformer] = [MaTransformer(windows=[short_window, long_window])]
+        transformer: Transformer = MaTransformer(windows=[short_window, long_window])
         acc = MaAccumulator(short_window=short_window, long_window=long_window)
 
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         computing_window, keep_all_timestamp, fill_method, effective_number, transformers, acc,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, acc,
                          need_persist, dry_run)
 
 
