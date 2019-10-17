@@ -2,6 +2,7 @@
 import os
 
 import dash_table
+import pandas as pd
 import plotly
 import plotly.graph_objs as go
 
@@ -19,44 +20,60 @@ def get_ui_path(name):
     return os.path.join(context['ui_path'], f'{name}.html')
 
 
+def to_annotations(annotation_df: pd.DataFrame):
+    """
+    annotation_df format:
+                                    value    flag    color
+    entity_id    timestamp
+
+
+    :param annotation_df:
+    :type annotation_df:
+    :return:
+    :rtype:
+    """
+    annotations = []
+
+    if df_is_not_null(annotation_df):
+        for trace_name, df in annotation_df.groupby(level=0):
+            if df_is_not_null(df):
+                for (_, timestamp), item in df.iterrows():
+                    if 'color' in item:
+                        color = item['color']
+                    else:
+                        color = '#ec0000'
+
+                    value = round(item['value'], 2)
+                    annotations.append(dict(
+                        x=timestamp,
+                        y=value,
+                        xref='x',
+                        yref='y',
+                        text=item['flag'],
+                        showarrow=True,
+                        align='center',
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        # arrowcolor='#030813',
+                        ax=-10,
+                        ay=-30,
+                        bordercolor='#c7c7c7',
+                        borderwidth=1,
+                        bgcolor=color,
+                        opacity=0.8
+                    ))
+
+    return annotations
+
+
 class Drawer(object):
-    def __init__(self, data: NormalData = None) -> None:
+    def __init__(self, data: NormalData, annotation_df: pd.DataFrame = None) -> None:
         self.normal_data: NormalData = data
+        self.annotation_df = annotation_df
 
     def get_plotly_annotations(self):
-        annotation_df = self.normal_data.annotation_df
-        annotations = []
-
-        if df_is_not_null(annotation_df):
-            for trace_name, df in annotation_df.groupby(level=0):
-                if df_is_not_null(df):
-                    for (_, timestamp), item in df.iterrows():
-                        if 'color' in item:
-                            color = item['color']
-                        else:
-                            color = '#ec0000'
-
-                        value = round(item['value'], 2)
-                        annotations.append(dict(
-                            x=timestamp,
-                            y=value,
-                            xref='x',
-                            yref='y',
-                            text=item['flag'],
-                            showarrow=True,
-                            align='center',
-                            arrowhead=2,
-                            arrowsize=1,
-                            arrowwidth=2,
-                            # arrowcolor='#030813',
-                            ax=-10,
-                            ay=-30,
-                            bordercolor='#c7c7c7',
-                            borderwidth=1,
-                            bgcolor=color,
-                            opacity=0.8
-                        ))
-        return annotations
+        return to_annotations(self.annotation_df)
 
     def get_plotly_layout(self,
                           width=None,
@@ -119,9 +136,8 @@ class Drawer(object):
             plotly_layout = self.get_plotly_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                                                    **layout_params)
 
-        # TODO:better way to add annotation
         if annotation_df:
-            self.normal_data.annotation_df = annotation_df
+            self.annotation_df = annotation_df
 
         if render == 'html':
             plotly.offline.plot(figure_or_data={'data': plotly_data,
