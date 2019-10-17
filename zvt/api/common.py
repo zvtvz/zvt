@@ -13,9 +13,7 @@ from zvdata.contract import get_db_session
 from zvdata.utils.pd_utils import se_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
-from zvt.domain import ReportPeriod, CompanyType
-from zvt.domain.quote import *
-from zvt.domain.stock_meta import Index, Stock, StockIndex
+from zvt.domain import *
 
 
 def get_kdata_schema(entity_type: str,
@@ -26,6 +24,18 @@ def get_kdata_schema(entity_type: str,
     # kdata schema rule
     # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}Kdata
     schema_str = '{}{}Kdata'.format(entity_type.capitalize(), level.value.capitalize())
+
+    return eval(schema_str)
+
+
+def get_ma_state_stats_schema(entity_type: str,
+                              level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
+    if type(level) == str:
+        level = IntervalLevel(level)
+
+    # ma state stats schema rule
+    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}MaStateStats
+    schema_str = '{}{}MaStateStats'.format(entity_type.capitalize(), level.value.capitalize())
 
     return eval(schema_str)
 

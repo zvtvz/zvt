@@ -8,18 +8,21 @@ from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_entities, Stock
-from zvt.domain.stats.ma_stats import MaStateStats
+from zvt.api.common import get_ma_state_stats_schema
 from zvt.factors.algorithm import MaTransformer
 from zvt.factors.factor import Accumulator, Transformer
-# 均线状态统计
 from zvt.factors.technical_factor import TechnicalFactor
 
 
+# 均线状态统计
 class MaAccumulator(Accumulator):
 
     def __init__(self, short_window, long_window) -> None:
         self.short_window = short_window
         self.long_window = long_window
+
+        self.current_col = 'current_count'
+        self.total_col = 'total_count'
 
     def acc(self, input_df, acc_df) -> pd.DataFrame:
         short_ma_col = 'ma{}'.format(self.short_window)
@@ -34,55 +37,55 @@ class MaAccumulator(Accumulator):
 
         for entity_id, df in input_df.groupby(level=0):
             count = 0
-            area = 0
             current_state = None
             pre_index = None
-            pre_col_total = None
             for index, item in df['score'].iteritems():
                 # ５日线在１０日线之上
                 if item:
-                    col_current = 'up_current_count'
-                    col_area = 'up_current_area'
-                    col_total = 'up_total_count'
                     state = 'up'
                 # ５日线在１０日线之下
                 elif not pd.isna(df[short_ma_col][index]) and not pd.isna(df[long_ma_col][index]):
-                    col_current = 'down_current_count'
-                    col_area = 'down_current_area'
-                    col_total = 'down_total_count'
                     state = 'down'
                 else:
                     continue
 
                 # 计算维持状态的 次数 和相应的 面积
                 if current_state == state:
-                    count = count + 1
-                    area += abs(input_df.loc[index, long_ma_col] - input_df.loc[index, short_ma_col])
-                else:
-                    # change state,set pre state total count
                     if count > 0:
-                        input_df.loc[pre_index, pre_col_total] = count
+                        count = count + 1
+                    else:
+                        count = count - 1
+                else:
+                    # 状态切换，设置前一状态的总和
+                    if count != 0:
+                        input_df.loc[pre_index, self.total_col] = count
                     current_state = state
 
-                    count = 1
+                    if current_state == 'up':
+                        count = 1
+                    else:
+                        count = -1
+
                     # 增量计算，需要累加之前的结果
                     if df_is_not_null(acc_df):
                         if entity_id in acc_df.index.levels[0]:
-                            acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][col_current]
+                            acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][self.current_col]
                             if not pd.isna(acc_col_current):
-                                count = acc_col_current + 1
+                                # up
+                                if acc_col_current > 0 and (current_state == 'up'):
+                                    count = acc_col_current + 1
+                                # down
+                                elif acc_col_current < 0 and (current_state == 'down'):
+                                    count = acc_col_current - 1
+                                else:
+                                    # state has changed
+                                    pre_timestamp = acc_df.loc[(entity_id,), 'timestamp'][-1]
+                                    acc_df.loc[(entity_id, pre_timestamp), self.total_col] = acc_col_current
 
-                    area = abs(input_df.loc[index, long_ma_col] - input_df.loc[index, short_ma_col])
-
-                input_df.loc[index, col_current] = count
-                input_df.loc[index, col_area] = area
+                # 设置目前状态
+                input_df.loc[index, self.current_col] = count
 
                 pre_index = index
-                pre_col_total = col_total
-
-                # 短期均线　长期均线的距离
-                # input_df.loc[index, 'distance'] = abs(input_df.loc[index, short_ma_col] - input_df.loc[
-                #     index, long_ma_col]) / input_df.loc[index, long_ma_col]
 
             print('finish calculating :{}'.format(entity_id))
 
@@ -98,8 +101,6 @@ class MaAccumulator(Accumulator):
 
 
 class MaStateStas(TechnicalFactor):
-    factor_schema = MaStateStats
-
     def __init__(self,
                  entity_ids: List[str] = None,
                  entity_type: str = 'stock',
@@ -126,6 +127,7 @@ class MaStateStas(TechnicalFactor):
                  # added fields
                  short_window: int = 5,
                  long_window: int = 10) -> None:
+        self.factor_schema = get_ma_state_stats_schema(entity_type=entity_type, level=level)
         self.short_window = short_window
         self.long_window = long_window
 
@@ -144,7 +146,7 @@ if __name__ == '__main__':
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
     parser.add_argument('--start', help='start code', default='000001')
-    parser.add_argument('--end', help='end code', default='002000')
+    parser.add_argument('--end', help='end code', default='000005')
 
     args = parser.parse_args()
 

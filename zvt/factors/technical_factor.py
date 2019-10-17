@@ -39,9 +39,9 @@ class TechnicalFactor(Factor):
 
         if not columns:
             if entity_type == 'stock':
-                columns = ['id', 'entity_id', 'timestamp', 'qfq_open', 'qfq_close', 'qfq_high', 'qfq_low']
+                columns = ['id', 'entity_id', 'timestamp', 'level', 'qfq_open', 'qfq_close', 'qfq_high', 'qfq_low']
             else:
-                columns = ['id', 'entity_id', 'timestamp', 'open', 'close', 'high', 'low']
+                columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low']
 
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
