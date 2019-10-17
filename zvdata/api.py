@@ -193,33 +193,36 @@ def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, forc
 
     df = df[cols]
 
-    if force_update:
-        session = get_db_session(provider=provider, data_schema=data_schema)
-        ids = df["id"].tolist()
-        # count = len(ids)
-        # start = 0
-        # while True:
-        #     end = min(count, start + 5000)
-        #     sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids[start:end])}'
-        #     session.execute(sql)
-        #     session.commit()
-        #     if end == count:
-        #         break
-        #     start = end
-        if len(ids) == 1:
-            sql = f'delete from {data_schema.__tablename__} where id = "{ids[0]}"'
-        else:
-            sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
+    size = len(df)
+    sub_size = 5000
 
-        session.execute(sql)
-        session.commit()
-
+    if size >= sub_size:
+        step_size = int(size / sub_size)
+        if size % sub_size:
+            step_size = step_size + 1
     else:
-        current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider, ids=df['id'].tolist())
-        if df_is_not_null(current):
-            df = df[~df['id'].isin(current['id'])]
+        step_size = 1
 
-    df.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
+    for step in range(step_size):
+        df_current = df.iloc[sub_size * step:sub_size * (step + 1)]
+        if force_update:
+            session = get_db_session(provider=provider, data_schema=data_schema)
+            ids = df_current["id"].tolist()
+            if len(ids) == 1:
+                sql = f'delete from {data_schema.__tablename__} where id = "{ids[0]}"'
+            else:
+                sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
+
+            session.execute(sql)
+            session.commit()
+
+        else:
+            current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider,
+                               ids=df_current['id'].tolist())
+            if df_is_not_null(current):
+                df_current = df_current[~df_current['id'].isin(current['id'])]
+
+        df_current.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
 
 
 def init_entities(df, entity_type='stock', provider='exchange'):

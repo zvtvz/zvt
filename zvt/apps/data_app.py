@@ -11,13 +11,13 @@ from dash import dash
 from dash.dependencies import Input, Output, State
 
 from zvdata import IntervalLevel
-from zvt.app import app
-from zvt.drawer.drawer import Drawer
 from zvdata.contract import global_providers, get_schemas, get_schema_by_name, get_schema_columns
-from zvdata.normal_data import NormalData, IntentType
+from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp, TIME_FORMAT_DAY
+from zvt.app import app
+from zvt.drawer.drawer import Drawer
 
 current_df = None
 
@@ -72,15 +72,14 @@ layout = html.Div(
                 html.Div(id='data-table-container', children=None),
 
                 # selected properties
-                html.Label('setting y_axis and chart type for the columns:'),
+                html.Label('setting y_axis for the columns:'),
 
                 # col setting container
                 html.Div(id='col-setting-container', children=dash_table.DataTable(
                     id='col-setting-table',
                     columns=[
                         {'id': 'property', 'name': 'property', 'editable': False},
-                        {'id': 'y_axis', 'name': 'y_axis', 'presentation': 'dropdown'},
-                        {'id': 'chart', 'name': 'chart', 'presentation': 'dropdown'}
+                        {'id': 'y_axis', 'name': 'y_axis', 'presentation': 'dropdown'}
                     ],
 
                     dropdown={
@@ -89,16 +88,10 @@ layout = html.Div(
                                 {'label': i, 'value': i}
                                 for i in ['y1', 'y2', 'y3', 'y4', 'y5']
                             ]
-                        },
-                        'chart': {
-                            'options': [
-                                {'label': chart_type.value, 'value': chart_type.value}
-                                for chart_type in NormalData.get_charts_by_intent(IntentType.compare_self)
-                            ]
                         }
                     },
                     editable=True
-                ), ),
+                )),
 
                 html.Div(id='table-type-label', children=None),
 
