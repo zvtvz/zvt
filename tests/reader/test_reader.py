@@ -42,9 +42,6 @@ def test_china_stock_reader():
         assert ('stock_sz_002572', timestamp) in df.index
         assert ('stock_sz_000338', to_time_str(timestamp)) in df.index
 
-    data_reader.data_drawer().draw_table()
-    data_reader.data_drawer().draw_kline()
-
 
 def test_reader_move_on():
     data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
@@ -58,11 +55,3 @@ def test_reader_move_on():
     start_time = time.time()
     data_reader.move_on(to_timestamp='2019-06-20', timeout=5)
     assert time.time() - start_time < 5
-
-
-def test_reader_draw():
-    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
-                             start_timestamp='2019-01-01',
-                             end_timestamp='2019-06-14')
-    data_reader.data_drawer().draw_table()
-    data_reader.data_drawer().draw_kline()

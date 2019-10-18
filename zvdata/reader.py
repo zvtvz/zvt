@@ -8,10 +8,8 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.api import get_data, get_entity_ids
-from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.drawer.drawer import Drawer
 from zvt.domain import Stock1dKdata
 
 
@@ -270,9 +268,6 @@ class DataReader(object):
     def deregister_data_listener(self, listener):
         if listener in self.data_listeners:
             self.data_listeners.remove(listener)
-
-    def data_drawer(self) -> Drawer:
-        return Drawer(data=NormalData(df=self.data_df))
 
     def empty(self):
         return not df_is_not_null(self.data_df)

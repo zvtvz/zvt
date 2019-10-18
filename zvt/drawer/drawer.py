@@ -140,12 +140,6 @@ class Drawer(object):
             fig.update_layout(plotly_layout)
 
         fig.show()
-        # if render == 'html':
-        #     fig.show(render=render, filename=get_ui_path(file_name))
-        # elif render == 'notebook':
-        #     fig.show(render=render)
-        # else:
-        #     return fig
 
     def draw(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None,
              height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
@@ -350,55 +344,66 @@ class Drawer(object):
                        height=None,
                        title=None,
                        keep_ui_state=True,
-                       property_map=None, **kwargs):
+                       property_map=None,
+                       histnorm='probability',
+                       **kwargs):
         annotations = []
 
         # 每个标的一个子图
         if entity_in_subplot:
+            total_rows = len(self.normal_data.entity_ids)
 
-            fig = make_subplots(
-                rows=len(self.normal_data.entity_ids), cols=1, shared_xaxes=True, vertical_spacing=0.02
-            )
+            fig = make_subplots(rows=total_rows, cols=1, shared_xaxes=True, vertical_spacing=0.02)
+        else:
+            total_rows = 1
+            fig = go.Figure()
 
-            row = 1
-            for entity_id, df in self.normal_data.entity_map_df.items():
-                _, _, code = decode_entity_id(entity_id)
+        row = 1
+        for entity_id, df in self.normal_data.entity_map_df.items():
+            _, _, code = decode_entity_id(entity_id)
 
-                for col in df.columns:
-                    trace_name = '{}_{}'.format(code, col)
-                    x = df[col].tolist()
-                    trace = go.Histogram(
-                        x=x,
-                        name=trace_name,
-                        histnorm='probability',
-                        **kwargs
-                    )
+            traces = []
+            rows = []
+            for col in df.columns:
+                trace_name = '{}_{}'.format(code, col)
+                x = df[col].tolist()
+                trace = go.Histogram(
+                    x=x,
+                    name=trace_name,
+                    histnorm=histnorm,
+                    **kwargs
+                )
 
-                    # if row > 1:
-                    #     yref = f'yaxis{row}',
-                    # else:
-                    yref = 'y'
+                yref = 'y'
 
-                    annotation = dict(
-                        x=x[-1],
-                        y=0,
-                        xref='x',
-                        yref=yref,
-                        text=f'current:{x[-1]}',
-                        showarrow=True,
-                        align='center',
-                        arrowhead=2,
-                        arrowsize=1,
-                        arrowwidth=2,
-                        bordercolor='#c7c7c7',
-                        borderwidth=1,
-                        opacity=0.8
-                    )
-                    fig.append_trace(trace, row=row, col=1)
+                annotation = dict(
+                    x=x[-1],
+                    y=0,
+                    xref='x',
+                    yref=yref,
+                    text=f'current:{x[-1]}',
+                    showarrow=True,
+                    align='center',
+                    arrowhead=2,
+                    arrowsize=1,
+                    arrowwidth=2,
+                    bordercolor='#c7c7c7',
+                    borderwidth=1,
+                    opacity=0.8
+                )
 
-                    annotations.append(annotation)
+                traces.append(trace)
+                rows.append(row)
+                annotations.append(annotation)
 
-                row = row + 1
+            # add the traces for row
+            if total_rows > 0:
+                fig.add_traces(traces, rows=rows, cols=[1] * len(rows))
+            else:
+                fig.add_traces(traces)
+
+            row = row + 1
+
         if keep_ui_state:
             uirevision = True
         else:
@@ -469,10 +474,15 @@ class Drawer(object):
 
 
 if __name__ == '__main__':
-    df = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'],
-                  index=['entity_id', 'timestamp'])
+    df = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'])
 
-    print(df)
+    # print(df)
+    #
+    # drawer = Drawer(data=NormalData(df=df.loc[:, ['total_count', 'current_count']]))
+    # drawer.draw_histogram(entity_in_subplot=True)
 
-    drawer = Drawer(data=NormalData(df=df.loc[:, ['total_count']]))
+    df1 = df.copy()
+    df1['entity_id'] = 'stock_china_stocks'
+
+    drawer = Drawer(data=NormalData(df=df1.loc[:, ['entity_id', 'timestamp', 'total_count', 'current_count']]))
     drawer.draw_histogram(entity_in_subplot=True)
