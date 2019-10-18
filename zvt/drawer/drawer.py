@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
 
-import dash_table
 import pandas as pd
-import plotly
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
-from zvdata.api import decode_entity_id
+from zvdata.api import decode_entity_id, get_data
 from zvdata.contract import context
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
 from zvdata.utils.utils import to_positive_number
+from zvt.domain import Stock1dMaStateStats
 
 
 def get_ui_path(name):
@@ -130,28 +130,22 @@ class Drawer(object):
             )
         return layout
 
-    def show(self, plotly_data, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None,
+    def show(self, fig: go.Figure, plotly_layout=None, render='html', file_name=None, width=None,
              height=None, title=None, keep_ui_state=True, **layout_params):
+
         if plotly_layout is None:
             plotly_layout = self.get_plotly_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                                                    **layout_params)
 
-        if annotation_df:
-            self.annotation_df = annotation_df
+            fig.update_layout(plotly_layout)
 
-        if render == 'html':
-            plotly.offline.plot(figure_or_data={'data': plotly_data,
-                                                'layout': plotly_layout
-                                                }, filename=get_ui_path(file_name))
-
-        elif render == 'notebook':
-            plotly.offline.init_notebook_mode(connected=True)
-            plotly.offline.iplot(figure_or_data={'data': plotly_data,
-                                                 'layout': plotly_layout
-                                                 })
-
-        else:
-            return plotly_data, plotly_layout
+        fig.show()
+        # if render == 'html':
+        #     fig.show(render=render, filename=get_ui_path(file_name))
+        # elif render == 'notebook':
+        #     fig.show(render=render)
+        # else:
+        #     return fig
 
     def draw(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None,
              height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
@@ -346,46 +340,65 @@ class Drawer(object):
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
-    def draw_histogram(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None,
+    def draw_histogram(self,
+                       entity_in_subplot: bool = False,
+                       plotly_layout=None,
+                       annotation_df=None,
+                       render='html',
+                       file_name=None,
+                       width=None,
                        height=None,
-                       title=None, keep_ui_state=True, property_map=None, **kwargs):
-        data = []
+                       title=None,
+                       keep_ui_state=True,
+                       property_map=None, **kwargs):
         annotations = []
-        for entity_id, df in self.normal_data.entity_map_df.items():
-            _, _, code = decode_entity_id(entity_id)
 
-            for col in df.columns:
-                trace_name = '{}_{}'.format(code, col)
-                x = df[col].tolist()
-                trace = go.Histogram(
-                    x=x,
-                    name=trace_name,
-                    histnorm='probability',
-                    **kwargs
-                )
-                annotation = dict(
-                    x=x[-1],
-                    y=0,
-                    xref='x',
-                    yref='y',
-                    text=f'current:{x[-1]}',
-                    showarrow=True,
-                    align='center',
-                    arrowhead=2,
-                    arrowsize=1,
-                    arrowwidth=2,
-                    # arrowcolor='#030813',
-                    # ax=-0.02,
-                    # ay=-0.02,
-                    bordercolor='#c7c7c7',
-                    borderwidth=1,
-                    opacity=0.8
-                )
-                data.append(trace)
-                annotations.append(annotation)
-            # just support one entity
-            break
+        # 每个标的一个子图
+        if entity_in_subplot:
 
+            fig = make_subplots(
+                rows=len(self.normal_data.entity_ids), cols=1, shared_xaxes=True, vertical_spacing=0.02
+            )
+
+            row = 1
+            for entity_id, df in self.normal_data.entity_map_df.items():
+                _, _, code = decode_entity_id(entity_id)
+
+                for col in df.columns:
+                    trace_name = '{}_{}'.format(code, col)
+                    x = df[col].tolist()
+                    trace = go.Histogram(
+                        x=x,
+                        name=trace_name,
+                        histnorm='probability',
+                        **kwargs
+                    )
+
+                    # if row > 1:
+                    #     yref = f'yaxis{row}',
+                    # else:
+                    yref = 'y'
+
+                    annotation = dict(
+                        x=x[-1],
+                        y=0,
+                        xref='x',
+                        yref=yref,
+                        text=f'current:{x[-1]}',
+                        showarrow=True,
+                        align='center',
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        bordercolor='#c7c7c7',
+                        borderwidth=1,
+                        opacity=0.8
+                    )
+                    fig.append_trace(trace, row=row, col=1)
+
+                    annotations.append(annotation)
+
+                row = row + 1
         if keep_ui_state:
             uirevision = True
         else:
@@ -399,7 +412,7 @@ class Drawer(object):
                            annotations=annotations,
                            barmode='overlay')
 
-        return self.show(plotly_data=data, plotly_layout=layout, render=render, file_name=file_name, width=width,
+        return self.show(fig, plotly_layout=layout, render=render, file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
     def draw_kline(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
@@ -454,21 +467,12 @@ class Drawer(object):
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
-    def draw_data_table(self, id=None):
-        cols = self.normal_data.data_df.index.names + self.normal_data.data_df.columns.tolist()
 
-        df = self.normal_data.data_df.reset_index(drop=True)
+if __name__ == '__main__':
+    df = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'],
+                  index=['entity_id', 'timestamp'])
 
-        return dash_table.DataTable(
-            id=id,
-            columns=[{'name': i, 'id': i} for i in cols],
-            data=df.to_dict('records'),
-            filter_action="native",
-            sort_action="native",
-            sort_mode='multi',
-            row_selectable='multi',
-            selected_rows=[],
-            page_action='native',
-            page_current=0,
-            page_size=5,
-        )
+    print(df)
+
+    drawer = Drawer(data=NormalData(df=df.loc[:, ['total_count']]))
+    drawer.draw_histogram(entity_in_subplot=True)
