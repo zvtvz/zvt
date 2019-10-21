@@ -11,66 +11,132 @@ from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
 from zvdata.utils.utils import to_positive_number
-from zvt.domain import Stock1dMaStateStats
-
-
-def get_ui_path(name):
-    if name is None:
-        return os.path.join(context['ui_path'], '{}.html'.format(now_time_str(fmt=TIME_FORMAT_ISO8601)))
-    return os.path.join(context['ui_path'], f'{name}.html')
-
-
-def to_annotations(annotation_df: pd.DataFrame):
-    """
-    annotation_df format:
-                                    value    flag    color
-    entity_id    timestamp
-
-
-    :param annotation_df:
-    :type annotation_df:
-    :return:
-    :rtype:
-    """
-    annotations = []
-
-    if df_is_not_null(annotation_df):
-        for trace_name, df in annotation_df.groupby(level=0):
-            if df_is_not_null(df):
-                for (_, timestamp), item in df.iterrows():
-                    if 'color' in item:
-                        color = item['color']
-                    else:
-                        color = '#ec0000'
-
-                    value = round(item['value'], 2)
-                    annotations.append(dict(
-                        x=timestamp,
-                        y=value,
-                        xref='x',
-                        yref='y',
-                        text=item['flag'],
-                        showarrow=True,
-                        align='center',
-                        arrowhead=2,
-                        arrowsize=1,
-                        arrowwidth=2,
-                        # arrowcolor='#030813',
-                        ax=-10,
-                        ay=-30,
-                        bordercolor='#c7c7c7',
-                        borderwidth=1,
-                        bgcolor=color,
-                        opacity=0.8
-                    ))
-
-    return annotations
+from zvt.domain import Stock1dKdata
 
 
 class Drawer(object):
     def __init__(self, data: NormalData, annotation_df: pd.DataFrame = None) -> None:
         self.normal_data: NormalData = data
         self.annotation_df = annotation_df
+
+    def generate_fig(self, entity_in_subplot: bool):
+        # 每个标的一个子图
+        if entity_in_subplot:
+            total_rows = len(self.normal_data.entity_ids)
+
+            fig = make_subplots(rows=total_rows, cols=1, shared_xaxes=True, vertical_spacing=0.02)
+        else:
+            total_rows = 1
+            fig = go.Figure()
+
+        return fig, total_rows
+
+    def draw_histogram(self,
+                       entity_in_subplot: bool = False,
+                       plotly_layout=None,
+                       annotation_df=None,
+                       render='html',
+                       file_name=None,
+                       width=None,
+                       height=None,
+                       title=None,
+                       keep_ui_state=True,
+                       histnorm='',
+                       **kwargs):
+        """
+
+        :param entity_in_subplot:
+        :type entity_in_subplot: bool
+        :param plotly_layout:
+        :type plotly_layout:
+        :param annotation_df:
+        :type annotation_df:
+        :param render:
+        :type render: str
+        :param file_name:
+        :type file_name:
+        :param width:
+        :type width: int
+        :param height:
+        :type height: int
+        :param title:
+        :type title: str
+        :param keep_ui_state:
+        :type keep_ui_state: bool
+        :param histnorm: enumerated , one of ( "" | "percent" | "probability" | "density" | "probability density" )
+        :type histnorm: str
+        :param kwargs:
+        :type kwargs:
+        """
+        annotations = []
+
+        fig, total_rows = self.generate_fig(entity_in_subplot)
+
+        row = 1
+        for entity_id, df in self.normal_data.entity_map_df.items():
+            _, _, code = decode_entity_id(entity_id)
+
+            traces = []
+            rows = []
+            for col in df.columns:
+                trace_name = '{}_{}'.format(code, col)
+                x = df[col].tolist()
+                trace = go.Histogram(
+                    x=x,
+                    name=trace_name,
+                    histnorm=histnorm,
+                    **kwargs
+                )
+
+                if row > 1:
+                    yref = f'y{row}'
+                else:
+                    yref = 'y'
+
+                annotation = dict(
+                    x=x[-1],
+                    y=0,
+                    xref='x',
+                    yref=yref,
+                    text=f'current:{x[-1]}',
+                    showarrow=True,
+                    align='center',
+                    arrowhead=2,
+                    arrowsize=1,
+                    arrowwidth=2,
+                    bordercolor='#c7c7c7',
+                    borderwidth=1,
+                    opacity=0.8
+                )
+
+                traces.append(trace)
+                rows.append(row)
+                annotations.append(annotation)
+
+            # add the traces for row
+            if total_rows > 0:
+                fig.add_traces(traces, rows=rows, cols=[1] * len(rows))
+            else:
+                fig.add_traces(traces)
+
+            row = row + 1
+
+        if keep_ui_state:
+            uirevision = True
+        else:
+            uirevision = None
+
+        layout = go.Layout(showlegend=True,
+                           uirevision=uirevision,
+                           height=height,
+                           width=width,
+                           title=title,
+                           annotations=annotations,
+                           barmode='overlay')
+
+        fig.update_layout(layout)
+
+        fig.show()
 
     def get_plotly_annotations(self):
         return to_annotations(self.annotation_df)
@@ -99,7 +165,7 @@ class Drawer(object):
                                zeroline=False
                            ),
                            **layout_params)
-        if self.normal_data.is_timeseries and need_range_selector and len(self.normal_data.data_df) > 500:
+        if need_range_selector and len(self.normal_data.data_df) > 500:
             layout.xaxis = dict(
                 domain=[0.2, 0.9],
                 rangeselector=dict(
@@ -129,27 +195,6 @@ class Drawer(object):
                 type='date'
             )
         return layout
-
-    def show(self, fig: go.Figure, plotly_layout=None, render='html', file_name=None, width=None,
-             height=None, title=None, keep_ui_state=True, **layout_params):
-
-        if plotly_layout is None:
-            plotly_layout = self.get_plotly_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                                                   **layout_params)
-
-            fig.update_layout(plotly_layout)
-
-        fig.show()
-
-    def draw(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None,
-             height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
-
-        func_name = f'self.draw_{chart}'
-        draw_func = eval(func_name)
-
-        return draw_func(plotly_layout=plotly_layout, annotation_df=annotation_df, render=render, file_name=file_name,
-                         width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                         property_map=property_map, **kwargs)
 
     def draw_compare(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None,
                      width=None, height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
@@ -253,8 +298,7 @@ class Drawer(object):
         return yaxis, layout, chart
 
     def draw_scatter(self, mode='markers', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                     width=None, height=None,
-                     title=None, keep_ui_state=True, property_map=None, **kwargs):
+                     width=None, height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
         layout_params = {}
         for entity_id, df in self.normal_data.entity_map_df.items():
@@ -334,92 +378,6 @@ class Drawer(object):
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
-    def draw_histogram(self,
-                       entity_in_subplot: bool = False,
-                       plotly_layout=None,
-                       annotation_df=None,
-                       render='html',
-                       file_name=None,
-                       width=None,
-                       height=None,
-                       title=None,
-                       keep_ui_state=True,
-                       property_map=None,
-                       histnorm='probability',
-                       **kwargs):
-        annotations = []
-
-        # 每个标的一个子图
-        if entity_in_subplot:
-            total_rows = len(self.normal_data.entity_ids)
-
-            fig = make_subplots(rows=total_rows, cols=1, shared_xaxes=True, vertical_spacing=0.02)
-        else:
-            total_rows = 1
-            fig = go.Figure()
-
-        row = 1
-        for entity_id, df in self.normal_data.entity_map_df.items():
-            _, _, code = decode_entity_id(entity_id)
-
-            traces = []
-            rows = []
-            for col in df.columns:
-                trace_name = '{}_{}'.format(code, col)
-                x = df[col].tolist()
-                trace = go.Histogram(
-                    x=x,
-                    name=trace_name,
-                    histnorm=histnorm,
-                    **kwargs
-                )
-
-                yref = 'y'
-
-                annotation = dict(
-                    x=x[-1],
-                    y=0,
-                    xref='x',
-                    yref=yref,
-                    text=f'current:{x[-1]}',
-                    showarrow=True,
-                    align='center',
-                    arrowhead=2,
-                    arrowsize=1,
-                    arrowwidth=2,
-                    bordercolor='#c7c7c7',
-                    borderwidth=1,
-                    opacity=0.8
-                )
-
-                traces.append(trace)
-                rows.append(row)
-                annotations.append(annotation)
-
-            # add the traces for row
-            if total_rows > 0:
-                fig.add_traces(traces, rows=rows, cols=[1] * len(rows))
-            else:
-                fig.add_traces(traces)
-
-            row = row + 1
-
-        if keep_ui_state:
-            uirevision = True
-        else:
-            uirevision = None
-
-        layout = go.Layout(showlegend=True,
-                           uirevision=uirevision,
-                           height=height,
-                           width=width,
-                           title=title,
-                           annotations=annotations,
-                           barmode='overlay')
-
-        return self.show(fig, plotly_layout=layout, render=render, file_name=file_name, width=width,
-                         height=height, title=title, keep_ui_state=keep_ui_state)
-
     def draw_kline(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
                    title=None, keep_ui_state=True, indicators=[], property_map=None, **kwargs):
         data = []
@@ -473,16 +431,69 @@ class Drawer(object):
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
 
+def get_ui_path(name):
+    if name is None:
+        return os.path.join(context['ui_path'], '{}.html'.format(now_time_str(fmt=TIME_FORMAT_ISO8601)))
+    return os.path.join(context['ui_path'], f'{name}.html')
+
+
+def to_annotations(annotation_df: pd.DataFrame):
+    """
+    annotation_df format:
+                                    value    flag    color
+    entity_id    timestamp
+
+
+    :param annotation_df:
+    :type annotation_df:
+    :return:
+    :rtype:
+    """
+    annotations = []
+
+    if df_is_not_null(annotation_df):
+        for trace_name, df in annotation_df.groupby(level=0):
+            if df_is_not_null(df):
+                for (_, timestamp), item in df.iterrows():
+                    if 'color' in item:
+                        color = item['color']
+                    else:
+                        color = '#ec0000'
+
+                    value = round(item['value'], 2)
+                    annotations.append(dict(
+                        x=timestamp,
+                        y=value,
+                        xref='x',
+                        yref='y',
+                        text=item['flag'],
+                        showarrow=True,
+                        align='center',
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        # arrowcolor='#030813',
+                        ax=-10,
+                        ay=-30,
+                        bordercolor='#c7c7c7',
+                        borderwidth=1,
+                        bgcolor=color,
+                        opacity=0.8
+                    ))
+
+    return annotations
+
+
 if __name__ == '__main__':
-    df = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'])
+    df = get_data(data_schema=Stock1dKdata, provider='joinquant', entity_ids=['stock_sz_000001', 'stock_sz_000002'])
 
     # print(df)
     #
-    # drawer = Drawer(data=NormalData(df=df.loc[:, ['total_count', 'current_count']]))
-    # drawer.draw_histogram(entity_in_subplot=True)
-
-    df1 = df.copy()
-    df1['entity_id'] = 'stock_china_stocks'
-
-    drawer = Drawer(data=NormalData(df=df1.loc[:, ['entity_id', 'timestamp', 'total_count', 'current_count']]))
+    drawer = Drawer(data=NormalData(df=df.loc[:, ['close']]))
     drawer.draw_histogram(entity_in_subplot=True)
+
+    # df1 = df.copy()
+    # df1['entity_id'] = 'stock_china_stocks'
+    #
+    # drawer = Drawer(data=NormalData(df=df1.loc[:, ['entity_id', 'timestamp', 'total_count', 'current_count']]))
+    # drawer.draw_histogram(entity_in_subplot=True)

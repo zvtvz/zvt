@@ -25,7 +25,7 @@ def get_dragon_and_tiger(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=DragonAndTiger, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -50,7 +50,7 @@ def get_rights_issue_detail(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=RightsIssueDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -75,7 +75,7 @@ def get_top_ten_holder(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=TopTenHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -100,7 +100,7 @@ def get_stock_summary(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=StockSummary, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -125,7 +125,7 @@ def get_index_money_flow(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=IndexMoneyFlow, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -150,7 +150,7 @@ def get_holder_trading(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=HolderTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -175,7 +175,7 @@ def get_cash_flow_statement(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=CashFlowStatement, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -200,7 +200,7 @@ def get_stock(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=Stock, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -225,7 +225,7 @@ def get_income_statement(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=IncomeStatement, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -250,7 +250,7 @@ def get_index(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=Index, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -275,7 +275,7 @@ def get_finance_factor(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=FinanceFactor, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -300,7 +300,7 @@ def get_balance_sheet(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=BalanceSheet, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -325,7 +325,7 @@ def get_top_ten_tradable_holder(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=TopTenTradableHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -350,7 +350,7 @@ def get_dividend_detail(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=DividendDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -375,7 +375,7 @@ def get_margin_trading(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=MarginTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -400,7 +400,7 @@ def get_institutional_investor_holder(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=InstitutionalInvestorHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -425,7 +425,7 @@ def get_dividend_financing(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=DividendFinancing, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -450,7 +450,7 @@ def get_stock_money_flow(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=StockMoneyFlow, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -475,7 +475,7 @@ def get_manager_trading(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=ManagerTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -500,7 +500,7 @@ def get_spo_detail(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=SpoDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
@@ -525,7 +525,7 @@ def get_big_deal_trading(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: str = None,
         time_field: str = 'timestamp'):
     return get_data(data_schema=BigDealTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
                     provider=provider,
