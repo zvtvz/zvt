@@ -11,18 +11,22 @@ from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import df_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
 from zvdata.utils.utils import to_positive_number
-from zvt.domain import Stock1dKdata
+from zvt.domain import Stock1dKdata, Stock1dMaStateStats
 
 
 class Drawer(object):
-    def __init__(self, data: NormalData, annotation_df: pd.DataFrame = None) -> None:
-        self.normal_data: NormalData = data
+    def __init__(self, data: NormalData, sub_data: NormalData = None, annotation_df: pd.DataFrame = None) -> None:
+        # 主图数据
+        self.main_data: NormalData = data
+        # 副图数据
+        self.sub_data: NormalData = sub_data
+        # 主图的标记数据
         self.annotation_df = annotation_df
 
     def generate_fig(self, entity_in_subplot: bool):
         # 每个标的一个子图
         if entity_in_subplot:
-            total_rows = len(self.normal_data.entity_ids)
+            total_rows = len(self.main_data.entity_ids)
 
             fig = make_subplots(rows=total_rows, cols=1, shared_xaxes=True, vertical_spacing=0.02)
         else:
@@ -34,7 +38,6 @@ class Drawer(object):
     def draw_histogram(self,
                        entity_in_subplot: bool = False,
                        plotly_layout=None,
-                       annotation_df=None,
                        render='html',
                        file_name=None,
                        width=None,
@@ -49,8 +52,6 @@ class Drawer(object):
         :type entity_in_subplot: bool
         :param plotly_layout:
         :type plotly_layout:
-        :param annotation_df:
-        :type annotation_df:
         :param render:
         :type render: str
         :param file_name:
@@ -73,7 +74,7 @@ class Drawer(object):
         fig, total_rows = self.generate_fig(entity_in_subplot)
 
         row = 1
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             _, _, code = decode_entity_id(entity_id)
 
             traces = []
@@ -114,12 +115,11 @@ class Drawer(object):
                 annotations.append(annotation)
 
             # add the traces for row
-            if total_rows > 0:
+            if entity_in_subplot and (total_rows > 1):
                 fig.add_traces(traces, rows=rows, cols=[1] * len(rows))
+                row = row + 1
             else:
                 fig.add_traces(traces)
-
-            row = row + 1
 
         if keep_ui_state:
             uirevision = True
@@ -138,69 +138,70 @@ class Drawer(object):
 
         fig.show()
 
-    def get_plotly_annotations(self):
-        return to_annotations(self.annotation_df)
+    def draw_kline(self,
+                   plotly_layout=None,
+                   render='html',
+                   file_name=None,
+                   width=None,
+                   height=None,
+                   title=None,
+                   keep_ui_state=True,
+                   **kwargs):
 
-    def get_plotly_layout(self,
-                          width=None,
-                          height=None,
-                          title=None,
-                          keep_ui_state=True,
-                          need_range_selector=True,
-                          **layout_params):
-        if keep_ui_state:
-            uirevision = True
+        if self.sub_data is not None and not self.sub_data.empty():
+            subplot = True
+            fig = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], shared_xaxes=True)
         else:
-            uirevision = None
+            subplot = False
+            fig = go.Figure()
 
-        layout = go.Layout(showlegend=True,
-                           uirevision=uirevision,
-                           height=height,
-                           width=width,
-                           title=title,
-                           annotations=self.get_plotly_annotations(),
-                           yaxis=dict(
-                               autorange=True,
-                               fixedrange=False,
-                               zeroline=False
-                           ),
-                           **layout_params)
-        if need_range_selector and len(self.normal_data.data_df) > 500:
-            layout.xaxis = dict(
-                domain=[0.2, 0.9],
-                rangeselector=dict(
-                    buttons=list([
-                        dict(count=1,
-                             label='1m',
-                             step='month',
-                             stepmode='backward'),
-                        dict(count=6,
-                             label='6m',
-                             step='month',
-                             stepmode='backward'),
-                        dict(count=1,
-                             label='YTD',
-                             step='year',
-                             stepmode='todate'),
-                        dict(count=1,
-                             label='1y',
-                             step='year',
-                             stepmode='backward'),
-                        dict(step='all')
-                    ])
-                ),
-                rangeslider=dict(
-                    visible=True
-                ),
-                type='date'
-            )
-        return layout
+        traces = []
+        sub_traces = []
+
+        for entity_id, df in self.main_data.entity_map_df.items():
+            entity_type, _, code = decode_entity_id(entity_id)
+
+            trace_name = '{}_kdata'.format(code)
+
+            if entity_type == 'stock':
+                open = df.loc[:, 'qfq_open']
+                close = df.loc[:, 'qfq_close']
+                high = df.loc[:, 'qfq_high']
+                low = df.loc[:, 'qfq_low']
+            else:
+                open = df.loc[:, 'open']
+                close = df.loc[:, 'close']
+                high = df.loc[:, 'high']
+                low = df.loc[:, 'low']
+
+            traces.append(
+                go.Candlestick(x=df.index, open=open, close=close, low=low, high=high, name=trace_name, **kwargs))
+
+            if subplot:
+                # 绘制幅图
+                sub_df = self.sub_data.entity_map_df.get(entity_id)
+                if df_is_not_null(sub_df):
+                    for col in sub_df.columns:
+                        trace_name = '{}_{}'.format(code, col)
+                        ydata = sub_df[col].values.tolist()
+                        sub_traces.append(go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2'))
+
+        if subplot:
+            fig.add_traces(traces, rows=[1] * len(traces), cols=[1] * len(traces))
+            fig.add_traces(sub_traces, rows=[2] * len(sub_traces), cols=[1] * len(sub_traces))
+        else:
+            fig.add_traces(traces)
+
+        fig.update_layout(self.get_plotly_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state,
+                                                 subplot=subplot))
+
+        fig.show()
 
     def draw_compare(self, chart: str, plotly_layout=None, annotation_df=None, render='html', file_name=None,
                      width=None, height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
         layout_params = {}
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             _, _, code = decode_entity_id(entity_id)
             for col in df.columns:
                 trace_name = '{}_{}'.format(code, col)
@@ -301,7 +302,7 @@ class Drawer(object):
                      width=None, height=None, title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
         layout_params = {}
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             _, _, code = decode_entity_id(entity_id)
             for col in df.columns:
                 trace_name = '{}_{}'.format(code, col)
@@ -323,7 +324,7 @@ class Drawer(object):
                  title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
         layout_params = {}
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             _, _, code = decode_entity_id(entity_id)
             for col in df.columns:
                 trace_name = '{}_{}'.format(code, col)
@@ -343,7 +344,7 @@ class Drawer(object):
     def draw_pie(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
                  title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             for _, row in df.iterrows():
                 row = row.apply(lambda x: to_positive_number(x))
                 data.append(go.Pie(name=entity_id, labels=df.columns.tolist(), values=row.tolist(), **kwargs))
@@ -358,7 +359,7 @@ class Drawer(object):
     def draw_polar(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
                    title=None, keep_ui_state=True, property_map=None, **kwargs):
         data = []
-        for entity_id, df in self.normal_data.entity_map_df.items():
+        for entity_id, df in self.main_data.entity_map_df.items():
             for _, row in df.iterrows():
                 row = row.apply(lambda x: to_positive_number(x))
 
@@ -378,50 +379,17 @@ class Drawer(object):
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
 
-    def draw_kline(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
-                   title=None, keep_ui_state=True, indicators=[], property_map=None, **kwargs):
-        data = []
-        for entity_id, df in self.normal_data.entity_map_df.items():
-            entity_type, _, code = decode_entity_id(entity_id)
-
-            trace_name = '{}_kdata'.format(code)
-
-            if entity_type == 'stock':
-                open = df.loc[:, 'qfq_open']
-                close = df.loc[:, 'qfq_close']
-                high = df.loc[:, 'qfq_high']
-                low = df.loc[:, 'qfq_low']
-            else:
-                open = df.loc[:, 'open']
-                close = df.loc[:, 'close']
-                high = df.loc[:, 'high']
-                low = df.loc[:, 'low']
-
-            data.append(
-                go.Candlestick(x=df.index, open=open, close=close, low=low, high=high, name=trace_name, **kwargs))
-
-            # append indicators
-            for indicator in indicators:
-                if indicator in df.columns:
-                    trace_name = '{}_{}'.format(code, indicator)
-                    ydata = df.loc[:, indicator].values.tolist()
-                    data.append(go.Scatter(x=df.index, y=ydata, mode='lines', name=trace_name))
-
-        return self.show(plotly_data=data, plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
-                         file_name=file_name, width=width,
-                         height=height, title=title, keep_ui_state=keep_ui_state)
-
     def draw_table(self, plotly_layout=None, annotation_df=None, render='html', file_name=None, width=None, height=None,
                    title=None, keep_ui_state=True, property_map=None, **kwargs):
-        cols = self.normal_data.data_df.index.names + self.normal_data.data_df.columns.tolist()
+        cols = self.main_data.data_df.index.names + self.main_data.data_df.columns.tolist()
 
-        index1 = self.normal_data.data_df.index.get_level_values(0).tolist()
-        index2 = self.normal_data.data_df.index.get_level_values(1).tolist()
-        values = [index1] + [index2] + [self.normal_data.data_df[col] for col in self.normal_data.data_df.columns]
+        index1 = self.main_data.data_df.index.get_level_values(0).tolist()
+        index2 = self.main_data.data_df.index.get_level_values(1).tolist()
+        values = [index1] + [index2] + [self.main_data.data_df[col] for col in self.main_data.data_df.columns]
 
         data = go.Table(
             header=dict(values=cols,
-                        fill_color=['#000080', '#000080'] + ['#0066cc'] * len(self.normal_data.data_df.columns),
+                        fill_color=['#000080', '#000080'] + ['#0066cc'] * len(self.main_data.data_df.columns),
                         align='left',
                         font=dict(color='white', size=13)),
             cells=dict(values=values, fill=dict(color='#F5F8FF'), align='left'), **kwargs)
@@ -429,6 +397,72 @@ class Drawer(object):
         return self.show(plotly_data=[data], plotly_layout=plotly_layout, annotation_df=annotation_df, render=render,
                          file_name=file_name, width=width,
                          height=height, title=title, keep_ui_state=keep_ui_state)
+
+    def get_plotly_annotations(self):
+        return to_annotations(self.annotation_df)
+
+    def get_plotly_layout(self,
+                          width=None,
+                          height=None,
+                          title=None,
+                          keep_ui_state=True,
+                          subplot=False,
+                          need_range_selector=True,
+                          **layout_params):
+        if keep_ui_state:
+            uirevision = True
+        else:
+            uirevision = None
+
+        layout = go.Layout(showlegend=True,
+                           uirevision=uirevision,
+                           height=height,
+                           width=width,
+                           title=title,
+                           annotations=self.get_plotly_annotations(),
+                           yaxis=dict(
+                               autorange=True,
+                               fixedrange=False,
+                               zeroline=False
+                           ),
+                           **layout_params)
+
+        if subplot:
+            layout.yaxis2 = dict(autorange=True,
+                                 fixedrange=False,
+                                 zeroline=False)
+
+        if need_range_selector and len(self.main_data.data_df) > 500:
+            range_dict = dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label='1m',
+                             step='month',
+                             stepmode='backward'),
+                        dict(count=6,
+                             label='6m',
+                             step='month',
+                             stepmode='backward'),
+                        dict(count=1,
+                             label='YTD',
+                             step='year',
+                             stepmode='todate'),
+                        dict(count=1,
+                             label='1y',
+                             step='year',
+                             stepmode='backward'),
+                        dict(step='all')
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=False
+                ),
+                type='date'
+            )
+
+            layout.xaxis = range_dict
+        return layout
 
 
 def get_ui_path(name):
@@ -486,11 +520,15 @@ def to_annotations(annotation_df: pd.DataFrame):
 
 if __name__ == '__main__':
     df = get_data(data_schema=Stock1dKdata, provider='joinquant', entity_ids=['stock_sz_000001', 'stock_sz_000002'])
+    df1 = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'],
+                   columns=['total_count'])
 
     # print(df)
     #
-    drawer = Drawer(data=NormalData(df=df.loc[:, ['close']]))
-    drawer.draw_histogram(entity_in_subplot=True)
+    # drawer = Drawer(data=NormalData(df=df.loc[:, ['close']]))
+    # drawer.draw_histogram(entity_in_subplot=True)
+    drawer = Drawer(data=NormalData(df), sub_data=NormalData(df1[['total_count']]))
+    drawer.draw_kline()
 
     # df1 = df.copy()
     # df1['entity_id'] = 'stock_china_stocks'
