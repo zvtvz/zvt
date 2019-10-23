@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import numbers
-import os
 from decimal import *
 from enum import Enum
-from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
@@ -112,39 +110,6 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_fun
                 result_value = the_func(to_value)
                 setattr(the_domain, k, result_value)
                 exec('the_domain.{}=result_value'.format(k))
-
-
-def init_process_log(file_name, log_dir=None):
-    if not log_dir:
-        from zvdata.contract import zvdata_env
-        log_dir = zvdata_env['log_path']
-
-    root_logger = logging.getLogger()
-
-    # reset the handlers
-    root_logger.handlers = []
-
-    root_logger.setLevel(logging.INFO)
-
-    if log_dir:
-        file_name = os.path.join(log_dir, file_name)
-
-    fh = RotatingFileHandler(file_name, maxBytes=524288000, backupCount=10)
-
-    fh.setLevel(logging.INFO)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(levelname)s  %(threadName)s  %(asctime)s  %(name)s:%(lineno)s  %(funcName)s  %(message)s")
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-
-    # add the handlers to the logger
-    root_logger.addHandler(fh)
-    root_logger.addHandler(ch)
 
 
 SUPPORT_ENCODINGS = ['GB2312', 'GBK', 'GB18030', 'UTF-8']

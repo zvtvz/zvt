@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt.recorders.eastmoney.holder.top_ten_holder_recorder import TopTenHolderRecorder
 from zvt.recorders.eastmoney.holder.top_ten_tradable_holder_recorder import TopTenTradableHolderRecorder
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_holder.log')
+    init_log('eastmoney_holder.log')
 
     run()
 

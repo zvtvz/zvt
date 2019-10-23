@@ -5,7 +5,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata import IntervalLevel
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.recorders.eastmoney.quotes.china_stock_kdata_recorder import ChinaStockKdataRecorder
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_quote.log')
+    init_log('eastmoney_quote.log')
 
     run()
 

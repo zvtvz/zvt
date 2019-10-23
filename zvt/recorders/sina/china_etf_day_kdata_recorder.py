@@ -7,7 +7,7 @@ import requests
 from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_time_str
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.api.common import generate_kdata_id
 from zvt.api.quote import get_kdata
 from zvt.domain import Index, Index1dKdata
@@ -122,5 +122,5 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    init_process_log('sina_china_etf_day_kdata.log')
+    init_log('sina_china_etf_day_kdata.log')
     ChinaETFDayKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()

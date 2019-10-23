@@ -5,7 +5,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.recorders.common.china_stock_list_spider import ChinaStockListSpider
 from zvt.recorders.eastmoney.meta.china_stock_category_recorder import ChinaStockCategoryRecorder
 from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import ChinaStockMetaRecorder
@@ -31,7 +31,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_china_stock_meta.log')
+    init_log('eastmoney_china_stock_meta.log')
 
     run()
 

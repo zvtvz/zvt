@@ -5,7 +5,7 @@ from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.time_utils import to_time_str
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.domain import Coin
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     if type(codes) != list:
         codes = [codes]
 
-    init_process_log(
+    init_log(
         'coin_{}_{}_{}_kdata.log'.format('-'.join(exchanges), '-'.join(codes).replace('/', ''), args.level))
 
     CoinKdataRecorder(exchanges=exchanges, codes=codes, level=level, real_time=True).run()

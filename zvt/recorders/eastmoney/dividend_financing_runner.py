@@ -9,7 +9,7 @@ from zvt.recorders.eastmoney.dividend_financing.dividend_detail_recorder import 
 from zvt.recorders.eastmoney.dividend_financing.dividend_financing_recorder import DividendFinancingRecorder
 from zvt.recorders.eastmoney.dividend_financing.rights_issue_detail_recorder import RightsIssueDetailRecorder
 from zvt.recorders.eastmoney.dividend_financing.spo_detail_recorder import SPODetailRecorder
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_dividend_financing.log')
+    init_log('eastmoney_dividend_financing.log')
 
     run()
 

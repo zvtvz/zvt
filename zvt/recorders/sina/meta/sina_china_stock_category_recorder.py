@@ -86,7 +86,7 @@ class SinaChinaStockCategoryRecorder(Recorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('sina_china_stock_category.log')
+    # init_log('sina_china_stock_category.log')
 
     recorder = SinaChinaStockCategoryRecorder()
     recorder.run()

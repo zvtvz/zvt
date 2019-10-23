@@ -210,6 +210,6 @@ class ChinaStockCashFlowRecorder(BaseChinaStockFinanceRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('cash_flow.log')
+    # init_log('cash_flow.log')
     recorder = ChinaStockCashFlowRecorder(codes=['002572'])
     recorder.run()

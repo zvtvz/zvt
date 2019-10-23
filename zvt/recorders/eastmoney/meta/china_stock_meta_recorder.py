@@ -79,7 +79,7 @@ class ChinaStockMetaRecorder(Recorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('china_stock_meta.log')
+    # init_log('china_stock_meta.log')
 
     recorder = ChinaStockMetaRecorder()
     recorder.run()

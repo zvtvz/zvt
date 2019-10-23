@@ -154,6 +154,6 @@ class ChinaStockFinanceFactorRecorder(BaseChinaStockFinanceRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('finance_factor.log')
+    # init_log('finance_factor.log')
     recorder = ChinaStockFinanceFactorRecorder(codes=['000001'])
     recorder.run()

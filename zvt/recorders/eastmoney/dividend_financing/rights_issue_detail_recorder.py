@@ -49,7 +49,7 @@ class RightsIssueDetailRecorder(EastmoneyPageabeDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('rights_issue.log')
+    # init_log('rights_issue.log')
 
     recorder = RightsIssueDetailRecorder(codes=SAMPLE_STOCK_CODES)
     recorder.run()

@@ -4,7 +4,7 @@ import argparse
 from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema, generate_kdata_id
 from zvt.domain import Coin
@@ -88,6 +88,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    init_process_log('coin_tick_kdata.log')
+    init_log('coin_tick_kdata.log')
 
     CoinKdataRecorder(codes=['EOS/USDT']).run()

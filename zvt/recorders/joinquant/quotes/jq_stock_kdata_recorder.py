@@ -10,7 +10,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2, \
     TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock
@@ -174,5 +174,5 @@ if __name__ == '__main__':
     level = IntervalLevel(args.level)
     codes = args.codes
 
-    init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
+    init_log('jq_china_stock_{}_kdata.log'.format(args.level))
     JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()

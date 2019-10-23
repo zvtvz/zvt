@@ -34,7 +34,7 @@ class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('manager_trading.log')
+    # init_log('manager_trading.log')
 
     recorder = ManagerTradingRecorder(codes=['002572'])
     recorder.run()

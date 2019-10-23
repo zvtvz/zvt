@@ -46,7 +46,7 @@ class SPODetailRecorder(EastmoneyPageabeDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('spo_detail.log')
+    # init_log('spo_detail.log')
 
     recorder = SPODetailRecorder(codes=['000999'])
     recorder.run()

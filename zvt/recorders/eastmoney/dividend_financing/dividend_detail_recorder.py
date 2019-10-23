@@ -29,7 +29,7 @@ class DividendDetailRecorder(EastmoneyPageabeDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('dividend_detail.log')
+    # init_log('dividend_detail.log')
 
     recorder = DividendDetailRecorder(codes=['000999'])
     recorder.run()
