@@ -2,7 +2,7 @@
 from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
 from zvdata.api import get_data
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvt.api.api import get_finance_factor
 from zvt.api.common import to_jq_report_period
 from zvt.domain import FinanceFactor
@@ -138,7 +138,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                                                   FinanceFactor.report_date >= the_data_list[0].report_date,
                                                   FinanceFactor.report_date <= the_data_list[-1].report_date, ])
 
-                if df_is_not_null(df):
+                if pd_is_not_null(df):
                     index_df(df, index='report_date')
 
                 for the_data in the_data_list:

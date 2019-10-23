@@ -10,7 +10,7 @@ from zvdata import IntervalLevel
 from zvdata.api import get_data, df_to_db
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvt.drawer.drawer import Drawer
 from zvt.sedes import Jsonable
 
@@ -106,7 +106,7 @@ class Factor(DataReader, DataListener, Jsonable):
                                           start_timestamp=self.start_timestamp,
                                           index=[self.category_field, self.time_field])
 
-        if df_is_not_null(self.factor_df):
+        if pd_is_not_null(self.factor_df):
             dfs = []
             for entity_id, df in self.data_df.groupby(level=0):
                 if entity_id in self.factor_df.index.levels[0]:
@@ -118,16 +118,16 @@ class Factor(DataReader, DataListener, Jsonable):
         self.register_data_listener(self)
 
     def pre_compute(self):
-        if df_is_not_null(self.pipe_df):
+        if pd_is_not_null(self.pipe_df):
             self.pipe_df = self.data_df
 
     def do_compute(self):
         # 无状态的转换运算
-        if df_is_not_null(self.data_df) and self.transformer:
+        if pd_is_not_null(self.data_df) and self.transformer:
             self.pipe_df = self.transformer.transform(self.data_df)
 
         # 有状态的累加运算
-        if df_is_not_null(self.pipe_df) and self.accumulator:
+        if pd_is_not_null(self.pipe_df) and self.accumulator:
             self.factor_df = self.accumulator.acc(self.pipe_df, self.factor_df)
         else:
             self.factor_df = self.pipe_df
@@ -267,7 +267,7 @@ class ScoreFactor(Factor):
     def do_compute(self):
         super().do_compute()
 
-        if df_is_not_null(self.pipe_df) and self.scorer:
+        if pd_is_not_null(self.pipe_df) and self.scorer:
             self.result_df = self.scorer.score(self.data_df)
 
 

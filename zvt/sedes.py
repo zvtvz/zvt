@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql.elements import BinaryExpression
 
-from zvdata.contract import context, table_name_to_domain_name
+from zvdata.contract import zvdata_env, table_name_to_domain_name
 from zvdata.utils.time_utils import to_time_str
 
 
@@ -25,7 +25,7 @@ class CustomJsonEncoder(json.JSONEncoder):
             if expression == '=':
                 expression = '=='
 
-            exec(f'from {context["domain_module"]} import {domain_name}')
+            exec(f'from {zvdata_env["domain_module"]} import {domain_name}')
 
             if isinstance(value, str):
                 filter_str = '{}.{} {} "{}"'.format(domain_name, col, expression, value)
@@ -54,7 +54,7 @@ class CustomJsonDecoder(json.JSONDecoder):
             left, _, _ = filter_str.split()
             domain_name, col = left.split('.')
 
-            exec(f'from {context["domain_module"]} import {domain_name}')
+            exec(f'from {zvdata_env["domain_module"]} import {domain_name}')
             return eval(filter_str)
 
         return obj

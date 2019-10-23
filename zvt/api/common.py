@@ -10,7 +10,7 @@ from sqlalchemy import exists, and_
 from zvdata import IntervalLevel
 from zvdata.api import decode_entity_id
 from zvdata.contract import get_db_session
-from zvdata.utils.pd_utils import se_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt.domain import *
@@ -192,11 +192,11 @@ def to_jq_report_period(timestamp):
 
 def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
     def to_close(s):
-        if se_is_not_null(s):
+        if pd_is_not_null(s):
             return s[-1]
 
     def to_open(s):
-        if se_is_not_null(s):
+        if pd_is_not_null(s):
             return s[0]
 
     def to_high(s):

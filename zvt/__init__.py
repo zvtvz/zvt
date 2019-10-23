@@ -7,13 +7,13 @@ from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_
 
 
 def init_log():
-    if not os.path.exists(LOG_PATH):
-        os.makedirs(LOG_PATH)
+    if not os.path.exists(zvt_env['log_path']):
+        os.makedirs(zvt_env['log_path'])
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
-    fh = logging.FileHandler(os.path.join(LOG_PATH, 'zvt.log'))
+    fh = logging.FileHandler(os.path.join(zvt_env['log_path'], 'zvt.log'))
     fh.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
@@ -36,15 +36,36 @@ def init_log():
 pd.set_option('expand_frame_repr', False)
 pd.set_option('mode.chained_assignment', 'raise')
 
-init_log()
+zvt_env = {}
+
+
+def init_env(data_path):
+    init_data_env(data_path=data_path, domain_module='zvt.domain')
+
+    zvt_env['data_path'] = data_path
+    zvt_env['domain_module'] = 'zvt.domain'
+
+    # path for storing ui results
+    zvt_env['ui_path'] = os.path.join(data_path, 'ui')
+    if not os.path.exists(zvt_env['ui_path']):
+        os.makedirs(zvt_env['ui_path'])
+
+    # path for storing logs
+    zvt_env['log_path'] = os.path.join(data_path, 'log_path')
+    if not os.path.exists(zvt_env['log_path']):
+        os.makedirs(zvt_env['log_path'])
+
+    init_log()
+
+    from zvt.domain import init_schema
+
+    init_schema()
+
 
 if os.getenv('TESTING_ZVT'):
-    init_context(data_path=DATA_SAMPLE_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain',
-                 register_api=False)
+    init_env(data_path=DATA_SAMPLE_PATH)
 else:
-    init_context(data_path=DATA_PATH, ui_path=UI_PATH, log_path=LOG_PATH, domain_module='zvt.domain',
-                 register_api=False)
+    init_env(data_path=DATA_PATH)
 
-from zvt.domain import init_schema
-
-init_schema()
+    if not zvt_env.get('data_path'):
+        print('please use init_env to set zvt data path at first')

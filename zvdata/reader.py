@@ -8,9 +8,8 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.api import get_data, get_entity_ids
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.domain import Stock1dKdata
 
 
 class DataListener(object):
@@ -143,7 +142,7 @@ class DataReader(object):
                           order=data_schema.timestamp.desc(),
                           entity_id=entity_id,
                           limit=self.computing_window)
-            if df_is_not_null(df):
+            if pd_is_not_null(df):
                 dfs.append(df)
         if dfs:
             window_df = pd.concat(dfs)
@@ -193,7 +192,7 @@ class DataReader(object):
         :return:
         :rtype:
         """
-        if not df_is_not_null(self.data_df):
+        if not pd_is_not_null(self.data_df):
             self.load_data()
             return
 
@@ -223,7 +222,7 @@ class DataReader(object):
                                     end_timestamp=to_timestamp, filters=filters, level=self.level,
                                     index=[self.category_field, self.time_field])
 
-                if df_is_not_null(added_df):
+                if pd_is_not_null(added_df):
                     self.logger.info('entity_id:{},added:\n{}'.format(entity_id, added_df))
 
                     for listener in self.data_listeners:
@@ -262,7 +261,7 @@ class DataReader(object):
             self.data_listeners.append(listener)
 
         # notify it once after registered
-        if df_is_not_null(self.data_df):
+        if pd_is_not_null(self.data_df):
             listener.on_data_loaded(self.data_df)
 
     def deregister_data_listener(self, listener):
@@ -270,10 +269,12 @@ class DataReader(object):
             self.data_listeners.remove(listener)
 
     def empty(self):
-        return not df_is_not_null(self.data_df)
+        return not pd_is_not_null(self.data_df)
 
 
 if __name__ == '__main__':
+    from zvt.domain import Stock1dKdata
+
     data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
                              start_timestamp='2017-01-01',
                              end_timestamp='2019-06-10')

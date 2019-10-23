@@ -5,7 +5,7 @@ from zvt.domain import RightsIssueDetail, DividendFinancing
 
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
 from zvt.settings import SAMPLE_STOCK_CODES
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 
 
@@ -41,7 +41,7 @@ class RightsIssueDetailRecorder(EastmoneyPageabeDataRecorder):
                                                   RightsIssueDetail.rights_raising_fund],
                                          start_timestamp=item.timestamp,
                                          end_timestamp="{}-12-31".format(item.timestamp.year))
-            if df_is_not_null(df):
+            if pd_is_not_null(df):
                 item.rights_raising_fund = df['rights_raising_fund'].sum()
                 self.session.commit()
 

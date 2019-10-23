@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from zvdata.utils.pd_utils import df_is_not_null, fill_with_same_index, normal_index_df
+from zvdata.utils.pd_utils import pd_is_not_null, fill_with_same_index, normal_index_df, is_normal_df
 
 
 class NormalData(object):
@@ -26,15 +26,6 @@ class NormalData(object):
 
         self.normalize()
 
-    def is_normalized(self):
-        if df_is_not_null(self.data_df):
-            names = self.data_df.index.names
-
-            if len(names) == 2 and names[0] == self.category_field and names[1] == self.index_field:
-                return True
-
-        return False
-
     def normalize(self):
         """
         normalize data_df to
@@ -42,8 +33,8 @@ class NormalData(object):
         entity_id    index_field
 
         """
-        if df_is_not_null(self.data_df):
-            if not self.is_normalized():
+        if pd_is_not_null(self.data_df):
+            if not is_normal_df(self.data_df):
                 self.data_df = normal_index_df(self.data_df)
 
             self.entity_ids = self.data_df.index.levels[0].to_list()
@@ -57,4 +48,4 @@ class NormalData(object):
                 self.df_list = fill_with_same_index(df_list=self.df_list)
 
     def empty(self):
-        return not df_is_not_null(self.data_df)
+        return not pd_is_not_null(self.data_df)

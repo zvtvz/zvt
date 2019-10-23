@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
 
-def df_is_not_null(df: pd.DataFrame):
-    return df is not None and isinstance(df, pd.DataFrame) and not df.empty
-
-
-def se_is_not_null(se: pd.Series):
-    return se is not None and isinstance(se, pd.Series) and not se.empty
+def pd_is_not_null(df: Union[pd.DataFrame, pd.Series]):
+    return df is not None and not df.empty
 
 
 def index_df(df, index='timestamp', inplace=True, drop=True, time_field='timestamp'):
@@ -38,7 +34,7 @@ def normal_index_df(df, index=['entity_id', 'timestamp'], drop=True):
 
 
 def is_normal_df(df):
-    if df_is_not_null(df):
+    if pd_is_not_null(df):
         names = df.index.names
 
         if len(names) == 2 and names[0] == 'entity_id' and names[1] == 'timestamp':
