@@ -4,7 +4,7 @@ from zvt.api.api import get_dividend_financing, get_spo_detail
 from zvt.domain import SpoDetail, DividendFinancing
 
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 
 
@@ -39,7 +39,7 @@ class SPODetailRecorder(EastmoneyPageabeDataRecorder):
                                 columns=[SpoDetail.timestamp, SpoDetail.spo_raising_fund],
                                 start_timestamp=item.timestamp,
                                 end_timestamp="{}-12-31".format(item.timestamp.year))
-            if df_is_not_null(df):
+            if pd_is_not_null(df):
                 item.spo_raising_fund = df['spo_raising_fund'].sum()
                 self.session.commit()
         super().on_finish()

@@ -53,38 +53,27 @@ _entity_map_schemas = {
 
 }
 
-context = {}
+zvdata_env = {}
 
 
-def init_context(data_path: str, ui_path: str, log_path: str, domain_module: str, register_api: bool = False) -> None:
+def init_data_env(data_path: str, domain_module: str) -> None:
     """
     now we just support sqlite engine for storing the data,you need to set the path for the db
 
     :param data_path: the db file path
     :type data_path:
-    :param ui_path: the path for storing render html
-    :type ui_path:
-    :param log_path: the path for logs
-    :type log_path:
     :param domain_module: the module name of your domains
     :type domain_module:
-    :param register_api: whether register the api
-    :type register_api:
     """
-    context['data_path'] = data_path
-    context['ui_path'] = ui_path
-    context['log_path'] = log_path
-    context['domain_module'] = domain_module
-    context['register_api'] = register_api
+    zvdata_env['data_path'] = data_path
+    zvdata_env['domain_module'] = domain_module
 
     if not os.path.exists(data_path):
         os.makedirs(data_path)
 
-    if not os.path.exists(ui_path):
-        os.makedirs(ui_path)
-
-    if not os.path.exists(log_path):
-        os.makedirs(log_path)
+    zvdata_env['api_dir'] = os.path.join(data_path, 'api')
+    if not os.path.exists(zvdata_env['api_dir']):
+        os.makedirs(zvdata_env['api_dir'])
 
 
 def table_name_to_domain_name(table_name: str) -> DeclarativeMeta:
@@ -159,7 +148,7 @@ def get_db_engine(provider: str,
     if data_schema:
         db_name = get_db_name(data_schema=data_schema)
 
-    db_path = os.path.join(context['data_path'], '{}_{}.db?check_same_thread=False'.format(provider, db_name))
+    db_path = os.path.join(zvdata_env['data_path'], '{}_{}.db?check_same_thread=False'.format(provider, db_name))
 
     engine_key = '{}_{}'.format(provider, db_name)
     db_engine = _db_engine_map.get(engine_key)
@@ -320,45 +309,40 @@ def get_{}(
 '''
 
 
-def register_api(provider: str, api_dir: str = '.') -> object:
+def register_api(provider: str) -> object:
     """
     decorator for registering api of the domain
 
     :param provider:
     :type provider:
-    :param api_dir:
-    :type api_dir:
     :return:
     :rtype:
     """
 
     def generate(cls):
-        if context['register_api']:
-            import_str = 'from {} import {}'.format(context['domain_module'], cls.__name__)
-            the_func = api_template.format(import_str, cls.__tablename__, provider, cls.__name__)
+        import_str = 'from {} import {}'.format(zvdata_env['domain_module'], cls.__name__)
+        the_func = api_template.format(import_str, cls.__tablename__, provider, cls.__name__)
 
-            with open(os.path.join(api_dir, f'{cls.__tablename__}.api'), "w") as myfile:
-                myfile.write(the_func)
-                myfile.write('\n')
+        with open(os.path.join(zvdata_env['api_dir'], f'{cls.__tablename__}.api'), "w") as myfile:
+            myfile.write(the_func)
+            myfile.write('\n')
 
         return cls
 
     return generate
 
 
-def generate_api(api_path: str, tmp_api_dir: str) -> object:
+def generate_api(api_path: str) -> object:
     """
     function for generate api.py for the register_api domain
 
     :param api_path:
     :type api_path:
-    :param tmp_api_dir:
-    :type tmp_api_dir:
     """
     from os import listdir
     from os.path import isfile, join
-    api_files = [os.path.join(tmp_api_dir, f) for f in listdir(tmp_api_dir) if
-                 isfile(join(tmp_api_dir, f)) and f.endswith('.api')]
+    api_files = [os.path.join(zvdata_env['api_dir'], f) for f in listdir(zvdata_env['api_dir']) if
+                 isfile(join(zvdata_env['api_dir'], f)) and f.endswith('.api')]
     with open(os.path.join(api_path, 'api.py'), 'w') as outfile:
         outfile.write(api_header)
 

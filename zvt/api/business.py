@@ -5,12 +5,12 @@ from zvdata.api import get_group, get_data
 
 from zvt.domain import business
 from zvt.domain.business import SimAccount, Position, Order
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 
 
 def get_traders() -> List[str]:
     df = get_group(provider='zvt', data_schema=SimAccount, column=SimAccount.trader_name, group_func=None)
-    if df_is_not_null(df):
+    if pd_is_not_null(df):
         return df['trader_name'].tolist()
     return []
 

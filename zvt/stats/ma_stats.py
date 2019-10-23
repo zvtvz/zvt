@@ -5,7 +5,7 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata import IntervalLevel
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_ma_state_stats_schema
@@ -30,7 +30,7 @@ class MaAccumulator(Accumulator):
 
         input_df['score'] = input_df[short_ma_col] > input_df[long_ma_col]
 
-        if df_is_not_null(acc_df):
+        if pd_is_not_null(acc_df):
             input_df = input_df[~input_df['id'].isin(acc_df['id'])]
 
         input_df = input_df.copy()
@@ -67,7 +67,7 @@ class MaAccumulator(Accumulator):
                         count = -1
 
                     # 增量计算，需要累加之前的结果
-                    if df_is_not_null(acc_df):
+                    if pd_is_not_null(acc_df):
                         if entity_id in acc_df.index.levels[0]:
                             acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][self.current_col]
                             if not pd.isna(acc_col_current):
@@ -89,8 +89,8 @@ class MaAccumulator(Accumulator):
 
             print('finish calculating :{}'.format(entity_id))
 
-        if df_is_not_null(acc_df):
-            if df_is_not_null(input_df):
+        if pd_is_not_null(acc_df):
+            if pd_is_not_null(input_df):
                 df = input_df[set(acc_df.columns) & set(input_df.columns)]
                 acc_df = acc_df.append(df)
                 acc_df = acc_df.sort_index(level=[0, 1])

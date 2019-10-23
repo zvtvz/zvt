@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import dash_core_components as dcc
-import dash_daq as daq
 import plotly.graph_objs as go
 import simplejson
 
@@ -10,7 +8,7 @@ from zvt.api.quote import get_current_price
 from zvt.domain import business
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.reader.business_reader import OrderReader, AccountReader
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 
 
 def get_account_figure(account_reader: AccountReader):
@@ -45,13 +43,13 @@ def get_trading_signals_figure(order_reader: OrderReader,
     security_factor = TechnicalFactor(entity_type=entity_type, entity_ids=[entity_id],
                                       level=level, provider=provider)
 
-    if df_is_not_null(security_factor.data_df):
+    if pd_is_not_null(security_factor.data_df):
         print(security_factor.data_df.tail())
 
     # generate the annotation df
     order_reader.move_on(timeout=0)
     df = order_reader.data_df.copy()
-    if df_is_not_null(df):
+    if pd_is_not_null(df):
         df['value'] = df['order_price']
         df['flag'] = df['order_type'].apply(lambda x: order_type_flag(x))
         df['color'] = df['order_type'].apply(lambda x: order_type_color(x))
@@ -81,7 +79,7 @@ def get_trader_detail_figures(trader_domain: business.Trader,
     order_reader.move_on(timeout=0)
     df_orders = order_reader.data_df.copy()
 
-    if df_is_not_null(df_orders):
+    if pd_is_not_null(df_orders):
         grouped = df_orders.groupby('entity_id')
 
         for entity_id, order_df in grouped:
@@ -107,7 +105,7 @@ def get_trader_detail_figures(trader_domain: business.Trader,
 
             # generate the annotation df
             df = order_df.copy()
-            if df_is_not_null(df):
+            if pd_is_not_null(df):
                 df['value'] = df['order_price']
                 df['flag'] = df['order_type'].apply(lambda x: order_type_flag(x))
                 df['color'] = df['order_type'].apply(lambda x: order_type_color(x))

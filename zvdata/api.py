@@ -9,7 +9,7 @@ from sqlalchemy.orm import Query, Session
 from zvdata import IntervalLevel
 from zvdata.contract import get_db_name, get_db_session, get_db_engine, global_entity_schema, global_providers, \
     get_schema_columns
-from zvdata.utils.pd_utils import df_is_not_null, index_df
+from zvdata.utils.pd_utils import pd_is_not_null, index_df
 from zvdata.utils.time_utils import to_pd_timestamp
 
 
@@ -127,7 +127,7 @@ def get_data(data_schema,
 
     if return_type == 'df':
         df = pd.read_sql(query.statement, query.session.bind)
-        if df_is_not_null(df):
+        if pd_is_not_null(df):
             if not index:
                 index = ['entity_id', time_field]
 
@@ -188,7 +188,7 @@ def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, forc
     :return:
     :rtype:
     """
-    if not df_is_not_null(df):
+    if not pd_is_not_null(df):
         return
 
     db_engine = get_db_engine(provider, data_schema=data_schema)
@@ -228,7 +228,7 @@ def df_to_db(df: pd.DataFrame, data_schema: DeclarativeMeta, provider: str, forc
         else:
             current = get_data(data_schema=data_schema, columns=[data_schema.id], provider=provider,
                                ids=df_current['id'].tolist())
-            if df_is_not_null(current):
+            if pd_is_not_null(current):
                 df_current = df_current[~df_current['id'].isin(current['id'])]
 
         df_current.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
@@ -245,7 +245,7 @@ def init_entities(df, entity_type='stock', provider='exchange'):
     current = get_entities(entity_type=entity_type, columns=[security_schema.id, security_schema.code],
                            provider=provider)
 
-    if df_is_not_null(current):
+    if pd_is_not_null(current):
         df = df[~df['id'].isin(current['id'])]
 
     df.to_sql(security_schema.__tablename__, db_engine, index=False, if_exists='append')
@@ -290,6 +290,6 @@ def get_entities(
 def get_entity_ids(entity_type='stock', exchanges=['sz', 'sh'], codes=None, provider='eastmoney'):
     df = get_entities(entity_type=entity_type, exchanges=exchanges, codes=codes,
                       provider=provider)
-    if df_is_not_null(df):
+    if pd_is_not_null(df):
         return df['entity_id'].to_list()
     return None

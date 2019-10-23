@@ -6,7 +6,7 @@ from jqdatasdk import auth, logout, get_bars
 
 from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.utils.pd_utils import df_is_not_null
+from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_time_str, now_pd_timestamp
 from zvdata.utils.utils import init_process_log
 from zvt.api.common import generate_kdata_id, get_kdata_schema
@@ -118,7 +118,7 @@ class JQChinaStockBarRecorder(FixedCycleDataRecorder):
         current_df = get_kdata(entity_id=entity.id, provider=self.provider, start_timestamp=check_date,
                                end_timestamp=check_date, limit=1, level=self.level)
 
-        if df_is_not_null(current_df):
+        if pd_is_not_null(current_df):
             old = current_df.iloc[0, :]['qfq_close']
             new = check_df['close'][0]
             # 相同时间的close不同，表明前复权需要重新计算
