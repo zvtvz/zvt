@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from zvdata.utils.time_utils import to_pd_timestamp
+from zvdata.utils.utils import add_func_to_value, first_item_to_float
 from zvt.api.common import to_report_period_type
 from zvt.domain import BalanceSheet
 from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
-from zvdata.utils.time_utils import to_pd_timestamp
-from zvdata.utils.utils import add_func_to_value, first_item_to_float, init_process_log
 
 balance_sheet_map = {
     # 流动资产
@@ -446,6 +446,6 @@ class ChinaStockBalanceSheetRecorder(BaseChinaStockFinanceRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('blance_sheet.log')
+    # init_log('blance_sheet.log')
     recorder = ChinaStockBalanceSheetRecorder(codes=['002572'])
     recorder.run()

@@ -54,10 +54,10 @@ from zvt.domain.holder import *
 from zvt.domain.macro import *
 from zvt.domain.stock_meta import *
 from zvt.domain.money_flow import *
-from zvt.domain.quote import *
 from zvt.domain.trading import *
 
-from .stats.stock_ma_stats import *
+from .quotes import *
+from .stats import *
 
 
 def init_schema():

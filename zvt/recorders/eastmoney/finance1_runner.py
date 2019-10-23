@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt.recorders.eastmoney.finance.china_stock_balance_sheet_recorder import ChinaStockBalanceSheetRecorder
 from zvt.recorders.eastmoney.finance.china_stock_income_statement_recorder import ChinaStockIncomeStatementRecorder
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_balance_sheet_income_statement.log')
+    init_log('eastmoney_balance_sheet_income_statement.log')
 
     run()
 

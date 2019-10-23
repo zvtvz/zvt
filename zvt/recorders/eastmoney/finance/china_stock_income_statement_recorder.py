@@ -172,6 +172,6 @@ class ChinaStockIncomeStatementRecorder(BaseChinaStockFinanceRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('income_statement.log')
+    # init_log('income_statement.log')
     recorder = ChinaStockIncomeStatementRecorder(codes=['002572'])
     recorder.run()

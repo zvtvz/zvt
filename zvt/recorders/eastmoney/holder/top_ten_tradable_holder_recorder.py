@@ -15,6 +15,6 @@ class TopTenTradableHolderRecorder(TopTenHolderRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('top_ten_tradable_holder.log')
+    # init_log('top_ten_tradable_holder.log')
 
     TopTenTradableHolderRecorder(codes=['002572']).run()

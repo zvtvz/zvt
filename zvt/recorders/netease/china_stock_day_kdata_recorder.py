@@ -147,5 +147,5 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('china_stock_day_kdata.log')
+    # init_log('china_stock_day_kdata.log')
     ChinaStockDayKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=['002572']).run()

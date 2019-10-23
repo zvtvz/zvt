@@ -48,7 +48,7 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('dividend_financing.log')
+    # init_log('dividend_financing.log')
 
     recorder = DividendFinancingRecorder(codes=['000999'])
     recorder.run()

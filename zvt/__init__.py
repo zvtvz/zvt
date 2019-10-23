@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
@@ -6,14 +7,21 @@ from zvdata.contract import *
 from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
 
 
-def init_log():
-    if not os.path.exists(zvt_env['log_path']):
-        os.makedirs(zvt_env['log_path'])
+def init_log(file_name='zvt.log', log_dir=None):
+    if not log_dir:
+        log_dir = zvt_env['log_path']
 
     root_logger = logging.getLogger()
+
+    # reset the handlers
+    root_logger.handlers = []
+
     root_logger.setLevel(logging.INFO)
 
-    fh = logging.FileHandler(os.path.join(zvt_env['log_path'], 'zvt.log'))
+    file_name = os.path.join(log_dir, file_name)
+
+    fh = RotatingFileHandler(file_name, maxBytes=524288000, backupCount=10)
+
     fh.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
@@ -28,9 +36,6 @@ def init_log():
     # add the handlers to the logger
     root_logger.addHandler(fh)
     root_logger.addHandler(ch)
-
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
-    logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 
 
 pd.set_option('expand_frame_repr', False)
@@ -51,7 +56,7 @@ def init_env(data_path):
         os.makedirs(zvt_env['ui_path'])
 
     # path for storing logs
-    zvt_env['log_path'] = os.path.join(data_path, 'log_path')
+    zvt_env['log_path'] = os.path.join(data_path, 'logs')
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
 

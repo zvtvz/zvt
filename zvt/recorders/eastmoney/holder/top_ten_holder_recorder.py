@@ -49,6 +49,6 @@ class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
 
 
 if __name__ == '__main__':
-    # init_process_log('top_ten_holder.log')
+    # init_log('top_ten_holder.log')
 
     TopTenHolderRecorder(codes=['002572']).run()

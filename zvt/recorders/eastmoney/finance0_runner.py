@@ -9,7 +9,7 @@ from zvt.recorders.eastmoney.finance.china_stock_balance_sheet_recorder import C
 from zvt.recorders.eastmoney.finance.china_stock_cash_flow_recorder import ChinaStockCashFlowRecorder
 from zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder import ChinaStockFinanceFactorRecorder
 from zvt.recorders.eastmoney.finance.china_stock_income_statement_recorder import ChinaStockIncomeStatementRecorder
-from zvdata.utils.utils import init_process_log
+from zvt import init_log
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_process_log('eastmoney_finance_factor_cash_flow.log')
+    init_log('eastmoney_finance_factor_cash_flow.log')
 
     run()
 
