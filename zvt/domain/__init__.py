@@ -57,7 +57,7 @@ from zvt.domain.money_flow import *
 from zvt.domain.trading import *
 
 from .quotes import *
-from .stats import *
+from .factors import *
 
 
 def init_schema():

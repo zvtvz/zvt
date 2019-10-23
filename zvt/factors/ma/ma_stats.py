@@ -117,7 +117,6 @@ class MaStateStas(TechnicalFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-
                  computing_window: int = 10,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',

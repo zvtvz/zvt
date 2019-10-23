@@ -40,6 +40,16 @@ def get_ma_state_stats_schema(entity_type: str,
     return eval(schema_str)
 
 
+def get_ma_factor_schema(entity_type: str,
+                         level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
+    if type(level) == str:
+        level = IntervalLevel(level)
+
+    schema_str = '{}{}MaFactor'.format(entity_type.capitalize(), level.value.capitalize())
+
+    return eval(schema_str)
+
+
 def to_report_period_type(report_period):
     the_date = to_pd_timestamp(report_period)
     if the_date.month == 3 and the_date.day == 31:
