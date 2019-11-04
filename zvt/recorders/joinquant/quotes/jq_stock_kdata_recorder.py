@@ -11,11 +11,12 @@ from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2, \
     TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt import init_log
+from zvt import zvt_env
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock
 from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD, SAMPLE_STOCK_CODES
+from zvt.settings import SAMPLE_STOCK_CODES
 
 
 class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
@@ -65,7 +66,7 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                 self.current_factors[security_item.id] = kdata[0].factor
                 self.logger.info('{} latest factor:{}'.format(security_item.id, kdata[0].factor))
 
-        auth(JQ_ACCOUNT, JQ_PASSWD)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)
@@ -175,4 +176,4 @@ if __name__ == '__main__':
     codes = args.codes
 
     init_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
+    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes, end_timestamp='2019-07-01').run()

@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 import pandas as pd
 
 from zvdata.contract import *
-from zvt.settings import LOG_PATH, DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH, UI_PATH
+from zvt.settings import DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH
 
 
 def init_log(file_name='zvt.log', log_dir=None):
@@ -44,7 +44,16 @@ pd.set_option('mode.chained_assignment', 'raise')
 zvt_env = {}
 
 
-def init_env(data_path):
+def init_env(data_path: str,
+             jq_username: str = os.environ.get('JQ_USERNAME'),
+             jq_password: str = os.environ.get('JQ_PASSWORD')) -> None:
+    """
+
+    :param data_path: data path for zvt
+    :param jq_username: joinquant username
+    :param jq_password: joinquant password
+    """
+
     init_data_env(data_path=data_path, domain_module='zvt.domain')
 
     zvt_env['data_path'] = data_path
@@ -59,6 +68,10 @@ def init_env(data_path):
     zvt_env['log_path'] = os.path.join(data_path, 'logs')
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
+
+    # setting joinquant account
+    zvt_env['jq_username'] = jq_username
+    zvt_env['jq_password'] = jq_password
 
     init_log()
 

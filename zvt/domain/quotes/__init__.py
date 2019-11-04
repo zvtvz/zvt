@@ -4,7 +4,7 @@ from sqlalchemy import String, Column, Float
 from zvdata import Mixin
 
 
-class StockKdataCommon(Mixin):
+class KdataCommon(Mixin):
     provider = Column(String(length=32))
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -12,37 +12,26 @@ class StockKdataCommon(Mixin):
     # level = Column(Enum(IntervalLevel, values_callable=enum_value))
     level = Column(String(length=32))
 
+    # 如果是股票，代表前复权数据
+    # 开盘价
     open = Column(Float)
-    hfq_open = Column(Float)
-    qfq_open = Column(Float)
+    # 收盘价
     close = Column(Float)
-    hfq_close = Column(Float)
-    qfq_close = Column(Float)
+    # 最高价
     high = Column(Float)
-    hfq_high = Column(Float)
-    qfq_high = Column(Float)
+    # 最低价
     low = Column(Float)
-    hfq_low = Column(Float)
-    qfq_low = Column(Float)
+    # 成交量
     volume = Column(Float)
+    # 成交金额
     turnover = Column(Float)
+
+
+class StockKdataCommon(KdataCommon):
+    # 涨跌幅
     change_pct = Column(Float)
+    # 换手率
     turnover_rate = Column(Float)
-    factor = Column(Float)
-
-
-class KdataCommon(Mixin):
-    provider = Column(String(length=32))
-    code = Column(String(length=32))
-    name = Column(String(length=32))
-    level = Column(String(length=32))
-
-    open = Column(Float)
-    close = Column(Float)
-    high = Column(Float)
-    low = Column(Float)
-    volume = Column(Float)
-    turnover = Column(Float)
 
 
 class TickCommon(Mixin):

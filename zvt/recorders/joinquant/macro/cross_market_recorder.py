@@ -1,10 +1,10 @@
 from jqdatasdk import auth, query, finance
 
 from zvdata.recorder import TimeSeriesDataRecorder
-from zvdata.utils.utils import multiple_number
-from zvt.domain import Index, CrossMarketSummary
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
 from zvdata.utils.time_utils import to_time_str
+from zvdata.utils.utils import multiple_number
+from zvt import zvt_env
+from zvt.domain import Index, CrossMarketSummary
 
 
 class StockSummaryRecorder(TimeSeriesDataRecorder):
@@ -30,7 +30,7 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
-        auth(JQ_ACCOUNT, JQ_PASSWD)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
     def init_entities(self):
         super().init_entities()
