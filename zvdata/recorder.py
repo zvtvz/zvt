@@ -10,7 +10,7 @@ from zvdata import IntervalLevel
 from zvdata.api import get_entities, get_data
 from zvdata.contract import get_db_session
 from zvdata.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
-    evaluate_size_from_timestamp, is_finished_kdata_timestamp
+    evaluate_size_from_timestamp, is_in_same_interval
 from zvdata.utils.utils import fill_domain_from_dict
 
 
@@ -473,11 +473,13 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
                            session=self.session,
                            level=self.level.value)
         if records:
-            # just keep one unfinished kdata
-            if not is_finished_kdata_timestamp(records[-1].timestamp, level=self.level):
-                self.session.delete(records[-1])
-                return records[0]
-            return records[-1]
+            # delete unfinished kdata
+            if len(records) == 2:
+                if is_in_same_interval(t1=records[0].timestamp, t2=records[1].timestamp, level=self.level):
+                    self.session.delete(records[0])
+                    self.session.flush()
+                    return records[1]
+            return records[0]
         return None
 
     def evaluate_start_end_size_timestamps(self, entity):

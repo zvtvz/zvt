@@ -7,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from zvdata import IntervalLevel
 from zvt import init_log
 from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import ChinaStockKdataRecorder
+from zvt.settings import SAMPLE_STOCK_CODES
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +15,24 @@ sched = BackgroundScheduler()
 
 
 @sched.scheduled_job('cron', hour=16, minute=0)
-def run():
+def record_day_kdata():
     while True:
         try:
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
+            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=SAMPLE_STOCK_CODES).run()
+
+            break
+        except Exception as e:
+            logger.exception('joinquant kdata runner error:{}'.format(e))
+            time.sleep(60)
+
+
+# 每周6抓取周线和月线数据
+@sched.scheduled_job('cron', day_of_week=5, hour=3, minute=0)
+def record_wk_kdata():
+    while True:
+        try:
+            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1WEEK, codes=SAMPLE_STOCK_CODES).run()
+            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON, codes=SAMPLE_STOCK_CODES).run()
 
             break
         except Exception as e:
@@ -28,7 +43,9 @@ def run():
 if __name__ == '__main__':
     init_log('joinquant_kdata_runner.log')
 
-    run()
+    record_day_kdata()
+
+    record_wk_kdata()
 
     sched.start()
 

@@ -156,5 +156,16 @@ def is_finished_kdata_timestamp(timestamp, level: IntervalLevel):
     return False
 
 
+def is_in_same_interval(t1: pd.Timestamp, t2: pd.Timestamp, level: IntervalLevel):
+    t1 = to_pd_timestamp(t1)
+    t2 = to_pd_timestamp(t2)
+    if level == IntervalLevel.LEVEL_1WEEK:
+        return t1.week == t2.week
+    if level == IntervalLevel.LEVEL_1MON:
+        return t1.month == t2.month
+
+    return level.floor_timestamp(t1) == level.floor_timestamp(t2)
+
+
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))

@@ -107,7 +107,7 @@ class IntervalLevel(enum.Enum):
             return pd_timestamp.floor('1h')
         if self == IntervalLevel.LEVEL_4HOUR:
             return pd_timestamp.floor('4h')
-        if self >= IntervalLevel.LEVEL_1DAY:
+        if self == IntervalLevel.LEVEL_1DAY:
             return pd_timestamp.floor('1d')
 
     def to_minute(self):
