@@ -237,17 +237,6 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
                                                                                'open': to_open,
                                                                                'high': to_high,
                                                                                'low': to_low,
-
-                                                                               'qfq_close': to_close,
-                                                                               'qfq_open': to_open,
-                                                                               'qfq_high': to_high,
-                                                                               'qfq_low': to_low,
-
-                                                                               'hfq_close': to_close,
-                                                                               'hfq_open': to_open,
-                                                                               'hfq_high': to_high,
-                                                                               'hfq_low': to_low,
-
                                                                                'volume': to_sum,
                                                                                'turnover': to_sum})
         else:
