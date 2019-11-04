@@ -2,7 +2,7 @@ from jqdatasdk import auth, query, finance
 
 from zvdata.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index, MarginTradingSummary
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
+from zvt import zvt_env
 from zvdata.utils.time_utils import to_time_str
 
 # 聚宽编码
@@ -31,7 +31,7 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
-        auth(JQ_ACCOUNT, JQ_PASSWD)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
     def record(self, entity, start, end, size, timestamps):
         jq_code = code_map_jq.get(entity.code)

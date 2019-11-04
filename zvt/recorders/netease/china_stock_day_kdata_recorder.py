@@ -13,7 +13,7 @@ from zvt.api.common import generate_kdata_id
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock1dKdata, Stock
 from zvt.recorders.joinquant import to_jq_entity_id
-from zvt.settings import JQ_ACCOUNT, JQ_PASSWD
+from zvt import zvt_env
 
 
 class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
@@ -45,7 +45,7 @@ class ChinaStockDayKdataRecorder(FixedCycleDataRecorder):
                 self.current_factors[security_item.id] = kdata[0].factor
                 self.logger.info('{} latest factor:{}'.format(security_item.id, kdata[0].factor))
 
-        auth(JQ_ACCOUNT, JQ_PASSWD)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
     def get_data_map(self):
         return {}

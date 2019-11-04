@@ -7,24 +7,6 @@ DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # please change the path to your real store path
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
-UI_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ui'))
-
-LOG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'logs'))
-
-if not DATA_PATH:
-    DATA_PATH = os.environ.get('ZVT_DATA_PATH')
-
-if not LOG_PATH:
-    LOG_PATH = os.environ.get('LOG_PATH')
-
-JQ_ACCOUNT = ''
-if not JQ_ACCOUNT:
-    JQ_ACCOUNT = os.environ.get('JQ_ACCOUNT')
-
-JQ_PASSWD = ''
-if not JQ_PASSWD:
-    JQ_PASSWD = os.environ.get('JQ_PASSWD')
-
 HTTP_PROXY = 'http://127.0.0.1:10080'
 if not HTTP_PROXY:
     HTTP_PROXY = os.environ.get('HTTP_PROXY')
