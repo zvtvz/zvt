@@ -12,6 +12,14 @@ class Stock1dMaFactor(Stock1dMaFactorBase, Mixin):
     __tablename__ = 'Stock1dMaFactor'
 
     level = Column(String(length=32))
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    open = Column(Float)
+    close = Column(Float)
+    high = Column(Float)
+    low = Column(Float)
+
     ma5 = Column(Float)
     ma10 = Column(Float)
 
