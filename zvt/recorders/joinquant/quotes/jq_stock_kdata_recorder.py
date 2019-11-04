@@ -2,24 +2,21 @@
 import argparse
 
 import pandas as pd
-from jqdatasdk import auth, get_price, logout
+from jqdatasdk import auth, logout, get_bars
 
 from zvdata import IntervalLevel
 from zvdata.api import df_to_db
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.pd_utils import pd_is_not_null
-from zvdata.utils.time_utils import to_time_str, now_time_str, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE2, \
-    TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
-from zvt import init_log
-from zvt import zvt_env
+from zvdata.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
+from zvt import init_log, zvt_env
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock
 from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
-from zvt.settings import SAMPLE_STOCK_CODES
 
 
-class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
+class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     # 复用eastmoney的股票列表
     entity_provider = 'eastmoney'
     entity_schema = Stock
@@ -38,14 +35,11 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                  fix_duplicate_way='ignore',
                  start_timestamp=None,
                  end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1DAY,
+                 level=IntervalLevel.LEVEL_1WEEK,
                  kdata_use_begin_time=False,
                  close_hour=15,
                  close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
-        # 周线以上级别请使用jq_stock_bar_recorder
-        assert level <= IntervalLevel.LEVEL_1DAY
-
         self.data_schema = get_kdata_schema(entity_type='stock', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 
@@ -53,18 +47,8 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
-        # 读取已经保存的最新factor,更新时有变化才需要重新计算前复权价格
-        self.current_factors = {}
-
-        for security_item in self.entities:
-            kdata = get_kdata(entity_id=security_item.id, provider=self.provider,
-                              level=self.level.value, order=self.data_schema.timestamp.desc(),
-                              limit=1,
-                              return_type='domain',
-                              session=self.session)
-            if kdata:
-                self.current_factors[security_item.id] = kdata[0].factor
-                self.logger.info('{} latest factor:{}'.format(security_item.id, kdata[0].factor))
+        self.factor = 0
+        self.last_timestamp = None
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
@@ -72,49 +56,21 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)
 
     def on_finish_entity(self, entity):
-        kdatas = get_kdata(provider=self.provider, entity_id=entity.id, level=self.level.value,
-                           order=self.data_schema.timestamp.asc(),
-                           return_type='domain',
-                           session=self.session,
-                           filters=[self.data_schema.hfq_close.is_(None),
-                                    self.data_schema.timestamp >= to_pd_timestamp('2005-01-01')])
-        if kdatas:
-            start = kdatas[0].timestamp
-            end = kdatas[-1].timestamp
-
-            # get hfq from joinquant
-            df = get_price(to_jq_entity_id(entity), start_date=to_time_str(start), end_date=now_time_str(),
-                           frequency='daily',
-                           fields=['factor', 'open', 'close', 'low', 'high'],
-                           skip_paused=True, fq='post')
-            if pd_is_not_null(df):
-                # fill hfq data
+        # 重新计算前复权数据
+        if self.factor != 0:
+            kdatas = get_kdata(provider=self.provider, entity_id=entity.id, level=self.level.value,
+                               order=self.data_schema.timestamp.asc(),
+                               return_type='domain',
+                               session=self.session,
+                               filters=[self.data_schema.timestamp < self.last_timestamp])
+            if kdatas:
+                self.logger.info('recomputing {} qfq kdata,factor is:{}'.format(entity.code, self.factor))
                 for kdata in kdatas:
-                    time_str = to_time_str(kdata.timestamp)
-                    if time_str in df.index:
-                        kdata.hfq_open = df.loc[time_str, 'open']
-                        kdata.hfq_close = df.loc[time_str, 'close']
-                        kdata.hfq_high = df.loc[time_str, 'high']
-                        kdata.hfq_low = df.loc[time_str, 'low']
-                        kdata.factor = df.loc[time_str, 'factor']
+                    kdata.open = kdata.open * self.factor
+                    kdata.close = kdata.close * self.factor
+                    kdata.high = kdata.high * self.factor
+                    kdata.low = kdata.low * self.factor
                 self.session.add_all(kdatas)
-                self.session.commit()
-
-                latest_factor = df.factor[-1]
-                # factor not change yet, no need to reset the qfq past
-                if latest_factor == self.current_factors.get(entity.id):
-                    sql = 'UPDATE {} SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
-                          'entity_id=\'{}\' and level=\'{}\' and (qfq_close isnull or qfq_high isnull or qfq_low isnull or qfq_open isnull)'.format(
-                        self.data_schema.__table__, latest_factor, latest_factor, latest_factor, latest_factor,
-                        entity.id, self.level.value)
-                else:
-                    sql = 'UPDATE {} SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
-                          'entity_id=\'{}\' and level=\'{}\''.format(self.data_schema.__table__, latest_factor,
-                                                                     latest_factor, latest_factor, latest_factor,
-                                                                     entity.id,
-                                                                     self.level.value)
-                self.logger.info(sql)
-                self.session.execute(sql)
                 self.session.commit()
 
     def on_finish(self):
@@ -122,35 +78,46 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
         logout()
 
     def record(self, entity, start, end, size, timestamps):
-        if self.start_timestamp:
-            start = max(self.start_timestamp, to_pd_timestamp(start))
+        # 只要前复权数据
+        if not self.end_timestamp:
+            df = get_bars(to_jq_entity_id(entity),
+                          count=size,
+                          unit=self.jq_trading_level,
+                          fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
+                          fq_ref_date=to_time_str(now_pd_timestamp()),
+                          include_now=True)
+        else:
+            end_timestamp = to_time_str(self.end_timestamp)
+            df = get_bars(to_jq_entity_id(entity),
+                          count=size,
+                          unit=self.jq_trading_level,
+                          fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
+                          end_dt=end_timestamp,
+                          fq_ref_date=to_time_str(now_pd_timestamp()),
+                          include_now=False)
 
-        # if self.level < IntervalLevel.LEVEL_1HOUR:
-        #     start = '2019-01-01'
-
-        end = now_pd_timestamp()
-
-        start_timestamp = to_time_str(start)
-
-        # 聚宽get_price函数必须指定结束时间，否则会有未来数据
-        end_timestamp = to_time_str(end, fmt=TIME_FORMAT_MINUTE2)
-        # 不复权
-        df = get_price(to_jq_entity_id(entity), start_date=to_time_str(start_timestamp),
-                       end_date=end_timestamp,
-                       frequency=self.jq_trading_level,
-                       fields=['open', 'close', 'low', 'high', 'volume', 'money'],
-                       skip_paused=True, fq=None)
         if pd_is_not_null(df):
-            df.index.name = 'timestamp'
-            df.reset_index(inplace=True)
             df['name'] = entity.name
-            df.rename(columns={'money': 'turnover'}, inplace=True)
+            df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
 
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df['provider'] = 'joinquant'
             df['level'] = self.level.value
             df['code'] = entity.code
+
+            # 判断是否需要重新计算之前保存的前复权数据
+            check_df = df.head(1)
+            check_date = check_df['timestamp'][0]
+            current_df = get_kdata(entity_id=entity.id, provider=self.provider, start_timestamp=check_date,
+                                   end_timestamp=check_date, limit=1, level=self.level)
+            if pd_is_not_null(current_df):
+                old = current_df.iloc[0, :]['close']
+                new = check_df['close'][0]
+                # 相同时间的close不同，表明前复权需要重新计算
+                if old != new:
+                    self.factor = new / old
+                    self.last_timestamp = pd.Timestamp(check_date)
 
             def generate_kdata_id(se):
                 if self.level >= IntervalLevel.LEVEL_1DAY:
@@ -167,8 +134,8 @@ class JQChinaStockKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=SAMPLE_STOCK_CODES, nargs='+')
+    parser.add_argument('--level', help='trading level', default='1m', choices=[item.value for item in IntervalLevel])
+    parser.add_argument('--codes', help='codes', default=['000338'], nargs='+')
 
     args = parser.parse_args()
 
@@ -176,4 +143,4 @@ if __name__ == '__main__':
     codes = args.codes
 
     init_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes, end_timestamp='2019-07-01').run()
+    ChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()

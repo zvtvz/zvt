@@ -16,10 +16,7 @@ class MaTransformer(Transformer):
             col = 'ma{}'.format(window)
             self.indicator_cols.append(col)
 
-            if 'qfq_close' in input_df.columns:
-                ma_df = input_df['qfq_close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
-            else:
-                ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
             ma_df = ma_df.reset_index(level=0, drop=True)
             input_df[col] = ma_df
 
@@ -37,12 +34,8 @@ class MacdTransformer(Transformer):
         self.indicator_cols.append('macd')
 
     def transform(self, input_df) -> pd.DataFrame:
-        if 'qfq_close' in input_df.columns:
-            macd_df = input_df.groupby(level=0)['qfq_close'].apply(
-                lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
-        else:
-            macd_df = input_df.groupby(level=0)['close'].apply(
-                lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
+        macd_df = input_df.groupby(level=0)['close'].apply(
+            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
         input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
         return input_df
 

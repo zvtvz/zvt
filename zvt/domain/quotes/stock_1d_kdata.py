@@ -16,4 +16,4 @@ class Stock1dKdata(Stock1DKdataBase, StockKdataCommon):
     __tablename__ = 'stock_1d_kdata'
 
 
-register_schema(providers=['joinquant', 'netease'], db_name='stock_1d_kdata', schema_base=Stock1DKdataBase)
+register_schema(providers=['joinquant'], db_name='stock_1d_kdata', schema_base=Stock1DKdataBase)

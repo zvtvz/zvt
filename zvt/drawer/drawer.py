@@ -140,16 +140,10 @@ class Drawer(object):
 
             trace_name = '{}_kdata'.format(code)
 
-            if entity_type == 'stock':
-                open = df.loc[:, 'qfq_open']
-                close = df.loc[:, 'qfq_close']
-                high = df.loc[:, 'qfq_high']
-                low = df.loc[:, 'qfq_low']
-            else:
-                open = df.loc[:, 'open']
-                close = df.loc[:, 'close']
-                high = df.loc[:, 'high']
-                low = df.loc[:, 'low']
+            open = df['open']
+            close = df['close']
+            high = df['high']
+            low = df['low']
 
             traces.append(
                 go.Candlestick(x=df.index, open=open, close=close, low=low, high=high, name=trace_name, **kwargs))

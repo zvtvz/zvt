@@ -96,13 +96,9 @@ class AccountService(TradingListener):
                                   start_timestamp=current_timestamp, end_timestamp=current_timestamp,
                                   limit=1)
                 if kdata is not None and not kdata.empty:
-                    # use qfq for stock
                     entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
 
-                    if entity_type == 'stock':
-                        the_price = kdata['qfq_close'][0]
-                    else:
-                        the_price = kdata['close'][0]
+                    the_price = kdata['close'][0]
 
                     if the_price:
                         self.order(entity_id=entity_id, current_price=the_price,
@@ -128,7 +124,7 @@ class SimAccountService(AccountService):
 
     def __init__(self, trader_name,
                  timestamp,
-                 provider='netease',
+                 provider='joinquant',
                  level=IntervalLevel.LEVEL_1DAY,
                  base_capital=1000000,
                  buy_cost=0.001,
@@ -192,7 +188,6 @@ class SimAccountService(AccountService):
         self.latest_account['value'] = 0
         self.latest_account['all_value'] = 0
         for position in self.latest_account['positions']:
-            # use qfq for stock
             entity_type, _, _ = decode_entity_id(position['entity_id'])
             data_schema = get_kdata_schema(entity_type, level=self.level)
 
@@ -200,11 +195,7 @@ class SimAccountService(AccountService):
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 
-            # use qfq for stock
-            if entity_type == 'stock':
-                closing_price = kdata['qfq_close'][0]
-            else:
-                closing_price = kdata['close'][0]
+            closing_price = kdata['close'][0]
 
             position['available_long'] = position['long_amount']
             position['available_short'] = position['short_amount']
