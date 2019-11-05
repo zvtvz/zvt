@@ -122,7 +122,7 @@ class Factor(DataReader, DataListener, Jsonable):
         self.register_data_listener(self)
 
     def pre_compute(self):
-        if pd_is_not_null(self.pipe_df):
+        if not pd_is_not_null(self.pipe_df):
             self.pipe_df = self.data_df
 
     def do_compute(self):

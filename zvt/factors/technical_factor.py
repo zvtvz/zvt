@@ -35,7 +35,8 @@ class TechnicalFactor(Factor):
                  dry_run: bool = True) -> None:
         self.data_schema = get_kdata_schema(entity_type, level=level)
 
-        self.indicator_cols = transformer.indicator_cols
+        if transformer:
+            self.indicator_cols = transformer.indicator_cols
 
         if not columns:
             columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low']
