@@ -125,7 +125,7 @@ class Drawer(object):
                    keep_ui_state=True,
                    **kwargs):
 
-        if pd_is_not_null(self.sub_data):
+        if self.sub_data is not None and not self.sub_data.empty():
             subplot = True
             fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], vertical_spacing=0.08, shared_xaxes=True)
         else:
@@ -155,7 +155,16 @@ class Drawer(object):
                     for col in sub_df.columns:
                         trace_name = '{}_{}'.format(code, col)
                         ydata = sub_df[col].values.tolist()
-                        sub_traces.append(go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2'))
+
+                        def color(i):
+                            if i > 0:
+                                return 'red'
+                            else:
+                                return 'green'
+
+                        colors = [color(i) for i in ydata]
+                        bar = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2', marker_color=colors)
+                        sub_traces.append(bar)
 
         if subplot:
             fig.add_traces(traces, rows=[1] * len(traces), cols=[1] * len(traces))
