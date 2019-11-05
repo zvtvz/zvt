@@ -16,6 +16,8 @@ from zvt.sedes import Jsonable
 
 
 class Transformer(object):
+    logger = logging.getLogger(__name__)
+
     indicator_cols = []
 
     def transform(self, input_df) -> pd.DataFrame:
@@ -23,6 +25,8 @@ class Transformer(object):
 
 
 class Accumulator(object):
+    logger = logging.getLogger(__name__)
+
     def acc(self, input_df, acc_df) -> pd.DataFrame:
         return acc_df
 

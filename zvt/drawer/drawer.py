@@ -125,7 +125,7 @@ class Drawer(object):
                    keep_ui_state=True,
                    **kwargs):
 
-        if self.sub_data is not None and not self.sub_data.empty():
+        if pd_is_not_null(self.sub_data):
             subplot = True
             fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], vertical_spacing=0.08, shared_xaxes=True)
         else:

@@ -87,7 +87,7 @@ class MaAccumulator(Accumulator):
 
                 pre_index = index
 
-            print('finish calculating :{}'.format(entity_id))
+            self.logger.info('finish calculating :{}'.format(entity_id))
 
         if pd_is_not_null(acc_df):
             if pd_is_not_null(input_df):
@@ -140,7 +140,6 @@ class MaStateStas(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    print('start')
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
