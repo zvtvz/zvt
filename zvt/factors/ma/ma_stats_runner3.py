@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=18, minute=0)
+@sched.scheduled_job('cron', hour=19, minute=0)
 def run():
     cal_ma_states(start='3000000', end='600000')
 
