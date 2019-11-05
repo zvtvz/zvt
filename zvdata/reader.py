@@ -249,7 +249,7 @@ class DataReader(object):
                 break
 
         if dfs:
-            self.data_df = pd.concat(dfs)
+            self.data_df = pd.concat(dfs, sort=False)
             self.data_df.sort_index(level=[0, 1])
 
             if changed:
