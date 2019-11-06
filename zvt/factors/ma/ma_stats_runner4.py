@@ -25,7 +25,7 @@ if __name__ == '__main__':
     init_log('ma_stats_runner4.log')
 
     run1()
-    run2
+    run2()
 
     sched.start()
 
