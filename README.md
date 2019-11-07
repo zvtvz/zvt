@@ -9,6 +9,10 @@
 
 ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
+**注意**：
+>可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档
+
+>项目将专注于一般行情软件难以实现的自定义统计指标，回测，交易通知上面
 ## 详细文档
 文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
 [http://zvt.foolcage.com](http://zvt.foolcage.com)  
@@ -125,9 +129,6 @@ python3 index.py
 <img src="./docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
 <img src="./docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
 
-有需要股票开户可以加我朋友微信,暗号:zvt  
-<img src="./docs/imgs/stock-kaihu.jpeg" width="25%" alt="Wechat">
-
 
 ## 💡 贡献
 
@@ -143,11 +144,10 @@ python3 index.py
 
 QQ群:300911873  
 
+个人微信:foolcage 添加暗号:zvt
 
 公众号(后续会不定时更新一些教程):  
 <img src="./docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
 
 知乎专栏会结合zvt写一些日常使用的例子:　
 https://zhuanlan.zhihu.com/automoney
-
-目前没有微信群，如果有，肯定是骗子
