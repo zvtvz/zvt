@@ -11,7 +11,6 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 
 **注意**：
 >可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档
-
 >项目将专注于一般行情软件难以实现的自定义统计指标，回测，交易通知上面
 ## 详细文档
 文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
@@ -19,55 +18,7 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 > 目前整个框架基本稳定下来,文档完善中。
 
-##  🔖使用展示
-
-### 板块资金流分析
-<p align="center"><img src='./docs/imgs/data-usage/money-flow.gif'/></p>
-
-### 市场历史pe分布
-<p align="center"><img src='./docs/imgs/data-usage/sh-pe-distribution.gif'/></p>
-
-### 多市场pe对比
-<p align="center"><img src='./docs/imgs/data-usage/compare-pe.gif'/></p>
-
-### 融资融券趋势
-<p align="center"><img src='./docs/imgs/data-usage/margin-trending.gif'/></p>
-
-### 外资资金流(沪/深港通)
-<p align="center"><img src='./docs/imgs/data-usage/cross-market-trading.gif'/></p>
-
-### 分红比较
-<p align="center"><img src='./docs/imgs/data-usage/compare-dividend.gif'/></p>
-
-### 多标的分红融资对比
-<p align="center"><img src='./docs/imgs/data-usage/filter-entity.gif'/></p>
-
-### 资产负债表分析
-<p align="center"><img src='./docs/imgs/data-usage/balance-sheet.gif'/></p>
-
-### 自定义factor
-<p align="center"><img src='./docs/imgs/data-usage/tech-factor.gif'/></p>
-
-
-[*trader examples*](./examples)  
-
-### 算法交易信号和性能
-<p align="center"><img src='./docs/imgs/trader_list_view.gif'/></p>
-
-### 多标的交易
-<p align="center"><img src='./docs/imgs/multiple-stock-macd.gif'/></p>
-
-### 1分钟实时数字货币交易
-<p align="center"><img src='./docs/imgs/realtime_signals.gif'/></p>
-
-### 选股器的应用
-<p align="center"><img src='./docs/imgs/fundamental-selector-in-notebook.png'/></p>
-
-<p align="center"><img src='./docs/imgs/technical-selector-in-notebook.gif'/></p>
-
-整个框架有着极高的可扩展性，只需要写极少的代码就可以对各模块进行扩展，各模块的扩展教程待完善，也需要大家的贡献。
 ##  ✨ 特性
-
 - **丰富全面开箱即用且可持续增量更新的数据**
     - A股数据:行情,财务报表,大股东行为,高管交易,分红融资详情,个股板块资金流向,融资融券,龙虎榜等数据
     - 市场整体pe,pb,资金流，融资融券，外资动向等数据
@@ -76,12 +27,26 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 - **简洁可扩展的数据框架**
 - **统一简洁的API,支持sql查询,支持pandas**
 - 可扩展的factor,对单标的和多标的的运算抽象了一种统一的计算方式
-- **简洁统一的可视化分析方式**
 - **支持多标的,多factor,多级别的回测方式**
 - 支持交易信号和策略使用到的factor的实时可视化
 - 支持多种实盘交易(实现中)
 
 ##  🔰安装
+
+### 注册聚宽(可选)
+项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，网易,交易所，ccxt等免费数据。
+
+但免费数据的缺点是显而易见的:不稳定，爬取清洗数据耗时耗力，维护代价巨大，且随时可能不可用。  
+个人建议：如果只是学习研究，可以使用免费数据；如果是真正有意投身量化，还是选一家可靠的数据提供商。
+
+项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）
+https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
+
+需要提高每日使用限额或者购买也可加我微信(foolcage)，可申请相应的优惠
+
+> 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
+
+> 添加其他数据提供商，请参考[数据扩展教程](http://www.foolcage.com/#/data_extending)
 
 ### 快速开始(只需3部)
 #### 1.clone代码
@@ -115,10 +80,6 @@ DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'
 
 把下载的数据解压到DATA_PATH
 
-运行主程序
-```
-python3 index.py
-```
 
 增量更新数据，只需要运行[recorders](./zvt/recorders)里面的脚本
 
