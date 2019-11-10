@@ -106,3 +106,5 @@ data.tar.gz
 # zen/
 
 node_modules/
+
+*running.ipynb
