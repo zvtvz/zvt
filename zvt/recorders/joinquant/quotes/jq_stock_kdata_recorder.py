@@ -66,10 +66,10 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
             if kdatas:
                 self.logger.info('recomputing {} qfq kdata,factor is:{}'.format(entity.code, self.factor))
                 for kdata in kdatas:
-                    kdata.open = kdata.open * self.factor
-                    kdata.close = kdata.close * self.factor
-                    kdata.high = kdata.high * self.factor
-                    kdata.low = kdata.low * self.factor
+                    kdata.open = round(kdata.open * self.factor, 2)
+                    kdata.close = round(kdata.close * self.factor, 2)
+                    kdata.high = round(kdata.high * self.factor, 2)
+                    kdata.low = round(kdata.low * self.factor, 2)
                 self.session.add_all(kdatas)
                 self.session.commit()
 
@@ -134,8 +134,8 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1m', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=['000338'], nargs='+')
+    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
+    parser.add_argument('--codes', help='codes', default=['000778'], nargs='+')
 
     args = parser.parse_args()
 
