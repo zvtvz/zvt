@@ -98,7 +98,7 @@ setup(
     # project page. What does your project relate to?
     #
     # Note that this is a string of words separated by whitespace, not a list.
-    keywords='ml quant stock finance fintech big-data tushare vnpy technical-analysis trading-platform pandas fundamental-analysis',
+    keywords='ml quant stock finance fintech big-data tushare vnpy zvt technical-analysis trading-platform pandas fundamental-analysis',
     # Optional
 
     # You can just specify package directories manually here if your project is
@@ -110,7 +110,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['examples', 'contrib', 'docs', 'tests', 've']),  # Required
+    packages=find_packages(exclude=['examples', 'contrib', 'docs', 'tests', 've', 'research']),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -121,8 +121,8 @@ setup(
 
     install_requires=['Scrapy>=1.5.1', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2', 'arrow>=0.11.0',
                       'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0', 'jqdatasdk', 'demjson>=2.2.4',
-                      'marshmallow-sqlalchemy',
-                      'ccxt>=1.17.191', 'dash>=1.1.1', 'dash-daq>=0.1.0'],  # Optional
+                      'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191', 'plotly>=4.1.0','simplejson>=3.16.0'
+                      'html5lib>=1.0.1', 'schedule>=0.6.0'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

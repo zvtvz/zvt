@@ -7,11 +7,11 @@ DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # please change the path to your real store path
 DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
-HTTP_PROXY = 'http://127.0.0.1:10080'
+HTTP_PROXY = 'http://127.0.0.1:1087'
 if not HTTP_PROXY:
     HTTP_PROXY = os.environ.get('HTTP_PROXY')
 
-HTTPS_PROXY = 'http://127.0.0.1:10080'
+HTTPS_PROXY = 'http://127.0.0.1:1087'
 if not HTTPS_PROXY:
     HTTPS_PROXY = os.environ.get('HTTPS_PROXY')
 
