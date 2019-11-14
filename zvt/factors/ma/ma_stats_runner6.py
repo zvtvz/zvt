@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=19, minute=30)
+@sched.scheduled_job('cron', hour=20, minute=30)
 def run():
-    cal_ma_states(start='600000', end='600200')
+    cal_ma_states(start='601000', end='999999')
 
 
 if __name__ == '__main__':
-    init_log('ma_stats_runner4.log')
+    init_log('ma_stats_runner6.log')
 
     run()
 

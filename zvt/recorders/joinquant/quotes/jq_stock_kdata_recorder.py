@@ -115,7 +115,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                 old = current_df.iloc[0, :]['close']
                 new = check_df['close'][0]
                 # 相同时间的close不同，表明前复权需要重新计算
-                if old != new:
+                if round(old, 2) != round(new, 2):
                     self.factor = new / old
                     self.last_timestamp = pd.Timestamp(check_date)
 
