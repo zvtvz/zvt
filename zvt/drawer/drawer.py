@@ -14,11 +14,22 @@ from zvt.domain import Stock1dKdata, Stock1dMaStateStats
 
 
 class Drawer(object):
-    def __init__(self, data: NormalData, sub_data: NormalData = None, annotation_df: pd.DataFrame = None) -> None:
+    def __init__(self,
+                 main_df: pd.DataFrame = None,
+                 sub_df: pd.DataFrame = None,
+                 main_data: NormalData = None,
+                 sub_data: NormalData = None,
+                 annotation_df: pd.DataFrame = None) -> None:
         # 主图数据
-        self.main_data: NormalData = data
+        if main_data is None:
+            main_data = NormalData(main_df)
+        self.main_data: NormalData = main_data
+
         # 副图数据
+        if sub_data is None:
+            sub_data = NormalData(sub_df)
         self.sub_data: NormalData = sub_data
+
         # 主图的标记数据
         self.annotation_df = annotation_df
 
@@ -386,7 +397,7 @@ if __name__ == '__main__':
     #
     # drawer = Drawer(data=NormalData(df=df.loc[:, ['close']]))
     # drawer.draw_histogram(entity_in_subplot=True)
-    drawer = Drawer(data=NormalData(df), sub_data=NormalData(df1[['current_count']]))
+    drawer = Drawer(df, df1[['current_count']])
     drawer.draw_kline()
 
     # df1 = df.copy()
