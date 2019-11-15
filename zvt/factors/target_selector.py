@@ -11,7 +11,7 @@ from zvt.drawer.drawer import Drawer
 from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
-from zvdata.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.quote import get_securities_in_blocks
 
 
