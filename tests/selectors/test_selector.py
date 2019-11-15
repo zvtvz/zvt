@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from zvdata import IntervalLevel
+from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
-from zvt.factors.technical_factor import CrossMaFactor, BullFactor
+from zvt.factors.technical_factor import BullFactor
 from ..context import init_test_context
 
 init_test_context()
@@ -39,6 +40,9 @@ def test_cross_ma_selector():
                                          entity_type=entity_type,
                                          start_timestamp=start_timestamp,
                                          end_timestamp=end_timestamp,
+                                         computing_window=10,
+                                         windows=[5,10],
+                                         need_persist=False,
                                          level=IntervalLevel.LEVEL_1DAY))
     my_selector.run()
     print(my_selector.open_long_df)

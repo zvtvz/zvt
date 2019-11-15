@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from zvdata import IntervalLevel
 from zvt.factors.algorithm import MaTransformer, MacdTransformer
+from zvt.factors.ma.ma_factor import CrossMaFactor
 from ..context import init_test_context
 
 init_test_context()
 
-from zvt.factors.technical_factor import TechnicalFactor, CrossMaFactor
+from zvt.factors.technical_factor import TechnicalFactor
 
 
 def test_ma():
@@ -77,8 +78,7 @@ def test_cross_ma():
                            end_timestamp='2019-06-10',
                            level=IntervalLevel.LEVEL_1DAY,
                            provider='joinquant',
-                           short_window=5,
-                           long_window=10)
+                           windows=[5,10])
     print(factor.get_factor_df().tail())
     print(factor.get_result_df().tail())
 
@@ -86,9 +86,9 @@ def test_cross_ma():
 
     assert score[('stock_sz_000338', '2019-06-03')] == True
     assert score[('stock_sz_000338', '2019-06-04')] == True
-    assert score[('stock_sz_000338', '2019-06-05')] == False
-    assert score[('stock_sz_000338', '2019-06-06')] == False
-    assert score[('stock_sz_000338', '2019-06-10')] == False
+    assert ('stock_sz_000338', '2019-06-05') not in score or score[('stock_sz_000338', '2019-06-05')] == False
+    assert ('stock_sz_000338', '2019-06-06') not in score or score[('stock_sz_000338', '2019-06-06')] == False
+    assert ('stock_sz_000338', '2019-06-10') not in score or score[('stock_sz_000338', '2019-06-10')] == False
 
     factor.move_on()
     score = factor.get_result_df()['score']

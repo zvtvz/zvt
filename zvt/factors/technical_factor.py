@@ -53,42 +53,6 @@ class TechnicalFactor(Factor):
 
     for_json = __json__  # supported by simplejson
 
-
-class CrossMaFactor(TechnicalFactor):
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'joinquant',
-                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-                 need_persist: bool = False,
-                 dry_run: bool = False,
-                 # child added arguments
-                 short_window=5,
-                 long_window=10) -> None:
-        self.short_window = short_window
-        self.long_window = long_window
-
-        transformer = MaTransformer(windows=[short_window, long_window])
-
-        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         columns, filters, order, limit, provider, level, 'entity_id', 'timestamp', long_window,
-                         False, None, None, transformer, None, need_persist, dry_run)
-
-    def do_compute(self):
-        super().do_compute()
-        s = self.factor_df['ma{}'.format(self.short_window)] > self.factor_df['ma{}'.format(self.long_window)]
-        self.result_df = s.to_frame(name='score')
-
-
 class BullFactor(TechnicalFactor):
     def __init__(self,
                  entity_ids: List[str] = None,
