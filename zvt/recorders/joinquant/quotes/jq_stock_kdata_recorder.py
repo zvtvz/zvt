@@ -135,7 +135,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=['000778'], nargs='+')
+    parser.add_argument('--codes', help='codes', default=['000001'], nargs='+')
 
     args = parser.parse_args()
 
