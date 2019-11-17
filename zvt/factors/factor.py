@@ -76,7 +76,33 @@ class Factor(DataReader, DataListener, Jsonable):
                  accumulator: Accumulator = None,
                  need_persist: bool = True,
                  dry_run: bool = False) -> None:
+        """
 
+        :param data_schema:
+        :param entity_ids:
+        :param entity_type:
+        :param exchanges:
+        :param codes:
+        :param the_timestamp:
+        :param start_timestamp:
+        :param end_timestamp:
+        :param columns:
+        :param filters:
+        :param order:
+        :param limit:
+        :param provider:
+        :param level:
+        :param category_field:
+        :param time_field:
+        :param computing_window:
+        :param keep_all_timestamp:
+        :param fill_method:
+        :param effective_number:
+        :param transformer:
+        :param accumulator:
+        :param need_persist:
+        :param dry_run:
+        """
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level,
                          category_field, time_field, computing_window)
@@ -92,10 +118,10 @@ class Factor(DataReader, DataListener, Jsonable):
         self.need_persist = need_persist
         self.dry_run = dry_run
 
-        # 计算因子的结果，可持久化
-        self.factor_df: pd.DataFrame = None
         # 中间结果，不持久化
         self.pipe_df: pd.DataFrame = None
+        # 计算因子的结果，可持久化,通过对pipe_df的计算得到
+        self.factor_df: pd.DataFrame = None
         # result_df是用于选股的标准df
         self.result_df: pd.DataFrame = None
 

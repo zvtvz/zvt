@@ -94,6 +94,6 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = CrossMaFactor(codes=codes, start_timestamp='2005-01-01',
+    factor = MaFactor(codes=['000001'], start_timestamp='2005-01-01',
                            end_timestamp=now_pd_timestamp(),
                            level=level)

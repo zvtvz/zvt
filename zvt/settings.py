@@ -19,10 +19,10 @@ if not HTTPS_PROXY:
 SMTP_HOST = 'smtpdm.aliyun.com'
 SMTP_PORT = '80'
 
-EMAIL_USER_NAME = ''
+EMAIL_USERNAME = ''
 
-if not EMAIL_USER_NAME:
-    EMAIL_USER_NAME = os.environ.get('EMAIL_USER_NAME')
+if not EMAIL_USERNAME:
+    EMAIL_USERNAME = os.environ.get('EMAIL_USERNAME')
 
 EMAIL_PASSWORD = ''
 if not EMAIL_PASSWORD:

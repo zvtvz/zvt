@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 import requests
 import schedule
 
-from zvt.settings import SMTP_HOST, SMTP_PORT, EMAIL_USER_NAME, EMAIL_PASSWORD, WECHAT_APP_ID, WECHAT_APP_SECRECT
+from zvt.settings import SMTP_HOST, SMTP_PORT, EMAIL_USERNAME, EMAIL_PASSWORD, WECHAT_APP_ID, WECHAT_APP_SECRECT
 
 
 class Informer(object):
@@ -27,10 +27,10 @@ class EmailInformer(Informer):
     def send_message(self, to_user, title, body, **kwargs):
         smtp_client = smtplib.SMTP()
         smtp_client.connect(SMTP_HOST, SMTP_PORT)
-        smtp_client.login(EMAIL_USER_NAME, EMAIL_PASSWORD)
+        smtp_client.login(EMAIL_USERNAME, EMAIL_PASSWORD)
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(title).encode()
-        msg['From'] = "{} <{}>".format(Header('zvt').encode(), EMAIL_USER_NAME)
+        msg['From'] = "{} <{}>".format(Header('zvt').encode(), EMAIL_USERNAME)
         msg['To'] = to_user
 
         msg['Message-id'] = email.utils.make_msgid()
@@ -40,7 +40,7 @@ class EmailInformer(Informer):
         msg.attach(plain_text)
 
         try:
-            smtp_client.sendmail(EMAIL_USER_NAME, to_user, msg.as_string())
+            smtp_client.sendmail(EMAIL_USERNAME, to_user, msg.as_string())
         except Exception as e:
             self.logger.exception('send email failed', e)
 
@@ -128,10 +128,10 @@ class WechatInformer(Informer):
 
 
 if __name__ == '__main__':
-    # email_action = EmailAction()
-    # for i in range(2):
-    #     email_action.send_message("5533061@qq.com", 'helo{}'.format(i), 'just a test')
+    email_action = EmailInformer()
+    for i in range(2):
+        email_action.send_message("5533061@qq.com", 'helo{}'.format(i), 'just a test')
 
-    weixin_action = WechatInformer()
-    weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',
-                                          current_price=1000, change_pct='0.5%')
+    # weixin_action = WechatInformer()
+    # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',
+    #                                       current_price=1000, change_pct='0.5%')
