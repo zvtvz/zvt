@@ -106,6 +106,7 @@ class Factor(DataReader, DataListener, Jsonable):
         :param persist_factor:
         :param dry_run:
         """
+        self.entity_type = entity_type
         if self.entity_type == 'stock':
             self.entity_provider = 'eastmoney'
         elif self.entity_type == 'coin':
