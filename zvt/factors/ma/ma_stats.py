@@ -23,6 +23,7 @@ class MaAccumulator(Accumulator):
 
         self.current_col = 'current_count'
         self.total_col = 'total_count'
+        self.acc_window = 1
 
     def acc(self, input_df, acc_df) -> pd.DataFrame:
         short_ma_col = 'ma{}'.format(self.short_window)
@@ -31,9 +32,13 @@ class MaAccumulator(Accumulator):
         input_df['score'] = input_df[short_ma_col] > input_df[long_ma_col]
 
         if pd_is_not_null(acc_df):
-            input_df = input_df[~input_df['id'].isin(acc_df['id'])]
+            dfs = []
+            for entity_id, df in input_df.groupby(level=0):
+                if entity_id in acc_df.index.levels[0]:
+                    df = df[df.timestamp > acc_df.loc[(entity_id,)].index[-1]]
+                dfs.append(df)
 
-        input_df = input_df.copy()
+            input_df = pd.concat(dfs, sort=False)
 
         for entity_id, df in input_df.groupby(level=0):
             count = 0
@@ -49,7 +54,7 @@ class MaAccumulator(Accumulator):
                 else:
                     continue
 
-                # 计算维持状态的 次数 和相应的 面积
+                # 计算维持状态的 次数
                 if current_state == state:
                     if count > 0:
                         count = count + 1
@@ -67,7 +72,7 @@ class MaAccumulator(Accumulator):
                         count = -1
 
                     # 增量计算，需要累加之前的结果
-                    if pd_is_not_null(acc_df):
+                    if pd_is_not_null(acc_df) and abs(count) == 1:
                         if entity_id in acc_df.index.levels[0]:
                             acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][self.current_col]
                             if not pd.isna(acc_col_current):
