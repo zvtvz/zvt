@@ -31,7 +31,7 @@ class TechnicalFactor(Factor):
                  effective_number: int = 10,
                  transformer: Transformer = MacdTransformer(),
                  accumulator: Accumulator = None,
-                 need_persist: bool = False,
+                 persist_factor: bool = False,
                  dry_run: bool = True) -> None:
         self.data_schema = get_kdata_schema(entity_type, level=level)
 
@@ -44,7 +44,7 @@ class TechnicalFactor(Factor):
         super().__init__(self.data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          computing_window, keep_all_timestamp, fill_method, effective_number,
-                         transformer, accumulator, need_persist, dry_run)
+                         transformer, accumulator, persist_factor, dry_run)
 
     def __json__(self):
         result = super().__json__()
@@ -70,12 +70,12 @@ class BullFactor(TechnicalFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 need_persist: bool = False, dry_run: bool = False) -> None:
+                 persist_factor: bool = False, dry_run: bool = False) -> None:
         transformer = MacdTransformer()
 
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                          columns, filters, order, limit, provider, level, category_field, time_field, 26,
-                         False, None, None, transformer, None, need_persist, dry_run)
+                         False, None, None, transformer, None, persist_factor, dry_run)
 
     def do_compute(self):
         super().do_compute()

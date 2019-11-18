@@ -121,7 +121,7 @@ class MaStateStas(TechnicalFactor):
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
-                 need_persist: bool = True,
+                 persist_factor: bool = True,
                  dry_run: bool = True,
                  # added fields
                  short_window: int = 5,
@@ -136,7 +136,7 @@ class MaStateStas(TechnicalFactor):
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          computing_window, keep_all_timestamp, fill_method, effective_number, transformer, acc,
-                         need_persist, dry_run)
+                         persist_factor, dry_run)
 
 
 if __name__ == '__main__':

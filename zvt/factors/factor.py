@@ -27,6 +27,9 @@ class Transformer(object):
 class Accumulator(object):
     logger = logging.getLogger(__name__)
 
+    def __init__(self, acc_window: int = 1) -> None:
+        self.acc_window = acc_window
+
     def acc(self, input_df, acc_df) -> pd.DataFrame:
         return acc_df
 
@@ -74,7 +77,7 @@ class Factor(DataReader, DataListener, Jsonable):
                  effective_number: int = 10,
                  transformer: Transformer = None,
                  accumulator: Accumulator = None,
-                 need_persist: bool = True,
+                 persist_factor: bool = True,
                  dry_run: bool = False) -> None:
         """
 
@@ -100,11 +103,18 @@ class Factor(DataReader, DataListener, Jsonable):
         :param effective_number:
         :param transformer:
         :param accumulator:
-        :param need_persist:
+        :param persist_factor:
         :param dry_run:
         """
-        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level,
+        if self.entity_type == 'stock':
+            self.entity_provider = 'eastmoney'
+        elif self.entity_type == 'coin':
+            self.entity_provider = 'ccxt'
+        else:
+            self.entity_provider = 'joinquant'
+
+        super().__init__(data_schema, self.entity_provider, entity_ids, entity_type, exchanges, codes, the_timestamp,
+                         start_timestamp, end_timestamp, columns, filters, order, limit, provider, level,
                          category_field, time_field, computing_window)
 
         self.factor_name = type(self).__name__.lower()
@@ -115,35 +125,27 @@ class Factor(DataReader, DataListener, Jsonable):
         self.transformer = transformer
         self.accumulator = accumulator
 
-        self.need_persist = need_persist
+        self.persist_factor = persist_factor
         self.dry_run = dry_run
 
         # 中间结果，不持久化
         self.pipe_df: pd.DataFrame = None
         # 计算因子的结果，可持久化,通过对pipe_df的计算得到
         self.factor_df: pd.DataFrame = None
-        # result_df是用于选股的标准df
+        # result_df是用于选股的标准df,通过对factor_df的计算得到
         self.result_df: pd.DataFrame = None
 
-        # 如果是accumulate类的运算，需要利用之前的factor_df,比如全市场的一些统计信息
-        if self.need_persist:
-            # 如果只是为了计算因子，只需要读取valid_window的factor_df
+        if self.persist_factor:
             if self.dry_run:
-                self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema)
+                # 如果只是为了计算因子，只需要读取acc_window的factor_df
+                if self.accumulator is not None:
+                    self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema,
+                                                         window=accumulator.acc_window)
             else:
                 self.factor_df = get_data(provider='zvt',
                                           data_schema=self.factor_schema,
                                           start_timestamp=self.start_timestamp,
                                           index=[self.category_field, self.time_field])
-
-        if pd_is_not_null(self.factor_df):
-            dfs = []
-            for entity_id, df in self.data_df.groupby(level=0):
-                if entity_id in self.factor_df.index.levels[0]:
-                    df = df[df.timestamp >= self.factor_df.loc[(entity_id,)].index[0]]
-                dfs.append(df)
-
-            self.data_df = pd.concat(dfs)
 
         self.register_data_listener(self)
 
@@ -165,7 +167,7 @@ class Factor(DataReader, DataListener, Jsonable):
     def after_compute(self):
         self.fill_gap()
 
-        if self.need_persist:
+        if self.persist_factor:
             self.persist_result()
 
     def compute(self):
@@ -254,20 +256,7 @@ class Factor(DataReader, DataListener, Jsonable):
         pass
 
     def persist_result(self):
-        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt')
-
-    def get_latest_saved_pipe(self):
-        order = eval('self.factor_schema.{}.desc()'.format(self.time_field))
-
-        records = get_data(provider=self.provider,
-                           data_schema=self.pipe_schema,
-                           order=order,
-                           limit=1,
-                           return_type='domain',
-                           session=self.session)
-        if records:
-            return records[0]
-        return None
+        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt', force_update=True)
 
 
 class FilterFactor(Factor):
@@ -285,13 +274,13 @@ class ScoreFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = 10, transformer: Transformer = None,
-                 need_persist: bool = True,
+                 persist_factor: bool = True,
                  dry_run: bool = True,
                  scorer: Scorer = None) -> None:
         self.scorer = scorer
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         keep_all_timestamp, fill_method, effective_number, transformer, need_persist,
+                         keep_all_timestamp, fill_method, effective_number, transformer, persist_factor,
                          dry_run)
 
     def do_compute(self):

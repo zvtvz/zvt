@@ -34,7 +34,7 @@ class MaFactor(TechnicalFactor):
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
-                 need_persist: bool = True,
+                 persist_factor: bool = True,
                  dry_run: bool = True,
                  windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
         self.factor_schema = get_ma_factor_schema(entity_type=entity_type, level=level)
@@ -45,7 +45,7 @@ class MaFactor(TechnicalFactor):
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          computing_window, keep_all_timestamp, fill_method, effective_number, transformer, None,
-                         need_persist, dry_run)
+                         persist_factor, dry_run)
 
 
 class CrossMaFactor(MaFactor):
@@ -56,10 +56,10 @@ class CrossMaFactor(MaFactor):
                  provider: str = 'joinquant', level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = 250,
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = 10,
-                 need_persist: bool = True, dry_run=False, windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
+                 persist_factor: bool = True, dry_run=False, windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                          columns, filters, order, limit, provider, level, category_field, time_field, computing_window,
-                         keep_all_timestamp, fill_method, effective_number, need_persist, dry_run,
+                         keep_all_timestamp, fill_method, effective_number, persist_factor, dry_run,
                          windows=windows)
 
     def do_compute(self):
