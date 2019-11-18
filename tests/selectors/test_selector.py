@@ -42,7 +42,7 @@ def test_cross_ma_selector():
                                          end_timestamp=end_timestamp,
                                          computing_window=10,
                                          windows=[5,10],
-                                         need_persist=False,
+                                         persist_factor=False,
                                          level=IntervalLevel.LEVEL_1DAY))
     my_selector.run()
     print(my_selector.open_long_df)

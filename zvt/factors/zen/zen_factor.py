@@ -82,28 +82,14 @@ class ZenAccumulator(Accumulator):
 
 
 class ZenFactor(TechnicalFactor):
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'joinquant',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = 10,
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10,
-                 need_persist: bool = True,
-                 dry_run: bool = True) -> None:
+    def __init__(self, data_schema: List[str], entity_ids: str = None, entity_type: List[str] = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'], codes: Union[str, pd.Timestamp] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: List = None, columns: List = None, filters: object = None, order: int = None,
+                 limit: str = None, provider: Union[str, IntervalLevel] = 'eastmoney',
+                 level: str = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: int = 'timestamp', computing_window: bool = 250, keep_all_timestamp: str = False,
+                 fill_method: int = 'ffill', effective_number: bool = 10, transformer: bool = None -> None:
         self.factor_schema = get_zen_factor_schema(entity_type=entity_type, level=level)
 
         transformer: Transformer = None
@@ -112,7 +98,7 @@ class ZenFactor(TechnicalFactor):
         super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          computing_window, keep_all_timestamp, fill_method, effective_number, transformer, acc,
-                         need_persist, dry_run)
+                         persist_factor, dry_run)
 
 
 if __name__ == '__main__':

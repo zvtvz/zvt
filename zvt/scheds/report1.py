@@ -43,7 +43,7 @@ def every_day_report():
 
             email_action = EmailInformer()
             msg = '\n'.join(long_targets)
-            email_action.send_message("5533061@qq.com", msg, f'{today} 选股结果')
+            email_action.send_message("5533061@qq.com", f'{today} 选股结果', msg)
 
             break
         except Exception as e:
