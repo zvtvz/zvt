@@ -35,10 +35,10 @@ def every_day_report():
             ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON).run()
 
             # 计算均线
-            my_selector = TargetSelector(start_timestamp='2017-01-01', end_timestamp=today)
+            my_selector = TargetSelector(start_timestamp='2005-01-01', end_timestamp=today)
             # add the factors
             # 设置dry_run为True，因为我们只需要最近的数据，不需要加载全量数据进行回测
-            ma_factor = CrossMaFactor(start_timestamp='2017-01-01', end_timestamp=today, dry_run=True)
+            ma_factor = CrossMaFactor(start_timestamp='2005-01-01', end_timestamp=today, dry_run=True)
 
             my_selector.add_filter_factor(ma_factor)
 
