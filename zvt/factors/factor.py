@@ -163,12 +163,31 @@ class Factor(DataReader, DataListener, Jsonable):
                 if self.accumulator is not None:
                     self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema,
                                                          window=accumulator.acc_window)
+
             else:
                 self.factor_df = get_data(provider='zvt',
                                           data_schema=self.factor_schema,
                                           start_timestamp=self.start_timestamp,
                                           end_timestamp=self.end_timestamp,
                                           index=[self.category_field, self.time_field])
+
+            # 根据已经计算的factor_df和computing_window来保留data_df
+            if pd_is_not_null(self.data_df):
+                dfs = []
+                for entity_id, df in self.data_df.groupby(level=0):
+                    latest_laved = get_data(provider='zvt',
+                                            data_schema=self.factor_schema,
+                                            entity_id=entity_id,
+                                            order=self.factor_schema.timestamp.desc(),
+                                            limit=1,
+                                            index=[self.category_field, self.time_field], return_type='domain')
+                    if latest_laved:
+                        df1 = df[df.timestamp < latest_laved[0].timestamp].iloc[-self.computing_window:]
+                        if pd_is_not_null(df1):
+                            df = df[df.timestamp >= df1.iloc[0].timestamp]
+                    dfs.append(df)
+
+                self.data_df = pd.concat(dfs)
 
         self.register_data_listener(self)
 
@@ -279,7 +298,7 @@ class Factor(DataReader, DataListener, Jsonable):
         pass
 
     def persist_result(self):
-        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt', force_update=True)
+        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt', force_update=False)
 
 
 class FilterFactor(Factor):
