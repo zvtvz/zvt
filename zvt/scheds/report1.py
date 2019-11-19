@@ -49,9 +49,11 @@ def every_day_report():
                 df = get_entities(provider='eastmoney', entity_schema=Stock, entity_ids=long_targets,
                                   columns=['code', 'name'])
                 info = [df.loc[i, 'code'] + ' ' + df.loc[i, 'name'] for i in df.index]
-                msg = '\n'.join(info)
+                msg = ' '.join(info)
             else:
                 msg = 'no targets'
+
+            logger.info(msg)
 
             email_action = EmailInformer()
             email_action.send_message("5533061@qq.com", f'{today} 选股结果', msg)
