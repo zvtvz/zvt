@@ -31,6 +31,7 @@ class MaAccumulator(Accumulator):
 
         input_df['score'] = input_df[short_ma_col] > input_df[long_ma_col]
 
+        # 过滤掉已经计算的时间
         if pd_is_not_null(acc_df):
             dfs = []
             for entity_id, df in input_df.groupby(level=0):
@@ -44,6 +45,7 @@ class MaAccumulator(Accumulator):
             count = 0
             current_state = None
             pre_index = None
+            check_acc = False
             for index, item in df['score'].iteritems():
                 # ５日线在１０日线之上
                 if item:
@@ -54,7 +56,7 @@ class MaAccumulator(Accumulator):
                 else:
                     continue
 
-                # 计算维持状态的 次数
+                # 计算维持状态（'up','down'）的 次数
                 if current_state == state:
                     if count > 0:
                         count = count + 1
@@ -72,7 +74,7 @@ class MaAccumulator(Accumulator):
                         count = -1
 
                     # 增量计算，需要累加之前的结果
-                    if pd_is_not_null(acc_df) and abs(count) == 1:
+                    if pd_is_not_null(acc_df) and not check_acc:
                         if entity_id in acc_df.index.levels[0]:
                             acc_col_current = acc_df.loc[(entity_id,)].iloc[-1][self.current_col]
                             if not pd.isna(acc_col_current):
@@ -82,10 +84,11 @@ class MaAccumulator(Accumulator):
                                 # down
                                 elif acc_col_current < 0 and (current_state == 'down'):
                                     count = acc_col_current - 1
+                                # state has changed
                                 else:
-                                    # state has changed
                                     pre_timestamp = acc_df.loc[(entity_id,), 'timestamp'][-1]
                                     acc_df.loc[(entity_id, pre_timestamp), self.total_col] = acc_col_current
+                        check_acc = True
 
                 # 设置目前状态
                 input_df.loc[index, self.current_col] = count
@@ -148,8 +151,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--start', help='start code', default='000001')
-    parser.add_argument('--end', help='end code', default='000005')
+    parser.add_argument('--start', help='start code', default='000338')
+    parser.add_argument('--end', help='end code', default='000339')
 
     args = parser.parse_args()
 
