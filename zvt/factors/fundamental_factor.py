@@ -4,10 +4,11 @@ from typing import List, Union
 import pandas as pd
 
 from zvdata import IntervalLevel
-from zvt.factors.factor import Factor, ScoreFactor
-from zvt.factors.algorithm import Scorer, RankScorer
 from zvdata.utils.pd_utils import normal_index_df
 from zvt.domain import FinanceFactor, IndexMoneyFlow
+from zvt.factors import Transformer, Accumulator
+from zvt.factors.algorithm import Scorer, RankScorer
+from zvt.factors.factor import Factor, ScoreFactor
 
 
 class FinanceBaseFactor(Factor):
@@ -20,32 +21,31 @@ class FinanceBaseFactor(Factor):
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
+                 columns: List = None, filters: List = None,
                  order: object = None,
                  limit: int = None,
                  provider: str = 'eastmoney',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10) -> None:
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = 10, transformer: Transformer = None,
+                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                           keep_all_timestamp, fill_method, effective_number, persist)
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         persist_factor, dry_run)
 
 
 class GoodCompanyFactor(FinanceBaseFactor):
-    def __init__(self,
+    def __init__(self, data_schema=FinanceFactor,
                  entity_ids: List[str] = None,
+                 entity_type: str = 'stock',
+                 exchanges: List[str] = ['sh', 'sz'],
                  codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = '2005-01-01',
                  end_timestamp: Union[str, pd.Timestamp] = None,
                  columns: List = [FinanceFactor.roe,
                                   FinanceFactor.op_income_growth_yoy,
@@ -60,19 +60,25 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-
-
+                 computing_window: int = None,
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 persist_factor: bool = False,
+                 dry_run: bool = False,
                  # 3 years
                  window='1095d',
-                 count=12) -> None:
+                 count=12
+                 ) -> None:
         self.window = window
         self.count = count
-        super().__init__(FinanceFactor, entity_ids, 'stock', ['sh', 'sz'], codes, the_timestamp, start_timestamp,
+
+        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                           keep_all_timestamp, fill_method, effective_number)
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         persist_factor, dry_run)
 
     def do_compute(self):
         def filter_df(df):
@@ -124,14 +130,13 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
 
-
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
         super().__init__(IndexMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                           keep_all_timestamp, fill_method, effective_number, scorer)
+                         keep_all_timestamp, fill_method, effective_number, scorer)
 
     def do_compute(self):
         self.pipe_df = self.data_df.copy()
@@ -144,4 +149,5 @@ class IndexMoneyFlowFactor(ScoreFactor):
 
 
 if __name__ == '__main__':
-    f1 = IndexMoneyFlowFactor(start_timestamp='2019-01-01')
+    f1 = GoodCompanyFactor()
+    print(f1.result_df)
