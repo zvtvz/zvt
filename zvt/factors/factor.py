@@ -20,24 +20,40 @@ class Transformer(object):
 
     indicator_cols = []
 
-    def transform(self, input_df) -> pd.DataFrame:
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        transform input_df
+
+        :param input_df:
+        :return:
+        """
         return input_df
 
 
 class Accumulator(object):
     logger = logging.getLogger(__name__)
 
-    def __init__(self, acc_window: int = 1) -> None:
+    def __init__(self, acc_window: int = 1) -> object:
+        """
+
+        :param acc_window: the window size of acc for computing,default is 1
+        """
         self.acc_window = acc_window
 
-    def acc(self, input_df, acc_df) -> pd.DataFrame:
+    def acc(self, input_df: pd.DataFrame, acc_df: pd.DataFrame) -> object:
+        """
+
+        :param input_df:
+        :param acc_df:
+        :return:
+        """
         return acc_df
 
 
 class Scorer(object):
     logger = logging.getLogger(__name__)
 
-    def score(self, input_df) -> pd.DataFrame:
+    def score(self, input_df: pd.DataFrame) -> object:
         return input_df
 
 
@@ -70,7 +86,7 @@ class Factor(DataReader, DataListener, Jsonable):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
-                 computing_window: int = 250,
+                 computing_window: int = None,
                  # child added arguments
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
@@ -97,14 +113,14 @@ class Factor(DataReader, DataListener, Jsonable):
         :param level:
         :param category_field:
         :param time_field:
-        :param computing_window:
-        :param keep_all_timestamp:
+        :param computing_window: the window size for computing factor
+        :param keep_all_timestamp: whether fill all timestamp gap,default False
         :param fill_method:
         :param effective_number:
         :param transformer:
         :param accumulator:
-        :param persist_factor:
-        :param dry_run:
+        :param persist_factor: whether persist factor
+        :param dry_run: True for just computing factor, False for backtesting
         """
         self.entity_type = entity_type
         if self.entity_type == 'stock':
@@ -130,10 +146,15 @@ class Factor(DataReader, DataListener, Jsonable):
         self.dry_run = dry_run
 
         # 中间结果，不持久化
+        # data_df->pipe_df
         self.pipe_df: pd.DataFrame = None
+
         # 计算因子的结果，可持久化,通过对pipe_df的计算得到
+        # pipe_df->factor_df
         self.factor_df: pd.DataFrame = None
+
         # result_df是用于选股的标准df,通过对factor_df的计算得到
+        # factor_df->result_df
         self.result_df: pd.DataFrame = None
 
         if self.persist_factor:
@@ -146,6 +167,7 @@ class Factor(DataReader, DataListener, Jsonable):
                 self.factor_df = get_data(provider='zvt',
                                           data_schema=self.factor_schema,
                                           start_timestamp=self.start_timestamp,
+                                          end_timestamp=self.end_timestamp,
                                           index=[self.category_field, self.time_field])
 
         self.register_data_listener(self)
