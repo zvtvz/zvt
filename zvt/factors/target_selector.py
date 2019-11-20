@@ -7,12 +7,12 @@ import pandas as pd
 from pandas import DataFrame
 
 from zvdata import IntervalLevel
-from zvt.drawer.drawer import Drawer
-from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
-from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.api.quote import get_securities_in_blocks
+from zvt.drawer.drawer import Drawer
+from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 
 
 class TargetType(Enum):
@@ -187,8 +187,8 @@ class TargetSelector(object):
             long_result = self.score_result[self.score_result.score >= self.long_threshold]
             short_result = self.score_result[self.score_result.score <= self.short_threshold]
         else:
-            long_result = self.filter_result[self.filter_result.score]
-            short_result = self.filter_result[~self.filter_result.score]
+            long_result = self.filter_result[self.filter_result.score == True]
+            short_result = self.filter_result[self.filter_result.score == False]
 
         # filter in blocks
         if self.block_selector:
