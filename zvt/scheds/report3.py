@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=16, minute=20)
+@sched.scheduled_job('cron', hour=18, minute=50)
 def every_day_report():
     while True:
         try:
