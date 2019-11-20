@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import operator
+from itertools import accumulate
 from typing import List, Union
 
 import pandas as pd
@@ -70,10 +72,11 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  dry_run: bool = False,
                  # 3 years
                  window='1095d',
-                 count=10
-                 ) -> None:
+                 count=10,
+                 col_threshold={'roe': 0.03}) -> None:
         self.window = window
         self.count = count
+        self.col_threshold = col_threshold
 
         super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
@@ -85,13 +88,20 @@ class GoodCompanyFactor(FinanceBaseFactor):
             se = pd.Series(index=df.index)
             for index, row in df.iterrows():
                 if row.report_period == 'year':
-                    se[index] = (row.roe >= 0.12)
+                    mul = 4
                 elif row.report_period == 'season3':
-                    se[index] = (row.roe >= 0.09)
+                    mul = 3
                 elif row.report_period == 'half_year':
-                    se[index] = (row.roe >= 0.06)
+                    mul = 2
                 else:
-                    se[index] = (row.roe >= 0.03)
+                    mul = 1
+
+                filters = []
+                for col in self.col_threshold:
+                    col_se = eval(f'row.{col}')
+                    filters.append(col_se >= mul * self.col_threshold[col])
+                se[index] = list(accumulate(filters, func=operator.__and__))[-1]
+
             return se
 
         self.pipe_df = self.data_df.loc[lambda df: filter_df(df), :]
