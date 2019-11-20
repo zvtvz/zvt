@@ -5,36 +5,26 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata.api import get_entities
-from zvdata.utils.time_utils import now_pd_timestamp, to_time_str
+from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import init_log
 from zvt.domain import Stock
-from zvt.factors import GoodCompanyFactor
-from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
+from zvt.scheds import select_by_finance
 
 logger = logging.getLogger(__name__)
 
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=16, minute=0)
+@sched.scheduled_job('cron', hour=16, minute=10)
 def every_day_report():
     while True:
         try:
-            t = now_pd_timestamp()
-            if t.dayofweek in (5, 6):
-                logger.info(f'today:{t} is {t.day_name()},just ignore')
+            today = now_pd_timestamp()
+            long_targets = select_by_finance(today)
 
-            today = to_time_str(t)
+            logger.info(f'selected:{len(long_targets)}')
 
-            my_selector = TargetSelector(start_timestamp='2015-01-01', end_timestamp=today)
-            # add the factors
-            good_factor = GoodCompanyFactor(start_timestamp='2015-01-01', end_timestamp=today)
-
-            my_selector.add_filter_factor(good_factor)
-            my_selector.run()
-
-            long_targets = my_selector.get_open_long_targets(today)
             if long_targets:
                 long_targets = list(set(long_targets))
                 df = get_entities(provider='eastmoney', entity_schema=Stock, entity_ids=long_targets,
