@@ -2,7 +2,6 @@
 import logging
 import time
 
-import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata.api import get_entities
@@ -28,15 +27,14 @@ def every_day_report():
 
             today = to_time_str(t)
 
-            my_selector = TargetSelector(start_timestamp='2005-01-01', end_timestamp=today)
+            my_selector = TargetSelector(start_timestamp='2015-01-01', end_timestamp=today)
             # add the factors
-            good_factor = GoodCompanyFactor(start_timestamp='2005-01-01', end_timestamp=today)
+            good_factor = GoodCompanyFactor(start_timestamp='2015-01-01', end_timestamp=today)
 
-            from_half_year = t - pd.Timedelta(days=140)
-            df = good_factor.result_df.reset_index()
-            df = df.loc[(df.timestamp >= from_half_year) & df['count']]
+            my_selector.add_filter_factor(good_factor)
+            my_selector.run()
 
-            long_targets = df.entity_id.to_list()
+            long_targets = my_selector.get_open_long_targets(today)
             if long_targets:
                 long_targets = list(set(long_targets))
                 df = get_entities(provider='eastmoney', entity_schema=Stock, entity_ids=long_targets,

@@ -90,7 +90,7 @@ class Factor(DataReader, DataListener, Jsonable):
                  # child added arguments
                  keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill',
-                 effective_number: int = 10,
+                 effective_number: int = None,
                  transformer: Transformer = None,
                  accumulator: Accumulator = None,
                  persist_factor: bool = True,

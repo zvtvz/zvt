@@ -51,7 +51,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
                                   FinanceFactor.op_income_growth_yoy,
                                   FinanceFactor.net_profit_growth_yoy,
                                   FinanceFactor.report_period],
-                 filters: List = [FinanceFactor.roe > 0.03,
+                 filters: List = [FinanceFactor.roe >= 0.03,
                                   FinanceFactor.op_income_growth_yoy >= 0.1,
                                   FinanceFactor.net_profit_growth_yoy >= 0.1],
                  order: object = None,
@@ -61,16 +61,16 @@ class GoodCompanyFactor(FinanceBaseFactor):
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
                  computing_window: int = None,
-                 keep_all_timestamp: bool = False,
+                 keep_all_timestamp: bool = True,
                  fill_method: str = 'ffill',
-                 effective_number: int = 10,
+                 effective_number: int = None,
                  transformer: Transformer = None,
                  accumulator: Accumulator = None,
                  persist_factor: bool = False,
                  dry_run: bool = False,
                  # 3 years
                  window='1095d',
-                 count=12
+                 count=10
                  ) -> None:
         self.window = window
         self.count = count
@@ -89,7 +89,7 @@ class GoodCompanyFactor(FinanceBaseFactor):
                 elif row.report_period == 'season3':
                     se[index] = (row.roe >= 0.09)
                 elif row.report_period == 'half_year':
-                    se[index] = (row.roe >= 0.08)
+                    se[index] = (row.roe >= 0.06)
                 else:
                     se[index] = (row.roe >= 0.03)
             return se
