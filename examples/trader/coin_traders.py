@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from zvdata import IntervalLevel
-from zvt.domain import Trader
+from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
-from zvt.factors.technical_factor import CrossMaFactor
-
 
 # run the recoder for the data
 # python zvt/recorders/ccxt/coin_kdata_recorder.py --level 1m --exchanges binance --codes EOS/USDT
-class MyMaCoinTrader(Trader):
-    entity_type = 'coin'
+from zvt.trader.trader import CoinTrader
+
+
+class MyMaCoinTrader(CoinTrader):
 
     def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
         myselector = TargetSelector(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,

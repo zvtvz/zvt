@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
-import inspect
 import json
-from enum import Enum
 
-import pandas as pd
-import simplejson
-from sqlalchemy.ext.declarative import DeclarativeMeta
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql.elements import BinaryExpression
 
 from zvdata.contract import zvdata_env, table_name_to_domain_name
-from zvdata.utils.time_utils import to_time_str
 
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -58,35 +51,3 @@ class CustomJsonDecoder(json.JSONDecoder):
             return eval(filter_str)
 
         return obj
-
-
-class Jsonable(object):
-    def id(self):
-        return hash(simplejson.dumps(self.__json__()))
-
-    def __json__(self):
-        result = {}
-
-        spec = inspect.getfullargspec(self.__class__)
-        args = [arg for arg in spec.args if arg != 'self']
-        for arg in args:
-            value = eval('self.{}'.format(arg))
-            json_value = value
-
-            if isinstance(value, pd.Timestamp):
-                json_value = to_time_str(value)
-
-            if isinstance(value.__class__, DeclarativeMeta):
-                json_value = value.__class__.__name__
-
-            if isinstance(value, InstrumentedAttribute):
-                json_value = value.name
-
-            if isinstance(value, Enum):
-                json_value = value.value
-
-            result[arg] = json_value
-
-        return result
-
-    for_json = __json__  # supported by simplejson

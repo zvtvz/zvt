@@ -8,6 +8,7 @@ from zvdata.contract import register_schema
 
 BusinessBase = declarative_base()
 
+
 class Trader(BusinessBase):
     __tablename__ = 'trader'
     id = Column(String(length=128), primary_key=True)
@@ -27,9 +28,9 @@ class Trader(BusinessBase):
     real_time = Column(Boolean)
     kdata_use_begin_time = Column(Boolean)
     # TODO:inspect selector/factors
-    selectors = Column(String(length=1024))
-    factors = Column(String(length=1024))
-    technical_factors = Column(String(length=1024))
+    # selectors = Column(String(length=1024))
+    # factors = Column(String(length=1024))
+    # technical_factors = Column(String(length=1024))
 
 
 # 一天只有一条记录

@@ -12,7 +12,6 @@ from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvt.drawer.drawer import Drawer
-from zvt.sedes import Jsonable
 
 
 class Transformer(object):
@@ -63,7 +62,7 @@ class FactorType(enum.Enum):
     state = 'state'
 
 
-class Factor(DataReader, DataListener, Jsonable):
+class Factor(DataReader, DataListener):
     factor_type: FactorType = None
 
     # define the schema for persist

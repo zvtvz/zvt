@@ -4,7 +4,6 @@ import logging
 from typing import List, Union
 
 import pandas as pd
-import simplejson
 
 from zvdata import IntervalLevel
 from zvdata.contract import get_db_session
@@ -14,7 +13,6 @@ from zvt.api.common import get_one_day_trading_minutes, decode_entity_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date
 from zvt.domain import business
 from zvt.factors.target_selector import TargetSelector
-from zvt.factors.technical_factor import TechnicalFactor
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
 
@@ -186,16 +184,9 @@ class Trader(object):
             raise Exception('please setup self.selectors in init_selectors at first')
 
         # run all the selectors
-        technical_factors = []
         for selector in self.selectors:
             # run for the history data at first
             selector.run()
-
-            for factor in selector.filter_factors:
-                if isinstance(factor, TechnicalFactor):
-                    technical_factors.append(factor)
-
-        technical_factors = simplejson.dumps(technical_factors, for_json=True)
 
         if self.entity_ids:
             entity_ids = json.dumps(self.entity_ids)
@@ -218,8 +209,7 @@ class Trader(object):
                                         start_timestamp=self.start_timestamp,
                                         end_timestamp=self.end_timestamp, provider=self.provider,
                                         level=self.level.value,
-                                        real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time,
-                                        technical_factors=technical_factors)
+                                        real_time=self.real_time, kdata_use_begin_time=self.kdata_use_begin_time)
         self.session.add(trader_domain)
         self.session.commit()
 
@@ -374,3 +364,11 @@ class Trader(object):
                 self.account_service.on_trading_close(timestamp)
 
         self.on_finish()
+
+
+class StockTrader(Trader):
+    entity_type = 'stock'
+
+
+class CoinTrader(Trader):
+    entity_type = 'coin'

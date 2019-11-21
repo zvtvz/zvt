@@ -154,7 +154,7 @@ class SimAccountService(AccountService):
         account = SimAccount(trader_name=self.trader_name, cash=self.base_capital,
                              positions=[], all_value=self.base_capital, value=0, closing=False,
                              timestamp=timestamp)
-        self.latest_account = sim_account_schema.dump(account).data
+        self.latest_account = sim_account_schema.dump(account)
 
         # self.persist_account(timestamp)
 
@@ -173,12 +173,12 @@ class SimAccountService(AccountService):
         positions = []
         # FIXME:dump all directly
         for position_domain in account.positions:
-            position_dict = position_schema.dump(position_domain).data
+            position_dict = position_schema.dump(position_domain)
             self.logger.info('current position:{}'.format(position_dict))
             del position_dict['sim_account']
             positions.append(position_dict)
 
-        self.latest_account = sim_account_schema.dump(account).data
+        self.latest_account = sim_account_schema.dump(account)
         self.latest_account['positions'] = positions
         self.logger.info('on_trading_open:{},latest_account:{}'.format(timestamp, self.latest_account))
 
@@ -249,7 +249,7 @@ class SimAccountService(AccountService):
                                     all_value=self.latest_account['all_value'], value=self.latest_account['value'],
                                     timestamp=to_pd_timestamp(self.latest_account['timestamp']))
 
-        self.logger.info('persist_account:{}'.format(sim_account_schema.dump(account_domain).data))
+        self.logger.info('persist_account:{}'.format(sim_account_schema.dump(account_domain)))
 
         self.session.add(account_domain)
         self.session.commit()
