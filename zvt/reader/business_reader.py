@@ -3,9 +3,11 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata.reader import DataReader
 from zvdata import IntervalLevel
+from zvdata.normal_data import NormalData
+from zvdata.reader import DataReader
 from zvt.domain import SimAccount, Order
+from zvt.drawer.drawer import Drawer
 
 
 class AccountReader(DataReader):
@@ -17,7 +19,6 @@ class AccountReader(DataReader):
                  filters: List = None,
                  order: object = None,
                  level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-
                  trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
@@ -29,9 +30,9 @@ class AccountReader(DataReader):
                 self.filters += filter
             else:
                 self.filters = filter
-        super().__init__(SimAccount, None, None, None, None, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, None, 'zvt', level, 'trader_name', 'timestamp',
-                         False, True)
+        super().__init__(SimAccount, None, None, None, None, None, the_timestamp,
+                         start_timestamp, end_timestamp, columns, filters, order, None, 'zvt', level,
+                         'trader_name', 'timestamp', None)
 
 
 class OrderReader(DataReader):
@@ -56,11 +57,13 @@ class OrderReader(DataReader):
             else:
                 self.filters = filter
 
-        super().__init__(Order, None, None, None, None, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, None, 'zvt', level, 'trader_name', 'timestamp',
-                         False, True)
+        super().__init__(SimAccount, None, None, None, None, None, the_timestamp,
+                         start_timestamp, end_timestamp, columns, filters, order, None, 'zvt', level,
+                         'trader_name', 'timestamp', None)
 
 
 if __name__ == '__main__':
-    reader = OrderReader(trader_names=['cointrader'])
-    reader.draw(value_fields='order_amount')
+    reader = AccountReader(trader_names=['000338_ma_trader'])
+    drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
+                                         category_field='trader_name'))
+    drawer.draw_line()
