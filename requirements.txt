@@ -1,4 +1,4 @@
-zvdata == 1.0.4
+zvdata == 1.0.5
 Scrapy == 1.5.1
 requests == 2.20.1
 SQLAlchemy == 1.2.14
