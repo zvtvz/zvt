@@ -4,7 +4,7 @@ import datetime
 import os
 import zipfile
 
-from zvt.settings import DATA_SAMPLE_PATH
+from zvt.settings import ZVT_TEST_HOME
 
 
 def zip_dir(src_dir,
@@ -44,5 +44,5 @@ def unzip(zip_file, dst_dir):
 
 
 if __name__ == '__main__':
-    zip_dir(DATA_SAMPLE_PATH, zip_file_name='datasample.zip')
+    zip_dir(ZVT_TEST_HOME, zip_file_name='datasample.zip')
     # unzip(DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH)
