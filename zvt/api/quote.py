@@ -72,7 +72,7 @@ def get_securities_in_blocks(provider: str = 'eastmoney',
     return securities
 
 
-def get_kdata(entity_id=None, level=IntervalLevel.LEVEL_1DAY.value, provider='eastmoney', columns=None,
+def get_kdata(entity_id=None, level=IntervalLevel.LEVEL_1DAY.value, provider='joinquant', columns=None,
               return_type='df', start_timestamp=None, end_timestamp=None,
               filters=None, session=None, order=None, limit=None, index='timestamp'):
     entity_type, exchange, code = decode_entity_id(entity_id)
