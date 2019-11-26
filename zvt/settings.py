@@ -2,10 +2,10 @@
 import os
 from pathlib import Path
 
-ZVT_TEST_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'zvt-test-home'))
+ZVT_TEST_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-test-home'))
 ZVT_TEST_DATA_PATH = os.path.join(ZVT_TEST_HOME, 'data')
 
-DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample.zip'))
+DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'sample_data', 'data.zip'))
 
 # please change the path to your real store path
 ZVT_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-home'))
