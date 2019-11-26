@@ -23,6 +23,12 @@ pip3 install zvt ipython
 pip3 install zvt ipython -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
 ```
 
+> 保证是最新版本[![image](https://img.shields.io/pypi/v/zvt.svg)](https://pypi.org/project/zvt/)
+
+```bash
+pip3 show zvt
+```
+
 进入ipython,体验一把
 ```
 In [1]: import os
