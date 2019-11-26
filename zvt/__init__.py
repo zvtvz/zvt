@@ -83,7 +83,6 @@ def init_env(zvt_home: str,
 
     init_schema()
 
-
 if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
     unzip(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_DATA_PATH)
