@@ -4,7 +4,8 @@ from logging.handlers import RotatingFileHandler
 import pandas as pd
 
 from zvdata.contract import *
-from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME
+from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH
+from zvt.utils.zip_utils import unzip
 
 
 def init_log(file_name='zvt.log', log_dir=None):
@@ -85,8 +86,8 @@ def init_env(zvt_home: str,
 
 if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
+    unzip(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_DATA_PATH)
 else:
     init_env(zvt_home=ZVT_HOME)
 
-    if not zvt_env.get('data_path'):
-        print('please use init_env to set zvt data path at first')
+print(f'zvt env:{zvt_env}')

@@ -9,6 +9,22 @@
 
 ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
+##  📝5分钟用起来
+
+>"一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。" ------ foolcage
+
+假设你已经在>=python3.6的环境中(建议新建一个干净的virtual env环境)
+```
+pip3 install zvt ipython
+```
+
+如果慢，试下这样
+```
+pip3 install zvt ipython -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+```
+
+进入ipython,体验一把
+
 **注意**：
 >可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档
 >项目将专注于一般行情软件难以实现的自定义统计指标，回测，交易通知上面
