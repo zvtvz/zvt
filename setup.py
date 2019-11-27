@@ -36,7 +36,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.3.4',  # Required
+    version='0.4.0',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -119,10 +119,12 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
 
-    install_requires=['Scrapy>=1.5.1', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2', 'arrow>=0.11.0',
+    install_requires=['zvdata>=1.0.5', 'Scrapy>=1.5.1', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2',
+                      'arrow>=0.11.0', 'marshmallow >= 3.2.2',
                       'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0', 'jqdatasdk', 'demjson>=2.2.4',
-                      'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191', 'plotly>=4.1.0','simplejson>=3.16.0'
-                      'html5lib>=1.0.1', 'schedule>=0.6.0'],  # Optional
+                      'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191', 'plotly>=4.1.0', 'simplejson>=3.16.0'
+                                                                                           'html5lib>=1.0.1',
+                      'schedule>=0.6.0'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -142,9 +144,9 @@ setup(
     #
     # If using Python 2.6 or earlier, then these have to be included in
     # MANIFEST.in as well.
-    # package_data={  # Optional
-    #     'sample': ['package_data.dat'],
-    # },
+    package_data={  # Optional
+        'sample_data': ['data.zip'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

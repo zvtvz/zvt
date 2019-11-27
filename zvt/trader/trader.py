@@ -7,12 +7,15 @@ import pandas as pd
 
 from zvdata import IntervalLevel
 from zvdata.contract import get_db_session
+from zvdata.normal_data import NormalData
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.business import get_trader
 from zvt.api.common import get_one_day_trading_minutes, decode_entity_id
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date
 from zvt.domain import business
+from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
+from zvt.reader.business_reader import AccountReader
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
 
@@ -306,7 +309,12 @@ class Trader(object):
 
     def on_finish(self):
         # show the result
-        pass
+        import plotly.io as pio
+        pio.renderers.default = "browser"
+        reader = AccountReader(trader_names=[self.trader_name])
+        drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
+                                             category_field='trader_name'))
+        drawer.draw_line()
 
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level

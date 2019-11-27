@@ -4,7 +4,8 @@ from logging.handlers import RotatingFileHandler
 import pandas as pd
 
 from zvdata.contract import *
-from zvt.settings import DATA_SAMPLE_ZIP_PATH, DATA_SAMPLE_PATH, DATA_PATH
+from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH
+from zvt.utils.zip_utils import unzip
 
 
 def init_log(file_name='zvt.log', log_dir=None):
@@ -44,15 +45,18 @@ pd.set_option('mode.chained_assignment', 'raise')
 zvt_env = {}
 
 
-def init_env(data_path: str,
+def init_env(zvt_home: str,
              jq_username: str = os.environ.get('JQ_USERNAME'),
              jq_password: str = os.environ.get('JQ_PASSWORD')) -> None:
     """
 
-    :param data_path: data path for zvt
+    :param zvt_home: home path for zvt
     :param jq_username: joinquant username
     :param jq_password: joinquant password
     """
+    data_path = os.path.join(zvt_home, 'data')
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
 
     init_data_env(data_path=data_path, domain_module='zvt.domain')
 
@@ -60,12 +64,12 @@ def init_env(data_path: str,
     zvt_env['domain_module'] = 'zvt.domain'
 
     # path for storing ui results
-    zvt_env['ui_path'] = os.path.join(data_path, 'ui')
+    zvt_env['ui_path'] = os.path.join(zvt_home, 'ui')
     if not os.path.exists(zvt_env['ui_path']):
         os.makedirs(zvt_env['ui_path'])
 
     # path for storing logs
-    zvt_env['log_path'] = os.path.join(data_path, 'logs')
+    zvt_env['log_path'] = os.path.join(zvt_home, 'logs')
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
 
@@ -79,11 +83,10 @@ def init_env(data_path: str,
 
     init_schema()
 
-
 if os.getenv('TESTING_ZVT'):
-    init_env(data_path=DATA_SAMPLE_PATH)
+    init_env(zvt_home=ZVT_TEST_HOME)
+    unzip(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_DATA_PATH)
 else:
-    init_env(data_path=DATA_PATH)
+    init_env(zvt_home=ZVT_HOME)
 
-    if not zvt_env.get('data_path'):
-        print('please use init_env to set zvt data path at first')
+print(f'zvt env:{zvt_env}')
