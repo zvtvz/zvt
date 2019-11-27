@@ -95,6 +95,8 @@ ENV/
 /full
 /data/
 /datasample
+/zvt-home
+/zvt-test-home
 *.tar.gz
 /data
 /ve/

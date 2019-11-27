@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 
-DATA_SAMPLE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample'))
-DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasample.zip'))
+ZVT_TEST_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-test-home'))
+ZVT_TEST_DATA_PATH = os.path.join(ZVT_TEST_HOME, 'data')
+
+DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'samples', 'data.zip'))
 
 # please change the path to your real store path
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+ZVT_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-home'))
 
 HTTP_PROXY = 'http://127.0.0.1:1087'
 if not HTTP_PROXY:
