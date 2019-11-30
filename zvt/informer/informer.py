@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 import requests
 import schedule
 
-from zvt.settings import SMTP_HOST, SMTP_PORT, EMAIL_USERNAME, EMAIL_PASSWORD, WECHAT_APP_ID, WECHAT_APP_SECRECT
+from zvt import zvt_env
 
 
 class Informer(object):
@@ -26,11 +26,11 @@ class EmailInformer(Informer):
 
     def send_message(self, to_user, title, body, **kwargs):
         smtp_client = smtplib.SMTP()
-        smtp_client.connect(SMTP_HOST, SMTP_PORT)
-        smtp_client.login(EMAIL_USERNAME, EMAIL_PASSWORD)
+        smtp_client.connect(zvt_env['smtp_host'], zvt_env['smtp_port'])
+        smtp_client.login(zvt_env['email_username'], zvt_env['email_password'])
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(title).encode()
-        msg['From'] = "{} <{}>".format(Header('zvt').encode(), EMAIL_USERNAME)
+        msg['From'] = "{} <{}>".format(Header('zvt').encode(), zvt_env['email_username'])
         msg['To'] = to_user
 
         msg['Message-id'] = email.utils.make_msgid()
@@ -40,14 +40,14 @@ class EmailInformer(Informer):
         msg.attach(plain_text)
 
         try:
-            smtp_client.sendmail(EMAIL_USERNAME, to_user, msg.as_string())
+            smtp_client.sendmail(zvt_env['email_username'], to_user, msg.as_string())
         except Exception as e:
             self.logger.exception('send email failed', e)
 
 
 class WechatInformer(Informer):
     GET_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={}&secret={}".format(
-        WECHAT_APP_ID, WECHAT_APP_SECRECT)
+        zvt_env['wechat_app_id'], zvt_env['wechat_app_secrect'])
 
     GET_TEMPLATE_URL = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token={}"
     SEND_MSG_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}"
