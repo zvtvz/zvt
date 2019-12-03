@@ -13,6 +13,8 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 
 >一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。
 
+* ### 安装
+
 假设你已经在>=python3.6的环境中(建议新建一个干净的virtual env环境)
 ```
 pip3 install zvt -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
@@ -28,7 +30,7 @@ pip install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.
 > 请根据需要决定是否使用豆瓣镜像源
 
 
-进入ipython,体验一把
+* ###  进入ipython,体验一把
 ```
 In [1]: import os
 
@@ -65,7 +67,7 @@ timestamp
 2019-11-04  stock_sz_000338_2019-11-04  stock_sz_000338 2019-11-04  joinquant  000338  潍柴动力    1d  12.77  13.00  13.11  12.77  126673139.0  1.643788e+09       None          None
 ```
 
-财务数据
+* ### 财务数据
 ```
 In [12]: from zvt.domain import *
 In [13]: df = get_finance_factor(entity_id='stock_sz_000338',columns=FinanceFactor.important_cols())
@@ -82,7 +84,7 @@ timestamp
 
 ```
 
-跑个策略
+* ### 跑个策略
 ```
 In [15]: from zvt.samples import *
 In [16]: t = MyMaTrader(codes=['000338'], level=IntervalLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
@@ -91,6 +93,41 @@ In [17]: t.run()
 
 ```
 <p align="center"><img src='./docs/imgs/output-value.jpg'/></p>
+
+* ### 配置
+在zvt_home目录中找到config.json进行配置：
+
+ * jq_username
+
+聚宽数据用户名
+
+ * jq_password
+
+聚宽数据密码
+
+> TODO:其他配置项用法
+
+* ### 抓数据
+
+```
+
+In [1]: from zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder import *
+In [2]: r = ChinaStockFinanceFactorRecorder(codes=['000338'])
+auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
+
+In [3]: r.run()
+INFO  MainThread  2019-12-03 17:13:28,331  ChinaStockFinanceFactorRecorder:recorder.py:537  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
+INFO  MainThread  2019-12-03 17:13:28,351  ChinaStockFinanceFactorRecorder:recorder.py:542  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
+INFO  MainThread  2019-12-03 17:13:28,352  ChinaStockFinanceFactorRecorder:recorder.py:337  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
+INFO  MainThread  2019-12-03 17:13:28,352  ChinaStockFinanceFactorRecorder:recorder.py:346  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
+已退出
+```
+
+这里只展示了财务指标的用法，其他所有recorder的用法都是一致的。
+* codes代表需要抓取的股票代码
+* 不传入codes则是全市场抓取
+
+> TODO:其他recorder用法，recorder其他参数用法。
 
 ## 📝配置正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
@@ -113,14 +150,14 @@ In [1]: from zvt import *
  'zvt_home': '/Users/xuanqi/zvt-home'}
  ```
 
-请在提示的zvt_home目录中找到config.json更改配置。
-
 >如果你不想使用使用默认的zvt_home目录,请设置环境变量ZVT_HOME再运行。
+
+所有操作跟测试环境是一致的，只是操作的目录不同。
 
 **注意**：
 >可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档
 >项目将专注于一般行情软件难以实现的自定义统计指标，回测，交易通知上面
-## 详细文档
+## 详细文档(待更新)
 文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
 [http://zvt.foolcage.com](http://zvt.foolcage.com)  
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
@@ -150,11 +187,9 @@ In [1]: from zvt import *
 项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）  
 https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
 
-需要提高每日使用限额或者购买也可加我微信(foolcage)，申请相应的优惠
-
 > 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
 
-> 添加其他数据提供商，请参考[数据扩展教程](http://www.foolcage.com/#/data_extending)
+> 添加其他数据提供商，请参考[数据扩展教程](http://zvt.foolcage.com/#/data_extending)
 
 ### 快速开始(只需3部)
 #### 1.clone代码
