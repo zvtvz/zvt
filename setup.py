@@ -36,7 +36,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.5.3',  # Required
+    version='0.5.4',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -122,9 +122,8 @@ setup(
     install_requires=['zvdata>=1.0.5', 'Scrapy>=1.5.1', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2',
                       'arrow>=0.11.0', 'marshmallow >= 3.2.2',
                       'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0', 'jqdatasdk', 'demjson>=2.2.4',
-                      'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191', 'plotly>=4.1.0', 'simplejson>=3.16.0'
-                                                                                           'html5lib>=1.0.1',
-                      'schedule>=0.6.0'],  # Optional
+                      'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191', 'plotly>=4.1.0', 'simplejson>=3.16.0',
+                      'html5lib>=1.0.1', 'schedule>=0.6.0'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
