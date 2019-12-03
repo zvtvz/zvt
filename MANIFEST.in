@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+include zvt/samples/data.zip
+include zvt/samples/config.json
+include zvt/accounts/*.json

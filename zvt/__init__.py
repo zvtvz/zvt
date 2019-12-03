@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
-
 from zvdata.contract import *
-from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH
+
+from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
 from zvt.utils.zip_utils import unzip
 
 
@@ -45,14 +46,10 @@ pd.set_option('mode.chained_assignment', 'raise')
 zvt_env = {}
 
 
-def init_env(zvt_home: str,
-             jq_username: str = os.environ.get('JQ_USERNAME'),
-             jq_password: str = os.environ.get('JQ_PASSWORD')) -> None:
+def init_env(zvt_home: str) -> None:
     """
 
     :param zvt_home: home path for zvt
-    :param jq_username: joinquant username
-    :param jq_password: joinquant password
     """
     data_path = os.path.join(zvt_home, 'data')
     if not os.path.exists(data_path):
@@ -60,6 +57,7 @@ def init_env(zvt_home: str,
 
     init_data_env(data_path=data_path, domain_module='zvt.domain')
 
+    zvt_env['zvt_home'] = zvt_home
     zvt_env['data_path'] = data_path
     zvt_env['domain_module'] = 'zvt.domain'
 
@@ -73,9 +71,16 @@ def init_env(zvt_home: str,
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
 
-    # setting joinquant account
-    zvt_env['jq_username'] = jq_username
-    zvt_env['jq_password'] = jq_password
+    # create default config.json if not exist
+    config_path = os.path.join(zvt_home, 'config.json')
+    if not os.path.exists(config_path):
+        from shutil import copyfile
+        copyfile(os.path.abspath(os.path.join(os.path.dirname(__file__), 'samples', 'config.json')), config_path)
+
+    with open(config_path) as f:
+        config_json = json.load(f)
+        for k in config_json:
+            zvt_env[k] = config_json[k]
 
     init_log()
 
@@ -83,10 +88,26 @@ def init_env(zvt_home: str,
 
     init_schema()
 
+
 if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
-    unzip(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_DATA_PATH)
+
+    # init the sample data if need
+    same = False
+    if os.path.exists(ZVT_TEST_ZIP_DATA_PATH):
+        import filecmp
+
+        same = filecmp.cmp(ZVT_TEST_ZIP_DATA_PATH, DATA_SAMPLE_ZIP_PATH)
+
+    if not same:
+        from shutil import copyfile
+
+        copyfile(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_ZIP_DATA_PATH)
+        unzip(ZVT_TEST_ZIP_DATA_PATH, ZVT_TEST_DATA_PATH)
+
 else:
     init_env(zvt_home=ZVT_HOME)
 
-print(f'zvt env:{zvt_env}')
+import pprint
+
+pprint.pprint(zvt_env)

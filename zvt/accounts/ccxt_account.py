@@ -3,7 +3,8 @@ import json
 
 import ccxt
 
-from zvt.settings import HTTP_PROXY, HTTPS_PROXY, COIN_EXCHANGES
+from zvt import zvt_env
+from zvt.settings import COIN_EXCHANGES
 
 
 class CCXTAccount(object):
@@ -40,5 +41,5 @@ class CCXTAccount(object):
         exchange.apiKey = cls.exchange_conf[exchange_str]['apiKey']
         exchange.secret = cls.exchange_conf[exchange_str]['secret']
         # set to your proxies if need
-        exchange.proxies = {'http': HTTP_PROXY, 'https': HTTPS_PROXY}
+        exchange.proxies = {'http': zvt_env['http_proxy'], 'https': zvt_env['https_proxy']}
         return exchange
