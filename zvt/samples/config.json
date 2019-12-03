@@ -1,0 +1,12 @@
+{
+  "jq_username": "",
+  "jq_password": "",
+  "http_proxy": "127.0.0.1:1087",
+  "https_proxy": "127.0.0.1:1087",
+  "smtp_host": "smtpdm.aliyun.com",
+  "smtp_port": "80",
+  "email_username": "",
+  "email_password": "",
+  "wechat_app_id": "",
+  "wechat_app_secrect": ""
+}

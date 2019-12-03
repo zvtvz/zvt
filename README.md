@@ -11,23 +11,22 @@ ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新�
 
 ##  🔖5分钟用起来
 
->"一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。" ------ foolcage
+>一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。
 
 假设你已经在>=python3.6的环境中(建议新建一个干净的virtual env环境)
 ```
-pip3 install zvt ipython
-```
+pip3 install zvt -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
 
-如果慢，试下这样
-```
-pip3 install zvt ipython -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
-```
-
-> 保证是最新版本[![image](https://img.shields.io/pypi/v/zvt.svg)](https://pypi.org/project/zvt/)
-
-```bash
 pip3 show zvt
 ```
+
+如果不是最新版本
+```
+pip install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+```
+
+> 请根据需要决定是否使用豆瓣镜像源
+
 
 进入ipython,体验一把
 ```
@@ -36,10 +35,21 @@ In [1]: import os
 In [2]: os.environ["TESTING_ZVT"] = "1"
 
 In [3]: from zvt import *
-start unzip /Users/xuanqi/workspace/github/zvtvz/zvt/zvt/sample_data/data.zip to /Users/xuanqi/zvt-test-home/data
-finish unzip /Users/xuanqi/workspace/github/zvtvz/zvt/zvt/sample_data/data.zip to /Users/xuanqi/zvt-test-home/data
-zvt env:{'data_path': '/Users/xuanqi/zvt-test-home/data', 'domain_module': 'zvt.domain', 'ui_path': '/Users/xuanqi/zvt-test-home/ui', 'log_path': '/Users/xuanqi/zvt-test-home/logs', 'jq_username': None, 'jq_password': None}
-
+{'data_path': '/Users/xuanqi/zvt-test-home/data',
+ 'domain_module': 'zvt.domain',
+ 'email_password': '',
+ 'email_username': '',
+ 'http_proxy': '127.0.0.1:1087',
+ 'https_proxy': '127.0.0.1:1087',
+ 'jq_password': '',
+ 'jq_username': '',
+ 'log_path': '/Users/xuanqi/zvt-test-home/logs',
+ 'smtp_host': 'smtpdm.aliyun.com',
+ 'smtp_port': '80',
+ 'ui_path': '/Users/xuanqi/zvt-test-home/ui',
+ 'wechat_app_id': '',
+ 'wechat_app_secrect': '',
+ 'zvt_home': '/Users/xuanqi/zvt-test-home'}
 In [5]: from zvt.api import *
 
 In [6]: df = get_kdata(entity_id='stock_sz_000338',provider='joinquant')
@@ -83,8 +93,29 @@ In [17]: t.run()
 <p align="center"><img src='./docs/imgs/output-value.jpg'/></p>
 
 ## 📝配置正式环境
+项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
+ ```
+In [1]: from zvt import *
+{'data_path': '/Users/xuanqi/zvt-home/data',
+ 'domain_module': 'zvt.domain',
+ 'email_password': '',
+ 'email_username': '',
+ 'http_proxy': '127.0.0.1:1087',
+ 'https_proxy': '127.0.0.1:1087',
+ 'jq_password': '',
+ 'jq_username': '',
+ 'log_path': '/Users/xuanqi/zvt-home/logs',
+ 'smtp_host': 'smtpdm.aliyun.com',
+ 'smtp_port': '80',
+ 'ui_path': '/Users/xuanqi/zvt-home/ui',
+ 'wechat_app_id': '',
+ 'wechat_app_secrect': '',
+ 'zvt_home': '/Users/xuanqi/zvt-home'}
+ ```
 
->待完善
+请在提示的zvt_home目录中找到config.json更改配置。
+
+>如果你不想使用使用默认的zvt_home目录,请设置环境变量ZVT_HOME再运行。
 
 **注意**：
 >可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档

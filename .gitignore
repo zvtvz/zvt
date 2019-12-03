@@ -110,3 +110,5 @@ ENV/
 node_modules/
 
 *running.ipynb
+
+.DS_Store

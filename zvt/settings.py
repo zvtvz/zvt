@@ -2,42 +2,17 @@
 import os
 from pathlib import Path
 
+# zvt home dir
+ZVT_HOME = os.environ.get('ZVT_HOME')
+if not ZVT_HOME:
+    ZVT_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-home'))
+
+# data for testing
 ZVT_TEST_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-test-home'))
+ZVT_TEST_ZIP_DATA_PATH = os.path.join(ZVT_TEST_HOME, 'data.zip')
 ZVT_TEST_DATA_PATH = os.path.join(ZVT_TEST_HOME, 'data')
 
 DATA_SAMPLE_ZIP_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'samples', 'data.zip'))
-
-# please change the path to your real store path
-ZVT_HOME = os.path.abspath(os.path.join(Path.home(), 'zvt-home'))
-
-HTTP_PROXY = 'http://127.0.0.1:1087'
-if not HTTP_PROXY:
-    HTTP_PROXY = os.environ.get('HTTP_PROXY')
-
-HTTPS_PROXY = 'http://127.0.0.1:1087'
-if not HTTPS_PROXY:
-    HTTPS_PROXY = os.environ.get('HTTPS_PROXY')
-
-# the action account settings
-SMTP_HOST = 'smtpdm.aliyun.com'
-SMTP_PORT = '80'
-
-EMAIL_USERNAME = ''
-
-if not EMAIL_USERNAME:
-    EMAIL_USERNAME = os.environ.get('EMAIL_USERNAME')
-
-EMAIL_PASSWORD = ''
-if not EMAIL_PASSWORD:
-    EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
-
-WECHAT_APP_ID = ""
-if not WECHAT_APP_ID:
-    WECHAT_APP_ID = os.environ.get("WEIXIN_APP_ID")
-
-WECHAT_APP_SECRECT = ""
-if not WECHAT_APP_SECRECT:
-    WECHAT_APP_SECRECT = os.environ.get("WEIXIN_APP_SECRECT")
 
 # ****** setting for crypto currency ****** #
 COIN_EXCHANGES = ["binance", "huobipro", "okex"]
