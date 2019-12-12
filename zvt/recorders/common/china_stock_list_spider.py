@@ -12,7 +12,7 @@ from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 from zvdata.utils.time_utils import to_pd_timestamp
 
 
-class ChinaStockListSpider(Recorder):
+class ChinaStockListRecorder(Recorder):
     data_schema = Stock
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='eastmoney') -> None:
@@ -64,5 +64,5 @@ class ChinaStockListSpider(Recorder):
 
 
 if __name__ == '__main__':
-    spider = ChinaStockListSpider(provider='eastmoney')
+    spider = ChinaStockListRecorder(provider='eastmoney')
     spider.run()

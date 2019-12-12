@@ -46,19 +46,27 @@ class CompanyType(enum.Enum):
 
 
 # make sure import all the domain schemas before using them
-from zvt.domain.business import *
-from zvt.domain.coin_meta import *
-from zvt.domain.dividend_financing import *
-from zvt.domain.finance import *
-from zvt.domain.holder import *
-from zvt.domain.macro import *
-from zvt.domain.stock_meta import *
-from zvt.domain.money_flow import *
-from zvt.domain.trading import *
+from .business import *
+from .meta.coin_meta import *
+from .dividend_financing import *
+from .finance import *
+from .holder import *
+from .macro import *
+from .meta.stock_meta import *
+from .money_flow import *
+from .trading import *
 
 from .quotes import *
 from .factors import *
+from .meta import *
 
 
 def init_schema():
     pass
+
+
+from zvdata.contract import global_schemas
+
+schemas = []
+for item in global_schemas:
+    schemas.append(item.__name__)

@@ -12,7 +12,7 @@ from zvdata.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_D
 from zvt import init_log, zvt_env
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
-from zvt.domain import Stock
+from zvt.domain import Stock, StockKdataCommon
 from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
 
 
@@ -23,6 +23,9 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
 
     # 数据来自jq
     provider = 'joinquant'
+
+    # 只是为了把recorder注册到data_schema
+    data_schema = StockKdataCommon
 
     def __init__(self,
                  entity_ids=None,
@@ -40,6 +43,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                  close_hour=15,
                  close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
+        level = IntervalLevel(level)
         self.data_schema = get_kdata_schema(entity_type='stock', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 

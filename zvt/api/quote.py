@@ -7,7 +7,7 @@ from zvdata.contract import get_db_session
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
 from zvt.domain import StockCategory, IndexMoneyFlow
-from zvt.domain.stock_meta import Index
+from zvt.domain.meta.stock_meta import Index
 
 
 def get_indices(provider: str = 'sina',

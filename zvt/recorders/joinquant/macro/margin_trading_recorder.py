@@ -1,9 +1,9 @@
 from jqdatasdk import auth, query, finance
 
 from zvdata.recorder import TimeSeriesDataRecorder
-from zvt.domain import Index, MarginTradingSummary
-from zvt import zvt_env
 from zvdata.utils.time_utils import to_time_str
+from zvt import zvt_env
+from zvt.domain import Index, MarginTradingSummary
 
 # 聚宽编码
 # XSHG-上海证券交易所
@@ -15,7 +15,7 @@ code_map_jq = {
 }
 
 
-class StockSummaryRecorder(TimeSeriesDataRecorder):
+class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
     entity_provider = 'exchange'
     entity_schema = Index
 
@@ -69,4 +69,4 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    StockSummaryRecorder(batch_size=30).run()
+    MarginTradingSummaryRecorder(batch_size=30).run()

@@ -2,9 +2,8 @@
 from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-
-from zvdata.contract import register_schema, register_api, register_entity
 from zvdata import EntityMixin
+from zvdata.contract import register_schema, register_api, register_entity
 
 StockMetaBase = declarative_base()
 
