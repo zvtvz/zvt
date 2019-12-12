@@ -11,7 +11,7 @@ from zvt.domain import Coin
 from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
 
 
-class CoinKdataRecorder(FixedCycleDataRecorder):
+class CoinTickRecorder(FixedCycleDataRecorder):
     provider = 'ccxt'
 
     entity_provider = 'ccxt'
@@ -90,4 +90,4 @@ if __name__ == '__main__':
 
     init_log('coin_tick_kdata.log')
 
-    CoinKdataRecorder(codes=['EOS/USDT']).run()
+    CoinTickRecorder(codes=['EOS/USDT']).run()

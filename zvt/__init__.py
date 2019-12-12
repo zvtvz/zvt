@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
+import os
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
-from zvdata.contract import *
 
+from zvdata.contract import init_data_env
 from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
 from zvt.utils.zip_utils import unzip
 
@@ -84,10 +86,6 @@ def init_env(zvt_home: str) -> None:
 
     init_log()
 
-    from zvt.domain import init_schema
-
-    init_schema()
-
 
 if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
@@ -111,3 +109,8 @@ else:
 import pprint
 
 pprint.pprint(zvt_env)
+
+import zvt.domain as domain
+import zvt.recorders as recorders
+
+__all__ = ['domain', 'recorders']

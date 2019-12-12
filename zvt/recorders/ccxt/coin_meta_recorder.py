@@ -3,7 +3,7 @@ import pandas as pd
 from zvdata.api import init_entities
 from zvdata.recorder import Recorder
 from zvt.accounts.ccxt_account import CCXTAccount
-from zvt.domain.coin_meta import Coin
+from zvt.domain.meta.coin_meta import Coin
 from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
 
 

@@ -3,7 +3,7 @@ from sqlalchemy import Column, Float, String, Boolean, Integer
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import Mixin
-from zvt import register_schema
+from zvdata.contract import register_schema
 
 Stock1dZenFactorBase = declarative_base()
 

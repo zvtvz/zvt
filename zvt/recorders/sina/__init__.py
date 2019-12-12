@@ -1,3 +1,3 @@
-from zvt.recorders.common.china_stock_list_spider import ChinaStockListSpider
+from zvt.recorders.common.china_stock_list_spider import ChinaStockListRecorder
 
-ChinaStockListSpider(provider='sina').run()
+ChinaStockListRecorder(provider='sina').run()
