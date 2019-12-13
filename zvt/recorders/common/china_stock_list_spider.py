@@ -4,7 +4,7 @@ import io
 
 import pandas as pd
 import requests
-from zvdata.api import init_entities
+from zvdata.api import persist_entities
 from zvdata.recorder import Recorder
 
 from zvt.domain import Stock
@@ -60,7 +60,7 @@ class ChinaStockListRecorder(Recorder):
             df['timestamp'] = df['list_date']
             df = df.dropna(axis=0, how='any')
             df = df.drop_duplicates(subset=('id'), keep='last')
-            init_entities(df, provider=self.provider)
+            persist_entities(df, provider=self.provider)
 
 
 if __name__ == '__main__':
