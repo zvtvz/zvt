@@ -1,6 +1,6 @@
 import pandas as pd
 
-from zvdata.api import init_entities
+from zvdata.api import persist_entities
 from zvdata.utils.time_utils import to_pd_timestamp
 
 CHINA_STOCK_MAIN_INDEX = [{'id': 'index_cn_000001',
@@ -113,7 +113,7 @@ def init_main_index(provider='exchange'):
         item['timestamp'] = to_pd_timestamp(item['timestamp'])
     df = pd.DataFrame(CHINA_STOCK_MAIN_INDEX)
     # print(df)
-    init_entities(df, entity_type='index', provider=provider)
+    persist_entities(df, entity_type='index', provider=provider)
 
 
 if __name__ == '__main__':

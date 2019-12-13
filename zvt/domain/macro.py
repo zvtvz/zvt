@@ -9,7 +9,7 @@ MacroBase = declarative_base()
 
 
 # 市场整体估值
-@register_api(provider='exchange')
+@register_api(provider='joinquant')
 class StockSummary(MacroBase, Mixin):
     __tablename__ = 'stock_summary'
 
@@ -27,6 +27,7 @@ class StockSummary(MacroBase, Mixin):
 
 
 # 融资融券概况
+@register_api(provider='joinquant')
 class MarginTradingSummary(MacroBase, Mixin):
     __tablename__ = 'margin_trading_summary'
     provider = Column(String(length=32))
@@ -48,6 +49,7 @@ class MarginTradingSummary(MacroBase, Mixin):
 
 
 # 北向/南向成交概况
+@register_api(provider='joinquant')
 class CrossMarketSummary(MacroBase, Mixin):
     __tablename__ = 'cross_market_summary'
     provider = Column(String(length=32))

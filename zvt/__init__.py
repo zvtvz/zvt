@@ -86,6 +86,9 @@ def init_env(zvt_home: str) -> None:
 
     init_log()
 
+    import pprint
+    pprint.pprint(zvt_env)
+
 
 if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
@@ -106,11 +109,7 @@ if os.getenv('TESTING_ZVT'):
 else:
     init_env(zvt_home=ZVT_HOME)
 
-import pprint
-
-pprint.pprint(zvt_env)
-
 import zvt.domain as domain
 import zvt.recorders as recorders
 
-__all__ = ['domain', 'recorders']
+__all__ = ['domain', 'recorders', 'zvt_env', 'init_log', 'init_env']
