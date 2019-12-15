@@ -111,23 +111,76 @@ In [17]: t.run()
 
 ```
 
-In [1]: from zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder import *
-In [2]: r = ChinaStockFinanceFactorRecorder(codes=['000338'])
-auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
+In [1]: from zvt.domain import *
+In [2]: global_schemas
+[zvt.domain.business.Trader,
+ zvt.domain.business.SimAccount,
+ zvt.domain.business.Position,
+ zvt.domain.business.Order,
+ zvt.domain.meta.coin_meta.Coin,
+ zvt.domain.meta.stock_meta.StockIndex,
+ zvt.domain.meta.stock_meta.Index,
+ zvt.domain.meta.stock_meta.Stock,
+ zvt.domain.dividend_financing.DividendFinancing,
+ zvt.domain.dividend_financing.DividendDetail,
+ zvt.domain.dividend_financing.SpoDetail,
+ zvt.domain.dividend_financing.RightsIssueDetail,
+ zvt.domain.finance.BalanceSheet,
+ zvt.domain.finance.IncomeStatement,
+ zvt.domain.finance.CashFlowStatement,
+ zvt.domain.finance.FinanceFactor,
+ zvt.domain.holder.TopTenTradableHolder,
+ zvt.domain.holder.TopTenHolder,
+ zvt.domain.holder.InstitutionalInvestorHolder,
+ zvt.domain.macro.StockSummary,
+ zvt.domain.macro.MarginTradingSummary,
+ zvt.domain.macro.CrossMarketSummary,
+ zvt.domain.money_flow.IndexMoneyFlow,
+ zvt.domain.money_flow.StockMoneyFlow,
+ zvt.domain.trading.ManagerTrading,
+ zvt.domain.trading.HolderTrading,
+ zvt.domain.trading.BigDealTrading,
+ zvt.domain.trading.MarginTrading,
+ zvt.domain.trading.DragonAndTiger,
+ zvt.domain.quotes.coin_tick_kdata.CoinTickKdata,
+ zvt.domain.quotes.coin_1m_kdata.Coin1mKdata,
+ zvt.domain.quotes.coin_1h_kdata.Coin1hKdata,
+ zvt.domain.quotes.coin_1d_kdata.Coin1dKdata,
+ zvt.domain.quotes.coin_1wk_kdata.Coin1wkKdata,
+ zvt.domain.quotes.coin_1mon_kdata.Coin1monKdata,
+ zvt.domain.quotes.index_1d_kdata.Index1dKdata,
+ zvt.domain.quotes.index_1wk_kdata.Index1wkKdata,
+ zvt.domain.quotes.index_1mon_kdata.Index1monKdata,
+ zvt.domain.quotes.stock_1m_kdata.Stock1mKdata,
+ zvt.domain.quotes.stock_5m_kdata.Stock5mKdata,
+ zvt.domain.quotes.stock_15m_kdata.Stock15mKdata,
+ zvt.domain.quotes.stock_30m_kdata.Stock30mKdata,
+ zvt.domain.quotes.stock_1h_kdata.Stock1hKdata,
+ zvt.domain.quotes.stock_1d_kdata.Stock1dKdata,
+ zvt.domain.quotes.stock_1wk_kdata.Stock1wkKdata,
+ zvt.domain.quotes.stock_1mon_kdata.Stock1monKdata,
+ zvt.domain.factors.stock_1d_ma_factor.Stock1dMaFactor,
+ zvt.domain.factors.stock_1d_ma_stats.Stock1dMaStateStats,
+ zvt.domain.factors.stock_1d_zen_factor.Stock1dZenFactor,
+ zvt.domain.factors.stock_1wk_ma_stats.Stock1wkMaStateStats]
+```
+整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
+```
+In [17]: FinanceFactor.recorders
+Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
 
-In [3]: r.run()
-INFO  MainThread  2019-12-03 17:13:28,331  ChinaStockFinanceFactorRecorder:recorder.py:537  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
-INFO  MainThread  2019-12-03 17:13:28,351  ChinaStockFinanceFactorRecorder:recorder.py:542  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
-INFO  MainThread  2019-12-03 17:13:28,352  ChinaStockFinanceFactorRecorder:recorder.py:337  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
-INFO  MainThread  2019-12-03 17:13:28,352  ChinaStockFinanceFactorRecorder:recorder.py:346  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
+In [18]: FinanceFactor.fetch_data(codes=['000338'])
+FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]
+auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
+INFO  MainThread  2019-12-15 18:03:35,493  ChinaStockFinanceFactorRecorder:recorder.py:551  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,509  ChinaStockFinanceFactorRecorder:recorder.py:556  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:348  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:357  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
 已退出
 ```
-
-这里只展示了财务指标的用法，其他所有recorder的用法都是一致的。
 * codes代表需要抓取的股票代码
 * 不传入codes则是全市场抓取
-
-> TODO:其他recorder用法，recorder其他参数用法。
+* 所有的schema对应的数据更新，方法是一致的
 
 ## 📝配置正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
