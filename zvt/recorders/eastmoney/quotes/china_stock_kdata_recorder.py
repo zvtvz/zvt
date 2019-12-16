@@ -32,13 +32,13 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     provider = 'eastmoney'
     url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.{}&cb=fsdata1567673076&klt={}&fqt=0&lmt={}&end={}&iscca=1&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&fsdata1567673076=fsdata1567673076'
 
-    def __init__(self, entity_type='index', entity_ids=None, codes=None, batch_size=10,
+    def __init__(self, entity_type='index', exchanges=None, entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=10, default_size=10000, real_time=True, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None,
                  level=IntervalLevel.LEVEL_1WEEK, kdata_use_begin_time=False, close_hour=0, close_minute=0,
                  one_day_trading_minutes=24 * 60) -> None:
         self.data_schema = get_kdata_schema(entity_type=entity_type, level=level)
-        super().__init__(entity_type, None, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time,
                          one_day_trading_minutes)

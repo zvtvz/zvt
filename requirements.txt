@@ -1,4 +1,4 @@
-zvdata == 1.0.7
+zvdata == 1.0.8
 requests == 2.20.1
 SQLAlchemy == 1.2.14
 pandas == 0.24.2

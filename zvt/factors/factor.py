@@ -92,7 +92,7 @@ class Factor(DataReader, DataListener):
                  effective_number: int = None,
                  transformer: Transformer = None,
                  accumulator: Accumulator = None,
-                 persist_factor: bool = True,
+                 persist_factor: bool = False,
                  dry_run: bool = False) -> None:
         """
 

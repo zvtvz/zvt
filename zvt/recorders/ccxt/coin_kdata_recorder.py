@@ -8,7 +8,7 @@ from zvdata.utils.time_utils import to_time_str
 from zvt import init_log
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import generate_kdata_id, get_kdata_schema
-from zvt.domain import Coin
+from zvt.domain import Coin, CoinKdataCommon
 from zvt.recorders.ccxt import to_ccxt_trading_level
 from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
 
@@ -18,6 +18,9 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
 
     entity_provider = 'ccxt'
     entity_schema = Coin
+
+    # 只是为了把recorder注册到data_schema
+    data_schema = CoinKdataCommon
 
     def __init__(self,
                  exchanges=['binance'],
