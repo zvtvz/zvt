@@ -2,7 +2,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.contract import register_schema
-from zvt.domain.quotes import StockKdataCommon
+from zvt.domain.quotes.stock import StockKdataCommon
 
 # kdata schema rule
 # 1)name:{entity_type}{level}Kdata

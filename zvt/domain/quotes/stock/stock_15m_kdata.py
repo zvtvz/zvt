@@ -2,8 +2,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.contract import register_schema
-from zvt.domain.quotes import StockKdataCommon
-
+from zvt.domain.quotes.stock import StockKdataCommon
 # 股票15分钟k线
 Stock15MKdataBase = declarative_base()
 

@@ -28,6 +28,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     data_schema = StockKdataCommon
 
     def __init__(self,
+                 exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
                  batch_size=10,
@@ -47,7 +48,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type='stock', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__('stock', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__('stock', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
