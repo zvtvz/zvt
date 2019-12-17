@@ -34,6 +34,7 @@ pip install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.
 ```
 In [1]: import os
 
+#这一句会进入测试环境，使用自带的测试数据
 In [2]: os.environ["TESTING_ZVT"] = "1"
 
 In [3]: from zvt import *
@@ -92,97 +93,11 @@ In [16]: t = MyMaTrader(codes=['000338'], level=IntervalLevel.LEVEL_1DAY, start_
 In [17]: t.run()
 
 ```
+测试数据里面包含的SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']，试一下传入其任意组合，即可看多标的的效果。
+
 <p align="center"><img src='./docs/imgs/output-value.jpg'/></p>
 
-* ### 配置
-在zvt_home目录中找到config.json进行配置：
-
- * jq_username
-
-聚宽数据用户名
-
- * jq_password
-
-聚宽数据密码
-
-> TODO:其他配置项用法
-
-* ### 抓数据
-
-```
-
-In [1]: from zvt.domain import *
-In [2]: global_schemas
-[zvt.domain.business.Trader,
- zvt.domain.business.SimAccount,
- zvt.domain.business.Position,
- zvt.domain.business.Order,
- zvt.domain.meta.coin_meta.Coin,
- zvt.domain.meta.stock_meta.StockIndex,
- zvt.domain.meta.stock_meta.Index,
- zvt.domain.meta.stock_meta.Stock,
- zvt.domain.dividend_financing.DividendFinancing,
- zvt.domain.dividend_financing.DividendDetail,
- zvt.domain.dividend_financing.SpoDetail,
- zvt.domain.dividend_financing.RightsIssueDetail,
- zvt.domain.finance.BalanceSheet,
- zvt.domain.finance.IncomeStatement,
- zvt.domain.finance.CashFlowStatement,
- zvt.domain.finance.FinanceFactor,
- zvt.domain.holder.TopTenTradableHolder,
- zvt.domain.holder.TopTenHolder,
- zvt.domain.holder.InstitutionalInvestorHolder,
- zvt.domain.macro.StockSummary,
- zvt.domain.macro.MarginTradingSummary,
- zvt.domain.macro.CrossMarketSummary,
- zvt.domain.money_flow.IndexMoneyFlow,
- zvt.domain.money_flow.StockMoneyFlow,
- zvt.domain.trading.ManagerTrading,
- zvt.domain.trading.HolderTrading,
- zvt.domain.trading.BigDealTrading,
- zvt.domain.trading.MarginTrading,
- zvt.domain.trading.DragonAndTiger,
- zvt.domain.quotes.coin_tick_kdata.CoinTickKdata,
- zvt.domain.quotes.coin_1m_kdata.Coin1mKdata,
- zvt.domain.quotes.coin_1h_kdata.Coin1hKdata,
- zvt.domain.quotes.coin_1d_kdata.Coin1dKdata,
- zvt.domain.quotes.coin_1wk_kdata.Coin1wkKdata,
- zvt.domain.quotes.coin_1mon_kdata.Coin1monKdata,
- zvt.domain.quotes.index_1d_kdata.Index1dKdata,
- zvt.domain.quotes.index_1wk_kdata.Index1wkKdata,
- zvt.domain.quotes.index_1mon_kdata.Index1monKdata,
- zvt.domain.quotes.stock_1m_kdata.Stock1mKdata,
- zvt.domain.quotes.stock_5m_kdata.Stock5mKdata,
- zvt.domain.quotes.stock_15m_kdata.Stock15mKdata,
- zvt.domain.quotes.stock_30m_kdata.Stock30mKdata,
- zvt.domain.quotes.stock_1h_kdata.Stock1hKdata,
- zvt.domain.quotes.stock_1d_kdata.Stock1dKdata,
- zvt.domain.quotes.stock_1wk_kdata.Stock1wkKdata,
- zvt.domain.quotes.stock_1mon_kdata.Stock1monKdata,
- zvt.domain.factors.stock_1d_ma_factor.Stock1dMaFactor,
- zvt.domain.factors.stock_1d_ma_stats.Stock1dMaStateStats,
- zvt.domain.factors.stock_1d_zen_factor.Stock1dZenFactor,
- zvt.domain.factors.stock_1wk_ma_stats.Stock1wkMaStateStats]
-```
-整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
-```
-In [17]: FinanceFactor.recorders
-Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
-
-In [18]: FinanceFactor.fetch_data(codes=['000338'])
-FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]
-auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
-INFO  MainThread  2019-12-15 18:03:35,493  ChinaStockFinanceFactorRecorder:recorder.py:551  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
-INFO  MainThread  2019-12-15 18:03:35,509  ChinaStockFinanceFactorRecorder:recorder.py:556  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
-INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:348  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
-INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:357  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
-已退出
-```
-* codes代表需要抓取的股票代码
-* 不传入codes则是全市场抓取
-* 所有的schema对应的数据更新，方法是一致的
-
-## 📝配置正式环境
+## 📝正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
  ```
 In [1]: from zvt import *
@@ -207,10 +122,78 @@ In [1]: from zvt import *
 
 所有操作跟测试环境是一致的，只是操作的目录不同。
 
+* ### 下载历史数据（可选）
+东财数据: https://pan.baidu.com/s/1CMAlCRYwlhGVxS6drYUEgA 提取码: q2qn  
+资金流，板块数据(新浪): https://pan.baidu.com/s/1eusW65sdK_WE4icnt8JS1g 提取码: uux3  
+市场概况，沪/深港通，融资融券数据(聚宽): https://pan.baidu.com/s/1ijrgjUd1WkRMONrwRQU-4w 提取码: dipd  
+
+把下载的数据解压到正式环境的data_path（所有db文件放到该目录下，没有层级结构）
+
+数据的更新是增量的，下载历史数据只是为了节省时间，全部自己更新也是可以的。
+
+* ### 注册聚宽(可选)
+项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，网易,交易所，ccxt等免费数据。
+#### 数据的设计上是让provider来适配schema,而不是反过来，这样即使某provider不可用了，换一个即可，不会影响整个系统的使用。
+
+但免费数据的缺点是显而易见的:不稳定，爬取清洗数据耗时耗力，维护代价巨大，且随时可能不可用。  
+个人建议：如果只是学习研究，可以使用免费数据；如果是真正有意投身量化，还是选一家可靠的数据提供商。
+
+项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）  
+https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
+
+> 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
+
+> 添加其他数据提供商，请参考[数据扩展教程](http://zvt.foolcage.com/#/data_extending)
+
+
+* ### 配置
+在zvt_home目录中找到config.json进行配置：
+
+ * jq_username
+
+聚宽数据用户名
+
+ * jq_password
+
+聚宽数据密码
+
+> TODO:其他配置项用法
+
+* ### 更新数据
+
+```
+
+In [1]: from zvt.domain import *
+In [2]: global_schemas
+[zvt.domain.dividend_financing.DividendFinancing,
+ zvt.domain.dividend_financing.DividendDetail,
+ zvt.domain.dividend_financing.SpoDetail...]
+```
+整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
+```
+In [17]: FinanceFactor.recorders
+Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
+
+In [18]: FinanceFactor.fetch_data(codes=['000338'])
+FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]
+auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
+INFO  MainThread  2019-12-15 18:03:35,493  ChinaStockFinanceFactorRecorder:recorder.py:551  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,509  ChinaStockFinanceFactorRecorder:recorder.py:556  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:348  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:357  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
+已退出
+```
+* codes代表需要抓取的股票代码
+* 不传入codes则是全市场抓取
+* 所有的schema对应的数据更新，方法是一致的
+
+定时任务的方式更新可参考[runners](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/eastmoney/finance0_runner.py)
+
 **注意**：
 >可视化方面，master分支只保留行情指标功能，其他复杂功能在[draft分支](https://github.com/zvtvz/zvt/tree/draft)里面存档
 >项目将专注于一般行情软件难以实现的自定义统计指标，回测，交易通知上面
-## 详细文档(待更新)
+
+## 详细文档(有点老了，待更新)
 文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
 [http://zvt.foolcage.com](http://zvt.foolcage.com)  
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
@@ -229,23 +212,8 @@ In [1]: from zvt import *
 - 支持交易信号和策略使用到的factor的实时可视化
 - 支持多种实盘交易(实现中)
 
-##  🔰安装
-
-### 注册聚宽(可选)
-项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，网易,交易所，ccxt等免费数据。
-
-但免费数据的缺点是显而易见的:不稳定，爬取清洗数据耗时耗力，维护代价巨大，且随时可能不可用。  
-个人建议：如果只是学习研究，可以使用免费数据；如果是真正有意投身量化，还是选一家可靠的数据提供商。
-
-项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）  
-https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
-
-> 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
-
-> 添加其他数据提供商，请参考[数据扩展教程](http://zvt.foolcage.com/#/data_extending)
-
-### 快速开始(只需3部)
-#### 1.clone代码
+## 开发
+* ### clone代码
 
 ```
 git clone https://github.com/zvtvz/zvt.git
@@ -254,31 +222,14 @@ git clone https://github.com/zvtvz/zvt.git
 设置项目的virtual env(python>=3.6),安装依赖
 ```
 pip3 install -r requirements.txt
+pip3 install pytest
 ```
 
-#### 2.pycharm导入工程(推荐,你也可以使用其他ide)
+* ### pycharm导入工程(推荐,你也可以使用其他ide)
+跑测试
+<p align="center"><img src='./docs/imgs/pytest.png'/></p>
 
-解压data sample,用于快速跑测试
-```
-python3 init_data_sample.py
-```
-
-#### 3.下载数据，运行
-更改DATA_PATH（否则会污染datasample,datasample只用于测试用）
-```
-DATA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
-```
-
-东财数据: https://pan.baidu.com/s/1CMAlCRYwlhGVxS6drYUEgA 提取码: q2qn  
-日线数据(网易): https://pan.baidu.com/s/1kMhEVO0kH_Pn6wXKyqvJEA 提取码: ijxg  
-资金流，板块数据(新浪): https://pan.baidu.com/s/1eusW65sdK_WE4icnt8JS1g 提取码: uux3  
-市场概况，沪/深港通，融资融券数据(聚宽): https://pan.baidu.com/s/1ijrgjUd1WkRMONrwRQU-4w 提取码: dipd  
-
-把下载的数据解压到DATA_PATH
-
-
-增量更新数据，只需要运行[recorders](./zvt/recorders)里面的脚本
-
+大部分功能使用都可以从tests里面参考
 
 ## 💌请作者喝杯咖啡
 
