@@ -162,7 +162,6 @@ class Factor(DataReader, DataListener):
                 if self.accumulator is not None:
                     self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema,
                                                          window=accumulator.acc_window)
-
             else:
                 self.factor_df = get_data(provider='zvt',
                                           data_schema=self.factor_schema,
@@ -171,7 +170,9 @@ class Factor(DataReader, DataListener):
                                           index=[self.category_field, self.time_field])
 
             # 根据已经计算的factor_df和computing_window来保留data_df
-            if pd_is_not_null(self.data_df):
+            # 因为读取data_df的目的是为了计算factor_df,选股和回测只依赖factor_df
+            # 所以如果有持久化的factor_df,只需保留需要用于计算的data_df即可
+            if pd_is_not_null(self.data_df) and self.computing_window:
                 dfs = []
                 for entity_id, df in self.data_df.groupby(level=0):
                     latest_laved = get_data(provider='zvt',
