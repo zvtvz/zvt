@@ -3,13 +3,13 @@ from sqlalchemy import Column, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.contract import register_schema
-from zvt.domain.quotes import KdataCommon
-
 # 指数日k线
+from zvt.domain.quotes.index import IndexKdataCommon
+
 Index1dKdataBase = declarative_base()
 
 
-class Index1dKdata(Index1dKdataBase, KdataCommon):
+class Index1dKdata(Index1dKdataBase, IndexKdataCommon):
     __tablename__ = 'index_1d_kdata'
     turnover_rate = Column(Float)
 

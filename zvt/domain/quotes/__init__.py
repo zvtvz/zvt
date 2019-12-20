@@ -27,13 +27,6 @@ class KdataCommon(Mixin):
     turnover = Column(Float)
 
 
-class StockKdataCommon(KdataCommon):
-    # 涨跌幅
-    change_pct = Column(Float)
-    # 换手率
-    turnover_rate = Column(Float)
-
-
 class TickCommon(Mixin):
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -48,22 +41,22 @@ class TickCommon(Mixin):
     order_type = Column(String(length=32))
 
 
-from .coin_tick_kdata import *
-from .coin_1m_kdata import *
-from .coin_1h_kdata import *
-from .coin_1d_kdata import *
-from .coin_1wk_kdata import *
-from .coin_1mon_kdata import *
+from zvt.domain.quotes.coin.coin_tick_kdata import *
+from zvt.domain.quotes.coin.coin_1m_kdata import *
+from zvt.domain.quotes.coin.coin_1h_kdata import *
+from zvt.domain.quotes.coin.coin_1d_kdata import *
+from zvt.domain.quotes.coin.coin_1wk_kdata import *
+from zvt.domain.quotes.coin.coin_1mon_kdata import *
 
-from .index_1d_kdata import *
-from .index_1wk_kdata import *
-from .index_1mon_kdata import *
+from zvt.domain.quotes.index.index_1d_kdata import *
+from zvt.domain.quotes.index.index_1wk_kdata import *
+from zvt.domain.quotes.index.index_1mon_kdata import *
 
-from .stock_1m_kdata import *
-from .stock_5m_kdata import *
-from .stock_15m_kdata import *
-from .stock_30m_kdata import *
-from .stock_1h_kdata import *
-from .stock_1d_kdata import *
-from .stock_1wk_kdata import *
-from .stock_1mon_kdata import *
+from zvt.domain.quotes.stock.stock_1m_kdata import *
+from zvt.domain.quotes.stock.stock_5m_kdata import *
+from zvt.domain.quotes.stock.stock_15m_kdata import *
+from zvt.domain.quotes.stock.stock_30m_kdata import *
+from zvt.domain.quotes.stock.stock_1h_kdata import *
+from zvt.domain.quotes.stock.stock_1d_kdata import *
+from zvt.domain.quotes.stock.stock_1wk_kdata import *
+from zvt.domain.quotes.stock.stock_1mon_kdata import *

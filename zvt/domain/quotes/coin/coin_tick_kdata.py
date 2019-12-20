@@ -3,12 +3,12 @@ from sqlalchemy.ext.declarative import declarative_base
 
 # 数字货币tick
 from zvdata.contract import register_schema
-from zvt.domain.quotes import TickCommon
+from zvt.domain.quotes.coin import CoinTickCommon
 
 CoinTickKdataBase = declarative_base()
 
 
-class CoinTickKdata(CoinTickKdataBase, TickCommon):
+class CoinTickKdata(CoinTickKdataBase, CoinTickCommon):
     __tablename__ = 'coin_tick_kdata'
 
 

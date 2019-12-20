@@ -3,10 +3,10 @@ import argparse
 from typing import List, Union
 
 import pandas as pd
-
 from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
+
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_zen_factor_schema
 from zvt.factors.factor import Accumulator, Transformer
@@ -82,14 +82,15 @@ class ZenAccumulator(Accumulator):
 
 
 class ZenFactor(TechnicalFactor):
-    def __init__(self, data_schema: List[str], entity_ids: str = None, entity_type: List[str] = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'], codes: Union[str, pd.Timestamp] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: List = None, columns: List = None, filters: object = None, order: int = None,
-                 limit: str = None, provider: Union[str, IntervalLevel] = 'eastmoney',
-                 level: str = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: int = 'timestamp', computing_window: bool = 250, keep_all_timestamp: str = False,
-                 fill_method: int = 'ffill', effective_number: bool = 10, transformer: bool = None -> None:
+
+    def __init__(self, entity_ids: List[str] = None, entity_type: str = 'stock', exchanges: List[str] = ['sh', 'sz'],
+                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
+                 provider: str = 'joinquant', level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
+                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = 10,
+                 persist_factor: bool = False, dry_run: bool = True) -> None:
         self.factor_schema = get_zen_factor_schema(entity_type=entity_type, level=level)
 
         transformer: Transformer = None

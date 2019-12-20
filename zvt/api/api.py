@@ -9,12 +9,14 @@ from sqlalchemy.orm import Session
 from zvdata.api import get_data
 from zvdata import IntervalLevel
 
-from zvt.domain import DragonAndTiger
+from zvt.domain import HolderTrading
 
-def get_dragon_and_tiger(
+def get_holder_trading(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -25,23 +27,24 @@ def get_dragon_and_tiger(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=DragonAndTiger, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=HolderTrading, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
-from zvt.domain import RightsIssueDetail
+from zvt.domain import CrossMarketSummary
 
-def get_rights_issue_detail(
+def get_cross_market_summary(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
+        provider: str = 'joinquant',
         columns: List = None,
         return_type: str = 'df',
         start_timestamp: Union[pd.Timestamp, str] = None,
@@ -50,71 +53,22 @@ def get_rights_issue_detail(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=RightsIssueDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import TopTenHolder
-
-def get_top_ten_holder(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=TopTenHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import StockSummary
-
-def get_stock_summary(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'exchange',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=StockSummary, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=CrossMarketSummary, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
 from zvt.domain import IndexMoneyFlow
 
 def get_index_money_flow(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'sina',
         columns: List = None,
@@ -125,21 +79,22 @@ def get_index_money_flow(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=IndexMoneyFlow, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=IndexMoneyFlow, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
-from zvt.domain import HolderTrading
+from zvt.domain import DragonAndTiger
 
-def get_holder_trading(
+def get_dragon_and_tiger(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -150,21 +105,74 @@ def get_holder_trading(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=HolderTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=DragonAndTiger, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import BalanceSheet
+
+def get_balance_sheet(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=BalanceSheet, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import RightsIssueDetail
+
+def get_rights_issue_detail(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=RightsIssueDetail, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
 from zvt.domain import CashFlowStatement
 
 def get_cash_flow_statement(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -175,21 +183,22 @@ def get_cash_flow_statement(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=CashFlowStatement, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=CashFlowStatement, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
-from zvt.domain import Stock
+from zvt.domain import BigDealTrading
 
-def get_stock(
+def get_big_deal_trading(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -200,21 +209,22 @@ def get_stock(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=Stock, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=BigDealTrading, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
 from zvt.domain import IncomeStatement
 
 def get_income_statement(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -225,21 +235,334 @@ def get_income_statement(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=IncomeStatement, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=IncomeStatement, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import TopTenTradableHolder
+
+def get_top_ten_tradable_holder(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=TopTenTradableHolder, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import TopTenHolder
+
+def get_top_ten_holder(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=TopTenHolder, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import Stock
+
+def get_stock(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=Stock, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import StockMoneyFlow
+
+def get_stock_money_flow(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'sina',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=StockMoneyFlow, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import MarginTrading
+
+def get_margin_trading(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=MarginTrading, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import StockSummary
+
+def get_stock_summary(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'joinquant',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=StockSummary, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import SpoDetail
+
+def get_spo_detail(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=SpoDetail, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import ManagerTrading
+
+def get_manager_trading(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=ManagerTrading, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import MarginTradingSummary
+
+def get_margin_trading_summary(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'joinquant',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=MarginTradingSummary, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import FinanceFactor
+
+def get_finance_factor(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=FinanceFactor, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import DividendDetail
+
+def get_dividend_detail(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=DividendDetail, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
+
+
+from zvt.domain import InstitutionalInvestorHolder
+
+def get_institutional_investor_holder(
+        ids: List[str] = None,
+        entity_ids: List[str] = None,
+        entity_id: str = None,
+        codes: List[str] = None,
+        code: str = None,
+        level: Union[IntervalLevel, str] = None,
+        provider: str = 'eastmoney',
+        columns: List = None,
+        return_type: str = 'df',
+        start_timestamp: Union[pd.Timestamp, str] = None,
+        end_timestamp: Union[pd.Timestamp, str] = None,
+        filters: List = None,
+        session: Session = None,
+        order=None,
+        limit: int = None,
+        index: Union[str, list] = 'timestamp',
+        time_field: str = 'timestamp'):
+    return get_data(data_schema=InstitutionalInvestorHolder, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
 from zvt.domain import Index
 
 def get_index(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'exchange',
         columns: List = None,
@@ -250,171 +573,22 @@ def get_index(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=Index, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import FinanceFactor
-
-def get_finance_factor(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=FinanceFactor, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import BalanceSheet
-
-def get_balance_sheet(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=BalanceSheet, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import TopTenTradableHolder
-
-def get_top_ten_tradable_holder(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=TopTenTradableHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import DividendDetail
-
-def get_dividend_detail(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=DividendDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import MarginTrading
-
-def get_margin_trading(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=MarginTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import InstitutionalInvestorHolder
-
-def get_institutional_investor_holder(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=InstitutionalInvestorHolder, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=Index, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
 
 from zvt.domain import DividendFinancing
 
 def get_dividend_financing(
+        ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
+        code: str = None,
         level: Union[IntervalLevel, str] = None,
         provider: str = 'eastmoney',
         columns: List = None,
@@ -425,111 +599,10 @@ def get_dividend_financing(
         session: Session = None,
         order=None,
         limit: int = None,
-        index: str = 'timestamp',
+        index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=DividendFinancing, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import StockMoneyFlow
-
-def get_stock_money_flow(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'sina',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=StockMoneyFlow, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import ManagerTrading
-
-def get_manager_trading(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=ManagerTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import SpoDetail
-
-def get_spo_detail(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=SpoDetail, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
-
-
-from zvt.domain import BigDealTrading
-
-def get_big_deal_trading(
-        entity_ids: List[str] = None,
-        entity_id: str = None,
-        codes: List[str] = None,
-        level: Union[IntervalLevel, str] = None,
-        provider: str = 'eastmoney',
-        columns: List = None,
-        return_type: str = 'df',
-        start_timestamp: Union[pd.Timestamp, str] = None,
-        end_timestamp: Union[pd.Timestamp, str] = None,
-        filters: List = None,
-        session: Session = None,
-        order=None,
-        limit: int = None,
-        index: str = 'timestamp',
-        time_field: str = 'timestamp'):
-    return get_data(data_schema=BigDealTrading, entity_ids=entity_ids, entity_id=entity_id, codes=codes, level=level,
-                    provider=provider,
-                    columns=columns, return_type=return_type, start_timestamp=start_timestamp,
-                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit,
-                    index=index, time_field=time_field)
+    return get_data(data_schema=DividendFinancing, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+                    code=code, level=level, provider=provider, columns=columns, return_type=return_type,
+                    start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
+                    order=order, limit=limit,index=index,time_field=time_field)
 
