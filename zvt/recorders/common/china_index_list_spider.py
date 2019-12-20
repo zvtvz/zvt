@@ -5,7 +5,7 @@ import io
 import demjson
 import pandas as pd
 import requests
-from zvdata.api import df_to_db, init_entities
+from zvdata.api import df_to_db, persist_entities
 from zvdata.recorder import Recorder
 
 from zvt.api.common import china_stock_code_to_id
@@ -235,7 +235,7 @@ class ChinaIndexListSpider(Recorder):
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        init_entities(df, entity_type='index', provider=self.provider)
+        persist_entities(df, entity_type='index', provider=self.provider)
 
 
 if __name__ == '__main__':

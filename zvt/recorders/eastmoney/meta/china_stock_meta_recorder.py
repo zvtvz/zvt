@@ -4,7 +4,7 @@ import requests
 
 from zvdata.recorder import Recorder
 from zvt.api.quote import get_entities
-from zvt.domain.stock_meta import Stock
+from zvt.domain.meta.stock_meta import Stock
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float, pct_to_float
 

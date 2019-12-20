@@ -7,15 +7,18 @@ from zvdata.utils.time_utils import to_pd_timestamp
 from zvt import init_log
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema, generate_kdata_id
-from zvt.domain import Coin
+from zvt.domain import Coin, CoinTickCommon
 from zvt.settings import COIN_EXCHANGES, COIN_PAIRS
 
 
-class CoinKdataRecorder(FixedCycleDataRecorder):
+class CoinTickRecorder(FixedCycleDataRecorder):
     provider = 'ccxt'
 
     entity_provider = 'ccxt'
     entity_schema = Coin
+
+    # 只是为了把recorder注册到data_schema
+    data_schema = CoinTickCommon
 
     def __init__(self,
                  exchanges=['binance'],
@@ -90,4 +93,4 @@ if __name__ == '__main__':
 
     init_log('coin_tick_kdata.log')
 
-    CoinKdataRecorder(codes=['EOS/USDT']).run()
+    CoinTickRecorder(codes=['EOS/USDT']).run()

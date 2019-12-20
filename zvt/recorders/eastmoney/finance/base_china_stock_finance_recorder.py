@@ -2,16 +2,16 @@
 from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
 from zvdata.api import get_data
+from zvdata.utils.pd_utils import index_df
 from zvdata.utils.pd_utils import pd_is_not_null
+from zvdata.utils.time_utils import to_time_str, to_pd_timestamp
+from zvt import zvt_env
 from zvt.api.api import get_finance_factor
 from zvt.api.common import to_jq_report_period
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
 from zvt.recorders.joinquant import to_jq_entity_id
-from zvt import zvt_env
-from zvdata.utils.pd_utils import index_df
-from zvdata.utils.time_utils import to_time_str, to_pd_timestamp
 
 
 class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
@@ -24,9 +24,11 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
-                 fix_duplicate_way='add') -> None:
+                 fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0,
+                 close_minute=0) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
@@ -132,11 +134,11 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                     self.fill_timestamp_with_jq(entity, the_data)
             else:
                 df = get_finance_factor(entity_id=entity.id,
-                                         columns=[FinanceFactor.timestamp, FinanceFactor.report_date, FinanceFactor.id],
-                                         filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
-                                                  FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),
-                                                  FinanceFactor.report_date >= the_data_list[0].report_date,
-                                                  FinanceFactor.report_date <= the_data_list[-1].report_date, ])
+                                        columns=[FinanceFactor.timestamp, FinanceFactor.report_date, FinanceFactor.id],
+                                        filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
+                                                 FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),
+                                                 FinanceFactor.report_date >= the_data_list[0].report_date,
+                                                 FinanceFactor.report_date <= the_data_list[-1].report_date, ])
 
                 if pd_is_not_null(df):
                     index_df(df, index='report_date')

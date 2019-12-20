@@ -2,12 +2,12 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata.contract import register_schema
-from zvt.domain.quotes import KdataCommon
+from zvt.domain.quotes.coin import CoinKdataCommon
 
 Coin1wkKdataBase = declarative_base()
 
 
-class Coin1wkKdata(Coin1wkKdataBase, KdataCommon):
+class Coin1wkKdata(Coin1wkKdataBase, CoinKdataCommon):
     __tablename__ = 'coin_1wk_kdata'
 
 

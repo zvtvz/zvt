@@ -10,7 +10,7 @@ from zvdata.recorder import Recorder
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
 from zvt.domain import StockIndex, StockCategory
-from zvt.domain.stock_meta import Index
+from zvt.domain.meta.stock_meta import Index
 
 
 class SinaChinaStockCategoryRecorder(Recorder):

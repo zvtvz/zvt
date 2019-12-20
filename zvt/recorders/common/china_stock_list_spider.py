@@ -4,7 +4,7 @@ import io
 
 import pandas as pd
 import requests
-from zvdata.api import init_entities
+from zvdata.api import persist_entities
 from zvdata.recorder import Recorder
 
 from zvt.domain import Stock
@@ -12,7 +12,7 @@ from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 from zvdata.utils.time_utils import to_pd_timestamp
 
 
-class ChinaStockListSpider(Recorder):
+class ChinaStockListRecorder(Recorder):
     data_schema = Stock
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='eastmoney') -> None:
@@ -60,9 +60,9 @@ class ChinaStockListSpider(Recorder):
             df['timestamp'] = df['list_date']
             df = df.dropna(axis=0, how='any')
             df = df.drop_duplicates(subset=('id'), keep='last')
-            init_entities(df, provider=self.provider)
+            persist_entities(df, provider=self.provider)
 
 
 if __name__ == '__main__':
-    spider = ChinaStockListSpider(provider='eastmoney')
+    spider = ChinaStockListRecorder(provider='eastmoney')
     spider.run()

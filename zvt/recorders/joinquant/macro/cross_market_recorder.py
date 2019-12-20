@@ -7,7 +7,7 @@ from zvt import zvt_env
 from zvt.domain import Index, CrossMarketSummary
 
 
-class StockSummaryRecorder(TimeSeriesDataRecorder):
+class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
     entity_provider = 'exchange'
     entity_schema = Index
 
@@ -71,4 +71,4 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    StockSummaryRecorder(batch_size=30).run()
+    CrossMarketSummaryRecorder(batch_size=30).run()
