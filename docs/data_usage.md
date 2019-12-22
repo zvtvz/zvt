@@ -1,3 +1,152 @@
+## 1. 数据是什么？
+
+没有数据，量化便成了空中楼阁。
+
+那么，在量化中，数据到底是什么？
+
+zvt对量化数据进行了非常简单而统一的抽象：数据就是 **投资标的** 在**某时间点(段)** 所**发生的事情**的描述。
+
+其中，投资标的，叫**entity**；时间点(段)，叫**timestamp**；事情的描述根据事情的不同而具有不同的**属性**。
+
+### 1.1 投资标的(entity)
+
+首先，我们得有投资标的。
+
+而在整个市场里，投资标的一定会有三个属性:
+
+* **证券类型(entity_type)**
+
+股票(stock)，债券(bond)，期货(future)，数字货币(coin)，基金(fund)等
+
+* **交易所(exchange)**
+
+上海证券交易所(sh)，深圳证券交易所(sz)等
+
+* **代码(code)**
+
+000338,601318,BTC/USDT等
+
+所以，zvt里面投资标的的唯一编码(entity_id)为:{entity_type}\_{exchange}\_{code}
+
+[entity基类](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L221)定义如下:
+```
+class EntityMixin(Mixin):
+    entity_type = Column(String(length=64))
+    exchange = Column(String(length=32))
+    code = Column(String(length=64))
+    name = Column(String(length=128))
+```
+
+### 1.2 投资标的发生的事情
+
+而投资标的发生的事情，一定会有三个属性：
+* **entity_id**
+
+投资标的的id
+
+* **timestamp**
+
+发生的时间
+
+* **id**
+
+事件的唯一编码，一般使情况下格式为:{entity_id}_{timestamp}
+
+[entity发生的事情](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L128)定义如下:
+```
+class Mixin(object):
+    id = Column(String, primary_key=True)
+    entity_id = Column(String)
+
+    # the meaning could be different for different case,most of time it means 'happen time'
+    timestamp = Column(DateTime)
+```
+
+>注意，上面EntityMixin继承了Mixin，如何理解？
+>entity的诞生其实也是一个事件，这时，timestamp就代表其上市日。
+
+## 2. 定义具体的数据
+市场没有新鲜事，市场数据更没有新鲜事。
+
+对市场理解越深，就越能定义出稳定的市场数据结构。
+
+而对市场的理解并不是一蹴而就的，这就要求数据结构的设计必须具有可扩展性。
+
+那么,什么是**稳定**并具有**可扩展性**的数据结构？
+
+稳定至少要达到以下的标准:
+* **标准的字段**
+
+不管数据来源何处，**确定的语义**在系统里面必须对应**确定的字段**；净资产收益率就叫roe,每股收益就叫eps,毛利率就叫gross_profit_margin。
+
+* **完全分类(正交)**
+
+技术面，基本面，宏观面，消息面等。
+
+* **层次关系**
+
+原始数据和衍生(计算)数据的关系，比如k线数据和各种技术指标；财报和各种财务指标。
+
+而扩展性最重要的就是，**容易添加新数据**，并使得新数据无缝融入到系统中。
+
+数据定义的目录为[domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)
+
+## 3. 系统都有哪些数据？
+```
+In [1]: from zvt.domain import *
+In [2]: global_schemas
+[zvt.domain.dividend_financing.DividendFinancing,
+ zvt.domain.dividend_financing.DividendDetail,
+ zvt.domain.dividend_financing.SpoDetail...]
+```
+
+global_schemas就是系统支持的所有数据，具体含义可以查看相应源码的注释，或者调用相应schema的help方法:
+```
+In [3]: DividendFinancing.help()
+class DividendFinancing(DividendFinancingBase, Mixin):
+    __tablename__ = 'dividend_financing'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    # 分红总额
+    dividend_money = Column(Float)
+
+    # 新股
+    ipo_issues = Column(Float)
+    ipo_raising_fund = Column(Float)
+
+    # 增发
+    spo_issues = Column(Float)
+    spo_raising_fund = Column(Float)
+    # 配股
+    rights_issues = Column(Float)
+    rights_raising_fund = Column(Float)
+```
+
+## 4. 如何查询数据？
+
+## 5. 如果更新数据?
+所有的schema都有[fetch_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L156)的方法,你可以用一种统一的方式来做数据的更新。
+```
+In [17]: FinanceFactor.recorders
+Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
+
+In [18]: FinanceFactor.fetch_data(codes=['000338'])
+FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]
+auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
+INFO  MainThread  2019-12-15 18:03:35,493  ChinaStockFinanceFactorRecorder:recorder.py:551  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,509  ChinaStockFinanceFactorRecorder:recorder.py:556  evaluate_start_end_size_timestamps  latest record timestamp:2019-10-31 00:00:00
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:348  run  entity_id:stock_sz_000338,evaluate_start_end_size_timestamps result:None,None,0,None
+INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recorder.py:357  run  finish recording <class 'zvt.domain.finance.FinanceFactor'> for entity_id:stock_sz_000338,latest_timestamp:None
+已退出
+```
+* codes代表需要抓取的股票代码
+* 不传入codes则是全市场抓取
+* 所有的schema对应的数据更新，方法是一致的
+
+定时任务的方式更新可参考[runners](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/eastmoney/finance0_runner.py)
+
 ## 数据结构
 
 zvt数据最重要的概念如下：
