@@ -125,14 +125,15 @@ class DividendFinancing(DividendFinancingBase, Mixin):
 ```
 
 ## 4. 如何查询数据？
+所有的schema都有[query_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L65)方法,你可以用一种统一的方式查询数据。
 
 ## 5. 如果更新数据?
-所有的schema都有[fetch_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L156)的方法,你可以用一种统一的方式来做数据的更新。
+所有的schema都有[record_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L193)方法,你可以用一种统一的方式来做数据的更新。
 ```
 In [17]: FinanceFactor.recorders
 Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
 
-In [18]: FinanceFactor.fetch_data(codes=['000338'])
+In [18]: FinanceFactor.record_data(codes=['000338'])
 FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]
 auth success  ( 如需说明文档请查看：https://url.cn/5oB7EOO，更多问题请联系JQData管理员，微信号：JQData02 )
 INFO  MainThread  2019-12-15 18:03:35,493  ChinaStockFinanceFactorRecorder:recorder.py:551  evaluate_start_end_size_timestamps  entity_id:stock_sz_000338,timestamps start:2002-12-31 00:00:00,end:2019-09-30 00:00:00
