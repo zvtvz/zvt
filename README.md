@@ -6,24 +6,16 @@
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![HitCount](http://hits.dwyl.io/zvtvz/zvt.svg)](http://hits.dwyl.io/zvtvz/zvt)
 
-**Read this in other languages: [English](./en/README.md).**  
+**Read this in other languages: [English](./docs/README-en.md).**  
 
 ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
-相比其他的量化系统，其不依赖任何中间件，**足够轻，可测试，可推断，可扩展**，更重要的是，其是作者为了更好的理解市场而写的，作者本身就是深度使用者。
+相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**，尽可能避免复杂晦涩的技术，坚持用简洁的代码表达市场的逻辑。
 
-## 0. ✨ 特性
-- **丰富全面开箱即用可扩展可持续增量更新的数据**
-    - A股数据:行情,财务报表,大股东行为,高管交易,分红融资详情,个股板块资金流向,融资融券,龙虎榜等数据
-    - 市场整体pe,pb,资金流，融资融券，外资动向等数据
-    - 数字货币数据
-- 数据的标准化,多数据源(provider)交叉验证,补全
-- **简洁可扩展的数据框架**
-- **统一简洁的API,支持sql查询,支持pandas**
-- 可扩展的factor,对单标的和多标的的运算抽象了一种统一的计算方式
-- **支持多标的,多factor,多级别的回测方式**
-- 支持交易信号和策略使用到的factor的实时可视化
-- 支持多种实盘交易(实现中)
+## 详细文档
+文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
+[http://zvt.foolcage.com](http://zvt.foolcage.com)  
+[https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
 ##  1. 🔖5分钟用起来
 
@@ -111,7 +103,7 @@ In [17]: t.run()
 ```
 测试数据里面包含的SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']，试一下传入其任意组合，即可看多标的的效果。
 
-<p align="center"><img src='./imgs/output-value.jpg'/></p>
+<p align="center"><img src='./docs/imgs/output-value.jpg'/></p>
 
 ## 2. 📝正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
@@ -223,16 +215,22 @@ pip3 install pytest
 ### 3.2 测试案例
 pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试案例
 
-<p align="center"><img src='./imgs/pytest.png'/></p>
+<p align="center"><img src='./docs/imgs/pytest.jpg'/></p>
 
 大部分功能使用都可以从tests里面参考
 
-## 💌请作者喝杯咖啡
-
-如果你觉得项目对你有帮助,可以请作者喝杯咖啡  
-<img src="./imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
-<img src="./imgs/wechat-cn.png" width="25%" alt="Wechat">
-
+## ✨ 特性
+- **丰富全面开箱即用可扩展可持续增量更新的数据**
+    - A股数据:行情,财务报表,大股东行为,高管交易,分红融资详情,个股板块资金流向,融资融券,龙虎榜等数据
+    - 市场整体pe,pb,资金流，融资融券，外资动向等数据
+    - 数字货币数据
+- 数据的标准化,多数据源(provider)交叉验证,补全
+- **简洁可扩展的数据框架**
+- **统一简洁的API,支持sql查询,支持pandas**
+- 可扩展的factor,对单标的和多标的的运算抽象了一种统一的计算方式
+- **支持多标的,多factor,多级别的回测方式**
+- 支持交易信号和策略使用到的factor的实时可视化
+- 支持多种实盘交易(实现中)
 
 ## 💡贡献
 
@@ -244,15 +242,22 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 
 也非常欢迎开发者能为 zvt 提供更多的示例，共同来完善文档。
 
+## 💌请作者喝杯咖啡
+
+如果你觉得项目对你有帮助,可以请作者喝杯咖啡  
+<img src="./docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
+<img src="./docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
+
 ## 🤝联系方式  
 
 QQ群:300911873  
 
 个人微信:foolcage 添加暗号:zvt  
-<img src="./imgs/wechat.jpeg" width="25%" alt="Wechat">
+<img src="./docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
-公众号(后续会不定时更新一些教程):  
-<img src="./imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
+------
+微信公众号:  
+<img src="./docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
 
-知乎专栏会结合zvt写一些日常使用的例子:　
+知乎专栏:  
 https://zhuanlan.zhihu.com/automoney
