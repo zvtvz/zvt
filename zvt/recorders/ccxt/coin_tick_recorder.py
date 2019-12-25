@@ -35,9 +35,10 @@ class CoinTickRecorder(FixedCycleDataRecorder):
                  kdata_use_begin_time=False,
                  close_hour=None,
                  close_minute=None,
+                 level=IntervalLevel.LEVEL_TICK,
                  one_day_trading_minutes=24 * 60) -> None:
 
-        self.data_schema = get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_TICK)
+        self.data_schema = get_kdata_schema(entity_type='coin', level=level)
 
         super().__init__('coin', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
