@@ -27,11 +27,11 @@ zvt对量化数据进行了简洁统一的抽象：数据就是 **投资标的**
 
 * **代码(code)**
 
-000338,601318,BTC/USDT等
+投资标的编码，A股中的000338,601318,数字货币交易对BTC/USDT,EOS/USDT等
 
 所以，zvt里面投资标的的唯一编码(entity_id)为:{entity_type}\_{exchange}\_{code}
 
-[entity基类](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L221)定义如下:
+entity基类定义如下:
 ```
 class EntityMixin(Mixin):
     entity_type = Column(String(length=64))
@@ -40,22 +40,22 @@ class EntityMixin(Mixin):
     name = Column(String(length=128))
 ```
 
-### 1.2 投资标的发生的事情
+### 1.2 投资标的发生的事
 
-而投资标的发生的事情，一定会有三个属性：
+而投资标的发生的事，一定会有三个属性：
 * **entity_id**
 
-投资标的的id
+投资标的id
 
 * **timestamp**
 
-发生的时间
+发生时间点(段)
 
 * **id**
 
 事件的唯一编码，一般使情况下格式为:{entity_id}_{timestamp}
 
-[entity发生的事情](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L128)定义如下:
+entity发生的事情定义如下:
 ```
 class Mixin(object):
     id = Column(String, primary_key=True)
@@ -68,7 +68,7 @@ class Mixin(object):
 >注意，上面EntityMixin继承了Mixin，如何理解？
 >entity的诞生其实也是一个事件，这时，timestamp就代表其上市日。
 
-## 2. 定义具体的数据
+## 2. 数据的稳定性和扩展性
 市场没有新鲜事，市场数据更没有新鲜事。
 
 对市场理解越深，就越能定义出稳定的市场数据结构。
@@ -103,7 +103,7 @@ In [2]: global_schemas
  zvt.domain.dividend_financing.SpoDetail...]
 ```
 
-global_schemas就是系统支持的所有数据，具体含义可以查看相应源码的注释，或者调用相应schema的help方法:
+global_schemas就是系统支持的所有数据，具体含义可以查看相应字段的注释，或者调用相应schema的help方法:
 ```
 In [3]: DividendFinancing.help()
 class DividendFinancing(DividendFinancingBase, Mixin):
@@ -128,10 +128,142 @@ class DividendFinancing(DividendFinancingBase, Mixin):
 ```
 
 ## 4. 如何查询数据？
-所有的schema都有[query_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L65)方法,你可以用一种统一的方式查询数据。
+查询数据，调用schema的query_data方法即可；由于该方法极为重要，有必要对其支持的参数进行详细的说明。
 
-## 5. 如果更新数据?
-所有的schema都有[record_data](https://github.com/zvtvz/zvdata/blob/master/zvdata/__init__.py#L193)方法,你可以用一种统一的方式来做数据的更新。
+```
+    @classmethod
+    def query_data(cls,
+                   provider_index: int = 0,
+                   ids: List[str] = None,
+                   entity_ids: List[str] = None,
+                   entity_id: str = None,
+                   codes: List[str] = None,
+                   code: str = None,
+                   level: Union[IntervalLevel, str] = None,
+                   provider: str = None,
+                   columns: List = None,
+                   return_type: str = 'df',
+                   start_timestamp: Union[pd.Timestamp, str] = None,
+                   end_timestamp: Union[pd.Timestamp, str] = None,
+                   filters: List = None,
+                   session: Session = None,
+                   order=None,
+                   limit: int = None,
+                   index: Union[str, list] = None,
+                   time_field: str = 'timestamp'):
+```
+* provider_index
+
+数据支持多provider,可以通过schema.providers来查看，provider_index为其providers的索引，默认为0
+
+* ids
+
+以id列表为过滤条件
+
+* entity_ids
+
+以entity_id列表为过滤条件
+
+* entity_id
+
+指定entity_id为过滤条件
+
+* codes
+
+以entity的code列表为过滤条件
+
+* code
+
+指定entity的code为过滤条件
+
+* level
+
+级别，对k线数据有用
+
+* provider
+
+指定provider,可以通过schema.providers来查看,默认不传，使用provider_index即可
+
+* columns
+
+查询返回的字段列表，类型为字符串或者schema.{column}列表,默认None,返回schema支持的所有字段
+
+* return_type
+
+目前支持df和domain,df为pandas dataframe格式，domain为数据库object,需要做数据库更新操作时使用。
+
+* start_timestamp
+
+开始时间过滤条件
+
+* end_timestamp
+
+结束时间过滤条件
+
+* filters
+
+其他的过滤条件列表，支持标准的[sql查询条件](https://docs.sqlalchemy.org/en/13/orm/tutorial.html#common-filter-operators)
+
+* session
+
+操作schema的session,默认None,系统自动分配
+
+* order
+
+排序的方式，schema.{column}.asc()为升序，schema.{column}.desc()为降序
+
+* limit
+
+返回的数量限制，默认None,不限制
+
+* index
+
+返回df时，索引的字段
+
+* time_field
+
+代表时间的字段，默认为timestamp
+
+### 4.1 一个查询例子
+
+2018年年报 roe>8% 营收增长>8% 的前20个股
+
+```
+In [37]: from zvt.domain import * 
+In [38]: df=FinanceFactor.query_data(filters=[FinanceFactor.roe>0.08,FinanceFactor.report_period=='year',FinanceFactor.op_income_growth_yoy>0.08],start_timestamp='2019-01-01',order=FinanceFactor.roe.desc(),limit=20,columns=[FinanceFactor.code]+FinanceFactor.important_cols(),index='code')
+
+In [39]: df
+Out[39]:
+          code  basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+code
+000048  000048     1.1193     3.437000e+09  4.374000e+08                1.2179                 3.8122  0.5495  0.0989               0.4286      0.1308 2019-04-15
+000629  000629     0.3598     1.516000e+10  3.090000e+09                0.6068                 2.5796  0.5281  0.2832               0.2752      0.2086 2019-03-26
+000672  000672     1.8100     5.305000e+09  1.472000e+09                0.1563                 0.8596  0.5047  0.2289               0.4670      0.2803 2019-04-11
+000912  000912     0.3500     4.405000e+09  3.516000e+08                0.1796                 1.2363  4.7847  0.0539               0.2175      0.0795 2019-03-20
+000932  000932     2.2483     9.137000e+10  6.780000e+09                0.1911                 0.6453  0.4866  0.1137               0.1743      0.0944 2019-03-28
+002607  002607     0.2200     6.237000e+09  1.153000e+09                0.5472                 1.1967  0.7189  0.2209               0.5908      0.1848 2019-04-09
+002959  002959     2.0611     2.041000e+09  1.855000e+08                0.2396                 0.2657  0.5055  0.2075               0.3251      0.0909 2019-07-15
+300107  300107     1.1996     1.418000e+09  6.560000e+08                1.6467                 6.5338  0.5202  0.4661               0.6379      0.4625 2019-03-15
+300618  300618     3.6900     2.782000e+09  7.076000e+08                0.8994                 0.5746  0.4965  0.2504               0.4530      0.2531 2019-04-26
+300776  300776     3.3900     3.649000e+08  1.679000e+08                1.2059                 1.5013  0.7122  0.2651               0.6207      0.4602 2019-02-18
+300792  300792     2.7100     1.013000e+09  1.626000e+08                0.4378                 0.1799  0.4723  0.3797               0.4259      0.1606 2019-09-16
+600399  600399     2.0100     5.848000e+09  2.607000e+09                0.1732                 2.9493  9.6467  0.2979               0.1453      0.4459 2019-03-29
+600408  600408     0.8100     8.816000e+09  8.202000e+08                0.3957                 3.9094  0.7501  0.1681               0.1535      0.1020 2019-03-22
+600423  600423     0.9000     2.009000e+09  3.903000e+08                0.0975                 5.3411  1.6695  0.1264               0.1404      0.1871 2019-03-19
+600507  600507     2.0800     1.729000e+10  2.927000e+09                0.2396                 0.1526  0.5817  0.3216               0.3287      0.1696 2019-02-22
+600678  600678     0.0900     4.240000e+08  3.168000e+07                1.2925                 0.0948  0.7213  0.0689               0.2183      0.0742 2019-03-14
+600793  600793     1.6568     1.293000e+09  1.745000e+08                0.1164                 0.8868  0.7490  0.0486               0.1622      0.1350 2019-04-30
+600870  600870     0.0087     3.096000e+07  4.554000e+06                0.7773                 1.3702  0.7458  0.0724               0.2688      0.1675 2019-03-30
+601003  601003     1.7987     4.735000e+10  4.610000e+09                0.1394                 0.7420  0.5264  0.1920               0.1439      0.0974 2019-03-29
+603379  603379     2.9400     4.454000e+09  1.108000e+09                0.1423                 0.1609  0.5476  0.3547               0.3959      0.2488 2019-03-13
+```
+
+其他schema和查询条件使用方法是一样的，请自行探索。
+
+## 5. 如何更新数据?
+
+调用schema的record_data方法即可。
+
 ```
 In [17]: FinanceFactor.recorders
 Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
@@ -150,184 +282,3 @@ INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recor
 * 所有的schema对应的数据更新，方法是一致的
 
 定时任务的方式更新可参考[runners](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/eastmoney/finance0_runner.py)
-
-## 数据结构
-
-zvt数据最重要的概念如下：
-- ### provider
-
-数据提供商
-
-- ### data_schema
-
-数据的定义，对应sql的table
-
-- ### entity_type
-实体类型，目前代表各种投资标的
-
-## 查询系统注册数据
-数据都是 **自注册** 和 **可扩展** 的，你可以通过下面的方式进行查询:
-
-### 查询注册的provider
-```
-In [1]: from zvt import *
-In [2]: get_providers()
-Out[2]: 
-['zvdata',
- 'zvt',
- 'ccxt',
- 'eastmoney',
- 'exchange',
- 'joinquant',
- 'sina',
- 'netease']
-```
-
-### 查询provider提供的schema
-```
-In [5]: get_schemas(provider='eastmoney')
-Out[5]: 
-[zvt.domain.dividend_financing.DividendFinancing,
- zvt.domain.dividend_financing.DividendDetail,
- zvt.domain.dividend_financing.SpoDetail,
- zvt.domain.dividend_financing.RightsIssueDetail,
- zvt.domain.finance.BalanceSheet,
- zvt.domain.finance.IncomeStatement,
- zvt.domain.finance.CashFlowStatement,
- zvt.domain.finance.FinanceFactor,
- zvt.domain.holder.TopTenTradableHolder,
- zvt.domain.holder.TopTenHolder,
- zvt.domain.holder.InstitutionalInvestorHolder,
- zvt.domain.stock_meta.StockIndex,
- zvt.domain.stock_meta.Index,
- zvt.domain.stock_meta.Stock,
- zvt.domain.quote.Index1wkKdata,
- zvt.domain.quote.Index1monKdata,
- zvt.domain.trading.ManagerTrading,
- zvt.domain.trading.HolderTrading,
- zvt.domain.trading.BigDealTrading,
- zvt.domain.trading.MarginTrading,
- zvt.domain.trading.DragonAndTiger]
-```
-
-schema具体字段的含义目前可以直接查看源码，里面每个字段都有注释。
-
-### 查询注册的entity_type
-```
-In [2]: get_entity_types()    
-Out[2]: ['coin', 'index', 'stock']
-```
-
-## 使用数据的方式
-有了provider,data_schema和entity_type，我们就可以以一种统一的方式来对数据进行操作。
-
-### 个股K线
-```
-In [4]: from zvt.api import *
-In [5]: get_kdata(provider='joinquant',entity_id='stock_sz_000338')
-Out[5]: 
-                                    id        entity_id  timestamp   provider    code  name level   open  hfq_open   qfq_open  close  hfq_close  qfq_close   high  hfq_high   qfq_high    low  hfq_low    qfq_low      volume      turnover  change_pct  turnover_rate     factor
-timestamp
-2007-04-30  stock_sz_000338_2007-04-30  stock_sz_000338 2007-04-30  joinquant  000338  潍柴动力    1d  70.00     70.00   3.649141  64.93      64.93   3.384839  71.00     71.00   3.701272  62.88    62.88   3.277972  20737497.0  1.365189e+09    217.1959        11.8154   1.000000
-2007-05-08  stock_sz_000338_2007-05-08  stock_sz_000338 2007-05-08  joinquant  000338  潍柴动力    1d  66.60     66.60   3.471897  64.00      64.00   3.336358  68.00     68.00   3.544880  62.88    62.88   3.277972   8629889.0  5.563198e+08     -1.4323         4.9170   1.000000
-2007-05-09  stock_sz_000338_2007-05-09  stock_sz_000338 2007-05-09  joinquant  000338  潍柴动力    1d  63.32     63.32   3.300909  62.00      62.00   3.232097  63.88     63.88   3.330102  59.60    59.60   3.106983   9382251.0  5.782065e+08     -3.1250         5.3456   1.000000
-2007-05-10  stock_sz_000338_2007-05-10  stock_sz_000338 2007-05-10  joinquant  000338  潍柴动力    1d  61.50     61.50   3.206031  62.49      62.49   3.257641  64.48     64.48   3.361380  61.01    61.01   3.180487   4772011.0  2.999226e+08      0.7903         2.7189   1.000000
-```
-
-### 数字货币k线
-```
-In [7]: get_kdata(entity_id='coin_binance_EOS/USDT',provider='ccxt')
-Out[7]: 
-                                          id              entity_id  timestamp provider      code      name level     open    close     high      low       volume turnover
-timestamp
-2018-05-28  coin_binance_EOS/USDT_2018-05-28  coin_binance_EOS/USDT 2018-05-28     ccxt  EOS/USDT  EOS/USDT    1d  12.4900  11.4788  12.6500  11.2800   3494258.32     None
-2018-05-29  coin_binance_EOS/USDT_2018-05-29  coin_binance_EOS/USDT 2018-05-29     ccxt  EOS/USDT  EOS/USDT    1d  11.4853  12.1112  12.4650  10.7000   6709192.34     None
-2018-05-30  coin_binance_EOS/USDT_2018-05-30  coin_binance_EOS/USDT 2018-05-30     ccxt  EOS/USDT  EOS/USDT    1d  12.1113  11.8968  12.8200  11.6206   6514864.18     None
-2018-05-31  coin_binance_EOS/USDT_2018-05-31  coin_binance_EOS/USDT 2018-05-31     ccxt  EOS/USDT  EOS/USDT    1d  11.8712  12.2353  12.7400  11.8116   6540020.80     None
-2018-06-01  coin_binance_EOS/USDT_2018-06-01  coin_binance_EOS/USDT 2018-06-01     ccxt  EOS/USDT  EOS/USDT    1d  12.2351  12.2048  12.3889  11.8354   5946136.88     None
-
-```
-
-### 社保持仓
-```
-In [11]: from zvt.domain import *
-In [12]: df = get_top_ten_tradable_holder(start_timestamp='2018-09-30',filters=[TopTenTradableHolder.holder_name.like('%社保%')],order=TopTenTradableHolder.shareholding_ratio.desc())
-
-In [9]: df.tail()
-Out[9]: 
-                                                         id        entity_id  timestamp provider    code report_period report_date holder_code  holder_name  shareholding_numbers  shareholding_ratio     change  change_ratio
-timestamp
-2019-03-31  stock_sz_000778_2019-03-31 00:00:00_全国社保基金四一三组合  stock_sz_000778 2019-03-31     None  000778       season1  2019-03-31    70010413  全国社保基金四一三组合            17800000.0              0.0045        NaN           NaN
-2019-03-31  stock_sz_002572_2019-03-31 00:00:00_全国社保基金一零九组合  stock_sz_002572 2019-03-31     None  002572       season1  2019-03-31    70010109  全国社保基金一零九组合             7520000.0              0.0118 -8013000.0       -0.5159
-2019-06-30  stock_sz_000778_2019-06-30 00:00:00_全国社保基金五零三组合  stock_sz_000778 2019-06-30     None  000778     half_year  2019-06-30    70010503  全国社保基金五零三组合            60000000.0              0.0153        NaN           NaN
-2019-06-30  stock_sz_000338_2019-06-30 00:00:00_全国社保基金一零一组合  stock_sz_000338 2019-06-30     None  000338     half_year  2019-06-30    70010101  全国社保基金一零一组合            35250000.0              0.0057 -1600000.0       -0.0434
-2019-06-30  stock_sz_000001_2019-06-30 00:00:00_全国社保基金一零四组合  stock_sz_000001 2019-06-30     None  000001     half_year  2019-06-30    70010104  全国社保基金一零四组合            55170000.0              0.0032        NaN           NaN
-
-```
-
-### 马云持仓 ###
-```bash
-In [26]: df = get_top_ten_tradable_holder(filters=[TopTenTradableHolder.holder_name=='马云'])
-Out[27]: 
-   holder_name    code  shareholding_numbers  shareholding_ratio      change  change_ratio
-0           马云  002204              460800.0              0.0085         NaN           NaN
-1           马云  300027             3912000.0              0.0205         NaN           NaN
-2           马云  300027             8319000.0              0.0230         NaN           NaN
-3           马云  300027             8319000.0              0.0230         NaN           NaN
-
-22          马云  300027            99780000.0              0.0520         NaN           NaN
-23          马云  300027            99780000.0              0.0520         NaN           NaN
-24          马云  300027            99780000.0              0.0451         NaN           NaN
-```
-### 2018年报eps前50
-```bash
-In [30]: df = get_finance_factor(start_timestamp='2018-12-31',order=FinanceFactor.basic_eps.desc(),limit=50,columns=[FinanceFactor.code,FinanceFactor.timestamp,FinanceFactor.basic_eps])
-Out[31]: 
-      code  timestamp  basic_eps
-0   600519 2018-12-31    28.0200
-1   603444 2018-12-31    10.1200
-2   601318 2018-12-31     6.0200
-3   000661 2018-12-31     5.9200
-
-47  603393 2018-12-31     2.0900
-48  601869 2018-12-31     2.0900
-49  600507 2018-12-31     2.0800
-
-```
-
-### 统一的方式get_data
-以上api的调用最后都是通过get_data来实现的，你也可以直接使用get_data
-```
-In [13]: df=get_data(provider='eastmoney',data_schema=FinanceFactor,filters=[FinanceFactor.roe>=0.15,FinanceFactor.report_date==pd.Timestamp('2018-12-31')],columns=[FinanceFactor.code,F
-    ...: inanceFactor.timestamp,FinanceFactor.report_date,FinanceFactor.roe])
-
-In [14]: df
-Out[14]: 
-              code  timestamp report_date     roe
-timestamp                                        
-2019-01-30  000055 2019-01-30  2018-12-31  0.5317
-2019-01-31  600738 2019-01-31  2018-12-31  0.6221
-2019-02-01  300748 2019-02-01  2018-12-31  0.1620
-2019-02-02  603225 2019-02-02  2018-12-31  0.1924
-2019-02-16  600276 2019-02-16  2018-12-31  0.2360
-2019-02-18  300776 2019-02-18  2018-12-31  0.7122
-
-```
-
-
-filters参数的使用请参考[*sqlalchemy*](https://docs.sqlalchemy.org/en/13/orm/query.html),SQL能做的查询都能做
-
-## SQL查询
-你也可以直接使用项目中的sqlite数据库,利用你熟悉的工具,语言来进行研究
-
-比如:查看某段时间整个市场的高管增持减持
-```
-select * from manager_trading where volume < 0 and timestamp > '2018-01-01';
-select count(id) from manager_trading where volume < 0 and timestamp > '2018-01-01';
-
-select * from manager_trading where volume > 0 and timestamp > '2018-01-01';
-select count(id) from manager_trading where volume > 0 and timestamp > '2018-01-01'
-```
-<p align="center"><img src='./imgs/sql-usage.gif'/></p>
-
-库都给你了,SQL大神,请开始你的表演
