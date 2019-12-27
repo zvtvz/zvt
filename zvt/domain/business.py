@@ -4,16 +4,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # business data
+from zvdata import Mixin
 from zvdata.contract import register_schema
 
 BusinessBase = declarative_base()
 
 
-class Trader(BusinessBase):
+class Trader(BusinessBase, Mixin):
     __tablename__ = 'trader'
-    id = Column(String(length=128), primary_key=True)
-    # 时间
-    timestamp = Column(DateTime)
     # 机器人名字
     trader_name = Column(String(length=128))
 
@@ -34,12 +32,8 @@ class Trader(BusinessBase):
 
 
 # 一天只有一条记录
-class SimAccount(BusinessBase):
+class SimAccount(BusinessBase, Mixin):
     __tablename__ = 'sim_account'
-
-    id = Column(String(length=128), primary_key=True)
-    # 时间
-    timestamp = Column(DateTime)
 
     # 机器人名字
     trader_name = Column(String(length=128))
@@ -57,7 +51,7 @@ class SimAccount(BusinessBase):
 
 
 # 一天可有多条记录
-class Position(BusinessBase):
+class Position(BusinessBase, Mixin):
     __tablename__ = 'position'
 
     id = Column(String(length=128), primary_key=True)
@@ -92,7 +86,7 @@ class Position(BusinessBase):
     trading_t = Column(Integer)
 
 
-class Order(BusinessBase):
+class Order(BusinessBase, Mixin):
     __tablename__ = 'order'
 
     id = Column(String(length=128), primary_key=True)
