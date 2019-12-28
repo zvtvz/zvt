@@ -59,7 +59,8 @@ from .trading import *
 from .quotes import *
 from .factors import *
 from .meta import *
-
+from .valuation import *
+from .trade_day import *
 
 def init_schema():
     pass
