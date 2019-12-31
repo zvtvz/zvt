@@ -30,6 +30,8 @@ from .quotes.jq_stock_kdata_recorder import ChinaStockKdataRecorder
 from .macro.margin_trading_recorder import MarginTradingSummaryRecorder
 from .macro.cross_market_recorder import CrossMarketSummaryRecorder
 from .macro.stock_summary_recorder import StockSummaryRecorder
+from .fundamental.stock_valuation_recorder import ChinaStockValuationRecorder
+from .stock_trade_day_recorder import StockTradeDayRecorder
 
 __all__ = ['ChinaStockKdataRecorder', 'MarginTradingSummaryRecorder', 'CrossMarketSummaryRecorder',
-           'StockSummaryRecorder']
+           'StockSummaryRecorder', 'ChinaStockValuationRecorder', 'StockTradeDayRecorder']
