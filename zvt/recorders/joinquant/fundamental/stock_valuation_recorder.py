@@ -41,11 +41,24 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
             valuation.code == to_jq_entity_id(entity)
         )
         count: pd.Timedelta = now_pd_timestamp() - start
-        panel = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1)
-        if not panel.empty:
-            print(panel)
-            df = panel.to_frame()
-            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        df = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1, panel=False)
+        df['entity_id'] = entity.id
+        df['timestamp'] = pd.to_datetime(df['day'])
+        df['code'] = entity.code
+        df['name'] = entity.name
+        df['id'] = df[['timestamp']].apply(lambda x: "{}_{}".format(entity.id, x), axis=1)
+        df = df.rename({'pe_ratio_lyr': 'pe',
+                        'pe_ratio': 'pe_ttm',
+                        'pb_ratio': 'pb',
+                        'ps_ratio': 'ps',
+                        'pcf_ratio': 'pcf'},
+                       axis='columns')
+
+        df['market_cap'] = df['market_cap'] * 100000000
+        df['circulating_cap'] = df['circulating_cap'] * 100000000
+        df['capitalization'] = df['capitalization'] * 10000
+        df['circulating_cap'] = df['circulating_cap'] * 10000
+        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
 
