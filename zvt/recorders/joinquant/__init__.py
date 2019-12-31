@@ -19,11 +19,21 @@ def to_jq_trading_level(trading_level: IntervalLevel):
 
 
 def to_jq_entity_id(security_item):
-    if security_item.entity_type == 'stock':
+    if security_item.entity_type == 'stock' or security_item.entity_type == 'index':
         if security_item.exchange == 'sh':
             return '{}.XSHG'.format(security_item.code)
         if security_item.exchange == 'sz':
             return '{}.XSHE'.format(security_item.code)
+
+
+def to_entity_id(jq_code: str, entity_type):
+    code, exchange = jq_code.split('.')
+    if exchange == 'XSHG':
+        exchange = 'sh'
+    elif exchange == 'XSHE':
+        exchange = 'sz'
+
+    return f'{entity_type}_{exchange}_{code}'
 
 
 from .quotes.jq_stock_kdata_recorder import ChinaStockKdataRecorder
