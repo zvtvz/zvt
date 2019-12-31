@@ -2,17 +2,21 @@
 from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from zvdata import EntityMixin
+
+from zvdata import EntityMixin, Mixin
 from zvdata.contract import register_schema, register_api, register_entity
 
 StockMetaBase = declarative_base()
 
 
 # 指数和个股为 many to many关系
-class StockIndex(StockMetaBase):
+class StockIndex(StockMetaBase,Mixin):
     __tablename__ = 'stock_index'
-    id = Column(String(length=128), primary_key=True)
-    timestamp = Column(DateTime)
+    # 报告期,season1,half_year,season2,year
+    report_period = Column(String(length=32))
+    # 3-31,6-30,9-30,12-31
+    report_date = Column(DateTime)
+
     stock_id = Column(String(length=128), ForeignKey('stock.id'), primary_key=True)
     index_id = Column(String(length=128), ForeignKey('index.id'), primary_key=True)
 

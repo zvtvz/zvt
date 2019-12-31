@@ -65,6 +65,7 @@ class ChinaStockCategoryRecorder(Recorder):
                     index_id = index_item.id
                     the_list.append({
                         'id': '{}_{}'.format(index_id, stock_id),
+                        'entity_id': index_id,
                         'index_id': index_id,
                         'stock_id': stock_id
                     })

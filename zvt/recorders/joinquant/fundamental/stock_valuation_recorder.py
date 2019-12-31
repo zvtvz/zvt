@@ -34,7 +34,6 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
         logout()
 
     def record(self, entity, start, end, size, timestamps):
-        # 只要前复权数据
         q = query(
             valuation
         ).filter(
