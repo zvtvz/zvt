@@ -5,7 +5,7 @@ from jqdatasdk import auth, logout, query, valuation, get_fundamentals_continuou
 
 from zvdata.api import df_to_db
 from zvdata.recorder import TimeSeriesDataRecorder
-from zvdata.utils.time_utils import now_pd_timestamp, now_time_str
+from zvdata.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
 from zvt import zvt_env
 from zvt.domain import Stock, Valuation
 from zvt.recorders.joinquant import to_jq_entity_id
@@ -46,7 +46,7 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
         df['timestamp'] = pd.to_datetime(df['day'])
         df['code'] = entity.code
         df['name'] = entity.name
-        df['id'] = df[['timestamp']].apply(lambda x: "{}_{}".format(entity.id, x), axis=1)
+        df['id'] = df['timestamp'].apply(lambda x: "{}_{}".format(entity.id, to_time_str(x)))
         df = df.rename({'pe_ratio_lyr': 'pe',
                         'pe_ratio': 'pe_ttm',
                         'pb_ratio': 'pb',
@@ -64,4 +64,4 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    ChinaStockValuationRecorder(codes=['000001']).run()
+    ChinaStockValuationRecorder(codes=['000338']).run()
