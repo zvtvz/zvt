@@ -10,12 +10,19 @@ StockMetaBase = declarative_base()
 
 
 # 指数和个股为 many to many关系
-class StockIndex(StockMetaBase,Mixin):
+class StockIndex(StockMetaBase, Mixin):
     __tablename__ = 'stock_index'
     # 报告期,season1,half_year,season2,year
     report_period = Column(String(length=32))
     # 3-31,6-30,9-30,12-31
     report_date = Column(DateTime)
+
+    # 占净值比例
+    proportion = Column(Float)
+    # 持有股票
+    shares = Column(Float)
+    # 持有股票的市值
+    market_cap = Column(Float)
 
     stock_id = Column(String(length=128), ForeignKey('stock.id'), primary_key=True)
     index_id = Column(String(length=128), ForeignKey('index.id'), primary_key=True)
@@ -77,4 +84,5 @@ class Stock(StockMetaBase, EntityMixin):
     net_winning_rate = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'exchange', 'sina'], db_name='stock_meta', schema_base=StockMetaBase)
+register_schema(providers=['eastmoney', 'exchange', 'sina', 'joinquant'], db_name='stock_meta',
+                schema_base=StockMetaBase)
