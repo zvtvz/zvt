@@ -7,7 +7,7 @@ from zvdata.api import df_to_db
 from zvdata.recorder import TimeSeriesDataRecorder
 from zvdata.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
 from zvt import zvt_env
-from zvt.domain import Stock, Valuation
+from zvt.domain import Stock, StockValuation, StockIndex
 from zvt.recorders.joinquant import to_jq_entity_id
 
 
@@ -19,7 +19,7 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
     # 数据来自jq
     provider = 'joinquant'
 
-    data_schema = Valuation
+    data_schema = StockValuation
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
@@ -63,4 +63,10 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    ChinaStockValuationRecorder(codes=['000338']).run()
+    index: StockIndex = StockIndex.query_data(provider='joinquant', entity_id='index_sh_510050', return_type='domain',
+                                              start_timestamp='2019-06-30', end_timestamp='2019-09-29')
+    stocks = [item.stock_id for item in index]
+    print(stocks)
+    print(len(stocks))
+
+    ChinaStockValuationRecorder(entity_ids=stocks).run()
