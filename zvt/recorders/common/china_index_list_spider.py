@@ -5,20 +5,20 @@ import io
 import demjson
 import pandas as pd
 import requests
+
 from zvdata.api import df_to_db, persist_entities
 from zvdata.recorder import Recorder
-
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.domain import StockIndex
-from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.domain import IndexStock
 
 
 class ChinaIndexListSpider(Recorder):
-    data_schema = StockIndex
+    data_schema = IndexStock
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=2.0, provider='exchange') -> None:
         self.provider = provider
-        super(ChinaIndexListSpider, self).__init__(batch_size, force_update, sleeping_time)
+        super().__init__(batch_size, force_update, sleeping_time)
 
     def run(self):
         # 上证、中证
@@ -28,7 +28,8 @@ class ChinaIndexListSpider(Recorder):
         self.fetch_szse_index()
 
         # 国证
-        self.fetch_cni_index()
+        # FIXME:已不可用
+        # self.fetch_cni_index()
 
     def fetch_csi_index(self) -> None:
         """
@@ -56,7 +57,7 @@ class ChinaIndexListSpider(Recorder):
             self.sleep()
 
         df = pd.DataFrame(index_list)
-        df = df[['base_date', 'base_point', 'index_code', 'indx_sname', 'online_date', 'class_eseries']]
+        df = df[['base_date', 'base_point', 'index_code', 'indx_sname', 'online_date', 'class_eseries']].copy()
         df.columns = ['timestamp', 'base_point', 'code', 'name', 'list_date', 'class_eseries']
         df['category'] = df['class_eseries'].apply(lambda x: x.split(' ')[0].lower())
         df = df.drop('class_eseries', axis=1)
@@ -89,16 +90,23 @@ class ChinaIndexListSpider(Recorder):
 
             response_df = pd.read_excel(io.BytesIO(response.content))
 
-            index_id = f'index_cn_{index_code}'
-            response_df = response_df[['成分券代码Constituent Code']].rename(columns={'成分券代码Constituent Code': 'stock_code'})
-            response_df['id'] = response_df['stock_code'].apply(
-                lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
-            response_df['entity_id'] = response_df['id']
-            response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
-            response_df['index_id'] = index_id
-            response_df.drop('stock_code', axis=1, inplace=True)
+            response_df = response_df[['成分券代码Constituent Code', '成分券名称Constituent Name']].rename(
+                columns={'成分券代码Constituent Code': 'stock_code',
+                         '成分券名称Constituent Name': 'stock_name'})
 
-            df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
+            index_id = f'index_cn_{index_code}'
+            response_df['entity_id'] = index_id
+            response_df['entity_type'] = 'index'
+            response_df['exchange'] = 'cn'
+            response_df['code'] = index_code
+            response_df['name'] = index['name']
+            response_df['timestamp'] = now_pd_timestamp()
+
+            response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
+            response_df['id'] = response_df['stock_id'].apply(
+                lambda x: f'{index_id}_{x}')
+
+            df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider, force_update=True)
             self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')
 
             self.sleep()
@@ -136,12 +144,18 @@ class ChinaIndexListSpider(Recorder):
             response_df = pd.read_excel(io.BytesIO(response.content), dtype='str')
 
             index_id = f'index_cn_{index_code}'
-            response_df = response_df[['证券代码']]
-            response_df['id'] = response_df['证券代码'].apply(lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
-            response_df['entity_id'] = response_df['id']
-            response_df['stock_id'] = response_df['证券代码'].apply(lambda x: china_stock_code_to_id(str(x)))
-            response_df['index_id'] = index_id
-            response_df.drop('证券代码', axis=1, inplace=True)
+            response_df['entity_id'] = index_id
+            response_df['entity_type'] = 'index'
+            response_df['exchange'] = 'cn'
+            response_df['code'] = index_code
+            response_df['name'] = index['name']
+            response_df['timestamp'] = now_pd_timestamp()
+
+            response_df.rename(columns={'证券代码': 'stock_code', '证券简称': 'stock_name'}, inplace=True)
+            response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
+
+            response_df['id'] = response_df['stock_id'].apply(
+                lambda x: f'{index_id}_{x}')
 
             df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
             self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')
@@ -210,13 +224,17 @@ class ChinaIndexListSpider(Recorder):
             except KeyError:
                 response_df = response_df[['证券代码']]
 
+            response_df['entity_id'] = index_id
+            response_df['entity_type'] = 'index'
+            response_df['exchange'] = 'cn'
+            response_df['code'] = index_code
+            response_df['name'] = index['name']
+            response_df['timestamp'] = now_pd_timestamp()
+
             response_df.columns = ['stock_code']
-            response_df['id'] = response_df['stock_code'].apply(
-                lambda x: f'{index_id}_{china_stock_code_to_id(str(x))}')
-            response_df['entity_id'] = response_df['id']
             response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
-            response_df['index_id'] = index_id
-            response_df.drop('stock_code', axis=1, inplace=True)
+            response_df['id'] = response_df['stock_id'].apply(
+                lambda x: f'{index_id}_{x}')
 
             df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
             self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')

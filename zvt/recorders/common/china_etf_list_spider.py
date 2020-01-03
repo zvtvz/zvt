@@ -6,16 +6,17 @@ import re
 import demjson
 import pandas as pd
 import requests
+
 from zvdata.api import persist_entities, df_to_db
 from zvdata.recorder import Recorder
-
+from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.domain import StockIndex, StockCategory
+from zvt.domain import EtfStock, StockCategory
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER
 
 
 class ChinaETFListSpider(Recorder):
-    data_schema = StockIndex
+    data_schema = EtfStock
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10.0, provider='exchange') -> None:
         self.provider = provider
@@ -58,16 +59,16 @@ class ChinaETFListSpider(Recorder):
             df = df[['证券代码', '证券简称']]
 
         df.columns = ['code', 'name']
-        df['id'] = df['code'].apply(lambda code: f'index_{exchange}_{code}')
+        df['id'] = df['code'].apply(lambda code: f'etf_{exchange}_{code}')
         df['entity_id'] = df['id']
         df['exchange'] = exchange
-        df['entity_type'] = 'index'
+        df['entity_type'] = 'etf'
         df['category'] = StockCategory.etf.value
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        persist_entities(df, entity_type='index', provider=self.provider)
+        persist_entities(df, entity_type='etf', provider=self.provider)
 
     def download_sh_etf_component(self, df: pd.DataFrame):
         """
@@ -89,14 +90,20 @@ class ChinaETFListSpider(Recorder):
             response_df = pd.DataFrame(response_dict.get('result', []))
 
             etf_code = etf['FUND_ID']
-            index_id = f'index_sh_{etf_code}'
-            response_df = response_df[['instrumentId']]
-            response_df['id'] = response_df['instrumentId'].apply(
-                lambda code: f'{index_id}_{china_stock_code_to_id(code)}')
-            df['entity_id'] = df['id']
-            response_df['stock_id'] = response_df['instrumentId'].apply(lambda code: china_stock_code_to_id(code))
-            response_df['index_id'] = index_id
-            response_df.drop('instrumentId', axis=1, inplace=True)
+            etf_id = f'etf_sh_{etf_code}'
+            response_df = response_df[['instrumentId', 'instrumentName']].copy()
+            response_df.rename(columns={'instrumentId': 'stock_code', 'instrumentName': 'stock_name'}, inplace=True)
+
+            response_df['entity_id'] = etf_id
+            response_df['entity_type'] = 'etf'
+            response_df['exchange'] = 'sh'
+            response_df['code'] = etf_code
+            response_df['name'] = etf['FUND_NAME']
+            response_df['timestamp'] = now_pd_timestamp()
+
+            response_df['stock_id'] = response_df['stock_code'].apply(lambda code: china_stock_code_to_id(code))
+            response_df['id'] = response_df['stock_id'].apply(
+                lambda x: f'{etf_id}_{x}')
 
             df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
             self.logger.info(f'{etf["FUND_NAME"]} - {etf_code} 成分股抓取完成...')
@@ -132,14 +139,20 @@ class ChinaETFListSpider(Recorder):
             response_df = response_df.dropna(axis=1, how='any')
             response_df['品种代码'] = response_df['品种代码'].apply(lambda x: f'{x:06d}')
 
-            index_id = f'index_sz_{etf_code}'
-            response_df = response_df[['品种代码']]
+            etf_id = f'etf_sz_{etf_code}'
+            response_df = response_df[['品种代码', '品种名称']].copy()
+            response_df.rename(columns={'品种代码': 'stock_code', '品种名称': 'stock_name'}, inplace=True)
 
-            response_df['id'] = response_df['品种代码'].apply(lambda code: f'{index_id}_{china_stock_code_to_id(code)}')
-            response_df['entity_id'] = response_df['id']
-            response_df['stock_id'] = response_df['品种代码'].apply(lambda code: china_stock_code_to_id(code))
-            response_df['index_id'] = index_id
-            response_df.drop('品种代码', axis=1, inplace=True)
+            response_df['entity_id'] = etf_id
+            response_df['entity_type'] = 'etf'
+            response_df['exchange'] = 'sz'
+            response_df['code'] = etf_code
+            response_df['name'] = etf['证券简称']
+            response_df['timestamp'] = now_pd_timestamp()
+
+            response_df['stock_id'] = response_df['stock_code'].apply(lambda code: china_stock_code_to_id(code))
+            response_df['id'] = response_df['stock_id'].apply(
+                lambda x: f'{etf_id}_{x}')
 
             df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider)
             self.logger.info(f'{etf["证券简称"]} - {etf_code} 成分股抓取完成...')

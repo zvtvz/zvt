@@ -179,7 +179,7 @@ def generate_kdata_id(entity_id, timestamp, level):
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
 
 
-def stock_id_in_index(stock_id, index_id, session=None, data_schema=StockIndex, provider='eastmoney'):
+def stock_id_in_index(stock_id, index_id, session=None, data_schema=IndexStock, provider='eastmoney'):
     the_id = '{}_{}'.format(index_id, stock_id)
     local_session = False
     if not session:
