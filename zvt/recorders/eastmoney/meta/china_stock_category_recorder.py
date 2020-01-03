@@ -6,14 +6,14 @@ from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
-from zvt.domain import StockIndex, StockCategory
+from zvt.domain import BlockStock, StockCategory
 from zvt.domain.meta.stock_meta import Index
 from zvdata.utils.utils import json_callback_param
 
 
 class ChinaStockCategoryRecorder(Recorder):
     provider = 'eastmoney'
-    data_schema = StockIndex
+    data_schema = BlockStock
 
     # 用于抓取行业/概念/地域列表
     category_map_url = {

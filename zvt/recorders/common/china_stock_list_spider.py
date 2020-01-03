@@ -4,18 +4,18 @@ import io
 
 import pandas as pd
 import requests
+
 from zvdata.api import persist_entities
 from zvdata.recorder import Recorder
-
+from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.domain import Stock
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
-from zvdata.utils.time_utils import to_pd_timestamp
 
 
 class ChinaStockListRecorder(Recorder):
     data_schema = Stock
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='eastmoney') -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='exchange') -> None:
         self.provider = provider
         super().__init__(batch_size, force_update, sleeping_time)
 
@@ -61,8 +61,10 @@ class ChinaStockListRecorder(Recorder):
             df = df.dropna(axis=0, how='any')
             df = df.drop_duplicates(subset=('id'), keep='last')
             persist_entities(df, provider=self.provider)
+            self.logger.info(df.tail())
+            self.logger.info("persist stock list successs")
 
 
 if __name__ == '__main__':
-    spider = ChinaStockListRecorder(provider='eastmoney')
+    spider = ChinaStockListRecorder(provider='exchange')
     spider.run()

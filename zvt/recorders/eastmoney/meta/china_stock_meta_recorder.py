@@ -3,15 +3,15 @@
 import requests
 
 from zvdata.recorder import Recorder
-from zvt.api.quote import get_entities
-from zvt.domain.meta.stock_meta import Stock
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float, pct_to_float
+from zvt.api.quote import get_entities
+from zvt.domain.meta.stock_meta import StockDetail
 
 
 class ChinaStockMetaRecorder(Recorder):
     provider = 'eastmoney'
-    data_schema = Stock
+    data_schema = StockDetail
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, codes=None) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
@@ -22,13 +22,13 @@ class ChinaStockMetaRecorder(Recorder):
                                          entity_type='stock',
                                          exchanges=['sh', 'sz'],
                                          codes=self.codes,
-                                         filters=[Stock.profile.is_(None)],
+                                         filters=[StockDetail.profile.is_(None)],
                                          return_type='domain',
                                          provider=self.provider)
 
     def run(self):
         for security_item in self.entities:
-            assert isinstance(security_item, Stock)
+            assert isinstance(security_item, StockDetail)
 
             if security_item.exchange == 'sh':
                 fc = "{}01".format(security_item.code)
