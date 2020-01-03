@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float
 from zvt.api.quote import get_entities
-from zvt.domain import IndexMoneyFlow, StockCategory, Index
+from zvt.domain import IndexMoneyFlow, StockCategory, Block
 
 
 # 实时资金流
@@ -17,11 +17,11 @@ from zvt.domain import IndexMoneyFlow, StockCategory, Index
 # 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk?page=1&num=20&sort=netamount&asc=0&fenlei=0'
 
 
-class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
+class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
     # entity的信息从哪里来
     entity_provider = 'sina'
     # entity的schema
-    entity_schema = Index
+    entity_schema = Block
 
     # 记录的信息从哪里来
     provider = 'sina'
@@ -43,13 +43,13 @@ class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
     def init_entities(self):
         self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
 
-        self.entities = get_entities(session=self.entity_session, entity_type='index',
+        self.entities = get_entities(session=self.entity_session, entity_type='block',
                                      exchanges=self.exchanges,
                                      codes=self.codes,
                                      entity_ids=self.entity_ids,
                                      return_type='domain', provider=self.provider,
                                      # 只抓概念和行业
-                                     filters=[Index.category.in_(
+                                     filters=[Block.category.in_(
                                          [StockCategory.industry.value, StockCategory.concept.value])])
 
     def generate_url(self, category, code, number):
@@ -105,5 +105,5 @@ class SinaIndexMoneyFlowRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    SinaIndexMoneyFlowRecorder(codes=['new_dzxx']).run()
+    SinaBlockMoneyFlowRecorder(codes=['new_blhy']).run()
     # SinaIndexMoneyFlowRecorder().run()

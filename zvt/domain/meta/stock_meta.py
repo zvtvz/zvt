@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
 from zvdata import EntityMixin
 from zvdata.contract import register_schema, register_entity
@@ -23,6 +22,7 @@ class Stock(StockMetaBase, BaseSecurity):
 
 
 # 板块
+@register_entity(entity_type='block')
 class Block(StockMetaBase, BaseSecurity):
     __tablename__ = 'block'
 
@@ -96,7 +96,6 @@ class StockDetail(StockMetaBase, EntityMixin):
     industry_indices = Column(String)
     concept_indices = Column(String)
     area_indices = Column(String)
-    indices = relationship('StockIndex', back_populates='stocks')
 
     # 成立日期
     date_of_establishment = Column(DateTime)

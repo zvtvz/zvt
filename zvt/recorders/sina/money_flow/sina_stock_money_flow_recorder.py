@@ -20,7 +20,7 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_lscjfb?page=1&num={}&sort=opendate&asc=0&daima={}'
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=10, default_size=4000, real_time=True, fix_duplicate_way='add',
+                 force_update=False, sleeping_time=10, default_size=4000, real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None,
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=15, close_minute=0,
                  one_day_trading_minutes=4 * 60) -> None:
