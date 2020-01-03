@@ -7,15 +7,15 @@ import requests
 
 from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
+from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
-from zvt.domain import StockIndex, StockCategory
-from zvt.domain.meta.stock_meta import Index
+from zvt.domain import BlockStock, StockCategory, Block
 
 
-class SinaChinaStockCategoryRecorder(Recorder):
+class SinaChinaBlockRecorder(Recorder):
     provider = 'sina'
-    data_schema = StockIndex
+    data_schema = BlockStock
 
     # 用于抓取行业/概念/地域列表
     category_map_url = {
@@ -30,9 +30,9 @@ class SinaChinaStockCategoryRecorder(Recorder):
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
-        self.indices = get_entities(session=self.session, entity_type='index', exchanges=['cn'],
-                                    return_type='domain', provider=self.provider)
-        self.index_ids = [index_item.id for index_item in self.indices]
+        self.blocks = get_entities(session=self.session, entity_type='block', exchanges=['cn'],
+                                   return_type='domain', provider=self.provider)
+        self.block_ids = [index_item.id for index_item in self.blocks]
 
     def run(self):
         # get stock category from sina
@@ -46,20 +46,20 @@ class SinaChinaStockCategoryRecorder(Recorder):
             for code in tmp_json:
                 name = tmp_json[code].split(',')[1]
                 id = 'index_cn_{}'.format(code)
-                if id in self.index_ids:
+                if id in self.block_ids:
                     continue
-                self.session.add(Index(id=id, entity_type='index', exchange='cn', code=code, name=name,
+                self.session.add(Block(id=id, entity_type='block', exchange='cn', code=code, name=name,
                                        category=category.value))
             self.session.commit()
 
-        indices = get_entities(session=self.session, entity_type='index',
-                               return_type='domain', filters=[
-                Index.category.in_([StockCategory.industry.value, StockCategory.concept.value])],
-                               provider=self.provider)
+        blocks = get_entities(session=self.session, entity_type='block',
+                              return_type='domain', filters=[
+                Block.category.in_([StockCategory.industry.value, StockCategory.concept.value])],
+                              provider=self.provider)
 
-        for index_item in indices:
+        for block in blocks:
             for page in range(1, 5):
-                resp = requests.get(self.category_stocks_url.format(page, index_item.code))
+                resp = requests.get(self.category_stocks_url.format(page, block.code))
                 try:
                     if resp.text == 'null' or resp.text is None:
                         break
@@ -68,17 +68,25 @@ class SinaChinaStockCategoryRecorder(Recorder):
                     for category in category_jsons:
                         stock_code = category['code']
                         stock_id = china_stock_code_to_id(stock_code)
-                        index_id = index_item.id
+                        block_id = block.id
                         the_list.append({
-                            'id': '{}_{}'.format(index_id, stock_id),
-                            'index_id': index_id,
-                            'stock_id': stock_id
+                            'id': '{}_{}'.format(block_id, stock_id),
+                            'entity_id': block_id,
+                            'entity_type': 'block',
+                            'exchange': block.exchange,
+                            'code': block.code,
+                            'name': block.name,
+                            'timestamp': now_pd_timestamp(),
+                            'stock_id': stock_id,
+                            'stock_code': stock_code,
+                            'stock_name': category['name'],
+
                         })
                     if the_list:
                         df = pd.DataFrame.from_records(the_list)
                         df_to_db(data_schema=self.data_schema, df=df, provider=self.provider)
 
-                    self.logger.info('finish recording index:{},{}'.format(index_item.category, index_item.name))
+                    self.logger.info('finish recording index:{},{}'.format(block.category, block.name))
 
                 except Exception as e:
                     self.logger.error("error:,resp.text:", e, resp.text)
@@ -88,5 +96,5 @@ class SinaChinaStockCategoryRecorder(Recorder):
 if __name__ == '__main__':
     # init_log('sina_china_stock_category.log')
 
-    recorder = SinaChinaStockCategoryRecorder()
+    recorder = SinaChinaBlockRecorder()
     recorder.run()

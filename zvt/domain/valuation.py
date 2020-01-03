@@ -35,8 +35,8 @@ class StockValuation(ValuationBase, Mixin):
     pcf = Column(Float)
 
 
-class IndexValuation(ValuationBase, Mixin):
-    __tablename__ = 'index_valuation'
+class EtfValuation(ValuationBase, Mixin):
+    __tablename__ = 'etf_valuation'
 
     code = Column(String(length=32))
     name = Column(String(length=32))

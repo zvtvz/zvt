@@ -266,6 +266,16 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
     return df
 
 
+def portfolio_relate_stock(df, portfolio):
+    df['entity_id'] = portfolio.entity_id
+    df['entity_type'] = portfolio.entity_type
+    df['exchange'] = portfolio.exchange
+    df['code'] = portfolio.code
+    df['name'] = portfolio.name
+
+    return df
+
+
 if __name__ == '__main__':
     assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1DAY) == Stock1dKdata
     assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_15MIN) == Stock15mKdata
