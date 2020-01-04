@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import math
-from typing import Union
+from typing import Union, List
 
 import numpy as np
 import pandas as pd
@@ -60,8 +59,8 @@ def get_zen_factor_schema(entity_type: str,
     return eval(schema_str)
 
 
-def to_report_period_type(report_period):
-    the_date = to_pd_timestamp(report_period)
+def to_report_period_type(report_date):
+    the_date = to_pd_timestamp(report_date)
     if the_date.month == 3 and the_date.day == 31:
         return ReportPeriod.season1.value
     if the_date.month == 6 and the_date.day == 30:
@@ -74,24 +73,27 @@ def to_report_period_type(report_period):
     return None
 
 
-def get_report_period(the_date=now_pd_timestamp()):
+def get_recent_report_date(the_date=now_pd_timestamp(), step=0):
+    the_date = to_pd_timestamp(the_date)
+    assert step >= 0
     if the_date.month >= 10:
-        return "{}{}".format(the_date.year, '-09-30')
+        recent = "{}{}".format(the_date.year, '-09-30')
     elif the_date.month >= 7:
-        return "{}{}".format(the_date.year, '-06-30')
+        recent = "{}{}".format(the_date.year, '-06-30')
     elif the_date.month >= 4:
-        return "{}{}".format(the_date.year, '-03-31')
+        recent = "{}{}".format(the_date.year, '-03-31')
     else:
-        return "{}{}".format(the_date.year - 1, '-12-31')
+        recent = "{}{}".format(the_date.year - 1, '-12-31')
+
+    if step == 0:
+        return recent
+    else:
+        step = step - 1
+        return get_recent_report_date(recent, step)
 
 
-def next_report_period(start_report_period, size=10):
-    year = start_report_period.year + math.floor(size / 4)
-    month = start_report_period.month
-    day = start_report_period.day
-
-    t = pd.Timestamp(year=year, month=month, day=day) + pd.Timedelta(days=(size % 4) * 31)
-    return get_report_period(t)
+def get_recent_report_period(the_date=now_pd_timestamp(), step=0):
+    return to_report_period_type(get_recent_report_date(the_date, step=step))
 
 
 def get_stock_category(stock_id, session=None):
@@ -276,10 +278,37 @@ def portfolio_relate_stock(df, portfolio):
     return df
 
 
-if __name__ == '__main__':
-    assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1DAY) == Stock1dKdata
-    assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_15MIN) == Stock15mKdata
-    assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1HOUR) == Stock1hKdata
+# etf半年报和年报才有全量的持仓信息，故根据离timestamp最近的报表(年报 or 半年报)来确定持仓
+def get_etf_stocks(code, timestamp=now_pd_timestamp(), provider=None):
+    latests: List[EtfStock] = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
+                                                  order=EtfStock.timestamp.desc(), limit=1, return_type='domain')
+    if latests:
+        latest_record = latests[0]
+        # 获取最新的报表
+        df = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
+                                 filters=[EtfStock.report_date == latest_record.report_date])
+        # 最新的为年报或者半年报
+        if latest_record.report_period == ReportPeriod.year or latest_record.report_period == ReportPeriod.half_year:
+            return df
+        # 一季报或三季报，需要结合 年报或半年报 来算持仓
+        else:
+            report_date = get_recent_report_date(latest_record.report_date)
 
-    assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1DAY) == Coin1dKdata
-    assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1MIN) == Coin1mKdata
+            pre_df = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
+                                         filters=[EtfStock.report_date == to_pd_timestamp(report_date)])
+            df = df.append(pre_df)
+            # 保留最新的持仓
+            df = df.drop_duplicates(subset=['stock_code'], keep='first')
+            return df
+
+
+if __name__ == '__main__':
+    df = get_etf_stocks(code='159901', provider='joinquant')
+    print(df)
+
+    # assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1DAY) == Stock1dKdata
+    # assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_15MIN) == Stock15mKdata
+    # assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1HOUR) == Stock1hKdata
+    #
+    # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1DAY) == Coin1dKdata
+    # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1MIN) == Coin1mKdata
