@@ -86,6 +86,7 @@ class ChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
             df['timestamp'] = pd.to_datetime(df['pub_date'])
 
             df.rename(columns={'symbol': 'stock_code', 'name': 'stock_name'}, inplace=True)
+            df['proportion'] = df['proportion'] * 0.01
 
             df = portfolio_relate_stock(df, entity)
 

@@ -52,7 +52,7 @@ class Etf(StockMetaBase, BaseSecurity):
 
 # 组合(Etf,Index,Block)和个股(Stock)的关系 应该继承自该类
 # 该基础类可以这样理解:
-# 其是一种包含关系，即本身是entity,但包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
+# entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
 class BasePortfolio(EntityMixin):
     stock_id = Column(String)
     stock_code = Column(String(length=64))
