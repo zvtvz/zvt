@@ -119,3 +119,5 @@ class StockDetail(StockMetaBase, EntityMixin):
 
 register_schema(providers=['eastmoney', 'exchange', 'sina', 'joinquant'], db_name='stock_meta',
                 schema_base=StockMetaBase)
+
+__all__ = ['Stock', 'Index', 'Block', 'Etf', 'IndexStock', 'BlockStock', 'EtfStock', 'StockDetail']

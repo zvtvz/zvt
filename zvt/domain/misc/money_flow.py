@@ -10,8 +10,8 @@ MoneyFlowBase = declarative_base()
 
 # 板块资金流向
 @register_api(provider='sina')
-class IndexMoneyFlow(MoneyFlowBase, Mixin):
-    __tablename__ = 'index_money_flow'
+class BlockMoneyFlow(MoneyFlowBase, Mixin):
+    __tablename__ = 'block_money_flow'
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -80,3 +80,5 @@ class StockMoneyFlow(MoneyFlowBase, Mixin):
 
 
 register_schema(providers=['sina'], db_name='money_flow', schema_base=MoneyFlowBase)
+
+__all__ = ['BlockMoneyFlow', 'StockMoneyFlow']

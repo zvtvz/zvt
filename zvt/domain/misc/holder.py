@@ -2,8 +2,8 @@
 from sqlalchemy import Column, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata.contract import register_schema, register_api
 from zvdata import Mixin
+from zvdata.contract import register_schema, register_api
 
 HolderBase = declarative_base()
 
@@ -79,3 +79,5 @@ class InstitutionalInvestorHolder(HolderBase, Mixin):
 
 
 register_schema(providers=['eastmoney'], db_name='holder', schema_base=HolderBase)
+
+__all__ = ['TopTenTradableHolder', 'TopTenHolder', 'InstitutionalInvestorHolder']

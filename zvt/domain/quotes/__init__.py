@@ -41,22 +41,26 @@ class TickCommon(Mixin):
     order_type = Column(String(length=32))
 
 
-from zvt.domain.quotes.coin.coin_tick_kdata import *
-from zvt.domain.quotes.coin.coin_1m_kdata import *
-from zvt.domain.quotes.coin.coin_1h_kdata import *
-from zvt.domain.quotes.coin.coin_1d_kdata import *
-from zvt.domain.quotes.coin.coin_1wk_kdata import *
-from zvt.domain.quotes.coin.coin_1mon_kdata import *
+class BlockKdataCommon(KdataCommon):
+    pass
 
-from zvt.domain.quotes.index.index_1d_kdata import *
-from zvt.domain.quotes.index.index_1wk_kdata import *
-from zvt.domain.quotes.index.index_1mon_kdata import *
 
-from zvt.domain.quotes.stock.stock_1m_kdata import *
-from zvt.domain.quotes.stock.stock_5m_kdata import *
-from zvt.domain.quotes.stock.stock_15m_kdata import *
-from zvt.domain.quotes.stock.stock_30m_kdata import *
-from zvt.domain.quotes.stock.stock_1h_kdata import *
-from zvt.domain.quotes.stock.stock_1d_kdata import *
-from zvt.domain.quotes.stock.stock_1wk_kdata import *
-from zvt.domain.quotes.stock.stock_1mon_kdata import *
+class CoinKdataCommon(KdataCommon):
+    pass
+
+
+class CoinTickCommon(TickCommon):
+    pass
+
+
+class StockKdataCommon(KdataCommon):
+    # 涨跌幅
+    change_pct = Column(Float)
+    # 换手率
+    turnover_rate = Column(Float)
+
+
+from zvt.domain.quotes.block import *
+from zvt.domain.quotes.coin import *
+from zvt.domain.quotes.stock import *
+from zvt.domain.quotes.trade_day import *

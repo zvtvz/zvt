@@ -8,10 +8,10 @@ from zvt.domain.quotes import StockKdataCommon
 KdataBase = declarative_base()
 
 
-class Stock1monKdata(KdataBase, StockKdataCommon):
-    __tablename__ = 'stock_1mon_kdata'
+class Stock4hKdata(KdataBase, StockKdataCommon):
+    __tablename__ = 'stock_4h_kdata'
 
 
-register_schema(providers=['joinquant'], db_name='stock_1mon_kdata', schema_base=KdataBase)
+register_schema(providers=['joinquant'], db_name='stock_4h_kdata', schema_base=KdataBase)
 
-__all__ = ['Stock1monKdata']
+__all__ = ['Stock4hKdata']

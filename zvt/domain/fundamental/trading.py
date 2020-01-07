@@ -2,8 +2,8 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata.contract import register_schema, register_api
 from zvdata import Mixin
+from zvdata.contract import register_schema, register_api
 
 TradingBase = declarative_base()
 
@@ -152,3 +152,5 @@ class DragonAndTiger(TradingBase, Mixin):
 
 
 register_schema(providers=['eastmoney'], db_name='trading', schema_base=TradingBase)
+
+__all__ = ['ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
