@@ -13,3 +13,5 @@ class StockTradeDay(TradeDayBase, Mixin):
 
 
 register_schema(providers=['joinquant'], db_name='trade_day', schema_base=TradeDayBase)
+
+__all__ = ['StockTradeDay']

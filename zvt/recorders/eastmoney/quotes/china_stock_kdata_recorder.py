@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
 from zvdata.utils.utils import json_callback_param, to_float
 from zvt.api.common import generate_kdata_id, get_kdata_schema
-from zvt.domain import Index, StockCategory
+from zvt.domain import Index, StockCategory, Block
 
 
 def level_flag(level: IntervalLevel):
@@ -27,7 +27,7 @@ def level_flag(level: IntervalLevel):
 # 抓取行业的日线,周线,月线数据，用于中期选行业
 class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     entity_provider: str = 'eastmoney'
-    entity_schema = Index
+    entity_schema = Block
 
     provider = 'eastmoney'
     url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.{}&cb=fsdata1567673076&klt={}&fqt=0&lmt={}&end={}&iscca=1&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&fsdata1567673076=fsdata1567673076'

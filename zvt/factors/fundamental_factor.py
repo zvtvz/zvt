@@ -8,7 +8,7 @@ import pandas as pd
 from zvdata import IntervalLevel
 from zvdata.utils.pd_utils import normal_index_df
 from zvdata.utils.time_utils import now_pd_timestamp
-from zvt.domain import FinanceFactor, IndexMoneyFlow
+from zvt.domain import FinanceFactor, BlockMoneyFlow
 from zvt.factors import Transformer, Accumulator
 from zvt.factors.algorithm import Scorer, RankScorer
 from zvt.factors.factor import Factor, ScoreFactor
@@ -154,8 +154,8 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = [IndexMoneyFlow.net_inflows, IndexMoneyFlow.net_inflow_rate,
-                                  IndexMoneyFlow.net_main_inflows, IndexMoneyFlow.net_main_inflow_rate],
+                 columns: List = [BlockMoneyFlow.net_inflows, BlockMoneyFlow.net_inflow_rate,
+                                  BlockMoneyFlow.net_main_inflows, BlockMoneyFlow.net_main_inflow_rate],
                  filters: List = [],
                  order: object = None,
                  limit: int = None,
@@ -167,7 +167,7 @@ class IndexMoneyFlowFactor(ScoreFactor):
                  fill_method: str = 'ffill',
                  effective_number: int = 10,
                  scorer: Scorer = RankScorer(ascending=True)) -> None:
-        super().__init__(IndexMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
+        super().__init__(BlockMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
                          end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
                          keep_all_timestamp, fill_method, effective_number, scorer)
 

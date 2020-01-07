@@ -2,15 +2,15 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata.contract import register_schema, register_api
 from zvdata import Mixin
+from zvdata.contract import register_schema, register_api
 
-MacroBase = declarative_base()
+OverallBase = declarative_base()
 
 
 # 市场整体估值
 @register_api(provider='joinquant')
-class StockSummary(MacroBase, Mixin):
+class StockSummary(OverallBase, Mixin):
     __tablename__ = 'stock_summary'
 
     provider = Column(String(length=32))
@@ -28,7 +28,7 @@ class StockSummary(MacroBase, Mixin):
 
 # 融资融券概况
 @register_api(provider='joinquant')
-class MarginTradingSummary(MacroBase, Mixin):
+class MarginTradingSummary(OverallBase, Mixin):
     __tablename__ = 'margin_trading_summary'
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -50,7 +50,7 @@ class MarginTradingSummary(MacroBase, Mixin):
 
 # 北向/南向成交概况
 @register_api(provider='joinquant')
-class CrossMarketSummary(MacroBase, Mixin):
+class CrossMarketSummary(OverallBase, Mixin):
     __tablename__ = 'cross_market_summary'
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -64,4 +64,6 @@ class CrossMarketSummary(MacroBase, Mixin):
     quota_daily_balance = Column(Float)
 
 
-register_schema(providers=['exchange', 'joinquant'], db_name='macro', schema_base=MacroBase)
+register_schema(providers=['exchange', 'joinquant'], db_name='overall', schema_base=OverallBase)
+
+__all__ = ['StockSummary', 'MarginTradingSummary', 'CrossMarketSummary']

@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float
 from zvt.api.quote import get_entities
-from zvt.domain import IndexMoneyFlow, StockCategory, Block
+from zvt.domain import BlockMoneyFlow, StockCategory, Block
 
 
 # 实时资金流
@@ -26,7 +26,7 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
     # 记录的信息从哪里来
     provider = 'sina'
     # 记录的schema
-    data_schema = IndexMoneyFlow
+    data_schema = BlockMoneyFlow
 
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_zjlrqs?page=1&num={}&sort=opendate&asc=0&bankuai={}%2F{}'
 

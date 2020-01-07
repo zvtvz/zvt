@@ -6,7 +6,7 @@ from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.contract import get_db_session
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
-from zvt.domain import StockCategory, IndexMoneyFlow
+from zvt.domain import StockCategory, BlockMoneyFlow
 from zvt.domain.meta.stock_meta import Index
 
 
@@ -107,7 +107,7 @@ def get_current_price(entity_ids=None, entity_type='coin'):
 
 
 if __name__ == '__main__':
-    money_flow_session = get_db_session(provider='sina', data_schema=IndexMoneyFlow)
+    money_flow_session = get_db_session(provider='sina', data_schema=BlockMoneyFlow)
 
     entities = get_entities(entity_type='index',
                             return_type='domain', provider='sina',
