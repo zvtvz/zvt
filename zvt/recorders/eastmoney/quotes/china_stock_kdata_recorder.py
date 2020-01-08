@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
 from zvdata.utils.utils import json_callback_param, to_float
 from zvt.api.common import generate_kdata_id, get_kdata_schema
-from zvt.domain import Index, StockCategory, Block
+from zvt.domain import Index, BlockCategory, Block
 
 
 def level_flag(level: IntervalLevel):
@@ -53,7 +53,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                                      return_type='domain', provider=self.provider,
                                      # 只抓概念和行业
                                      filters=[Index.category.in_(
-                                         [StockCategory.industry.value, StockCategory.concept.value])])
+                                         [BlockCategory.industry.value, BlockCategory.concept.value])])
 
     def record(self, entity, start, end, size, timestamps):
         the_url = self.url.format("{}".format(entity.code), level_flag(self.level), size,

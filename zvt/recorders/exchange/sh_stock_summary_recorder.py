@@ -3,11 +3,11 @@ import pandas as pd
 import requests
 
 from zvdata.recorder import TimestampsDataRecorder
-from zvt.domain import Index
-from zvt.domain.misc.macro import StockSummary
-from zvt.recorders.consts import DEFAULT_SH_SUMMARY_HEADER
 from zvdata.utils.time_utils import to_time_str
 from zvdata.utils.utils import to_float
+from zvt.domain import Index
+from zvt.domain.misc import StockSummary
+from zvt.recorders.consts import DEFAULT_SH_SUMMARY_HEADER
 
 
 class StockSummaryRecorder(TimestampsDataRecorder):

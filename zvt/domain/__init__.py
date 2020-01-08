@@ -2,7 +2,7 @@
 import enum
 
 
-class StockCategory(enum.Enum):
+class BlockCategory(enum.Enum):
     # 行业版块
     industry = 'industry'
     # 概念版块
@@ -52,11 +52,6 @@ from zvt.domain.fundamental import *
 from zvt.domain.misc import *
 from zvt.domain.quotes import *
 from zvt.domain.factors import *
-
-
-def init_schema():
-    pass
-
 
 from zvdata.contract import global_schemas
 

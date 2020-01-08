@@ -6,7 +6,7 @@ from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
-from zvt.domain import BlockStock, StockCategory
+from zvt.domain import BlockStock, BlockCategory
 from zvt.domain.meta.stock_meta import Index
 from zvdata.utils.utils import json_callback_param
 
@@ -17,9 +17,9 @@ class ChinaStockCategoryRecorder(Recorder):
 
     # 用于抓取行业/概念/地域列表
     category_map_url = {
-        StockCategory.industry: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKHY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_F1A61014DE5E45B7A50068EA290BC918&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08766',
-        StockCategory.concept: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKGN&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=300&lvl=&cb=jsonp_3071689CC1E6486A80027D69E8B33F26&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08251',
-        StockCategory.area: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKDY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_A597D4867B3D4659A203AADE5B3B3AD5&token=4f1862fc3b5e77c150a2b985b12db0fd&_=02443'
+        BlockCategory.industry: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKHY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_F1A61014DE5E45B7A50068EA290BC918&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08766',
+        BlockCategory.concept: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKGN&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=300&lvl=&cb=jsonp_3071689CC1E6486A80027D69E8B33F26&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08251',
+        BlockCategory.area: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKDY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_A597D4867B3D4659A203AADE5B3B3AD5&token=4f1862fc3b5e77c150a2b985b12db0fd&_=02443'
     }
 
     # 用于抓取行业包含的股票
@@ -50,7 +50,7 @@ class ChinaStockCategoryRecorder(Recorder):
         indices = get_entities(session=self.session, entity_type='index',
                                return_type='domain', filters=[
                 Index.category.in_(
-                    [StockCategory.concept.value, StockCategory.industry.value])],
+                    [BlockCategory.concept.value, BlockCategory.industry.value])],
                                provider=self.provider)
 
         for index_item in indices:

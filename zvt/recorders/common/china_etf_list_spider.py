@@ -11,7 +11,7 @@ from zvdata.api import persist_entities, df_to_db
 from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.domain import EtfStock, StockCategory
+from zvt.domain import EtfStock, BlockCategory
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER
 
 
@@ -63,7 +63,7 @@ class ChinaETFListSpider(Recorder):
         df['entity_id'] = df['id']
         df['exchange'] = exchange
         df['entity_type'] = 'etf'
-        df['category'] = StockCategory.etf.value
+        df['category'] = BlockCategory.etf.value
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
@@ -207,6 +207,8 @@ class ChinaETFListSpider(Recorder):
 
         df['拟合指数'] = df['拟合指数'].apply(parse_index)
 
+
+__all__ = ['ChinaETFListSpider']
 
 if __name__ == '__main__':
     spider = ChinaETFListSpider(provider='exchange')

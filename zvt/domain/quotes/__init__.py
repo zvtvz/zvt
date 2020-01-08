@@ -45,6 +45,19 @@ class BlockKdataCommon(KdataCommon):
     pass
 
 
+class IndexKdataCommon(KdataCommon):
+    pass
+
+
+class EtfKdataCommon(KdataCommon):
+    turnover_rate = Column(Float)
+
+    # ETF 累计净值（货币 ETF 为七日年化)
+    cumulative_net_value = Column(Float)
+    # ETF 净值增长率
+    change_pct = Column(Float)
+
+
 class CoinKdataCommon(KdataCommon):
     pass
 
@@ -63,4 +76,6 @@ class StockKdataCommon(KdataCommon):
 from zvt.domain.quotes.block import *
 from zvt.domain.quotes.coin import *
 from zvt.domain.quotes.stock import *
+from zvt.domain.quotes.etf import *
+from zvt.domain.quotes.index import *
 from zvt.domain.quotes.trade_day import *

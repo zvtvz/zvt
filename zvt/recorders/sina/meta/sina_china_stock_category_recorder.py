@@ -10,7 +10,7 @@ from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
-from zvt.domain import BlockStock, StockCategory, Block
+from zvt.domain import BlockStock, BlockCategory, Block
 
 
 class SinaChinaBlockRecorder(Recorder):
@@ -19,8 +19,8 @@ class SinaChinaBlockRecorder(Recorder):
 
     # 用于抓取行业/概念/地域列表
     category_map_url = {
-        StockCategory.industry: 'http://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php',
-        StockCategory.concept: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=class'
+        BlockCategory.industry: 'http://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php',
+        BlockCategory.concept: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=class'
         # StockCategory.area: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=area',
     }
 
@@ -54,7 +54,7 @@ class SinaChinaBlockRecorder(Recorder):
 
         blocks = get_entities(session=self.session, entity_type='block',
                               return_type='domain', filters=[
-                Block.category.in_([StockCategory.industry.value, StockCategory.concept.value])],
+                Block.category.in_([BlockCategory.industry.value, BlockCategory.concept.value])],
                               provider=self.provider)
 
         for block in blocks:

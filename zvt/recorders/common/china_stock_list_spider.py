@@ -65,6 +65,8 @@ class ChinaStockListRecorder(Recorder):
             self.logger.info("persist stock list successs")
 
 
+__all__ = ['ChinaStockListRecorder']
+
 if __name__ == '__main__':
     spider = ChinaStockListRecorder(provider='exchange')
     spider.run()

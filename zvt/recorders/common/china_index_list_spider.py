@@ -248,13 +248,14 @@ class ChinaIndexListSpider(Recorder):
         df['entity_id'] = df['id']
         df['exchange'] = 'cn'
         df['entity_type'] = 'index'
-        df['is_delisted'] = False
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
         persist_entities(df, entity_type='index', provider=self.provider)
 
+
+__all__ = ['ChinaIndexListSpider']
 
 if __name__ == '__main__':
     spider = ChinaIndexListSpider(provider='exchange')
