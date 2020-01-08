@@ -9,7 +9,7 @@ from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float
 from zvt.api.quote import get_entities
-from zvt.domain import BlockMoneyFlow, StockCategory, Block
+from zvt.domain import BlockMoneyFlow, BlockCategory, Block
 
 
 # 实时资金流
@@ -50,12 +50,12 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
                                      return_type='domain', provider=self.provider,
                                      # 只抓概念和行业
                                      filters=[Block.category.in_(
-                                         [StockCategory.industry.value, StockCategory.concept.value])])
+                                         [BlockCategory.industry.value, BlockCategory.concept.value])])
 
     def generate_url(self, category, code, number):
-        if category == StockCategory.industry.value:
+        if category == BlockCategory.industry.value:
             block = 0
-        elif category == StockCategory.concept.value:
+        elif category == BlockCategory.concept.value:
             block = 1
 
         return self.url.format(number, block, code)

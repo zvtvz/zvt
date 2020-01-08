@@ -83,6 +83,8 @@ class CoinTickRecorder(FixedCycleDataRecorder):
             self.logger.warning("exchange:{} not support fetchOHLCV".format(entity.exchange))
 
 
+__all__ = ["CoinTickRecorder"]
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exchanges', help='exchanges', default='binance', nargs='+',

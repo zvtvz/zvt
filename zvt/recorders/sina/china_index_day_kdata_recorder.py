@@ -85,5 +85,7 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
         return result_df.to_dict(orient='records')
 
 
+__all__ = ['ChinaIndexDayKdataRecorder']
+
 if __name__ == '__main__':
     ChinaIndexDayKdataRecorder().run()

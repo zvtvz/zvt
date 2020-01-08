@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Float
+from sqlalchemy import Column, String, DateTime, BigInteger, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import EntityMixin
@@ -9,10 +9,10 @@ StockMetaBase = declarative_base()
 
 
 class BaseSecurity(EntityMixin):
-    # 是否退市
-    is_delisted = Column(Boolean)
     # 上市日
     list_date = Column(DateTime)
+    # 退市日
+    end_date = Column(DateTime)
 
 
 # 个股
@@ -88,10 +88,9 @@ class EtfStock(StockMetaBase, Portfolio):
 
 # 个股详情
 @register_entity(entity_type='stock_detail')
-class StockDetail(StockMetaBase, EntityMixin):
+class StockDetail(StockMetaBase, BaseSecurity):
     __tablename__ = 'stock_detail'
 
-    is_delisted = Column(Boolean)
     industries = Column(String)
     industry_indices = Column(String)
     concept_indices = Column(String)
@@ -103,8 +102,6 @@ class StockDetail(StockMetaBase, EntityMixin):
     profile = Column(String(length=1024))
     # 主营业务
     main_business = Column(String(length=512))
-    # 上市日期
-    list_date = Column(DateTime)
     # 发行量(股)
     issues = Column(BigInteger)
     # 发行价格

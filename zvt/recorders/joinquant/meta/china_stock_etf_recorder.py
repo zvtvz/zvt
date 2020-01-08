@@ -5,14 +5,14 @@ from jqdatasdk import auth, get_all_securities, logout, query, finance
 from zvdata.api import df_to_db, get_entity_exchange, get_entity_code
 from zvdata.recorder import Recorder, TimeSeriesDataRecorder
 from zvdata.utils.pd_utils import pd_is_not_null
-from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import zvt_env
 from zvt.api.common import china_stock_code_to_id, to_report_period_type, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf
 from zvt.recorders.joinquant import to_entity_id
+from zvt.settings import SAMPLE_ETF_CODES
 
 
-class ChinaStockEtfListRecorder(Recorder):
+class JqChinaStockMetaRecorder(Recorder):
     provider = 'joinquant'
     data_schema = Etf
 
@@ -27,32 +27,42 @@ class ChinaStockEtfListRecorder(Recorder):
         # 上市日期
         df.rename(columns={'start_date': 'timestamp'}, inplace=True)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['list_date'] = df['timestamp']
+        df['end_date'] = pd.to_datetime(df['end_date'])
+
         df['entity_id'] = df['entity_id'].apply(lambda x: to_entity_id(entity_type=entity_type, jq_code=x))
         df['id'] = df['entity_id']
         df['entity_type'] = entity_type
         df['exchange'] = df['entity_id'].apply(lambda x: get_entity_exchange(x))
         df['code'] = df['entity_id'].apply(lambda x: get_entity_code(x))
         df['name'] = df['display_name']
-        df['is_delisted'] = pd.to_datetime(df['end_date']) < now_pd_timestamp()
-        df['category'] = category
+
+        if category:
+            df['category'] = category
 
         return df
 
     def run(self):
+        # 抓取股票列表
         df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
         df_to_db(df_stock, data_schema=Stock, provider=self.provider)
 
         self.logger.info(df_stock)
         self.logger.info("persist stock list success")
 
+        # 抓取etf列表
         df_index = self.to_zvt_entity(get_all_securities(['etf']), entity_type='etf', category='etf')
         df_to_db(df_index, data_schema=Etf, provider=self.provider)
 
         self.logger.info(df_index)
         self.logger.info("persist etf list success")
 
+    def on_finish(self):
+        super().on_finish()
+        logout()
 
-class ChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
+
+class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
     entity_provider = 'joinquant'
     entity_schema = Etf
 
@@ -103,7 +113,8 @@ class ChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
         return None
 
 
+__all__ = ['JqChinaStockMetaRecorder', 'JqChinaStockEtfPortfolioRecorder']
+
 if __name__ == '__main__':
-    # ChinaStockEtfListRecorder().run()
-    recorder = ChinaStockEtfPortfolioRecorder()
-    recorder.run()
+    # JqChinaStockMetaRecorder().run()
+    JqChinaStockEtfPortfolioRecorder(codes=SAMPLE_ETF_CODES).run()

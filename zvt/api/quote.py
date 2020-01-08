@@ -6,12 +6,12 @@ from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.contract import get_db_session
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
-from zvt.domain import StockCategory, BlockMoneyFlow
+from zvt.domain import BlockCategory, BlockMoneyFlow
 from zvt.domain.meta.stock_meta import Index
 
 
 def get_indices(provider: str = 'sina',
-                block_category: Union[str, StockCategory] = 'concept',
+                block_category: Union[str, BlockCategory] = 'concept',
                 return_type: str = 'df') -> object:
     """
     get indices/blocks on block_category
@@ -25,7 +25,7 @@ def get_indices(provider: str = 'sina',
     :return:
     :rtype:
     """
-    if type(block_category) == StockCategory:
+    if type(block_category) == BlockCategory:
         block_category = block_category.value
 
     session = get_db_session(provider=provider, data_schema=Index)
@@ -51,11 +51,11 @@ def in_filters(col, values):
 
 
 def get_securities_in_blocks(provider: str = 'eastmoney',
-                             categories: List[Union[str, StockCategory]] = ['concept', 'industry'],
+                             categories: List[Union[str, BlockCategory]] = ['concept', 'industry'],
                              names=None, codes=None, ids=None):
     session = get_db_session(provider=provider, data_schema=Index)
 
-    categories = [StockCategory(category).value for category in categories]
+    categories = [BlockCategory(category).value for category in categories]
 
     filters = [Index.category.in_(categories)]
 
@@ -113,7 +113,7 @@ if __name__ == '__main__':
                             return_type='domain', provider='sina',
                             # 只抓概念和行业
                             filters=[Index.category.in_(
-                                [StockCategory.industry.value, StockCategory.concept.value])])
+                                [BlockCategory.industry.value, BlockCategory.concept.value])])
 
     for entity in entities:
         sql = 'UPDATE index_money_flow SET name="{}" where code="{}"'.format(

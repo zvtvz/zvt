@@ -93,6 +93,8 @@ class CoinKdataRecorder(FixedCycleDataRecorder):
             self.logger.warning("exchange:{} not support fetchOHLCV".format(entity.exchange))
 
 
+__all__ = ["CoinKdataRecorder"]
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1m', choices=[item.value for item in IntervalLevel])

@@ -72,3 +72,10 @@ if __name__ == '__main__':
     # 板块行情
     gen_quote_domain(providers=['eastmoney'], entity_type='block',
                      levels=[IntervalLevel.LEVEL_1DAY, IntervalLevel.LEVEL_1WEEK, IntervalLevel.LEVEL_1MON])
+
+    # etf行情
+    gen_quote_domain(providers=['sina'], entity_type='etf',
+                     levels=[IntervalLevel.LEVEL_1DAY])
+    # 指数行情
+    gen_quote_domain(providers=['sina'], entity_type='index',
+                     levels=[IntervalLevel.LEVEL_1DAY])

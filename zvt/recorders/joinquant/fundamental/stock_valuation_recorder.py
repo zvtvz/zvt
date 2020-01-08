@@ -11,7 +11,7 @@ from zvt.domain import Stock, StockValuation, EtfStock
 from zvt.recorders.joinquant import to_jq_entity_id
 
 
-class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
+class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
     # 复用eastmoney的股票列表
     entity_provider = 'joinquant'
     entity_schema = Stock
@@ -62,11 +62,13 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
         return None
 
 
+__all__ = ['JqChinaStockValuationRecorder']
+
 if __name__ == '__main__':
-    index: EtfStock = EtfStock.query_data(provider='joinquant', entity_id='etf_sz_159901', return_type='domain',
-                                          start_timestamp='2019-06-30', end_timestamp='2019-09-29')
-    stocks = [item.stock_id for item in index]
+    # 上证50
+    index: EtfStock = EtfStock.query_data(provider='joinquant', code='510050', return_type='domain')
+    stocks = list(set([item.stock_id for item in index]))
     print(stocks)
     print(len(stocks))
 
-    ChinaStockValuationRecorder(entity_ids=stocks).run()
+    JqChinaStockValuationRecorder(entity_ids=stocks).run()
