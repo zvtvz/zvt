@@ -36,13 +36,16 @@ class TargetSelector(object):
                  short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY,
                  provider='eastmoney',
-                 block_selector=None) -> None:
+                 portfolio_selector=None) -> None:
         self.entity_ids = entity_ids
         self.entity_type = entity_type
         self.exchanges = exchanges
         self.codes = codes
         self.provider = provider
-        self.block_selector: TargetSelector = block_selector
+        self.portfolio_selector: TargetSelector = portfolio_selector
+
+        if self.portfolio_selector:
+            assert self.portfolio_selector.entity_type in ['etf', 'block', 'index']
 
         if the_timestamp:
             self.the_timestamp = to_pd_timestamp(the_timestamp)
@@ -88,9 +91,9 @@ class TargetSelector(object):
         assert factor.level == self.level
 
     def move_on(self, to_timestamp=None, kdata_use_begin_time=False, timeout=20):
-        if self.block_selector:
-            self.block_selector.move_on(to_timestamp=to_timestamp, kdata_use_begin_time=kdata_use_begin_time,
-                                        timeout=timeout)
+        if self.portfolio_selector:
+            self.portfolio_selector.move_on(to_timestamp=to_timestamp, kdata_use_begin_time=kdata_use_begin_time,
+                                            timeout=timeout)
 
         if self.score_factors:
             for factor in self.score_factors:
@@ -162,11 +165,12 @@ class TargetSelector(object):
     def in_block(self, df, target_type: TargetType = TargetType.open_long):
         se = pd.Series(index=df.index)
         for index, row in df.iterrows():
-            blocks = self.block_selector.get_targets(index[1], target_type=target_type)
+            portfolio = self.portfolio_selector.get_targets(index[1], target_type=target_type)
 
             se[index] = False
-            if blocks:
-                securities = get_securities_in_blocks(provider=self.block_selector.provider, ids=blocks)
+            if portfolio:
+                securities = get_securities_in_blocks(provider=self.portfolio_selector.provider, ids=portfolio)
+                securities = self.portfolio_selector
                 if index[0] in securities:
                     se[index] = True
 
@@ -191,11 +195,11 @@ class TargetSelector(object):
             short_result = self.filter_result[self.filter_result.score == False]
 
         # filter in blocks
-        if self.block_selector:
-            if pd_is_not_null(self.block_selector.open_long_df):
+        if self.portfolio_selector:
+            if pd_is_not_null(self.portfolio_selector.open_long_df):
                 long_result = long_result[lambda df: self.in_block(long_result, target_type=TargetType.open_long)]
 
-            if pd_is_not_null(self.block_selector.open_short_df):
+            if pd_is_not_null(self.portfolio_selector.open_short_df):
                 short_result = short_result[lambda df: self.in_block(short_result, target_type=TargetType.open_short)]
 
         self.open_long_df = self.normalize_result_df(long_result)

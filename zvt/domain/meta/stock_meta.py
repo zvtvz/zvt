@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+
 from sqlalchemy import Column, String, DateTime, BigInteger, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import EntityMixin
 from zvdata.contract import register_schema, register_entity
+from zvdata.utils.time_utils import now_pd_timestamp
 
 StockMetaBase = declarative_base()
 
@@ -15,6 +17,21 @@ class BaseSecurity(EntityMixin):
     end_date = Column(DateTime)
 
 
+class BasePortfolio(BaseSecurity):
+    @classmethod
+    def get_stocks(cls,
+                   code=None, timestamp=now_pd_timestamp(), provider=None):
+        """
+
+        :param code: portfolio(etf/block/index...) code
+        :param timestamp:
+        :param provider:
+        :return:
+        """
+        portfolio_stock: BasePortfolioStock = eval(f'{cls.__name__}Stock')
+        return portfolio_stock.query_data(provider=provider, code=code)
+
+
 # 个股
 @register_entity(entity_type='stock')
 class Stock(StockMetaBase, BaseSecurity):
@@ -23,7 +40,7 @@ class Stock(StockMetaBase, BaseSecurity):
 
 # 板块
 @register_entity(entity_type='block')
-class Block(StockMetaBase, BaseSecurity):
+class Block(StockMetaBase, BasePortfolio):
     __tablename__ = 'block'
 
     # 板块类型，行业(industry),概念(concept)
@@ -32,7 +49,7 @@ class Block(StockMetaBase, BaseSecurity):
 
 # 指数
 @register_entity(entity_type='index')
-class Index(StockMetaBase, BaseSecurity):
+class Index(StockMetaBase, BasePortfolio):
     __tablename__ = 'index'
 
     # 发布商
@@ -45,22 +62,27 @@ class Index(StockMetaBase, BaseSecurity):
 
 # etf
 @register_entity(entity_type='etf')
-class Etf(StockMetaBase, BaseSecurity):
+class Etf(StockMetaBase, BasePortfolio):
     __tablename__ = 'etf'
     category = Column(String(length=64))
+
+    @classmethod
+    def get_stocks(cls, code=None, timestamp=now_pd_timestamp(), provider=None):
+        from zvt.api.common import get_etf_stocks
+        return get_etf_stocks(code=code, timestamp=timestamp, provider=provider)
 
 
 # 组合(Etf,Index,Block)和个股(Stock)的关系 应该继承自该类
 # 该基础类可以这样理解:
 # entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
-class BasePortfolio(EntityMixin):
+class BasePortfolioStock(EntityMixin):
     stock_id = Column(String)
     stock_code = Column(String(length=64))
     stock_name = Column(String(length=128))
 
 
 # 支持时间变化,报告期标的调整
-class Portfolio(BasePortfolio):
+class BasePortfolioStockHistory(BasePortfolioStock):
     # 报告期,season1,half_year,season3,year
     report_period = Column(String(length=32))
     # 3-31,6-30,9-30,12-31
@@ -74,15 +96,15 @@ class Portfolio(BasePortfolio):
     market_cap = Column(Float)
 
 
-class BlockStock(StockMetaBase, BasePortfolio):
+class BlockStock(StockMetaBase, BasePortfolioStock):
     __tablename__ = 'block_stock'
 
 
-class IndexStock(StockMetaBase, BasePortfolio):
+class IndexStock(StockMetaBase, BasePortfolioStockHistory):
     __tablename__ = 'index_stock'
 
 
-class EtfStock(StockMetaBase, Portfolio):
+class EtfStock(StockMetaBase, BasePortfolioStockHistory):
     __tablename__ = 'etf_stock'
 
 
@@ -114,7 +136,7 @@ class StockDetail(StockMetaBase, BaseSecurity):
     net_winning_rate = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'exchange', 'sina', 'joinquant'], db_name='stock_meta',
+register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina'], db_name='stock_meta',
                 schema_base=StockMetaBase)
 
 __all__ = ['Stock', 'Index', 'Block', 'Etf', 'IndexStock', 'BlockStock', 'EtfStock', 'StockDetail']

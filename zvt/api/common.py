@@ -8,7 +8,6 @@ from sqlalchemy import exists, and_
 
 from zvdata import IntervalLevel
 from zvdata.api import decode_entity_id
-from zvdata.contract import get_db_session
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvdata.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
@@ -96,31 +95,6 @@ def get_recent_report_period(the_date=now_pd_timestamp(), step=0):
     return to_report_period_type(get_recent_report_date(the_date, step=step))
 
 
-def get_stock_category(stock_id, session=None):
-    local_session = False
-    if not session:
-        session = get_db_session(db_name='meta')
-        local_session = True
-    try:
-        return session.query(Index).filter(Index.stocks.any(id=stock_id)).all()
-    except Exception:
-        raise
-    finally:
-        if local_session:
-            session.close()
-
-
-def get_company_type(stock_domain: Stock):
-    industries = stock_domain.industries.split(',')
-    if ('银行' in industries) or ('信托' in industries):
-        return CompanyType.yinhang
-    if '保险' in industries:
-        return CompanyType.baoxian
-    if '证券' in industries:
-        return CompanyType.quanshang
-    return CompanyType.qiye
-
-
 def data_exist(session, schema, id):
     return session.query(exists().where(and_(schema.id == id))).scalar()
 
@@ -179,22 +153,6 @@ def generate_kdata_id(entity_id, timestamp, level):
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))
     else:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
-
-
-def stock_id_in_index(stock_id, index_id, session=None, data_schema=IndexStock, provider='eastmoney'):
-    the_id = '{}_{}'.format(index_id, stock_id)
-    local_session = False
-    if not session:
-        session = get_db_session(provider=provider, data_schema=data_schema)
-        local_session = True
-
-    try:
-        return data_exist(session=session, schema=data_schema, id=the_id)
-    except Exception:
-        raise
-    finally:
-        if local_session:
-            session.close()
 
 
 def to_jq_report_period(timestamp):
@@ -279,7 +237,7 @@ def portfolio_relate_stock(df, portfolio):
 
 
 # etf半年报和年报才有全量的持仓信息，故根据离timestamp最近的报表(年报 or 半年报)来确定持仓
-def get_etf_stocks(code, timestamp=now_pd_timestamp(), provider=None):
+def get_etf_stocks(code=None, timestamp=now_pd_timestamp(), provider=None):
     latests: List[EtfStock] = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
                                                   order=EtfStock.timestamp.desc(), limit=1, return_type='domain')
     if latests:

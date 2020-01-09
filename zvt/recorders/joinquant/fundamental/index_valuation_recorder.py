@@ -31,9 +31,15 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
 
         date_range = pd.date_range(start=start, end=end, freq='1D').tolist()
         for date in date_range:
+            # etf包含的个股和比例
             etf_stock_df = get_etf_stocks(code=entity.code, timestamp=date, provider=self.provider)
+
+            all_pct = etf_stock_df['proportion'].sum()
+
+            if all_pct >= 1.1 or all_pct <= 0.9:
+                self.logger.info(f'etf:{entity.id}  date:{date} proportion sum:{all_pct}')
+
             if pd_is_not_null(etf_stock_df):
-                # etf包含的个股和比例
                 etf_stock_df.set_index('stock_id', inplace=True)
 
                 # 个股的估值数据
@@ -42,14 +48,11 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
                                                                index='entity_id')
 
                 if pd_is_not_null(stock_valuation_df):
-                    df = pd.concat([stock_valuation_df, etf_stock_df['proportion']], axis=1, sort=False)
-                    self.logger.info(f'etf:{entity.id} date:{date} stock count: {len(etf_stock_df)}')
+                    # 暂时只支持 简单算术平均估值，理由：模糊的正确比精确的错误有用
+                    # A股个股的市值往往相差很大，按市值权重的话，这样的估值很难反映整体
+                    self.logger.info(
+                        f'etf:{entity.id} date:{date} stock count: {len(etf_stock_df)},valuation count:{len(stock_valuation_df)}')
 
-                    df = df.dropna(subset=['proportion'])
-
-                    self.logger.info(f'etf:{entity.id} date:{date} stock value count: {len(df)}')
-
-                    self.logger.info(f'etf:{entity.id}  date:{date} proportion sum:{df["proportion"].sum()}')
                     #     # 静态pe
                     #     pe = Column(Float)
                     #     # 动态pe
@@ -61,32 +64,29 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
                     #     # 市现率
                     #     pcf = Column(Float)
 
-                    # 加权平均
-                    # df = df[['pe', 'pe_ttm', 'pb', 'ps', 'pcf']].multiply(df["proportion"], axis="index")
-
-                    result_df = pd.DataFrame()
+                    se = pd.Series({'id': "{}_{}".format(entity.id, date),
+                                    'entity_id': entity.id,
+                                    'timestamp': date,
+                                    'code': entity.code,
+                                    'name': entity.name})
                     for col in ['pe', 'pe_ttm', 'pb', 'ps', 'pcf']:
                         # PE=P/E
-                        positive_df = df[col][df[col] > 0].multiply(df["proportion"], axis="index").sum()
-                        positive_proportion = df[df[col] > 0]['proportion'].sum()
+                        # 这里的算法为：将其价格都设为1，算出总earning,再相除
+                        positive_df = stock_valuation_df[col][stock_valuation_df[col] > 0]
+                        positive_count = len(positive_df)
 
-                        negative_df = df[col][df[col] < 0].multiply(df["proportion"], axis="index").sum()
-                        negative_proportion = df[df[col] < 0]['proportion'].sum()
+                        negative_df = stock_valuation_df[col][stock_valuation_df[col] < 0]
+                        negative_count = len(negative_df)
 
-                        # FIXME:handle negative latter
-                        se = positive_df
-                        if pd_is_not_null(result_df):
-                            result_df[col] = se
-                        else:
-                            result_df = pd.DataFrame(data={col: [se]})
+                        result = (positive_count + negative_count) / (
+                                positive_count / positive_df.mean() + negative_count / negative_df.mean())
 
-                    result_df['id'] = "{}_{}".format(entity.id, date)
-                    result_df['entity_id'] = entity.id
-                    result_df['timestamp'] = date
-                    result_df['code'] = entity.code
-                    result_df['name'] = entity.name
+                        se[col] = result
+                    df = se.to_frame().T
 
-                    df_to_db(df=result_df, data_schema=self.data_schema, provider=self.provider,
+                    self.logger.info(df)
+
+                    df_to_db(df=df, data_schema=self.data_schema, provider=self.provider,
                              force_update=self.force_update)
 
         return None

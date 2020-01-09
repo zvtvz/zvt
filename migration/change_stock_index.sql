@@ -1,17 +1,10 @@
-alter table stock_index
-	add entity_id VARCHAR(128);
-
-alter table stock_index
+alter table index_stock
+    add report_period VARCHAR(32);
+alter table index_stock
 	add report_date DATETIME;
-
-alter table stock_index
-	add report_period VARCHAR(128);
-
-alter table stock_index
+alter table index_stock
 	add proportion FLOAT;
-
-alter table stock_index
-	add shares FLOAT ;
-
-alter table stock_index
+alter table index_stock
+	add shares FLOAT;
+alter table index_stock
 	add market_cap FLOAT;

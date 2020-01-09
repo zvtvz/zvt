@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvdata import IntervalLevel
-from zvt.api.quote import get_indices, get_kdata
-from zvt.domain import BlockCategory
-
-
-def test_get_indices():
-    df = get_indices(provider='sina', block_category=BlockCategory.industry)
-    print(df)
-
-    df = get_indices(provider='eastmoney', block_category=BlockCategory.industry)
-    print(df)
+from zvt.api.quote import get_kdata
 
 
 def test_jq_1mon_kdata():

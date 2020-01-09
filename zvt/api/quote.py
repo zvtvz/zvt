@@ -10,46 +10,6 @@ from zvt.domain import BlockCategory, BlockMoneyFlow
 from zvt.domain.meta.stock_meta import Index
 
 
-def get_indices(provider: str = 'sina',
-                block_category: Union[str, BlockCategory] = 'concept',
-                return_type: str = 'df') -> object:
-    """
-    get indices/blocks on block_category
-
-    :param provider:
-    :type provider:
-    :param block_category:
-    :type block_category:
-    :param return_type:
-    :type return_type:
-    :return:
-    :rtype:
-    """
-    if type(block_category) == BlockCategory:
-        block_category = block_category.value
-
-    session = get_db_session(provider=provider, data_schema=Index)
-
-    filters = [Index.category == block_category]
-    blocks = get_entities(entity_type='index', provider=provider, filters=filters,
-                          session=session, return_type=return_type)
-    return blocks
-
-
-get_blocks = get_indices
-
-
-def in_filters(col, values):
-    filters = None
-    if values:
-        for value in values:
-            if filters:
-                filters |= (col == value)
-            else:
-                filters = (col == value)
-    return filters
-
-
 def get_securities_in_blocks(provider: str = 'eastmoney',
                              categories: List[Union[str, BlockCategory]] = ['concept', 'industry'],
                              names=None, codes=None, ids=None):
