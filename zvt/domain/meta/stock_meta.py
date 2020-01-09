@@ -20,16 +20,17 @@ class BaseSecurity(EntityMixin):
 class BasePortfolio(BaseSecurity):
     @classmethod
     def get_stocks(cls,
-                   code=None, timestamp=now_pd_timestamp(), provider=None):
+                   code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
         """
 
         :param code: portfolio(etf/block/index...) code
+        :param codes: portfolio(etf/block/index...) codes
         :param timestamp:
         :param provider:
         :return:
         """
         portfolio_stock: BasePortfolioStock = eval(f'{cls.__name__}Stock')
-        return portfolio_stock.query_data(provider=provider, code=code)
+        return portfolio_stock.query_data(provider=provider, code=code, codes=codes, ids=ids)
 
 
 # 个股
@@ -67,9 +68,9 @@ class Etf(StockMetaBase, BasePortfolio):
     category = Column(String(length=64))
 
     @classmethod
-    def get_stocks(cls, code=None, timestamp=now_pd_timestamp(), provider=None):
+    def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
         from zvt.api.common import get_etf_stocks
-        return get_etf_stocks(code=code, timestamp=timestamp, provider=provider)
+        return get_etf_stocks(code=code, codes=codes, ids=ids, timestamp=timestamp, provider=provider)
 
 
 # 组合(Etf,Index,Block)和个股(Stock)的关系 应该继承自该类

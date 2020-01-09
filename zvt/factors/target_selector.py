@@ -7,10 +7,11 @@ import pandas as pd
 from pandas import DataFrame
 
 from zvdata import IntervalLevel
+from zvdata.api import get_entity_schema
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp
-from zvt.api.quote import get_securities_in_blocks
+from zvt.domain.meta.stock_meta import BasePortfolio
 from zvt.drawer.drawer import Drawer
 from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 
@@ -165,13 +166,14 @@ class TargetSelector(object):
     def in_block(self, df, target_type: TargetType = TargetType.open_long):
         se = pd.Series(index=df.index)
         for index, row in df.iterrows():
-            portfolio = self.portfolio_selector.get_targets(index[1], target_type=target_type)
+            portfolios = self.portfolio_selector.get_targets(index[1], target_type=target_type)
 
             se[index] = False
-            if portfolio:
-                securities = get_securities_in_blocks(provider=self.portfolio_selector.provider, ids=portfolio)
-                securities = self.portfolio_selector
-                if index[0] in securities:
+            if portfolios:
+                portfolio_schema: BasePortfolio = get_entity_schema(self.portfolio_selector.entity_type)
+                stock_df = portfolio_schema.get_stocks(provider=self.portfolio_selector.provider, ids=portfolios,
+                                                       timestamp=index[1])
+                if index[0] in stock_df['stock_id']:
                     se[index] = True
 
         return se
