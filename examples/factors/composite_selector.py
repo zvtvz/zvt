@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from examples.factors.technical_selector import TechnicalSelector
-from zvdata import now_pd_timestamp, IntervalLevel
+from zvdata import IntervalLevel
+from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_blocks
 from zvt.factors import IndexMoneyFlowFactor
 from zvt.factors.target_selector import TargetSelector
