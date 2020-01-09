@@ -237,13 +237,13 @@ def portfolio_relate_stock(df, portfolio):
 
 
 # etf半年报和年报才有全量的持仓信息，故根据离timestamp最近的报表(年报 or 半年报)来确定持仓
-def get_etf_stocks(code=None, timestamp=now_pd_timestamp(), provider=None):
+def get_etf_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
     latests: List[EtfStock] = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
                                                   order=EtfStock.timestamp.desc(), limit=1, return_type='domain')
     if latests:
         latest_record = latests[0]
         # 获取最新的报表
-        df = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
+        df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids, dend_timestamp=timestamp,
                                  filters=[EtfStock.report_date == latest_record.report_date])
         # 最新的为年报或者半年报
         if latest_record.report_period == ReportPeriod.year or latest_record.report_period == ReportPeriod.half_year:
@@ -252,7 +252,7 @@ def get_etf_stocks(code=None, timestamp=now_pd_timestamp(), provider=None):
         else:
             report_date = get_recent_report_date(latest_record.report_date)
 
-            pre_df = EtfStock.query_data(provider=provider, code=code, end_timestamp=timestamp,
+            pre_df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids, end_timestamp=timestamp,
                                          filters=[EtfStock.report_date == to_pd_timestamp(report_date)])
             df = df.append(pre_df)
             # 保留最新的持仓

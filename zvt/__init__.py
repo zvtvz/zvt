@@ -90,7 +90,7 @@ def init_env(zvt_home: str) -> None:
     pprint.pprint(zvt_env)
 
 
-if True:
+if os.getenv('TESTING_ZVT'):
     init_env(zvt_home=ZVT_TEST_HOME)
 
     # init the sample data if need
