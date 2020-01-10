@@ -30,7 +30,13 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        try:
+            auth(zvt_env['jq_username'], zvt_env['jq_password'])
+            self.fetch_jq_timestamp = True
+        except Exception as e:
+            self.fetch_jq_timestamp = False
+            self.logger.warning(
+                f'joinquant account not ok,the timestamp(publish date) for finance would be not correct', e)
 
     def init_timestamps(self, entity):
         param = {
@@ -119,6 +125,9 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
             self.session.commit()
 
     def on_finish_entity(self, entity):
+        if not self.fetch_jq_timestamp:
+            return
+
         # fill the timestamp for report published date
         the_data_list = get_data(data_schema=self.data_schema,
                                  provider=self.provider,
