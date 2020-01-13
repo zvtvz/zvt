@@ -6,7 +6,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log
-from zvt.recorders.common.china_stock_list_spider import ChinaStockListRecorder
+from zvt.recorders.exchange.china_stock_list_spider import ChinaStockListRecorder
 from zvt.recorders.eastmoney.meta.china_stock_category_recorder import ChinaStockCategoryRecorder
 from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import ChinaStockMetaRecorder
 

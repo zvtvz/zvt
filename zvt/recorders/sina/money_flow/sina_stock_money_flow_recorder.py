@@ -11,7 +11,7 @@ from zvt.domain import StockMoneyFlow, Stock
 
 
 class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
-    entity_provider = 'sina'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'sina'
