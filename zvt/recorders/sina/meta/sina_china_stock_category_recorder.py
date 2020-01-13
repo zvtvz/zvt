@@ -86,7 +86,7 @@ class SinaChinaBlockRecorder(Recorder):
                         df = pd.DataFrame.from_records(the_list)
                         df_to_db(data_schema=self.data_schema, df=df, provider=self.provider)
 
-                    self.logger.info('finish recording index:{},{}'.format(block.category, block.name))
+                    self.logger.info('finish recording BlockStock:{},{}'.format(block.category, block.name))
 
                 except Exception as e:
                     self.logger.error("error:,resp.text:", e, resp.text)

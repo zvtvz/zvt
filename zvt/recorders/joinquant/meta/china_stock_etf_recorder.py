@@ -116,5 +116,5 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 __all__ = ['JqChinaStockMetaRecorder', 'JqChinaStockEtfPortfolioRecorder']
 
 if __name__ == '__main__':
-    # JqChinaStockMetaRecorder().run()
-    JqChinaStockEtfPortfolioRecorder(codes=SAMPLE_ETF_CODES).run()
+    JqChinaStockMetaRecorder().run()
+    # JqChinaStockEtfPortfolioRecorder(codes=SAMPLE_ETF_CODES).run()
