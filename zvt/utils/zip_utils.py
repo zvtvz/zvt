@@ -25,8 +25,8 @@ def zip_dir(src_dir,
     for folder, subfolders, files in os.walk(src_dir):
         for file in files:
             the_path = os.path.join(folder, file)
-            if 'zvt_business.db' in the_path:
-                continue
+            # if 'zvt_business.db' in the_path:
+            #     continue
             print("zip {}".format(the_path))
             the_zip_file.write(the_path,
                                os.path.relpath(the_path, src_dir),

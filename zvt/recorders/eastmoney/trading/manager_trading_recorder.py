@@ -33,6 +33,8 @@ class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
         return the_id
 
 
+__all__ = ['ManagerTradingRecorder']
+
 if __name__ == '__main__':
     # init_log('manager_trading.log')
 

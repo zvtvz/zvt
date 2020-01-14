@@ -13,12 +13,11 @@ from zvt import init_log, zvt_env
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.api.quote import get_kdata
 from zvt.domain import Stock, StockKdataCommon
-from zvt.recorders.joinquant import to_jq_trading_level, to_jq_entity_id
+from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 
 
-class ChinaStockKdataRecorder(FixedCycleDataRecorder):
-    # 复用eastmoney的股票列表
-    entity_provider = 'eastmoney'
+class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     # 数据来自jq
@@ -137,6 +136,8 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
         return None
 
 
+__all__ = ['JqChinaStockKdataRecorder']
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
@@ -148,4 +149,4 @@ if __name__ == '__main__':
     codes = args.codes
 
     init_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    ChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
+    JqChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()

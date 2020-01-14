@@ -120,6 +120,8 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
         return result_list
 
 
+__all__ = ['SinaStockMoneyFlowRecorder']
+
 if __name__ == '__main__':
     SinaStockMoneyFlowRecorder(codes=['000338']).run()
     # SinaStockMoneyFlowRecorder().run()

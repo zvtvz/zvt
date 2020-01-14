@@ -137,7 +137,7 @@ class BaseEastmoneyRecorder(object):
 
 
 class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'
@@ -163,7 +163,7 @@ class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecor
 
 
 class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'
@@ -205,7 +205,7 @@ class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder
 
 
 class EastmoneyMoreDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'

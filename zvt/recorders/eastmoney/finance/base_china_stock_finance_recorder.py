@@ -11,7 +11,7 @@ from zvt.api.common import to_jq_report_period
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
-from zvt.recorders.joinquant import to_jq_entity_id
+from zvt.recorders.joinquant.common import to_jq_entity_id
 
 
 class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):

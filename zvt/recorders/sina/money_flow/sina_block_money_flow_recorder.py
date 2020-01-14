@@ -104,6 +104,8 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
         return result_list
 
 
+__all__ = ['SinaBlockMoneyFlowRecorder']
+
 if __name__ == '__main__':
     SinaBlockMoneyFlowRecorder(codes=['gn_5Ggn']).run()
     # SinaIndexMoneyFlowRecorder().run()

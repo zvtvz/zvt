@@ -4,11 +4,11 @@ import requests
 
 from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
+from zvdata.utils.utils import json_callback_param
 from zvt.api.common import china_stock_code_to_id
 from zvt.api.quote import get_entities
 from zvt.domain import BlockStock, BlockCategory
 from zvt.domain.meta.stock_meta import Index
-from zvdata.utils.utils import json_callback_param
 
 
 class ChinaStockCategoryRecorder(Recorder):
@@ -79,6 +79,8 @@ class ChinaStockCategoryRecorder(Recorder):
                 self.logger.error("error:,resp.text:", e, resp.text)
             self.sleep()
 
+
+__all__ = ['ChinaStockCategoryRecorder']
 
 if __name__ == '__main__':
     # init_log('china_stock_category.log')

@@ -7,6 +7,11 @@ from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float, pct_to_float
 from zvt.api.quote import get_entities
 from zvt.domain.meta.stock_meta import StockDetail
+from zvt.recorders.exchange.china_stock_list_spider import ChinaStockListRecorder
+
+
+class EastmoneyChinaStockListRecorder(ChinaStockListRecorder):
+    data_schema = StockDetail
 
 
 class ChinaStockMetaRecorder(Recorder):
@@ -16,10 +21,13 @@ class ChinaStockMetaRecorder(Recorder):
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, codes=None) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
+        # get list at first
+        EastmoneyChinaStockListRecorder(provider=self.provider).run()
+
         self.codes = codes
         if not self.force_update:
             self.entities = get_entities(session=self.session,
-                                         entity_type='stock',
+                                         entity_type='stock_detail',
                                          exchanges=['sh', 'sz'],
                                          codes=self.codes,
                                          filters=[StockDetail.profile.is_(None)],
@@ -77,6 +85,8 @@ class ChinaStockMetaRecorder(Recorder):
 
             self.sleep()
 
+
+__all__ = ['ChinaStockMetaRecorder']
 
 if __name__ == '__main__':
     # init_log('china_stock_meta.log')
