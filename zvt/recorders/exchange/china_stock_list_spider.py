@@ -5,7 +5,7 @@ import io
 import pandas as pd
 import requests
 
-from zvdata.api import persist_entities
+from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvt.domain import Stock
@@ -60,7 +60,7 @@ class ChinaStockListRecorder(Recorder):
             df['timestamp'] = df['list_date']
             df = df.dropna(axis=0, how='any')
             df = df.drop_duplicates(subset=('id'), keep='last')
-            persist_entities(df, provider=self.provider)
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=False)
             self.logger.info(df.tail())
             self.logger.info("persist stock list successs")
 

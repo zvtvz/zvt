@@ -29,6 +29,8 @@ class HolderTradingRecorder(EastmoneyMoreDataRecorder):
         return the_id
 
 
+__all__ = ['HolderTradingRecorder']
+
 if __name__ == '__main__':
     # init_log('holder_trading.log')
 

@@ -91,6 +91,8 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
         return kdatas
 
 
+__all__ = ['ChinaStockKdataRecorder']
+
 if __name__ == '__main__':
     recorder = ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON)
     recorder.run()

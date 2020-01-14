@@ -68,5 +68,7 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
         return None
 
 
+__all__ = ['MarginTradingSummaryRecorder']
+
 if __name__ == '__main__':
     MarginTradingSummaryRecorder(batch_size=30).run()

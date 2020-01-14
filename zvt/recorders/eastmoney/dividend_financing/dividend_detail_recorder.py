@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from zvt.domain import DividendDetail
-
-from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.domain import DividendDetail
+from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
 
 
 class DividendDetailRecorder(EastmoneyPageabeDataRecorder):
@@ -27,6 +26,8 @@ class DividendDetailRecorder(EastmoneyPageabeDataRecorder):
             "dividend": ("FengHongFangAn", str)
         }
 
+
+__all__ = ['DividendDetailRecorder']
 
 if __name__ == '__main__':
     # init_log('dividend_detail.log')

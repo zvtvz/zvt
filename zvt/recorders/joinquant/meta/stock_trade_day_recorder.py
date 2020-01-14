@@ -10,8 +10,7 @@ from zvt.domain import StockTradeDay, Stock
 
 
 class StockTradeDayRecorder(TimeSeriesDataRecorder):
-    # 复用eastmoney的股票列表
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'joinquant'

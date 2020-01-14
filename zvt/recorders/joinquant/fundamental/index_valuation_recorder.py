@@ -92,6 +92,8 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
         return None
 
 
+__all__ = ['JqChinaEtfValuationRecorder']
+
 if __name__ == '__main__':
     # 上证50
     JqChinaEtfValuationRecorder(codes=['510050'], start_timestamp='2005-02-23').run()

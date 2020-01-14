@@ -70,5 +70,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         return None
 
 
+__all__ = ['CrossMarketSummaryRecorder']
+
 if __name__ == '__main__':
     CrossMarketSummaryRecorder(batch_size=30).run()
