@@ -22,7 +22,7 @@ def select_by_finance(timestamp=now_pd_timestamp(), entity_ids=None):
                                      columns=[CashFlowStatement.report_period,
                                               CashFlowStatement.net_op_cash_flows],
                                      filters=[CashFlowStatement.net_op_cash_flows > 0],
-                                     col_threshold={'net_op_cash_flows': 100000000})
+                                     col_period_threshold={'net_op_cash_flows': 100000000})
 
     my_selector.add_filter_factor(good_factor1)
     my_selector.add_filter_factor(good_factor2)

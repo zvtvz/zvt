@@ -1,6 +1,6 @@
 import pandas as pd
 
-from zvdata.api import persist_entities
+from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.domain.meta.coin_meta import Coin
@@ -55,7 +55,7 @@ class CoinMetaRecorder(Recorder):
 
                 # 存储该交易所的数字货币列表
                 if not df.empty:
-                    persist_entities(df=df, entity_type='coin', provider=self.provider)
+                    df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=True)
                 self.logger.info("init_markets for {} success".format(exchange_str))
             except Exception as e:
                 self.logger.exception(f"init_markets for {exchange_str} failed", e)
