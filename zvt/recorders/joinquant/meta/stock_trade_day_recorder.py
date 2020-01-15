@@ -34,6 +34,8 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
 
+__all__ = ['StockTradeDayRecorder']
+
 if __name__ == '__main__':
     r = StockTradeDayRecorder()
     r.run()
