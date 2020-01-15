@@ -11,9 +11,8 @@ from zvt.domain import EtfStock, Stock, Etf
 from zvt.recorders.joinquant.common import to_entity_id
 
 
-class JqChinaStockMetaRecorder(Recorder):
+class BaseJqChinaMetaRecorder(Recorder):
     provider = 'joinquant'
-    data_schema = Etf
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
@@ -41,6 +40,10 @@ class JqChinaStockMetaRecorder(Recorder):
 
         return df
 
+
+class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
+    data_schema = Stock
+
     def run(self):
         # 抓取股票列表
         df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
@@ -49,13 +52,19 @@ class JqChinaStockMetaRecorder(Recorder):
         self.logger.info(df_stock)
         self.logger.info("persist stock list success")
 
+        logout()
+
+
+class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
+    data_schema = Etf
+
+    def run(self):
         # 抓取etf列表
         df_index = self.to_zvt_entity(get_all_securities(['etf']), entity_type='etf', category='etf')
         df_to_db(df_index, data_schema=Etf, provider=self.provider)
 
         self.logger.info(df_index)
         self.logger.info("persist etf list success")
-
         logout()
 
 
@@ -110,8 +119,8 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['JqChinaStockMetaRecorder', 'JqChinaStockEtfPortfolioRecorder']
+__all__ = ['JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder']
 
 if __name__ == '__main__':
-    JqChinaStockMetaRecorder().run()
+    JqChinaStockRecorder().run()
     # JqChinaStockEtfPortfolioRecorder(codes=SAMPLE_ETF_CODES).run()
