@@ -109,7 +109,8 @@ class Trader(object):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  trader_name: str = None,
                  real_time: bool = False,
-                 kdata_use_begin_time: bool = False) -> None:
+                 kdata_use_begin_time: bool = False,
+                 draw_result: bool = True) -> None:
 
         assert self.entity_type is not None
 
@@ -152,6 +153,7 @@ class Trader(object):
             assert self.end_timestamp >= now_pd_timestamp()
 
         self.kdata_use_begin_time = kdata_use_begin_time
+        self.draw_result = draw_result
 
         self.account_service = SimAccountService(trader_name=self.trader_name,
                                                  timestamp=self.start_timestamp,
@@ -309,12 +311,13 @@ class Trader(object):
 
     def on_finish(self):
         # show the result
-        import plotly.io as pio
-        pio.renderers.default = "browser"
-        reader = AccountReader(trader_names=[self.trader_name])
-        drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
-                                             category_field='trader_name'))
-        drawer.draw_line()
+        if self.draw_result:
+            import plotly.io as pio
+            pio.renderers.default = "browser"
+            reader = AccountReader(trader_names=[self.trader_name])
+            drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
+                                                 category_field='trader_name'))
+            drawer.draw_line()
 
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level

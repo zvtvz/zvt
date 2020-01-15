@@ -14,10 +14,7 @@ from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 
 class ChinaStockListRecorder(Recorder):
     data_schema = Stock
-
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, provider='exchange') -> None:
-        self.provider = provider
-        super().__init__(batch_size, force_update, sleeping_time)
+    provider = 'exchange'
 
     def run(self):
         url = 'http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=1'
@@ -68,5 +65,5 @@ class ChinaStockListRecorder(Recorder):
 __all__ = ['ChinaStockListRecorder']
 
 if __name__ == '__main__':
-    spider = ChinaStockListRecorder(provider='exchange')
+    spider = ChinaStockListRecorder()
     spider.run()

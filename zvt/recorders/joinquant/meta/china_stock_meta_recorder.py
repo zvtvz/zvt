@@ -8,8 +8,7 @@ from zvdata.utils.pd_utils import pd_is_not_null
 from zvt import zvt_env
 from zvt.api.common import china_stock_code_to_id, to_report_period_type, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf
-from zvt.recorders.joinquant import to_entity_id
-from zvt.settings import SAMPLE_ETF_CODES
+from zvt.recorders.joinquant.common import to_entity_id
 
 
 class JqChinaStockMetaRecorder(Recorder):
@@ -57,8 +56,6 @@ class JqChinaStockMetaRecorder(Recorder):
         self.logger.info(df_index)
         self.logger.info("persist etf list success")
 
-    def on_finish(self):
-        super().on_finish()
         logout()
 
 

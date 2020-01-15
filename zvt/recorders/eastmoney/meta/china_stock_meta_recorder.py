@@ -12,6 +12,7 @@ from zvt.recorders.exchange.china_stock_list_spider import ChinaStockListRecorde
 
 class EastmoneyChinaStockListRecorder(ChinaStockListRecorder):
     data_schema = StockDetail
+    provider = 'eastmoney'
 
 
 class ChinaStockMetaRecorder(Recorder):
@@ -22,7 +23,7 @@ class ChinaStockMetaRecorder(Recorder):
         super().__init__(batch_size, force_update, sleeping_time)
 
         # get list at first
-        EastmoneyChinaStockListRecorder(provider=self.provider).run()
+        EastmoneyChinaStockListRecorder().run()
 
         self.codes = codes
         if not self.force_update:
@@ -86,7 +87,7 @@ class ChinaStockMetaRecorder(Recorder):
             self.sleep()
 
 
-__all__ = ['ChinaStockMetaRecorder']
+__all__ = ['EastmoneyChinaStockListRecorder', 'ChinaStockMetaRecorder']
 
 if __name__ == '__main__':
     # init_log('china_stock_meta.log')
