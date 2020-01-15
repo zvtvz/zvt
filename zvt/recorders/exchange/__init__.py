@@ -1,7 +1,8 @@
 import pandas as pd
 
-from zvdata.api import persist_entities
+from zvdata.api import df_to_db
 from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.domain import Index
 from zvt.recorders.exchange.china_etf_list_spider import *
 from zvt.recorders.exchange.china_index_list_spider import *
 from zvt.recorders.exchange.china_stock_list_spider import *
@@ -116,7 +117,7 @@ def init_main_index(provider='exchange'):
         item['timestamp'] = to_pd_timestamp(item['timestamp'])
     df = pd.DataFrame(CHINA_STOCK_MAIN_INDEX)
     # print(df)
-    persist_entities(df, entity_type='index', provider=provider)
+    df_to_db(df=df, data_schema=Index, provider=provider, force_update=False)
 
 
 init_main_index()

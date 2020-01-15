@@ -7,11 +7,10 @@ import pandas as pd
 from pandas import DataFrame
 
 from zvdata import IntervalLevel
-from zvdata.api import get_entity_schema
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp
-from zvt.domain.meta.stock_meta import BasePortfolio
+from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
 from zvt.drawer.drawer import Drawer
 from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 
@@ -27,8 +26,8 @@ class TargetType(Enum):
 class TargetSelector(object):
     def __init__(self,
                  entity_ids=None,
-                 entity_type='stock',
-                 exchanges=['sh', 'sz'],
+                 entity_schema=Stock,
+                 exchanges=None,
                  codes=None,
                  the_timestamp=None,
                  start_timestamp=None,
@@ -39,14 +38,14 @@ class TargetSelector(object):
                  provider='eastmoney',
                  portfolio_selector=None) -> None:
         self.entity_ids = entity_ids
-        self.entity_type = entity_type
+        self.entity_schema = entity_schema
         self.exchanges = exchanges
         self.codes = codes
         self.provider = provider
         self.portfolio_selector: TargetSelector = portfolio_selector
 
         if self.portfolio_selector:
-            assert self.portfolio_selector.entity_type in ['etf', 'block', 'index']
+            assert self.portfolio_selector.entity_schema in [Etf, Block, Index]
 
         if the_timestamp:
             self.the_timestamp = to_pd_timestamp(the_timestamp)
@@ -70,11 +69,11 @@ class TargetSelector(object):
         self.open_long_df: DataFrame = None
         self.open_short_df: DataFrame = None
 
-        self.init_factors(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges, codes=codes,
+        self.init_factors(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
                           the_timestamp=the_timestamp, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                           level=self.level)
 
-    def init_factors(self, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
+    def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
         pass
 
@@ -170,9 +169,9 @@ class TargetSelector(object):
 
             se[index] = False
             if portfolios:
-                portfolio_schema: BasePortfolio = get_entity_schema(self.portfolio_selector.entity_type)
-                stock_df = portfolio_schema.get_stocks(provider=self.portfolio_selector.provider, ids=portfolios,
-                                                       timestamp=index[1])
+                stock_df = self.portfolio_selector.entity_schema.get_stocks(provider=self.portfolio_selector.provider,
+                                                                            ids=portfolios,
+                                                                            timestamp=index[1])
                 if index[0] in stock_df['stock_id']:
                     se[index] = True
 
@@ -235,8 +234,7 @@ class TargetSelector(object):
         df['target_type'] = target_type.value
 
         if pd_is_not_null(df):
-            drawer = Drawer(
-                NormalData(df=df, annotation_df=annotation_df, time_field='timestamp', is_timeseries=True))
+            drawer = Drawer(NormalData(df=df))
 
             drawer.draw_table(render=render, file_name=file_name, width=width, height=height, title=title,
                               keep_ui_state=keep_ui_state)

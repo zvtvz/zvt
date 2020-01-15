@@ -7,11 +7,11 @@ import demjson
 import pandas as pd
 import requests
 
-from zvdata.api import persist_entities, df_to_db
+from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.domain import EtfStock, BlockCategory
+from zvt.domain import EtfStock, BlockCategory, Etf
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER
 
 
@@ -68,7 +68,7 @@ class ChinaETFListSpider(Recorder):
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        persist_entities(df, entity_type='etf', provider=self.provider)
+        df_to_db(df=df, data_schema=Etf, provider=self.provider, force_update=False)
 
     def download_sh_etf_component(self, df: pd.DataFrame):
         """

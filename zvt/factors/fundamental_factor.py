@@ -5,103 +5,78 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel
-from zvdata.utils.pd_utils import normal_index_df
-from zvdata.utils.time_utils import now_pd_timestamp
-from zvt.domain import FinanceFactor, BlockMoneyFlow
-from zvt.factors import Transformer, Accumulator
-from zvt.factors.algorithm import Scorer, RankScorer
-from zvt.factors.factor import Factor, ScoreFactor
+from zvdata import IntervalLevel, Mixin, EntityMixin
+from zvt.domain import FinanceFactor, BalanceSheet, Stock
+from zvt.factors import Transformer, Accumulator, FilterFactor
+from zvt.factors.factor import Factor
 
 
 class FinanceBaseFactor(Factor):
-    def __init__(self,
-                 data_schema=FinanceFactor,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'eastmoney',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = None,
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = None,
-                 transformer: Transformer = None,
-                 accumulator: Accumulator = None,
-                 persist_factor: bool = False,
-                 dry_run: bool = False) -> None:
+
+    def __init__(self, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, provider: str = None,
+                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
+                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
+                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
-        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
-                         persist_factor, dry_run)
+        super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
+                         category_field, time_field, computing_window, keep_all_timestamp, fill_method,
+                         effective_number, transformer, accumulator, persist_factor, dry_run)
 
 
-class GoodCompanyFactor(FinanceBaseFactor):
-    def __init__(self, data_schema=FinanceFactor,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = '2005-01-01',
-                 end_timestamp: Union[str, pd.Timestamp] = now_pd_timestamp(),
+class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
+
+    def __init__(self, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, provider: str = None,
+                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
+                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
                  # 高roe,高现金流,低财务杠杆，有增长
-                 columns: List = [FinanceFactor.roe,
+                 columns: List = (FinanceFactor.roe,
                                   FinanceFactor.op_income_growth_yoy,
                                   FinanceFactor.net_profit_growth_yoy,
                                   FinanceFactor.report_period,
                                   FinanceFactor.op_net_cash_flow_per_op_income,
                                   FinanceFactor.sales_net_cash_flow_per_op_income,
                                   FinanceFactor.current_ratio,
-                                  FinanceFactor.debt_asset_ratio],
-                 filters: List = [FinanceFactor.roe >= 0.02,
+                                  FinanceFactor.debt_asset_ratio),
+                 filters: List = (FinanceFactor.roe >= 0.02,
                                   FinanceFactor.op_income_growth_yoy >= 0.05,
                                   FinanceFactor.net_profit_growth_yoy >= 0.05,
                                   FinanceFactor.op_net_cash_flow_per_op_income >= 0.1,
                                   FinanceFactor.sales_net_cash_flow_per_op_income >= 0.3,
                                   FinanceFactor.current_ratio >= 1,
-                                  FinanceFactor.debt_asset_ratio <= 0.5],
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'eastmoney',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = None,
-                 keep_all_timestamp: bool = True,
-                 fill_method: str = 'ffill',
-                 effective_number: int = None,
-                 transformer: Transformer = None,
-                 accumulator: Accumulator = None,
-                 persist_factor: bool = False,
-                 dry_run: bool = False,
+                                  FinanceFactor.debt_asset_ratio <= 0.5),
+                 order: object = None, limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
+                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False,
                  # 3 years
                  window='1095d',
                  count=8,
-                 col_threshold={'roe': 0.02},
-                 handling_on_period=('roe',)) -> None:
+                 col_period_threshold={'roe': 0.02}) -> None:
+
         self.window = window
         self.count = count
-        self.col_threshold = col_threshold
-        # 对于根据年度计算才有意义的指标，比如roe,我们会对不同季度的值区别处理
-        self.handling_on_period = handling_on_period
 
-        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
-                         persist_factor, dry_run)
+        # 对于根据年度计算才有意义的指标，比如roe,我们会对不同季度的值区别处理,传入的参数为季度值
+        self.col_period_threshold = col_period_threshold
+        if self.col_period_threshold:
+            assert 'report_period' in columns or (data_schema.report_period in columns)
+
+        self.logger.info(f'using data_schema:{data_schema.__name__}')
+
+        super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
+                         category_field, time_field, computing_window, keep_all_timestamp, fill_method,
+                         effective_number, transformer, accumulator, persist_factor, dry_run)
 
     def do_compute(self):
         def filter_df(df):
@@ -118,17 +93,15 @@ class GoodCompanyFactor(FinanceBaseFactor):
                     mul = 1
 
                 filters = []
-                for col in self.col_threshold:
+                for col in self.col_period_threshold:
                     col_se = eval(f'row.{col}')
-                    if col in self.handling_on_period:
-                        filters.append(col_se >= mul * self.col_threshold[col])
-                    else:
-                        filters.append(col_se >= self.col_threshold[col])
+                    filters.append(col_se >= mul * self.col_period_threshold[col])
                 se[index] = list(accumulate(filters, func=operator.__and__))[-1]
 
             return se
 
-        self.factor_df = self.data_df.loc[lambda df: filter_df(df), :]
+        if self.col_period_threshold:
+            self.factor_df = self.data_df.loc[lambda df: filter_df(df), :]
 
         self.factor_df = pd.DataFrame(index=self.data_df.index, columns=['count'], data=1)
 
@@ -148,39 +121,14 @@ class GoodCompanyFactor(FinanceBaseFactor):
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))
 
 
-class IndexMoneyFlowFactor(ScoreFactor):
-    def __init__(self,
-                 codes=None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = [BlockMoneyFlow.net_inflows, BlockMoneyFlow.net_inflow_rate,
-                                  BlockMoneyFlow.net_main_inflows, BlockMoneyFlow.net_main_inflow_rate],
-                 filters: List = [],
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'sina',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10,
-                 scorer: Scorer = RankScorer(ascending=True)) -> None:
-        super().__init__(BlockMoneyFlow, None, 'index', None, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         keep_all_timestamp, fill_method, effective_number, scorer)
-
-    def do_compute(self):
-        self.pipe_df = self.data_df.copy()
-        self.pipe_df = self.pipe_df.groupby(level=1).rolling(window=20).mean()
-        self.pipe_df = self.pipe_df.reset_index(level=0, drop=True)
-        self.pipe_df = self.pipe_df.reset_index()
-        self.pipe_df = normal_index_df(self.pipe_df)
-
-        super().do_compute()
-
-
 if __name__ == '__main__':
-    f1 = GoodCompanyFactor(keep_all_timestamp=False)
-    print(f1.result_df)
+    # f1 = GoodCompanyFactor(keep_all_timestamp=False)
+    # print(f1.result_df)
+
+    # 高股息 低应收
+    factor2 = GoodCompanyFactor(data_schema=BalanceSheet,
+                                columns=[BalanceSheet.accounts_receivable],
+                                filters=[
+                                    BalanceSheet.accounts_receivable <= 0.2 * BalanceSheet.total_current_assets],
+                                col_period_threshold=None, keep_all_timestamp=False)
+    print(factor2.result_df)

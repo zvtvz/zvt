@@ -6,11 +6,11 @@ import demjson
 import pandas as pd
 import requests
 
-from zvdata.api import df_to_db, persist_entities
+from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.domain import IndexStock
+from zvt.domain import IndexStock, Index
 
 
 class ChinaIndexListSpider(Recorder):
@@ -252,7 +252,7 @@ class ChinaIndexListSpider(Recorder):
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')
 
-        persist_entities(df, entity_type='index', provider=self.provider)
+        df_to_db(df=df, data_schema=Index, provider=self.provider, force_update=False)
 
 
 __all__ = ['ChinaIndexListSpider']
