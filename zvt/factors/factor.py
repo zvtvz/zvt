@@ -192,23 +192,19 @@ class Factor(DataReader, DataListener):
             self.persist_result()
 
     def compute(self):
-        """
-        implement this to calculate factors normalize to [0,1]
-
-        """
         self.pre_compute()
 
         self.logger.info('do_compute start')
         start_time = time.time()
         self.do_compute()
         cost_time = time.time() - start_time
-        self.logger.info('do_compute finish,cost_time:{}'.format(cost_time))
+        self.logger.info('do_compute finished,cost_time:{}'.format(cost_time))
 
         self.logger.info('after_compute start')
         start_time = time.time()
         self.after_compute()
         cost_time = time.time() - start_time
-        self.logger.info('after_compute finish,cost_time:{}'.format(cost_time))
+        self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
 
     def __repr__(self) -> str:
         return self.result_df.__repr__()

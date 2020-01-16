@@ -32,5 +32,5 @@ __all__ = ['DividendDetailRecorder']
 if __name__ == '__main__':
     # init_log('dividend_detail.log')
 
-    recorder = DividendDetailRecorder(codes=['000999'])
+    recorder = DividendDetailRecorder(codes=['601318'])
     recorder.run()
