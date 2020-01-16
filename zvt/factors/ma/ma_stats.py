@@ -100,7 +100,7 @@ class MaAccumulator(Accumulator):
         if pd_is_not_null(acc_df):
             if pd_is_not_null(input_df):
                 df = input_df[set(acc_df.columns) & set(input_df.columns)]
-                acc_df = acc_df.append(df)
+                acc_df = acc_df.append(df, sort=False)
                 acc_df = acc_df.sort_index(level=[0, 1])
         else:
             acc_df = input_df
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     start = args.start
     end = args.end
 
-    entities = get_entities(provider='eastmoney', entity_type='stock', columns=[Stock.entity_id, Stock.code],
+    entities = get_entities(provider='joinquant', entity_type='stock', columns=[Stock.entity_id, Stock.code],
                             filters=[Stock.code >= start, Stock.code < end])
 
     codes = entities.index.to_list()
