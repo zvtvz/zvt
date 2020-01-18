@@ -1,309 +1,201 @@
-## FIXME:该文档需要更改，新版本某些结构已变
-## 1. 数据结构
-相关概念及关系
+## 数据扩展
+扩展zvt的数据步骤如何，下面以**个股估值数据**为例做一个说明。
 
-### 1.1 provider
-代表数据提供商,比如joinquant,eastmoney,sina,netease,ccxt
-### 1.2 store category
-数据的逻辑分类,物理上代表一个db,其下面一般有多个data schema,schema间可能有关系
-### 1.3 data schema
-数据的结构描述,物理上代表一个table
-
-#### *逻辑视图* ####
-<p align="center"><img src='./imgs/data_structure.png'/></p>
-
-#### *物理视图* ####
-<p align="center"><img src='./imgs/data_structure_physics.png'/></p>
-
-> 一般来说,data schema是稳定的,有些数据需要多个provider来一起生成,这时也认为数据只属于某个provider;某类数据有多个provider时,可以相互验证,api上只需要指定相应的provider即可
-
-## 2. 如何添加provider支持
-下面以joinquant来举个栗子
-
-### 2.1 添加joinquant provider ###
-
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L54) 
-
+## 1. 定义数据
+在domain package(或者其子package)下新建一个文件(module)valuation.py，内容如下：
 ```
-class Provider(enum.Enum):
-    # add
-    JOINQUANT = 'joinquant'
-```
+# -*- coding: utf-8 -*-
+from sqlalchemy import Column, String, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-### 2.2 添加store category ###
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/common.py#L59)  
+from zvdata import Mixin
+from zvdata.contract import register_schema
 
-```
-class StoreCategory(enum.Enum):
-    meta = 'meta'
-    stock_1m_kdata = 'stock_1m_kdata'
-    stock_5m_kdata = 'stock_5m_kdata'
-    stock_15m_kdata = 'stock_15m_kdata'
-    stock_1h_kdata = 'stock_1h_kdata'
-    stock_1d_kdata = 'stock_1d_kdata'
-    stock_1wk_kdata = 'stock_1wk_kdata'
+ValuationBase = declarative_base()
 
-    etf_1d_kdata = 'etf_1d_kdata'
-    index_1d_kdata = 'index_1d_kdata'
 
-    finance = 'finance'
-    dividend_financing = 'dividend_financing'
-    holder = 'holder'
-    trading = 'trading'
-    money_flow = 'money_flow'
-    macro = 'macro'
-    business = 'business'
+class StockValuation(ValuationBase, Mixin):
+    __tablename__ = 'stock_valuation'
 
-    coin_meta = 'coin_meta'
-    coin_tick_kdata = 'coin_tick_kdata'
-    coin_1m_kdata = 'coin_1m_kdata'
-    coin_5m_kdata = 'coin_5m_kdata'
-    coin_15m_kdata = 'coin_15m_kdata'
-    coin_1h_kdata = 'coin_1h_kdata'
-    coin_1d_kdata = 'coin_1d_kdata'
-    coin_1wk_kdata = 'coin_1wk_kdata'
-```
-
-### 2.3 设置provider支持的store category ###
-```
-
-provider_map_category = {
-    'eastmoney': [StoreCategory.meta,
-                         StoreCategory.finance,
-                         StoreCategory.dividend_financing,
-                         StoreCategory.holder,
-                         StoreCategory.trading],
-
-    Provider.SINA: [StoreCategory.meta,
-                    StoreCategory.etf_1d_kdata,
-                    StoreCategory.stock_1d_kdata,
-                    StoreCategory.money_flow],
-
-    Provider.NETEASE: [StoreCategory.stock_1d_kdata,
-                       StoreCategory.index_1d_kdata],
-
-    Provider.EXCHANGE: [StoreCategory.meta, StoreCategory.macro],
-
-    Provider.ZVT: [StoreCategory.business],
-
-    # TODO:would add other data from joinquant
-    Provider.JOINQUANT: [StoreCategory.stock_1m_kdata,
-                         StoreCategory.stock_5m_kdata,
-                         StoreCategory.stock_15m_kdata,
-                         StoreCategory.stock_1h_kdata,
-                         StoreCategory.stock_1d_kdata,
-                         StoreCategory.stock_1wk_kdata, ],
-
-    Provider.CCXT: [StoreCategory.coin_meta,
-                    StoreCategory.coin_tick_kdata,
-                    StoreCategory.coin_1m_kdata,
-                    StoreCategory.coin_5m_kdata,
-                    StoreCategory.coin_15m_kdata,
-                    StoreCategory.coin_1h_kdata,
-                    StoreCategory.coin_1d_kdata,
-                    StoreCategory.coin_1wk_kdata],
-}
-
-```
-### 2.4 添加data schema ###
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/domain/quote.py#L9)  
-个股日线行情数据结构
-```
-class StockKdataCommon(object):
-    id = Column(String(length=128), primary_key=True)
-    provider = Column(String(length=32))
-    timestamp = Column(DateTime)
-    security_id = Column(String(length=128))
     code = Column(String(length=32))
     name = Column(String(length=32))
-    # level = Column(Enum(IntervalLevel, values_callable=enum_value))
-    level = Column(String(length=32))
+    # 总股本(股)
+    capitalization = Column(Float)
+    # 公司已发行的普通股股份总数(包含A股，B股和H股的总股本)
+    circulating_cap = Column(Float)
+    # 市值
+    market_cap = Column(Float)
+    # 流通市值
+    circulating_market_cap = Column(Float)
+    # 换手率
+    turnover_ratio = Column(Float)
+    # 静态pe
+    pe = Column(Float)
+    # 动态pe
+    pe_ttm = Column(Float)
+    # 市净率
+    pb = Column(Float)
+    # 市销率
+    ps = Column(Float)
+    # 市现率
+    pcf = Column(Float)
 
-    open = Column(Float)
-    hfq_open = Column(Float)
-    qfq_open = Column(Float)
-    close = Column(Float)
-    hfq_close = Column(Float)
-    qfq_close = Column(Float)
-    high = Column(Float)
-    hfq_high = Column(Float)
-    qfq_high = Column(Float)
-    low = Column(Float)
-    hfq_low = Column(Float)
-    qfq_low = Column(Float)
-    volume = Column(Float)
-    turnover = Column(Float)
-    change_pct = Column(Float)
-    turnover_rate = Column(Float)
-    factor = Column(Float)
 
-class Stock1DKdata(Stock1DKdataBase, StockKdataCommon):
-    __tablename__ = 'stock_1d_kdata'
-```
+class EtfValuation(ValuationBase, Mixin):
+    __tablename__ = 'etf_valuation'
 
-### 2.5 实现相应的recorder
-[*代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/joinquant/quotes/jq_china_stock__kdata_recorder.py)  
-核心代码
-```
-#将聚宽数据转换为标准zvt数据
-class MyApiWrapper(ApiWrapper):
-    def request(self, url=None, method='get', param=None, path_fields=None):
-        security_item = param['security_item']
-        start_timestamp = param['start_timestamp']
-        end_timestamp = param['end_timestamp']
-        # 不复权
-        df = get_price(to_jq_security_id(security_item), start_date=to_time_str(start_timestamp),
-                       end_date=end_timestamp,
-                       frequency=param['jq_level'],
-                       fields=['open', 'close', 'low', 'high', 'volume', 'money'],
-                       skip_paused=True, fq=None)
-        df.index.name = 'timestamp'
-        df.reset_index(inplace=True)
-        df['name'] = security_item.name
-        df.rename(columns={'money': 'turnover'}, inplace=True)
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    # 静态pe
+    pe = Column(Float)
+    # 动态pe
+    pe_ttm = Column(Float)
+    # 市净率
+    pb = Column(Float)
+    # 市销率
+    ps = Column(Float)
+    # 市现率
+    pcf = Column(Float)
 
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df['provider'] = Provider.JOINQUANT.value
-        df['level'] = param['level']
 
-        # remove the unfinished kdata
-        if is_in_trading(entity_type='stock', exchange='sh', timestamp=df.iloc[-1, :]['timestamp']):
-            df = df.iloc[:-1, :]
+register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase)
 
-        return df.to_dict(orient='records')
-
-#补全复权数据
-def on_finish(self, security_item):
-    kdatas = get_kdata(security_id=security_item.id, level=self.level.value, order=StockDayKdata.timestamp.asc(),
-                       return_type='domain',
-                       session=self.session,
-                       filters=[StockDayKdata.hfq_close.is_(None),
-                                StockDayKdata.timestamp >= to_pd_timestamp('2005-01-01')])
-    if kdatas:
-        start = kdatas[0].timestamp
-        end = kdatas[-1].timestamp
-
-        # get hfq from joinquant
-        df = get_price(to_jq_security_id(security_item), start_date=to_time_str(start), end_date=now_time_str(),
-                       frequency='daily',
-                       fields=['factor', 'open', 'close', 'low', 'high'],
-                       skip_paused=True, fq='post')
-        if df is not None and not df.empty:
-            # fill hfq data
-            for kdata in kdatas:
-                if kdata.timestamp in df.index:
-                    kdata.hfq_open = df.loc[kdata.timestamp, 'open']
-                    kdata.hfq_close = df.loc[kdata.timestamp, 'close']
-                    kdata.hfq_high = df.loc[kdata.timestamp, 'high']
-                    kdata.hfq_low = df.loc[kdata.timestamp, 'low']
-                    kdata.factor = df.loc[kdata.timestamp, 'factor']
-            self.session.commit()
-
-            latest_factor = df.factor[-1]
-            # factor not change yet, no need to reset the qfq past
-            if latest_factor == self.current_factors.get(security_item.id):
-                sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
-                      'security_id=\'{}\' and level=\'{}\' and (qfq_close isnull or qfq_high isnull or qfq_low isnull or qfq_open isnull)'.format(
-                    latest_factor, latest_factor, latest_factor, latest_factor, security_item.id, self.level.value)
-            else:
-                sql = 'UPDATE stock_day_kdata SET qfq_close=hfq_close/{},qfq_high=hfq_high/{}, qfq_open= hfq_open/{}, qfq_low= hfq_low/{} where ' \
-                      'security_id=\'{}\' and level=\'{}\''.format(latest_factor,
-                                                                   latest_factor,
-                                                                   latest_factor,
-                                                                   latest_factor,
-                                                                   security_item.id,
-                                                                   self.level.value)
-            self.logger.info(sql)
-            self.session.execute(sql)
-            self.session.commit()
-
-    # TODO:use netease provider to get turnover_rate
-    self.logger.info('use netease provider to get turnover_rate')
-```
-
-这里留了一个练习,由于聚宽的数据没有提供换手率和当日涨跌幅,可以通过其他数据源补全或者自己计算的方式来完成.  
-
-网易的数据没有复权信息,通过聚宽的factor来补全,同理,可以用网易的换手率,涨跌幅数据来补全聚宽数据.
-[*参考代码*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/netease/china_stock_day_kdata_recorder.py)
-
-### 2.6 运行recorder
-
-在[settings](https://github.com/zvtvz/zvt/blob/master/zvt/settings.py)设置自己的jqdata账户和密码
-
->jqdata目前免费使用一年,注册地址如下  
->https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d  
->需要增加免费使用额度的可进群咨询
+__all__ = ['StockValuation', 'EtfValuation']
 
 ```
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=SAMPLE_STOCK_CODES, nargs='+')
-
-    args = parser.parse_args()
-
-    level = IntervalLevel(args.level)
-    codes = args.codes
-
-    init_process_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JQChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes).run()
+将其分解为以下步骤：
+### 1.1 数据库base
 ```
-这里可以通过传入不同的level来抓取不同级别的k线数据,codes为个股的代码列表,不填的话会全量抓取.
+ValuationBase = declarative_base()
+```
+一个数据库可有多个table(schema),table(schema)应继承自该类
+
+### 1.2 table(schema)的定义
+```
+class StockValuation(ValuationBase, Mixin):
+    __tablename__ = 'stock_valuation'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    # 总股本(股)
+    capitalization = Column(Float)
+    # 公司已发行的普通股股份总数(包含A股，B股和H股的总股本)
+    circulating_cap = Column(Float)
+    # 市值
+    market_cap = Column(Float)
+    # 流通市值
+    circulating_market_cap = Column(Float)
+    # 换手率
+    turnover_ratio = Column(Float)
+    # 静态pe
+    pe = Column(Float)
+    # 动态pe
+    pe_ttm = Column(Float)
+    # 市净率
+    pb = Column(Float)
+    # 市销率
+    ps = Column(Float)
+    # 市现率
+    pcf = Column(Float)
+
+
+class EtfValuation(ValuationBase, Mixin):
+    __tablename__ = 'etf_valuation'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    # 静态pe
+    pe = Column(Float)
+    # 动态pe
+    pe_ttm = Column(Float)
+    # 市净率
+    pb = Column(Float)
+    # 市销率
+    ps = Column(Float)
+    # 市现率
+    pcf = Column(Float)
+```
+这里定义了两个table(schema),继承ValuationBase表明其隶属的数据库，继承Mixin让其获得zvt统一的字段和方法。
+schema里面的__tablename__为表名。
+### 1.3 注册数据
+```
+register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase)
+
+__all__ = ['StockValuation', 'EtfValuation']
+```
+register_schema会将数据注册到zvt的数据系统中，providers为数据的提供商列表，db_name为数据库名字标识，schema_base为上面定义的数据库base。
+
+__all__为该module定义的数据结构，为了使得整个系统的数据依赖干净明确，所有的module都应该手动定义该字段。
+
+
+## 2 实现相应的recorder
+```
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+from jqdatasdk import auth, logout, query, valuation, get_fundamentals_continuously
+
+from zvdata.api import df_to_db
+from zvdata.recorder import TimeSeriesDataRecorder
+from zvdata.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
+from zvt import zvt_env
+from zvt.domain import Stock, StockValuation, EtfStock
+from zvt.recorders.joinquant.common import to_jq_entity_id
+
+
+class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
+    entity_schema = Stock
+
+    # 数据来自jq
+    provider = 'joinquant'
+
+    data_schema = StockValuation
+
+    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+
+    def on_finish(self):
+        super().on_finish()
+        logout()
+
+    def record(self, entity, start, end, size, timestamps):
+        q = query(
+            valuation
+        ).filter(
+            valuation.code == to_jq_entity_id(entity)
+        )
+        count: pd.Timedelta = now_pd_timestamp() - start
+        df = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1, panel=False)
+        df['entity_id'] = entity.id
+        df['timestamp'] = pd.to_datetime(df['day'])
+        df['code'] = entity.code
+        df['name'] = entity.name
+        df['id'] = df['timestamp'].apply(lambda x: "{}_{}".format(entity.id, to_time_str(x)))
+        df = df.rename({'pe_ratio_lyr': 'pe',
+                        'pe_ratio': 'pe_ttm',
+                        'pb_ratio': 'pb',
+                        'ps_ratio': 'ps',
+                        'pcf_ratio': 'pcf'},
+                       axis='columns')
+
+        df['market_cap'] = df['market_cap'] * 100000000
+        df['circulating_cap'] = df['circulating_cap'] * 100000000
+        df['capitalization'] = df['capitalization'] * 10000
+        df['circulating_cap'] = df['circulating_cap'] * 10000
+        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+
+        return None
+
+__all__ = ['JqChinaStockValuationRecorder']
+```
 
 # 3. 获得的能力
-添加一种数据源后,天然就获得相应的api,factor,selector和trader的能力,这里展示使用聚宽的数据的能力
-```
-In [1]: from zvt.api.technical import * 
-In [2]: from zvt.api.domain import * 
-In [3]: df1=get_kdata(security_id='stock_sz_300027', provider='joinquant',start_timestamp='2019-01-01',limit=10)
-In [4]: df1                                                                     
-                           id   provider  timestamp      security_id    code  name level  open  hfq_open  qfq_open  close  hfq_close  qfq_close  high  hfq_high  qfq_high   low  hfq_low   qfq_low      volume      turnover change_pct turnover_rate  factor
-0  stock_sz_300027_2019-01-02  joinquant 2019-01-02  stock_sz_300027  300027  华谊兄弟    1d  4.54     68.58  4.539918   4.40      66.47   4.400238  4.58     69.19  4.580299  4.35    65.71  4.349927  29554330.0  1.306117e+08       None          None  15.106
-1  stock_sz_300027_2019-01-03  joinquant 2019-01-03  stock_sz_300027  300027  华谊兄弟    1d  4.40     66.47  4.400238   4.42      66.77   4.420098  4.45     67.22  4.449887  4.36    65.86  4.359857  15981569.0  7.052363e+07       None          None  15.106
-2  stock_sz_300027_2019-01-04  joinquant 2019-01-04  stock_sz_300027  300027  华谊兄弟    1d  4.36     65.86  4.359857   4.52      68.28   4.520058  4.54     68.58  4.539918  4.33    65.41  4.330068  17103081.0  7.657399e+07       None          None  15.106
-3  stock_sz_300027_2019-01-07  joinquant 2019-01-07  stock_sz_300027  300027  华谊兄弟    1d  4.54     68.58  4.539918   4.59      69.34   4.590229  4.63     69.94  4.629948  4.48    67.67  4.479677  16163938.0  7.383168e+07       None          None  15.106
-4  stock_sz_300027_2019-01-08  joinquant 2019-01-08  stock_sz_300027  300027  华谊兄弟    1d  4.59     69.34  4.590229   4.60      69.49   4.600159  4.66     70.39  4.659738  4.56    68.88  4.559778  10908603.0  5.034655e+07       None          None  15.106
-5  stock_sz_300027_2019-01-09  joinquant 2019-01-09  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.58      69.19   4.580299  4.73     71.45  4.729909  4.58    69.19  4.580299  16901976.0  7.881876e+07       None          None  15.106
-6  stock_sz_300027_2019-01-10  joinquant 2019-01-10  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.61      69.64   4.610089  4.76     71.90  4.759698  4.59    69.34  4.590229  20855469.0  9.717176e+07       None          None  15.106
-7  stock_sz_300027_2019-01-11  joinquant 2019-01-11  stock_sz_300027  300027  华谊兄弟    1d  4.60     69.49  4.600159   4.67      70.55   4.670330  4.67     70.55  4.670330  4.56    68.88  4.559778  13216260.0  6.089670e+07       None          None  15.106
-8  stock_sz_300027_2019-01-14  joinquant 2019-01-14  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.57      69.03   4.569707  4.65     70.24  4.649808  4.55    68.73  4.549848  12421993.0  5.705187e+07       None          None  15.106
-9  stock_sz_300027_2019-01-15  joinquant 2019-01-15  stock_sz_300027  300027  华谊兄弟    1d  4.56     68.88  4.559778   4.64      70.09   4.639878  4.66     70.39  4.659738  4.54    68.58  4.539918  14403671.0  6.637258e+07       None          None  15.106
-
-#跟网易的数据比较
-In [24]: df2=get_kdata(security_id='stock_sz_300027', provider='netease',start_timestamp='2019-01-01',limit=10)                                                                          
-
-In [25]: df2                                                                                                                                                                             
-Out[25]: 
-                           id provider  timestamp      security_id    code  name level  open  hfq_open  qfq_open  close  hfq_close  qfq_close  high  hfq_high  qfq_high   low  hfq_low   qfq_low      volume      turnover  change_pct  turnover_rate  factor
-0  stock_sz_300027_2019-01-02  netease 2019-01-02  stock_sz_300027  300027  华谊兄弟    1d  4.54     68.58  4.539918   4.40      66.47   4.400238  4.58     69.19  4.580299  4.35    65.71  4.349927  29554330.0  1.306117e+08     -6.1834         1.0652  15.106
-1  stock_sz_300027_2019-01-03  netease 2019-01-03  stock_sz_300027  300027  华谊兄弟    1d  4.40     66.47  4.400238   4.42      66.77   4.420098  4.45     67.22  4.449887  4.36    65.86  4.359857  15981569.0  7.052363e+07      0.4545         0.5760  15.106
-2  stock_sz_300027_2019-01-04  netease 2019-01-04  stock_sz_300027  300027  华谊兄弟    1d  4.36     65.86  4.359857   4.52      68.28   4.520058  4.54     68.58  4.539918  4.33    65.41  4.330068  17103081.0  7.657399e+07      2.2624         0.6164  15.106
-3  stock_sz_300027_2019-01-07  netease 2019-01-07  stock_sz_300027  300027  华谊兄弟    1d  4.54     68.58  4.539918   4.59      69.34   4.590229  4.63     69.94  4.629948  4.48    67.67  4.479677  16163938.0  7.383168e+07      1.5487         0.5826  15.106
-4  stock_sz_300027_2019-01-08  netease 2019-01-08  stock_sz_300027  300027  华谊兄弟    1d  4.59     69.34  4.590229   4.60      69.49   4.600159  4.66     70.39  4.659738  4.56    68.88  4.559778  10908603.0  5.034655e+07      0.2179         0.3932  15.106
-5  stock_sz_300027_2019-01-09  netease 2019-01-09  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.58      69.19   4.580299  4.73     71.45  4.729909  4.58    69.19  4.580299  16901976.0  7.881876e+07     -0.4348         0.6092  15.106
-6  stock_sz_300027_2019-01-10  netease 2019-01-10  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.61      69.64   4.610089  4.76     71.90  4.759698  4.59    69.34  4.590229  20855469.0  9.717176e+07      0.6550         0.7517  15.106
-7  stock_sz_300027_2019-01-11  netease 2019-01-11  stock_sz_300027  300027  华谊兄弟    1d  4.60     69.49  4.600159   4.67      70.55   4.670330  4.67     70.55  4.670330  4.56    68.88  4.559778  13216260.0  6.089670e+07      1.3015         0.4763  15.106
-8  stock_sz_300027_2019-01-14  netease 2019-01-14  stock_sz_300027  300027  华谊兄弟    1d  4.63     69.94  4.629948   4.57      69.03   4.569707  4.65     70.24  4.649808  4.55    68.73  4.549848  12421993.0  5.705187e+07     -2.1413         0.4477  15.106
-9  stock_sz_300027_2019-01-15  netease 2019-01-15  stock_sz_300027  300027  华谊兄弟    1d  4.56     68.88  4.559778   4.64      70.09   4.639878  4.66     70.39  4.659738  4.54    68.58  4.539918  14403671.0  6.637258e+07      1.5317         0.5191  15.106
-
-```
-比较两家数据
-```
-In [26]: df1.loc[:,['open','close','high','low','volume']]-df2.loc[:,['open','close','high','low','volume']]                                                                             
-Out[26]: 
-   open  close  high  low  volume
-0   0.0    0.0   0.0  0.0     0.0
-1   0.0    0.0   0.0  0.0     0.0
-2   0.0    0.0   0.0  0.0     0.0
-3   0.0    0.0   0.0  0.0     0.0
-4   0.0    0.0   0.0  0.0     0.0
-5   0.0    0.0   0.0  0.0     0.0
-6   0.0    0.0   0.0  0.0     0.0
-7   0.0    0.0   0.0  0.0     0.0
-8   0.0    0.0   0.0  0.0     0.0
-9   0.0    0.0   0.0  0.0     0.0
-```
-嗯,两家的数据是一致的,数据的准确性得到进一步的确认
 
 # 4. recorder原理
 将各provider提供(或者自己爬取)的数据**变成**符合data schema的数据需要做好以下几点:  
@@ -320,7 +212,3 @@ Out[26]:
 
 流程图如下：
 <p align="center"><img src='./imgs/recorder.png'/></p>
-
-具体实现请查看[*recorder*](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/recorder.py)，项目一部分的recorder实现以开源的方式直接提供,一部分闭源,只提供最终数据库文件(会发布在dropbox和qq群).  
-
-整个东财的recorder在基础recorder类的基础，基本上一类数据就10行左右代码搞定；掌握了上面的方法，相信大家也很容易其他写出的joinquant recorder。
