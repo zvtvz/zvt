@@ -1,5 +1,37 @@
 ## 数据扩展
-扩展zvt的数据步骤如何，下面以**个股估值数据**为例做一个说明。
+做zvt的数据扩展只需明白以下几点：
+
+* zvt里面只有两种数据，EntityMixin和Mixin
+
+  EntityMixin为投资标的信息，Mixin为其发生的事。
+
+* zvt的数据可以记录(record_data方法)
+  
+  记录数据可以通过扩展以下类来实现：
+
+  * Recorder
+    
+    最基本的类，实现了关联data_schema和recorder的功能。记录EntityMixin一般继承该类。
+  
+  * RecorderForEntities
+    
+    实现了初始化需要记录的**投资标的列表**的功能，有了标的，才能记录标的发生的事。
+
+  * TimeSeriesDataRecorder
+    
+    实现了增量记录的功能，实时和非实时数据处理的功能。
+
+  * FixedCycleDataRecorder
+    
+    实现了计算固定周期数据剩余size的功能。
+
+  * TimestampsDataRecorder
+
+    实现记录时间集合可知的数据记录功能。
+
+
+
+下面以**个股估值数据**为例做一个说明。
 
 ## 1. 定义数据
 在domain package(或者其子package)下新建一个文件(module)valuation.py，内容如下：
