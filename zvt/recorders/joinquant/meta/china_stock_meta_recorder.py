@@ -7,7 +7,7 @@ from zvdata.recorder import Recorder, TimeSeriesDataRecorder
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvt import zvt_env
 from zvt.api.common import china_stock_code_to_id, to_report_period_type, portfolio_relate_stock
-from zvt.domain import EtfStock, Stock, Etf
+from zvt.domain import EtfStock, Stock, Etf, StockDetail
 from zvt.recorders.joinquant.common import to_entity_id
 
 
@@ -48,6 +48,8 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
         # 抓取股票列表
         df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
         df_to_db(df_stock, data_schema=Stock, provider=self.provider)
+        # persist StockDetail too
+        df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=False)
 
         self.logger.info(df_stock)
         self.logger.info("persist stock list success")
