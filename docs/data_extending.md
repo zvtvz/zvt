@@ -1,9 +1,9 @@
-## 数据扩展
-做zvt的数据扩展只需明白以下几点：
+## 数据扩展要点
 
 * zvt里面只有两种数据，EntityMixin和Mixin
 
-  EntityMixin为投资标的信息，Mixin为其发生的事。
+  EntityMixin为投资标的信息，Mixin为其发生的事。任何一个投资品种，首先是定义EntityMixin，然后是其相关的Mixin。
+  比如Stock(EntityMixin),及其相关的BalanceSheet,CashFlowStatement(Mixin)等。
 
 * zvt的数据可以记录(record_data方法)
   
@@ -19,19 +19,39 @@
 
   * TimeSeriesDataRecorder
     
-    实现了增量记录的功能，实时和非实时数据处理的功能。
+    实现了增量记录，实时和非实时数据处理的功能。
 
   * FixedCycleDataRecorder
-    
+
     实现了计算固定周期数据剩余size的功能。
 
   * TimestampsDataRecorder
 
     实现记录时间集合可知的数据记录功能。
 
+继承Recorder必须指定data_schema和provider两个字段，系统通过python meta programing的方式对data_schema和recorder class进行了关联:
+```
+class Meta(type):
+    def __new__(meta, name, bases, class_dict):
+        cls = type.__new__(meta, name, bases, class_dict)
+        # register the recorder class to the data_schema
+        if hasattr(cls, 'data_schema') and hasattr(cls, 'provider'):
+            if cls.data_schema and issubclass(cls.data_schema, Mixin):
+                print(f'{cls.__name__}:{cls.data_schema.__name__}')
+                cls.data_schema.register_recorder_cls(cls.provider, cls)
+        return cls
 
 
-下面以**个股估值数据**为例做一个说明。
+class Recorder(metaclass=Meta):
+    logger = logging.getLogger(__name__)
+
+    # overwrite them to setup the data you want to record
+    provider: str = None
+    data_schema: Mixin = None
+```
+
+
+下面以**个股估值数据**为例对具体步骤做一个说明。
 
 ## 1. 定义数据
 在domain package(或者其子package)下新建一个文件(module)valuation.py，内容如下：
