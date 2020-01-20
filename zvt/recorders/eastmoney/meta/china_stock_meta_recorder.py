@@ -6,16 +6,16 @@ from zvdata.recorder import Recorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float, pct_to_float
 from zvt.api.quote import get_entities
-from zvt.domain.meta.stock_meta import StockDetail
-from zvt.recorders.exchange.china_stock_list_spider import ChinaStockListRecorder
+from zvt.domain.meta.stock_meta import StockDetail, Stock
+from zvt.recorders.exchange.china_stock_list_spider import ExchangeChinaStockListRecorder
 
 
-class EastmoneyChinaStockListRecorder(ChinaStockListRecorder):
-    data_schema = StockDetail
+class EastmoneyChinaStockListRecorder(ExchangeChinaStockListRecorder):
+    data_schema = Stock
     provider = 'eastmoney'
 
 
-class ChinaStockMetaRecorder(Recorder):
+class EastmoneyChinaStockDetailRecorder(Recorder):
     provider = 'eastmoney'
     data_schema = StockDetail
 
@@ -87,10 +87,10 @@ class ChinaStockMetaRecorder(Recorder):
             self.sleep()
 
 
-__all__ = ['EastmoneyChinaStockListRecorder', 'ChinaStockMetaRecorder']
+__all__ = ['EastmoneyChinaStockListRecorder', 'EastmoneyChinaStockDetailRecorder']
 
 if __name__ == '__main__':
     # init_log('china_stock_meta.log')
 
-    recorder = ChinaStockMetaRecorder()
+    recorder = EastmoneyChinaStockDetailRecorder()
     recorder.run()

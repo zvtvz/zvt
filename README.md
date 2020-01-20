@@ -180,8 +180,8 @@ In [2]: global_schemas
 ```
 整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
 ```
-In [17]: FinanceFactor.recorders
-Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
+In [17]: FinanceFactor.provider_map_recorder
+Out[17]: {'eastmoney': zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder}
 
 In [18]: FinanceFactor.record_data(codes=['000338'])
 FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]

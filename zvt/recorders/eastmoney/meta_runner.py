@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log
 from zvt.recorders.eastmoney.meta.china_stock_category_recorder import ChinaStockCategoryRecorder
-from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import ChinaStockMetaRecorder
+from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import EastmoneyChinaStockDetailRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def run():
         try:
             ChinaStockCategoryRecorder().run()
 
-            ChinaStockMetaRecorder().run()
+            EastmoneyChinaStockDetailRecorder().run()
             break
         except Exception as e:
             logger.exception('meta runner error:{}'.format(e))
