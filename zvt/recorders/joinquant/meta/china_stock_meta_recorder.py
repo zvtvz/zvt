@@ -51,7 +51,7 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
         # persist StockDetail too
         df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=False)
 
-        self.logger.info(df_stock)
+        # self.logger.info(df_stock)
         self.logger.info("persist stock list success")
 
         logout()
@@ -65,7 +65,7 @@ class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
         df_index = self.to_zvt_entity(get_all_securities(['etf']), entity_type='etf', category='etf')
         df_to_db(df_index, data_schema=Etf, provider=self.provider)
 
-        self.logger.info(df_index)
+        # self.logger.info(df_index)
         self.logger.info("persist etf list success")
         logout()
 
@@ -115,7 +115,7 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
-            self.logger.info(df.tail())
+            # self.logger.info(df.tail())
             self.logger.info(f"persist etf {entity.code} portfolio success")
 
         return None
