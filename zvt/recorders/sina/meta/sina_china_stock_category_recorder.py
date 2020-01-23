@@ -9,7 +9,6 @@ from zvdata.api import df_to_db
 from zvdata.recorder import Recorder, TimeSeriesDataRecorder
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
-from zvt.api.quote import get_entities
 from zvt.domain import BlockStock, BlockCategory, Block
 
 
@@ -24,15 +23,8 @@ class SinaChinaBlockRecorder(Recorder):
         # StockCategory.area: 'http://money.finance.sina.com.cn/q/view/newFLJK.php?param=area',
     }
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
-        super().__init__(batch_size, force_update, sleeping_time)
-
-        self.blocks = get_entities(session=self.session, entity_type='block', exchanges=['cn'],
-                                   return_type='domain', provider=self.provider)
-        self.block_ids = [index_item.id for index_item in self.blocks]
-
     def run(self):
-        # get stock category from sina
+        # get stock blocks from sina
         for category, url in self.category_map_url.items():
             resp = requests.get(url)
             resp.encoding = 'GBK'
@@ -40,17 +32,27 @@ class SinaChinaBlockRecorder(Recorder):
             tmp_str = resp.text
             json_str = tmp_str[tmp_str.index('{'):tmp_str.index('}') + 1]
             tmp_json = json.loads(json_str)
+
+            the_list = []
+
             for code in tmp_json:
                 name = tmp_json[code].split(',')[1]
-                id = 'index_cn_{}'.format(code)
-                if id in self.block_ids:
-                    continue
-                self.session.add(
-                    Block(id=id, entity_id=id, timestamp=now_pd_timestamp(), entity_type='block', exchange='cn',
-                          code=code, name=name,
-                          category=category.value))
-            self.session.commit()
-            self.logger.info(f"finish record sina block {category.value}")
+                entity_id = 'index_cn_{}'.format(code)
+                the_list.append({
+                    'id': entity_id,
+                    'entity_id': entity_id,
+                    'entity_type': 'block',
+                    'exchange': 'cn',
+                    'code': code,
+                    'name': name,
+                    'category': category.value
+                })
+            if the_list:
+                df = pd.DataFrame.from_records(the_list)
+                df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
+                         force_update=True)
+
+            self.logger.info(f"finish record sina block:{category.value}")
 
 
 class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
@@ -64,7 +66,7 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
     category_stocks_url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page={}&num=5000&sort=symbol&asc=1&node={}&symbol=&_s_r_a=page'
 
     def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 force_update=True, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
@@ -98,7 +100,7 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
                 if the_list:
                     df = pd.DataFrame.from_records(the_list)
                     df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                             force_update=self.force_update)
+                             force_update=True)
 
                 self.logger.info('finish recording BlockStock:{},{}'.format(entity.category, entity.name))
 

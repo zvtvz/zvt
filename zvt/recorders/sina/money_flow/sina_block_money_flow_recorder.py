@@ -4,11 +4,9 @@ import time
 import requests
 
 from zvdata import IntervalLevel
-from zvdata.contract import get_db_session
 from zvdata.recorder import FixedCycleDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
 from zvdata.utils.utils import to_float
-from zvt.api.quote import get_entities
 from zvt.domain import BlockMoneyFlow, BlockCategory, Block
 
 
@@ -30,27 +28,13 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_zjlrqs?page=1&num={}&sort=opendate&asc=0&bankuai={}%2F{}'
 
-    def __init__(self, exchanges=['cn'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=True, sleeping_time=10, default_size=2000, real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
-                 close_hour=15, close_minute=0,
-                 one_day_trading_minutes=4 * 60) -> None:
-        super().__init__('index', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+    def __init__(self, exchanges=None, entity_ids=None, codes=None, batch_size=10,
+                 force_update=True, sleeping_time=10, default_size=2000, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
+                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+        super().__init__('block', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute, level, kdata_use_begin_time,
-                         one_day_trading_minutes)
-
-    def init_entities(self):
-        self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
-
-        self.entities = get_entities(session=self.entity_session, entity_type='block',
-                                     exchanges=self.exchanges,
-                                     codes=self.codes,
-                                     entity_ids=self.entity_ids,
-                                     return_type='domain', provider=self.provider,
-                                     # 只抓概念和行业
-                                     filters=[Block.category.in_(
-                                         [BlockCategory.industry.value, BlockCategory.concept.value])])
+                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
     def generate_url(self, category, code, number):
         if category == BlockCategory.industry.value:
