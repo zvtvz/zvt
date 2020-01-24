@@ -73,6 +73,7 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
             result = {
                 'timestamp': to_pd_timestamp(item['opendate']),
+                'name': entity.name,
                 'close': to_float(item['trade']),
                 'change_pct': to_float(item['changeratio']),
                 'turnover_rate': to_float(item['turnover']) / 10000,
