@@ -37,7 +37,7 @@ class SinaChinaBlockRecorder(Recorder):
 
             for code in tmp_json:
                 name = tmp_json[code].split(',')[1]
-                entity_id = 'index_cn_{}'.format(code)
+                entity_id = f'block_cn_{code}'
                 the_list.append({
                     'id': entity_id,
                     'entity_id': entity_id,
@@ -52,7 +52,7 @@ class SinaChinaBlockRecorder(Recorder):
                 df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
                          force_update=True)
 
-            self.logger.info(f"finish record sina block:{category.value}")
+            self.logger.info(f"finish record sina blocks:{category.value}")
 
 
 class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
