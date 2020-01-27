@@ -108,10 +108,10 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
             if amount != 0:
                 result['net_main_inflow_rate'] = (to_float(item['r0_net']) + to_float(item['r1_net'])) / amount
-                result['net_huge_inflows_rate'] = to_float(item['r0_net']) / amount
-                result['net_big_inflows_rate'] = to_float(item['r1_net']) / amount
-                result['net_medium_inflows_rate'] = to_float(item['r2_net']) / amount
-                result['net_small_inflows_rate'] = to_float(item['r3_net']) / amount
+                result['net_huge_inflow_rate'] = to_float(item['r0_net']) / amount
+                result['net_big_inflow_rate'] = to_float(item['r1_net']) / amount
+                result['net_medium_inflow_rate'] = to_float(item['r2_net']) / amount
+                result['net_small_inflow_rate'] = to_float(item['r3_net']) / amount
 
             result_list.append(result)
 
@@ -121,5 +121,5 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 __all__ = ['SinaStockMoneyFlowRecorder']
 
 if __name__ == '__main__':
-    SinaStockMoneyFlowRecorder(codes=['000338']).run()
+    SinaStockMoneyFlowRecorder(codes=['601318']).run()
     # SinaStockMoneyFlowRecorder().run()
