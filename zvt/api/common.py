@@ -243,7 +243,7 @@ def get_etf_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp()
     if latests:
         latest_record = latests[0]
         # 获取最新的报表
-        df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids, dend_timestamp=timestamp,
+        df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids, end_timestamp=timestamp,
                                  filters=[EtfStock.report_date == latest_record.report_date])
         # 最新的为年报或者半年报
         if latest_record.report_period == ReportPeriod.year or latest_record.report_period == ReportPeriod.half_year:
