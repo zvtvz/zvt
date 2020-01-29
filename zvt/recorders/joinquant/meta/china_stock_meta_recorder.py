@@ -6,9 +6,9 @@ from zvdata.api import df_to_db, get_entity_exchange, get_entity_code
 from zvdata.recorder import Recorder, TimeSeriesDataRecorder
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvt import zvt_env
-from zvt.api.common import china_stock_code_to_id, to_report_period_type, portfolio_relate_stock
+from zvt.api.common import china_stock_code_to_id, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf, StockDetail
-from zvt.recorders.joinquant.common import to_entity_id
+from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 
 
 class BaseJqChinaMetaRecorder(Recorder):
@@ -111,7 +111,7 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
             df['stock_id'] = df['stock_code'].apply(lambda x: china_stock_code_to_id(x))
             df['id'] = df[['entity_id', 'stock_id', 'pub_date', 'id']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
             df['report_date'] = pd.to_datetime(df['period_end'])
-            df['report_period'] = df['report_date'].apply(lambda x: to_report_period_type(x))
+            df['report_period'] = df['report_type'].apply(lambda x: jq_to_report_period(x))
 
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
@@ -124,5 +124,5 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 __all__ = ['JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder']
 
 if __name__ == '__main__':
-    JqChinaStockRecorder().run()
-    # JqChinaStockEtfPortfolioRecorder(codes=SAMPLE_ETF_CODES).run()
+    # JqChinaStockRecorder().run()
+    JqChinaStockEtfPortfolioRecorder(codes=['510050']).run()

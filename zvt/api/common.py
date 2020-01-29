@@ -248,20 +248,31 @@ def get_etf_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp()
         # 最新的为年报或者半年报
         if latest_record.report_period == ReportPeriod.year or latest_record.report_period == ReportPeriod.half_year:
             return df
-        # 一季报或三季报，需要结合 年报或半年报 来算持仓
+        # 季报，需要结合 年报或半年报 来算持仓
         else:
-            report_date = get_recent_report_date(latest_record.report_date)
+            step = 0
+            while True:
+                report_date = get_recent_report_date(latest_record.report_date, step=step)
 
-            pre_df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids, end_timestamp=timestamp,
-                                         filters=[EtfStock.report_date == to_pd_timestamp(report_date)])
-            df = df.append(pre_df)
-            # 保留最新的持仓
-            df = df.drop_duplicates(subset=['stock_code'], keep='first')
-            return df
+                pre_df = EtfStock.query_data(provider=provider, code=code, codes=codes, ids=ids,
+                                             end_timestamp=timestamp,
+                                             filters=[EtfStock.report_date == to_pd_timestamp(report_date)])
+                df = df.append(pre_df)
+
+                # 半年报和年报
+                if (ReportPeriod.half_year.value in pre_df['report_period'].tolist()) or (
+                        ReportPeriod.year.value in pre_df['report_period'].tolist()):
+                    # 保留最新的持仓
+                    df = df.drop_duplicates(subset=['stock_code'], keep='first')
+                    return df
+                step = step + 1
+
+                if step >= 20:
+                    break
 
 
 if __name__ == '__main__':
-    df = get_etf_stocks(code='159901', provider='joinquant')
+    df = get_etf_stocks(code='510050', provider='joinquant')
     print(df)
 
     # assert get_kdata_schema(entity_type='stock', level=IntervalLevel.LEVEL_1DAY) == Stock1dKdata
