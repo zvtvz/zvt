@@ -22,9 +22,12 @@ class BlockCategory(enum.Enum):
 
 
 class ReportPeriod(enum.Enum):
+    # 有些基金的2，4季报只有10大持仓，半年报和年报有详细持仓，需要区别对待
     season1 = 'season1'
-    half_year = 'half_year'
+    season2 = 'season2'
     season3 = 'season3'
+    season4 = 'season4'
+    half_year = 'half_year'
     year = 'year'
 
 
