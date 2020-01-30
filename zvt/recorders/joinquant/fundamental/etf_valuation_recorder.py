@@ -71,13 +71,16 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
                         # PE=P/E
                         # 这里的算法为：将其价格都设为PE,那么Earning为1(亏钱为-1)，结果为 总价格(PE)/总Earning
 
+                        value = 0
+                        price = 0
+
                         # 权重估值
                         positive_df = stock_valuation_df[[col]][stock_valuation_df[col] > 0]
                         positive_df['count'] = 1
                         positive_df = positive_df.multiply(etf_stock_df["proportion"], axis="index")
-
-                        value = positive_df['count'].sum()
-                        price = positive_df[col].sum()
+                        if pd_is_not_null(positive_df):
+                            value = positive_df['count'].sum()
+                            price = positive_df[col].sum()
 
                         negative_df = stock_valuation_df[[col]][stock_valuation_df[col] < 0]
                         if pd_is_not_null(negative_df):

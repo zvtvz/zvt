@@ -57,6 +57,7 @@ class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
         df['circulating_market_cap'] = df['circulating_market_cap'] * 100000000
         df['capitalization'] = df['capitalization'] * 10000
         df['circulating_cap'] = df['circulating_cap'] * 10000
+        df['turnover_ratio'] = df['turnover_ratio'] * 0.01
         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
