@@ -18,7 +18,7 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
 
     data_schema = EtfValuation
 
-    def __init__(self, entity_type='etf', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+    def __init__(self, entity_type='etf', exchanges=None, entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
@@ -34,12 +34,12 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
             # etf包含的个股和比例
             etf_stock_df = get_etf_stocks(code=entity.code, timestamp=date, provider=self.provider)
 
-            all_pct = etf_stock_df['proportion'].sum()
-
-            if all_pct >= 1.1 or all_pct <= 0.9:
-                self.logger.info(f'etf:{entity.id}  date:{date} proportion sum:{all_pct}')
-
             if pd_is_not_null(etf_stock_df):
+                all_pct = etf_stock_df['proportion'].sum()
+
+                if all_pct >= 1.1 or all_pct <= 0.9:
+                    self.logger.info(f'etf:{entity.id}  date:{date} proportion sum:{all_pct}')
+
                 etf_stock_df.set_index('stock_id', inplace=True)
 
                 # 个股的估值数据
@@ -51,7 +51,8 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
                     # 暂时只支持 简单算术平均估值，理由：模糊的正确比精确的错误有用
                     # A股个股的市值往往相差很大，按市值权重的话，这样的估值很难反映整体
                     self.logger.info(
-                        f'etf:{entity.id} date:{date} stock count: {len(etf_stock_df)},valuation count:{len(stock_valuation_df)}')
+                        f'etf:{entity.id} date:{date} stock count: {len(etf_stock_df)},'
+                        f'valuation count:{len(stock_valuation_df)}')
 
                     #     # 静态pe
                     #     pe = Column(Float)
@@ -71,17 +72,17 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
                                     'name': entity.name})
                     for col in ['pe', 'pe_ttm', 'pb', 'ps', 'pcf']:
                         # PE=P/E
-                        # 这里的算法为：将其价格都设为1，算出总earning,再相除
+                        # 这里的算法为：将其价格都设为PE,那么Earning为1(亏钱为-1)，结果为 总价格(PE)/总Earning
                         positive_df = stock_valuation_df[col][stock_valuation_df[col] > 0]
                         positive_count = len(positive_df)
 
                         negative_df = stock_valuation_df[col][stock_valuation_df[col] < 0]
                         negative_count = len(negative_df)
 
-                        result = (positive_count + negative_count) / (
-                                positive_count / positive_df.mean() + negative_count / negative_df.mean())
+                        value = positive_count - negative_count
+                        price = positive_df.sum() + abs(negative_df.sum())
 
-                        se[col] = result
+                        se[col] = price / value
                     df = se.to_frame().T
 
                     self.logger.info(df)
@@ -96,4 +97,4 @@ __all__ = ['JqChinaEtfValuationRecorder']
 
 if __name__ == '__main__':
     # 上证50
-    JqChinaEtfValuationRecorder(codes=['510050'], start_timestamp='2005-02-23').run()
+    JqChinaEtfValuationRecorder(codes=['510050']).run()
