@@ -125,6 +125,8 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
             self.session.commit()
 
     def on_finish_entity(self, entity):
+        super().on_finish_entity(entity)
+
         if not self.fetch_jq_timestamp:
             return
 
