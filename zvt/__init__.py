@@ -11,7 +11,7 @@ from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST
 from zvt.utils.zip_utils import unzip
 
 
-def init_log(file_name='zvt.log', log_dir=None):
+def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
     if not log_dir:
         log_dir = zvt_env['log_path']
 
@@ -32,8 +32,12 @@ def init_log(file_name='zvt.log', log_dir=None):
     ch.setLevel(logging.INFO)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(levelname)s  %(threadName)s  %(asctime)s  %(name)s:%(filename)s:%(lineno)s  %(funcName)s  %(message)s")
+    if simple_formatter:
+        formatter = logging.Formatter(
+            "%(asctime)s  %(levelname)s  %(threadName)s  %(message)s")
+    else:
+        formatter = logging.Formatter(
+            "%(asctime)s  %(levelname)s  %(threadName)s  %(name)s:%(filename)s:%(lineno)s  %(funcName)s  %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 

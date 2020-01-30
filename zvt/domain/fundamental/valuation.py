@@ -42,14 +42,24 @@ class EtfValuation(ValuationBase, Mixin):
     name = Column(String(length=32))
     # 静态pe
     pe = Column(Float)
+    # 加权
+    pe1 = Column(Float)
     # 动态pe
     pe_ttm = Column(Float)
+    # 加权
+    pe_ttm1 = Column(Float)
     # 市净率
     pb = Column(Float)
+    # 加权
+    pb1 = Column(Float)
     # 市销率
     ps = Column(Float)
+    # 加权
+    ps1 = Column(Float)
     # 市现率
     pcf = Column(Float)
+    # 加权
+    pcf1 = Column(Float)
 
 
 register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase)
