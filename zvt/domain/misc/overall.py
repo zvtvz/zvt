@@ -64,6 +64,6 @@ class CrossMarketSummary(OverallBase, Mixin):
     quota_daily_balance = Column(Float)
 
 
-register_schema(providers=['exchange', 'joinquant'], db_name='overall', schema_base=OverallBase)
+register_schema(providers=['joinquant', 'exchange'], db_name='overall', schema_base=OverallBase)
 
 __all__ = ['StockSummary', 'MarginTradingSummary', 'CrossMarketSummary']
