@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-from examples.factors.technical_selector import TechnicalSelector
 from zvdata import IntervalLevel
 from zvt.domain import Block
 from zvt.factors.money_flow_factor import BlockMoneyFlowFactor
 from zvt.factors.target_selector import TargetSelector
-from zvt.settings import SAMPLE_STOCK_CODES
 
 
 class BlockSelector(TargetSelector):
@@ -25,10 +23,6 @@ class BlockSelector(TargetSelector):
 if __name__ == '__main__':
     block_selector = BlockSelector(start_timestamp='2019-01-01')
     block_selector.run()
-
-    # index_selector.draw()
-
-    s = TechnicalSelector(codes=SAMPLE_STOCK_CODES, start_timestamp='2019-01-01', end_timestamp='2019-06-30',
-                          block_selector=block_selector)
-    s.run()
-    s.draw()
+    entity_ids = block_selector.get_targets(timestamp='2020-01-23')
+    df = Block.query_data(provider='sina', entity_ids=entity_ids)
+    print(df)

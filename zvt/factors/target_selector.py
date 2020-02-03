@@ -9,7 +9,7 @@ from pandas import DataFrame
 from zvdata import IntervalLevel
 from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
-from zvdata.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
 from zvt.drawer.drawer import Drawer
 from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
@@ -51,11 +51,13 @@ class TargetSelector(object):
             self.the_timestamp = to_pd_timestamp(the_timestamp)
             self.start_timestamp = self.the_timestamp
             self.end_timestamp = self.the_timestamp
-        elif start_timestamp and end_timestamp:
-            self.start_timestamp = to_pd_timestamp(start_timestamp)
-            self.end_timestamp = to_pd_timestamp(end_timestamp)
         else:
-            assert False
+            if start_timestamp:
+                self.start_timestamp = to_pd_timestamp(start_timestamp)
+            if end_timestamp:
+                self.end_timestamp = to_pd_timestamp(end_timestamp)
+            else:
+                self.end_timestamp = now_pd_timestamp()
 
         self.long_threshold = long_threshold
         self.short_threshold = short_threshold
