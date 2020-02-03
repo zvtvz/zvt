@@ -14,7 +14,7 @@ from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 class BaseJqChinaMetaRecorder(Recorder):
     provider = 'joinquant'
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10) -> None:
+    def __init__(self, batch_size=10, force_update=True, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
@@ -47,9 +47,9 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
     def run(self):
         # 抓取股票列表
         df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
-        df_to_db(df_stock, data_schema=Stock, provider=self.provider)
+        df_to_db(df_stock, data_schema=Stock, provider=self.provider, force_update=self.force_update)
         # persist StockDetail too
-        df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=False)
+        df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=self.force_update)
 
         # self.logger.info(df_stock)
         self.logger.info("persist stock list success")
@@ -63,7 +63,7 @@ class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
     def run(self):
         # 抓取etf列表
         df_index = self.to_zvt_entity(get_all_securities(['etf']), entity_type='etf', category='etf')
-        df_to_db(df_index, data_schema=Etf, provider=self.provider)
+        df_to_db(df_index, data_schema=Etf, provider=self.provider, force_update=self.force_update)
 
         # self.logger.info(df_index)
         self.logger.info("persist etf list success")
