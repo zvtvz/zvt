@@ -6,8 +6,7 @@ import requests
 from zvdata.api import get_count, get_data
 from zvdata.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvdata.utils.time_utils import to_pd_timestamp
-from zvt.api.common import get_company_type
-from zvt.domain import CompanyType, Stock
+from zvt.domain import CompanyType, Stock, StockDetail
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +23,17 @@ def get_fc(security_item):
         fc = "{}02".format(security_item.code)
 
     return fc
+
+
+def get_company_type(stock_domain: StockDetail):
+    industries = stock_domain.industries.split(',')
+    if ('银行' in industries) or ('信托' in industries):
+        return CompanyType.yinhang
+    if '保险' in industries:
+        return CompanyType.baoxian
+    if '证券' in industries:
+        return CompanyType.quanshang
+    return CompanyType.qiye
 
 
 def company_type_flag(security_item):
@@ -127,7 +137,7 @@ class BaseEastmoneyRecorder(object):
 
 
 class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'
@@ -153,7 +163,7 @@ class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecor
 
 
 class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'
@@ -195,7 +205,7 @@ class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder
 
 
 class EastmoneyMoreDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'eastmoney'

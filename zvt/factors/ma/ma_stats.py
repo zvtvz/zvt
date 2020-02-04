@@ -4,7 +4,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel
+from zvdata import IntervalLevel, EntityMixin
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_entities, Stock
@@ -100,7 +100,7 @@ class MaAccumulator(Accumulator):
         if pd_is_not_null(acc_df):
             if pd_is_not_null(input_df):
                 df = input_df[set(acc_df.columns) & set(input_df.columns)]
-                acc_df = acc_df.append(df)
+                acc_df = acc_df.append(df, sort=False)
                 acc_df = acc_df.sort_index(level=[0, 1])
         else:
             acc_df = input_df
@@ -109,42 +109,31 @@ class MaAccumulator(Accumulator):
 
 
 class MaStateStas(TechnicalFactor):
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
+
+    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'joinquant',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = 10,
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10,
-                 persist_factor: bool = True,
-                 dry_run: bool = True,
+                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low'],
+                 filters: List = None, order: object = None, limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = 10, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None,
+                 persist_factor: bool = True, dry_run: bool = True,
                  # added fields
                  short_window: int = 5,
                  long_window: int = 10) -> None:
-        self.factor_schema = get_ma_state_stats_schema(entity_type=entity_type, level=level)
+        self.factor_schema = get_ma_state_stats_schema(entity_type=entity_schema.__name__, level=level)
         self.short_window = short_window
         self.long_window = long_window
 
         transformer: Transformer = MaTransformer(windows=[short_window, long_window])
-        acc = MaAccumulator(short_window=short_window, long_window=long_window)
+        accumulator = MaAccumulator(short_window=short_window, long_window=long_window)
 
-        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, acc,
-                         persist_factor, dry_run)
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
+                         start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
+                         time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
+                         accumulator, persist_factor, dry_run)
 
 
 if __name__ == '__main__':
@@ -160,7 +149,7 @@ if __name__ == '__main__':
     start = args.start
     end = args.end
 
-    entities = get_entities(provider='eastmoney', entity_type='stock', columns=[Stock.entity_id, Stock.code],
+    entities = get_entities(provider='joinquant', entity_type='stock', columns=[Stock.entity_id, Stock.code],
                             filters=[Stock.code >= start, Stock.code < end])
 
     codes = entities.index.to_list()

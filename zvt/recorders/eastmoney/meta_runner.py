@@ -6,9 +6,8 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log
-from zvt.recorders.common.china_stock_list_spider import ChinaStockListRecorder
 from zvt.recorders.eastmoney.meta.china_stock_category_recorder import ChinaStockCategoryRecorder
-from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import ChinaStockMetaRecorder
+from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import EastmoneyChinaStockDetailRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +18,9 @@ sched = BackgroundScheduler()
 def run():
     while True:
         try:
-            ChinaStockListRecorder(provider='eastmoney').run()
-
             ChinaStockCategoryRecorder().run()
 
-            ChinaStockMetaRecorder().run()
+            EastmoneyChinaStockDetailRecorder().run()
             break
         except Exception as e:
             logger.exception('meta runner error:{}'.format(e))

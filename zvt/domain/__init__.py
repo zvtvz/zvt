@@ -2,7 +2,7 @@
 import enum
 
 
-class StockCategory(enum.Enum):
+class BlockCategory(enum.Enum):
     # 行业版块
     industry = 'industry'
     # 概念版块
@@ -22,9 +22,12 @@ class StockCategory(enum.Enum):
 
 
 class ReportPeriod(enum.Enum):
+    # 有些基金的2，4季报只有10大持仓，半年报和年报有详细持仓，需要区别对待
     season1 = 'season1'
-    half_year = 'half_year'
+    season2 = 'season2'
     season3 = 'season3'
+    season4 = 'season4'
+    half_year = 'half_year'
     year = 'year'
 
 
@@ -46,25 +49,12 @@ class CompanyType(enum.Enum):
 
 
 # make sure import all the domain schemas before using them
-from .business import *
-from .meta.coin_meta import *
-from .dividend_financing import *
-from .finance import *
-from .holder import *
-from .macro import *
-from .meta.stock_meta import *
-from .money_flow import *
-from .trading import *
-
-from .quotes import *
-from .factors import *
-from .meta import *
-from .valuation import *
-from .trade_day import *
-
-def init_schema():
-    pass
-
+from zvt.domain.business import *
+from zvt.domain.meta import *
+from zvt.domain.fundamental import *
+from zvt.domain.misc import *
+from zvt.domain.quotes import *
+from zvt.domain.factors import *
 
 from zvdata.contract import global_schemas
 

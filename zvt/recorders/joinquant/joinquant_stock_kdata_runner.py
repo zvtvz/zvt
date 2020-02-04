@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata import IntervalLevel
 from zvt import init_log
-from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import ChinaStockKdataRecorder
+from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JqChinaStockKdataRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ sched = BackgroundScheduler()
 def record_day_kdata():
     while True:
         try:
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
 
             break
         except Exception as e:
@@ -30,8 +30,8 @@ def record_day_kdata():
 def record_wk_kdata():
     while True:
         try:
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1WEEK).run()
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1WEEK).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON).run()
 
             break
         except Exception as e:

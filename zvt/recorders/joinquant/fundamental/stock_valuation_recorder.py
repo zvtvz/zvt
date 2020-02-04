@@ -7,21 +7,21 @@ from zvdata.api import df_to_db
 from zvdata.recorder import TimeSeriesDataRecorder
 from zvdata.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
 from zvt import zvt_env
-from zvt.domain import Stock, Valuation
-from zvt.recorders.joinquant import to_jq_entity_id
+from zvt.domain import Stock, StockValuation, Etf
+from zvt.recorders.joinquant.common import to_jq_entity_id
 
 
-class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
+class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
     # 复用eastmoney的股票列表
-    entity_provider = 'eastmoney'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     # 数据来自jq
     provider = 'joinquant'
 
-    data_schema = Valuation
+    data_schema = StockValuation
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+    def __init__(self, entity_type='stock', exchanges=None, entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
@@ -34,7 +34,6 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
         logout()
 
     def record(self, entity, start, end, size, timestamps):
-        # 只要前复权数据
         q = query(
             valuation
         ).filter(
@@ -55,13 +54,22 @@ class ChinaStockValuationRecorder(TimeSeriesDataRecorder):
                        axis='columns')
 
         df['market_cap'] = df['market_cap'] * 100000000
-        df['circulating_cap'] = df['circulating_cap'] * 100000000
+        df['circulating_market_cap'] = df['circulating_market_cap'] * 100000000
         df['capitalization'] = df['capitalization'] * 10000
         df['circulating_cap'] = df['circulating_cap'] * 10000
+        df['turnover_ratio'] = df['turnover_ratio'] * 0.01
         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
 
 
+__all__ = ['JqChinaStockValuationRecorder']
+
 if __name__ == '__main__':
-    ChinaStockValuationRecorder(codes=['000338']).run()
+    # 上证50
+    df = Etf.get_stocks(code='510050')
+    stocks = df.stock_id.tolist()
+    print(stocks)
+    print(len(stocks))
+
+    JqChinaStockValuationRecorder(entity_ids=stocks, force_update=True).run()

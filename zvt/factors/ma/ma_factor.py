@@ -4,64 +4,41 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel
+from zvdata import IntervalLevel, EntityMixin
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_ma_factor_schema
+from zvt.factors import Accumulator
 from zvt.factors.algorithm import MaTransformer
 from zvt.factors.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 
 
 class MaFactor(TechnicalFactor):
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
+
+    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 provider: str = 'joinquant',
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = 250,
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = 10,
-                 persist_factor: bool = True,
-                 dry_run: bool = True,
+                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low'],
+                 filters: List = None, order: object = None, limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None,
+                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False,
                  windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
-        self.factor_schema = get_ma_factor_schema(entity_type=entity_type, level=level)
+        self.factor_schema = get_ma_factor_schema(entity_type=entity_schema.__name__, level=level)
         self.windows = windows
 
         transformer: Transformer = MaTransformer(windows=windows)
 
-        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, None,
-                         persist_factor, dry_run)
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
+                         start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
+                         time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
+                         accumulator, persist_factor, dry_run)
 
 
 class CrossMaFactor(MaFactor):
-    def __init__(self, entity_ids: List[str] = None, entity_type: str = 'stock', exchanges: List[str] = ['sh', 'sz'],
-                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 provider: str = 'joinquant', level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = 250,
-                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = 10,
-                 persist_factor: bool = True, dry_run=False, windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
-        super().__init__(entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         columns, filters, order, limit, provider, level, category_field, time_field, computing_window,
-                         keep_all_timestamp, fill_method, effective_number, persist_factor, dry_run,
-                         windows=windows)
-
     def do_compute(self):
         super().do_compute()
         cols = [f'ma{window}' for window in self.windows]

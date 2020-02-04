@@ -12,7 +12,7 @@ from zvt.domain import Stock
 from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
-from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import ChinaStockKdataRecorder
+from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JqChinaStockKdataRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +30,9 @@ def every_day_report():
             today = to_time_str(t)
 
             # 抓取k线数据
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1WEEK).run()
-            ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1WEEK).run()
+            JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON).run()
 
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2016-01-01', end_timestamp=today)

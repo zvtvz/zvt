@@ -5,13 +5,13 @@ import requests
 
 from zvdata import IntervalLevel
 from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.utils.time_utils import to_pd_timestamp
+from zvdata.utils.time_utils import to_pd_timestamp, is_same_date, now_pd_timestamp
 from zvdata.utils.utils import to_float
-from zvt.domain import StockMoneyFlow, Stock
+from zvt.domain import StockMoneyFlow, Stock, StockTradeDay
 
 
 class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
-    entity_provider = 'sina'
+    entity_provider = 'joinquant'
     entity_schema = Stock
 
     provider = 'sina'
@@ -19,16 +19,29 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_lscjfb?page=1&num={}&sort=opendate&asc=0&daima={}'
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=10, default_size=4000, real_time=True, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=15, close_minute=0,
-                 one_day_trading_minutes=4 * 60) -> None:
-
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+    def __init__(self, exchanges=None, entity_ids=None, codes=None, batch_size=10,
+                 force_update=True, sleeping_time=10, default_size=2000, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
+                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+        super().__init__('stock', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute, level, kdata_use_begin_time,
-                         one_day_trading_minutes)
+                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
+
+    def init_entities(self):
+        super().init_entities()
+        # 过滤掉退市的
+        self.entities = [entity for entity in self.entities if
+                         (entity.end_date is None) or (entity.end_date > now_pd_timestamp())]
+
+    # TODO:more general for the case using StockTradeDay
+    def evaluate_start_end_size_timestamps(self, entity):
+        start, end, size, timestamps = super().evaluate_start_end_size_timestamps(entity)
+        if start:
+            trade_day = StockTradeDay.query_data(limit=1, order=StockTradeDay.timestamp.desc(), return_type='domain')
+            if trade_day:
+                if is_same_date(trade_day[0].timestamp, start):
+                    size = 0
+        return start, end, size, timestamps
 
     def generate_url(self, code, number):
         return self.url.format(number, code)
@@ -76,6 +89,7 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
             result = {
                 'timestamp': to_pd_timestamp(item['opendate']),
+                'name': entity.name,
                 'close': to_float(item['trade']),
                 'change_pct': to_float(item['changeratio']),
                 'turnover_rate': to_float(item['turnover']) / 10000,
@@ -110,16 +124,18 @@ class SinaStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
             if amount != 0:
                 result['net_main_inflow_rate'] = (to_float(item['r0_net']) + to_float(item['r1_net'])) / amount
-                result['net_huge_inflows_rate'] = to_float(item['r0_net']) / amount
-                result['net_big_inflows_rate'] = to_float(item['r1_net']) / amount
-                result['net_medium_inflows_rate'] = to_float(item['r2_net']) / amount
-                result['net_small_inflows_rate'] = to_float(item['r3_net']) / amount
+                result['net_huge_inflow_rate'] = to_float(item['r0_net']) / amount
+                result['net_big_inflow_rate'] = to_float(item['r1_net']) / amount
+                result['net_medium_inflow_rate'] = to_float(item['r2_net']) / amount
+                result['net_small_inflow_rate'] = to_float(item['r3_net']) / amount
 
             result_list.append(result)
 
         return result_list
 
 
+__all__ = ['SinaStockMoneyFlowRecorder']
+
 if __name__ == '__main__':
-    SinaStockMoneyFlowRecorder(codes=['000338']).run()
+    SinaStockMoneyFlowRecorder(codes=['000406']).run()
     # SinaStockMoneyFlowRecorder().run()

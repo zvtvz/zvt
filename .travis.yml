@@ -8,7 +8,6 @@ install:
   - pip install pytest-cov codecov
   - pip install -r ./requirements.txt
 script:
-- python init_data_sample.py
 - pytest  tests/ --cov-report term --cov=./zvt --ignore=tests/recorders/
 after_success:
   - codecov

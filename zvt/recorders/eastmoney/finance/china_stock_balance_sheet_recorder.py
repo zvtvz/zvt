@@ -445,6 +445,8 @@ class ChinaStockBalanceSheetRecorder(BaseChinaStockFinanceRecorder):
         return balance_sheet_map
 
 
+__all__ = ['ChinaStockBalanceSheetRecorder']
+
 if __name__ == '__main__':
     # init_log('blance_sheet.log')
     recorder = ChinaStockBalanceSheetRecorder(codes=['002572'])

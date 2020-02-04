@@ -6,7 +6,7 @@ init_test_context()
 import time
 
 from zvt.api.rules import iterate_timestamps
-from zvt.domain import Stock1dKdata
+from zvt.domain import Stock1dKdata, Stock
 
 from zvdata.utils.time_utils import to_time_str
 
@@ -15,7 +15,7 @@ from zvdata import IntervalLevel
 
 
 def test_china_stock_reader():
-    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
+    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, entity_schema=Stock,
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10', entity_provider='eastmoney')
 
@@ -44,7 +44,7 @@ def test_china_stock_reader():
 
 
 def test_reader_move_on():
-    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, provider='joinquant',
+    data_reader = DataReader(codes=['002572', '000338'], data_schema=Stock1dKdata, entity_schema=Stock,
                              start_timestamp='2019-06-13',
                              end_timestamp='2019-06-14', entity_provider='eastmoney')
 

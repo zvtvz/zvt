@@ -6,11 +6,17 @@
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![HitCount](http://hits.dwyl.io/zvtvz/zvt.svg)](http://hits.dwyl.io/zvtvz/zvt)
 
-**Read this in other languages: [English](./docs/README-en.md).**  
+**Read this in other languages: [English](README-en.md).**  
 
 ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
-相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**，尽可能避免复杂晦涩的技术，坚持用简洁的代码表达市场的逻辑。
+相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
+
+编写该系统的初心:
+* 构造一个中立标准的数据schema
+* 能够容易地把各provider的数据适配到系统
+* 相同的算法，只写一次，可以应用到任何市场
+* 适用于低耗能的人脑+个人电脑
 
 ## 详细文档
 文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
@@ -32,7 +38,7 @@ pip3 show zvt
 
 如果不是最新版本
 ```
-pip install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+pip3 install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
 ```
 
 > 请根据需要决定是否使用豆瓣镜像源
@@ -180,8 +186,8 @@ In [2]: global_schemas
 ```
 整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
 ```
-In [17]: FinanceFactor.recorders
-Out[17]: [zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder]
+In [17]: FinanceFactor.provider_map_recorder
+Out[17]: {'eastmoney': zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder}
 
 In [18]: FinanceFactor.record_data(codes=['000338'])
 FinanceFactor registered recorders:[<class 'zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder'>]

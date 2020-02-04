@@ -3,9 +3,10 @@
   - [快速开始](quick-start.md "zvt quick start")
 - 数据
   - [数据总览](data_overview.md "zvt data overview")
-  - [数据使用](data_usage.md "zvt data usage")
+  - [数据列表](data_list.md "zvt data list")
   - [数据更新](data_recorder.md "zvt data recorder")
-  - [扩展数据](data_extending.md "zvt data extending")
+  - [数据使用](data_usage.md "zvt data usage")
+  - [数据扩展](data_extending.md "zvt data extending")
 - 计算
   - [因子计算](factor.md "zvt factor")
   - [回测通知](trader.md "zvt trader")

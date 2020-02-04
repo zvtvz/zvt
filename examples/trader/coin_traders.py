@@ -10,13 +10,13 @@ from zvt.trader.trader import CoinTrader
 
 class MyMaCoinTrader(CoinTrader):
 
-    def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+        myselector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider='ccxt', level=IntervalLevel.LEVEL_1MIN)
 
         myselector.add_filter_factor(
-            CrossMaFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+            CrossMaFactor(entity_ids=entity_ids, entity_type=entity_schema, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp, provider='ccxt',
                           level=IntervalLevel.LEVEL_1MIN))
 

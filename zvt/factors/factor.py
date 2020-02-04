@@ -6,11 +6,12 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel
+from zvdata import IntervalLevel, Mixin, EntityMixin
 from zvdata.api import get_data, df_to_db
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader, DataListener
 from zvdata.utils.pd_utils import pd_is_not_null
+from zvt.domain import Stock
 from zvt.drawer.drawer import Drawer
 
 
@@ -69,10 +70,12 @@ class Factor(DataReader, DataListener):
     factor_schema = None
 
     def __init__(self,
-                 data_schema: object,
+                 data_schema: Mixin,
+                 entity_schema: EntityMixin = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
                  entity_ids: List[str] = None,
-                 entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'],
+                 exchanges: List[str] = None,
                  codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
@@ -81,7 +84,6 @@ class Factor(DataReader, DataListener):
                  filters: List = None,
                  order: object = None,
                  limit: int = None,
-                 provider: str = 'eastmoney',
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
@@ -96,22 +98,6 @@ class Factor(DataReader, DataListener):
                  dry_run: bool = False) -> None:
         """
 
-        :param data_schema:
-        :param entity_ids:
-        :param entity_type:
-        :param exchanges:
-        :param codes:
-        :param the_timestamp:
-        :param start_timestamp:
-        :param end_timestamp:
-        :param columns:
-        :param filters:
-        :param order:
-        :param limit:
-        :param provider:
-        :param level:
-        :param category_field:
-        :param time_field:
         :param computing_window: the window size for computing factor
         :param keep_all_timestamp: whether fill all timestamp gap,default False
         :param fill_method:
@@ -121,16 +107,9 @@ class Factor(DataReader, DataListener):
         :param persist_factor: whether persist factor
         :param dry_run: True for just computing factor, False for backtesting
         """
-        self.entity_type = entity_type
-        if self.entity_type == 'stock':
-            self.entity_provider = 'eastmoney'
-        elif self.entity_type == 'coin':
-            self.entity_provider = 'ccxt'
-        else:
-            self.entity_provider = 'joinquant'
 
-        super().__init__(data_schema, self.entity_provider, entity_ids, entity_type, exchanges, codes, the_timestamp,
-                         start_timestamp, end_timestamp, columns, filters, order, limit, provider, level,
+        super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window)
 
         self.factor_name = type(self).__name__.lower()
@@ -213,23 +192,19 @@ class Factor(DataReader, DataListener):
             self.persist_result()
 
     def compute(self):
-        """
-        implement this to calculate factors normalize to [0,1]
-
-        """
         self.pre_compute()
 
         self.logger.info('do_compute start')
         start_time = time.time()
         self.do_compute()
         cost_time = time.time() - start_time
-        self.logger.info('do_compute finish,cost_time:{}'.format(cost_time))
+        self.logger.info('do_compute finished,cost_time:{}'.format(cost_time))
 
         self.logger.info('after_compute start')
         start_time = time.time()
         self.after_compute()
         cost_time = time.time() - start_time
-        self.logger.info('after_compute finish,cost_time:{}'.format(cost_time))
+        self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
 
     def __repr__(self) -> str:
         return self.result_df.__repr__()
@@ -265,6 +240,7 @@ class Factor(DataReader, DataListener):
                                          width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
 
     def fill_gap(self):
+        # 该操作较慢，只适合做基本面的运算
         if self.keep_all_timestamp:
             idx = pd.date_range(self.start_timestamp, self.end_timestamp)
             new_index = pd.MultiIndex.from_product([self.result_df.index.levels[0], idx],
@@ -308,28 +284,27 @@ class FilterFactor(Factor):
 class ScoreFactor(Factor):
     factor_type = FactorType.score
 
-    def __init__(self, data_schema: object, entity_ids: List[str] = None, entity_type: str = 'stock',
-                 exchanges: List[str] = ['sh', 'sz'], codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
-                 order: object = None, limit: int = None, provider: str = 'eastmoney',
+    def __init__(self, data_schema: Mixin, entity_schema: EntityMixin = Stock, provider: str = None,
+                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
+                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = 10, transformer: Transformer = None,
-                 persist_factor: bool = True,
-                 dry_run: bool = True,
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
+                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False,
                  scorer: Scorer = None) -> None:
         self.scorer = scorer
-        super().__init__(data_schema, entity_ids, entity_type, exchanges, codes, the_timestamp, start_timestamp,
-                         end_timestamp, columns, filters, order, limit, provider, level, category_field, time_field,
-                         keep_all_timestamp, fill_method, effective_number, transformer, persist_factor,
-                         dry_run)
+        super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
+                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
+                         category_field, time_field, computing_window, keep_all_timestamp, fill_method,
+                         effective_number, transformer, accumulator, persist_factor, dry_run)
 
     def do_compute(self):
         super().do_compute()
 
         if pd_is_not_null(self.pipe_df) and self.scorer:
-            self.result_df = self.scorer.score(self.data_df)
+            self.result_df = self.scorer.score(self.pipe_df)
 
 
 class StateFactor(Factor):
