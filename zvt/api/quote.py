@@ -6,56 +6,16 @@ from zvdata.api import get_entities, decode_entity_id, get_data
 from zvdata.contract import get_db_session
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
-from zvt.domain import StockCategory, IndexMoneyFlow
+from zvt.domain import BlockCategory, BlockMoneyFlow
 from zvt.domain.meta.stock_meta import Index
 
 
-def get_indices(provider: str = 'sina',
-                block_category: Union[str, StockCategory] = 'concept',
-                return_type: str = 'df') -> object:
-    """
-    get indices/blocks on block_category
-
-    :param provider:
-    :type provider:
-    :param block_category:
-    :type block_category:
-    :param return_type:
-    :type return_type:
-    :return:
-    :rtype:
-    """
-    if type(block_category) == StockCategory:
-        block_category = block_category.value
-
-    session = get_db_session(provider=provider, data_schema=Index)
-
-    filters = [Index.category == block_category]
-    blocks = get_entities(entity_type='index', provider=provider, filters=filters,
-                          session=session, return_type=return_type)
-    return blocks
-
-
-get_blocks = get_indices
-
-
-def in_filters(col, values):
-    filters = None
-    if values:
-        for value in values:
-            if filters:
-                filters |= (col == value)
-            else:
-                filters = (col == value)
-    return filters
-
-
 def get_securities_in_blocks(provider: str = 'eastmoney',
-                             categories: List[Union[str, StockCategory]] = ['concept', 'industry'],
+                             categories: List[Union[str, BlockCategory]] = ['concept', 'industry'],
                              names=None, codes=None, ids=None):
     session = get_db_session(provider=provider, data_schema=Index)
 
-    categories = [StockCategory(category).value for category in categories]
+    categories = [BlockCategory(category).value for category in categories]
 
     filters = [Index.category.in_(categories)]
 
@@ -107,13 +67,13 @@ def get_current_price(entity_ids=None, entity_type='coin'):
 
 
 if __name__ == '__main__':
-    money_flow_session = get_db_session(provider='sina', data_schema=IndexMoneyFlow)
+    money_flow_session = get_db_session(provider='sina', data_schema=BlockMoneyFlow)
 
     entities = get_entities(entity_type='index',
                             return_type='domain', provider='sina',
                             # 只抓概念和行业
                             filters=[Index.category.in_(
-                                [StockCategory.industry.value, StockCategory.concept.value])])
+                                [BlockCategory.industry.value, BlockCategory.concept.value])])
 
     for entity in entities:
         sql = 'UPDATE index_money_flow SET name="{}" where code="{}"'.format(

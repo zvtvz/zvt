@@ -8,13 +8,13 @@ from zvt.trader.trader import StockTrader
 
 
 class MyMaTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+        myselector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider='joinquant')
 
         myselector.add_filter_factor(
-            CrossMaFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+            CrossMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                           windows=[5, 10], persist_factor=False))
 
@@ -22,13 +22,13 @@ class MyMaTrader(StockTrader):
 
 
 class MyBullTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_type, exchanges, codes, start_timestamp, end_timestamp):
-        myselector = TargetSelector(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+        myselector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider='joinquant')
 
         myselector.add_filter_factor(
-            BullFactor(entity_ids=entity_ids, entity_type=entity_type, exchanges=exchanges,
+            BullFactor(entity_ids=entity_ids, entity_type=entity_schema, exchanges=exchanges,
                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp))
 
         self.selectors.append(myselector)

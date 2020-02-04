@@ -61,7 +61,7 @@ def get_cross_market_summary(
                     order=order, limit=limit,index=index,time_field=time_field)
 
 
-from zvt.domain import IndexMoneyFlow
+from zvt.domain import BlockMoneyFlow
 
 def get_index_money_flow(
         ids: List[str] = None,
@@ -81,10 +81,10 @@ def get_index_money_flow(
         limit: int = None,
         index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema=IndexMoneyFlow, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+    return get_data(data_schema=BlockMoneyFlow, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
                     code=code, level=level, provider=provider, columns=columns, return_type=return_type,
                     start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
-                    order=order, limit=limit,index=index,time_field=time_field)
+                    order=order, limit=limit, index=index, time_field=time_field)
 
 
 from zvt.domain import DragonAndTiger

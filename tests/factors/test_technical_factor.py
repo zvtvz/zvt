@@ -10,8 +10,7 @@ from zvt.factors.technical_factor import TechnicalFactor
 
 
 def test_ma():
-    factor = TechnicalFactor(entity_type='stock',
-                             codes=['000338'],
+    factor = TechnicalFactor(codes=['000338'],
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10',
                              level=IntervalLevel.LEVEL_1DAY,
@@ -41,8 +40,7 @@ def test_ma():
 
 
 def test_macd():
-    factor = TechnicalFactor(entity_type='stock',
-                             codes=['000338'],
+    factor = TechnicalFactor(codes=['000338'],
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10',
                              level=IntervalLevel.LEVEL_1DAY,
@@ -72,13 +70,12 @@ def test_macd():
 
 
 def test_cross_ma():
-    factor = CrossMaFactor(entity_type='stock',
-                           codes=['000338'],
+    factor = CrossMaFactor(codes=['000338'],
                            start_timestamp='2019-01-01',
                            end_timestamp='2019-06-10',
                            level=IntervalLevel.LEVEL_1DAY,
                            provider='joinquant',
-                           windows=[5,10])
+                           windows=[5, 10])
     print(factor.get_factor_df().tail())
     print(factor.get_result_df().tail())
 

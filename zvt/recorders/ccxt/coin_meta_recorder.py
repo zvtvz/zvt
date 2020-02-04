@@ -1,6 +1,6 @@
 import pandas as pd
 
-from zvdata.api import persist_entities
+from zvdata.api import df_to_db
 from zvdata.recorder import Recorder
 from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.domain.meta.coin_meta import Coin
@@ -13,7 +13,7 @@ class CoinMetaRecorder(Recorder):
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=10, exchanges=COIN_EXCHANGES) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
-        self.exchanges = COIN_EXCHANGES
+        self.exchanges = exchanges
 
     def run(self):
         for exchange_str in self.exchanges:
@@ -55,11 +55,13 @@ class CoinMetaRecorder(Recorder):
 
                 # 存储该交易所的数字货币列表
                 if not df.empty:
-                    persist_entities(df=df, entity_type='coin', provider=self.provider)
+                    df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=True)
                 self.logger.info("init_markets for {} success".format(exchange_str))
             except Exception as e:
-                self.logger.exception("init_markets for {} failed".format(exchange_str), e)
+                self.logger.exception(f"init_markets for {exchange_str} failed", e)
 
+
+__all__ = ["CoinMetaRecorder"]
 
 if __name__ == '__main__':
     CoinMetaRecorder().run()

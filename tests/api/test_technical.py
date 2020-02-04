@@ -3,7 +3,7 @@ from ..context import init_test_context
 
 init_test_context()
 
-from zvt.api.quote import get_entities, get_securities_in_blocks
+from zvt.api.quote import get_entities
 
 
 def test_basic_get_securities():
@@ -13,9 +13,3 @@ def test_basic_get_securities():
     print(items)
     items = get_entities(entity_type='coin', provider='ccxt')
     print(items)
-
-
-def test_get_security_blocks():
-    hs300 = get_securities_in_blocks(names=['HS300_'])
-    assert len(hs300) == 300
-    assert 'stock_sz_000338' in hs300

@@ -1,0 +1,10 @@
+alter table index_stock
+    add report_period VARCHAR(32);
+alter table index_stock
+	add report_date DATETIME;
+alter table index_stock
+	add proportion FLOAT;
+alter table index_stock
+	add shares FLOAT;
+alter table index_stock
+	add market_cap FLOAT;
