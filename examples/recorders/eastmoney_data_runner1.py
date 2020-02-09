@@ -15,13 +15,14 @@ sched = BackgroundScheduler()
 
 # 自行更改定定时运行时间
 # 这些数据都是些低频分散的数据，每天更新一次即可
-@sched.scheduled_job('cron', hour=2, minute=00)
+@sched.scheduled_job('cron', hour=2, minute=00, day_of_week=5)
 def run():
     while True:
         email_action = EmailInformer()
 
         try:
             Stock.record_data(provider='eastmoney')
+            Stock.record_data(provider='joinquant')
             FinanceFactor.record_data(provider='eastmoney')
             BalanceSheet.record_data(provider='eastmoney')
             IncomeStatement.record_data(provider='eastmoney')
