@@ -19,13 +19,13 @@ class FundamentalSelector(TargetSelector):
                                     the_timestamp=the_timestamp,
                                     columns=[BalanceSheet.accounts_receivable],
                                     filters=[
-                                        BalanceSheet.accounts_receivable <= 0.2 * BalanceSheet.total_current_assets],
+                                        BalanceSheet.accounts_receivable <= 0.3 * BalanceSheet.total_current_assets],
                                     start_timestamp=start_timestamp, end_timestamp=end_timestamp, provider='eastmoney',
                                     col_period_threshold=None)
         self.filter_factors.append(factor2)
 
 
 if __name__ == '__main__':
-    selector: TargetSelector = FundamentalSelector(start_timestamp='2000-01-01', end_timestamp='2019-06-30')
+    selector: TargetSelector = FundamentalSelector(start_timestamp='2015-01-01', end_timestamp='2019-06-30')
     selector.run()
     print(selector.get_targets('2019-06-30'))

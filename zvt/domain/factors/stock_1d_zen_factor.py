@@ -1,11 +1,44 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Float, String, Boolean, Integer
+import enum
+
+from sqlalchemy import Column, Float, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvdata import Mixin
 from zvdata.contract import register_schema
 
 Stock1dZenFactorBase = declarative_base()
+
+
+# k线的状态
+class KState(enum.Enum):
+    # 上升k线，可转换为 顶分型
+    up = 'up'
+    # 下降k线，可转换为 底分型
+    down = 'down'
+
+    # 顶分型
+    ding = 'ding'
+    # 底分型
+    di = 'di'
+
+
+# 笔的状态
+class BiState(enum.Enum):
+    # 向上笔，底分型 连 顶分型
+    up = 'up'
+    # 向下笔，顶分型 连 底分型
+    down = 'down'
+
+
+# 中枢状态
+class ZenState(enum.Enum):
+    # 震荡
+    shaking = 'shaking'
+    # 趋势向上
+    up = 'up'
+    # 趋势向下
+    down = 'down'
 
 
 class Stock1dZenFactor(Stock1dZenFactorBase, Mixin):
@@ -20,18 +53,12 @@ class Stock1dZenFactor(Stock1dZenFactorBase, Mixin):
     high = Column(Float)
     low = Column(Float)
 
-    # 确定的顶分型
-    zen_ding = Column(Boolean)
-    # 未确定的顶
-    tmp_ding = Column(Boolean)
-    # 确定的底分型
-    zen_di = Column(Boolean)
-    # 未确定的底
-    tmp_di = Column(Boolean)
-
-    # 笔的状态，1代表向上，-1代表向下
-    zen_bi_state = Column(Integer)
-    tmp_bi_state = Column(Integer)
+    # KState，当下k线的状态是确定的，笔状态的 延续和打破 受其影响
+    k_state = Column(String(length=32))
+    # BiState
+    bi_state = Column(String(length=32))
+    # ZenState
+    zen_state = Column(String(length=32))
 
 
 register_schema(providers=['zvt'], db_name='stock_1d_zen_factor', schema_base=Stock1dZenFactorBase)
