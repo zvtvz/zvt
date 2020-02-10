@@ -17,14 +17,15 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=16, minute=0, day='15')
+# 基本面选股 每周一次即可 基本无变化
+@sched.scheduled_job('cron', hour=16, minute=0, day_of_week='6')
 def report_core_company():
     while True:
         error_count = 0
         email_action = EmailInformer()
 
         try:
-            Stock.record_data(provider='eastmoney')
+            StockTradeDay.record_data(provider='joinquant')
             Stock.record_data(provider='joinquant')
             FinanceFactor.record_data(provider='eastmoney')
             BalanceSheet.record_data(provider='eastmoney')
@@ -54,16 +55,16 @@ def report_core_company():
 
             break
         except Exception as e:
-            logger.exception('report1 sched error:{}'.format(e))
+            logger.exception('report_core_company error:{}'.format(e))
             time.sleep(60 * 3)
             error_count = error_count + 1
             if error_count == 10:
-                email_action.send_message("5533061@qq.com", f'report ma targets error',
-                                          'report1 sched error:{}'.format(e))
+                email_action.send_message("5533061@qq.com", f'report_core_company error',
+                                          'report_core_company error:{}'.format(e))
 
 
 if __name__ == '__main__':
-    init_log('report1.log')
+    init_log('report_core_company.log')
 
     report_core_company()
 
