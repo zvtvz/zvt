@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from zvdata.api import get_entities
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import init_log
-from zvt.domain import Stock, StockTradeDay
+from zvt.domain import Stock, StockTradeDay, Stock1dKdata
 from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
@@ -25,8 +25,8 @@ def report_cross_ma():
 
         try:
             # 抓取k线数据
-            # StockTradeDay.record_data(provider='joinquant')
-            # JqChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
+            StockTradeDay.record_data(provider='joinquant')
+            Stock1dKdata.record_data(provider='joinquant')
 
             latest_day: StockTradeDay = StockTradeDay.query_data(order=StockTradeDay.timestamp.desc(), limit=1,
                                                                  return_type='domain')
@@ -59,12 +59,12 @@ def report_cross_ma():
 
             break
         except Exception as e:
-            logger.exception('report_cross_ma sched error:{}'.format(e))
+            logger.exception('report_cross_ma error:{}'.format(e))
             time.sleep(60 * 3)
             error_count = error_count + 1
             if error_count == 10:
-                email_action.send_message("5533061@qq.com", f'report ma targets error',
-                                          'report_cross_ma sched error:{}'.format(e))
+                email_action.send_message("5533061@qq.com", f'report_cross_ma error',
+                                          'report_cross_ma error:{}'.format(e))
 
 
 if __name__ == '__main__':
