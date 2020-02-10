@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
 from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
 from zvdata.api import get_data
@@ -109,20 +110,23 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
 
     def fill_timestamp_with_jq(self, security_item, the_data):
         # get report published date from jq
-        q = query(
-            indicator.pubDate
-        ).filter(
-            indicator.code == to_jq_entity_id(security_item),
-        )
+        try:
+            q = query(
+                indicator.pubDate
+            ).filter(
+                indicator.code == to_jq_entity_id(security_item),
+            )
 
-        df = get_fundamentals(q, statDate=to_jq_report_period(the_data.report_date))
-        if not df.empty:
-            the_data.timestamp = to_pd_timestamp(df['pubDate'][0])
-            self.logger.info(
-                'jq fill {} {} timestamp:{} for report_date:{}'.format(self.data_schema, security_item.id,
-                                                                       the_data.timestamp,
-                                                                       the_data.report_date))
-            self.session.commit()
+            df = get_fundamentals(q, statDate=to_jq_report_period(the_data.report_date))
+            if not df.empty and pd.isna(df).empty:
+                the_data.timestamp = to_pd_timestamp(df['pubDate'][0])
+                self.logger.info(
+                    'jq fill {} {} timestamp:{} for report_date:{}'.format(self.data_schema, security_item.id,
+                                                                           the_data.timestamp,
+                                                                           the_data.report_date))
+                self.session.commit()
+        except Exception as e:
+            self.logger.error(e)
 
     def on_finish_entity(self, entity):
         super().on_finish_entity(entity)
