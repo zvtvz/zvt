@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
 from zvdata.api import get_entities
-from zvdata.utils.time_utils import now_pd_timestamp
+from zvdata.utils.time_utils import now_pd_timestamp, to_time_str
 from zvt import init_log
 from zvt.domain import Stock, StockTradeDay, FinanceFactor, BalanceSheet
 from zvt.factors.target_selector import TargetSelector
@@ -51,7 +51,7 @@ def report_core_company():
 
             logger.info(msg)
 
-            email_action.send_message("5533061@qq.com", f'{target_date} 均线选股结果', msg)
+            email_action.send_message("5533061@qq.com", f'{to_time_str(target_date)} 核心资产选股结果', msg)
 
             break
         except Exception as e:
