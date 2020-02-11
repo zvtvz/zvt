@@ -12,7 +12,6 @@ from zvt.recorders.joinquant.common import to_jq_entity_id
 
 
 class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
-    # 复用eastmoney的股票列表
     entity_provider = 'joinquant'
     entity_schema = Stock
 
