@@ -22,7 +22,6 @@ def run():
 
         try:
             Stock.record_data(provider='eastmoney')
-            Stock.record_data(provider='joinquant')
             FinanceFactor.record_data(provider='eastmoney')
             BalanceSheet.record_data(provider='eastmoney')
             IncomeStatement.record_data(provider='eastmoney')
