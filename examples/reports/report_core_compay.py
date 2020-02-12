@@ -51,7 +51,7 @@ def report_core_company():
 
             logger.info(msg)
 
-            email_action.send_message("5533061@qq.com", f'{to_time_str(target_date)} 核心资产选股结果', msg)
+            email_action.send_message(['5533061@qq.com','manstiilin@protonmail.com'], f'{to_time_str(target_date)} 核心资产选股结果', msg)
 
             break
         except Exception as e:
