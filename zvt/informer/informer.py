@@ -31,8 +31,10 @@ class EmailInformer(Informer):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(title).encode()
         msg['From'] = "{} <{}>".format(Header('zvt').encode(), zvt_env['email_username'])
-        msg['To'] = to_user
-
+        if type(to_user) is list:
+            msg['To'] = ", ".join(to_user)
+        else:
+            msg['To'] = to_user
         msg['Message-id'] = email.utils.make_msgid()
         msg['Date'] = email.utils.formatdate()
 
@@ -129,8 +131,7 @@ class WechatInformer(Informer):
 
 if __name__ == '__main__':
     email_action = EmailInformer()
-    for i in range(2):
-        email_action.send_message("5533061@qq.com", 'helo{}'.format(i), 'just a test')
+    email_action.send_message(["5533061@qq.com",'2315983623@qq.com'], 'helo', 'just a test')
 
     # weixin_action = WechatInformer()
     # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',

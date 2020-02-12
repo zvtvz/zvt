@@ -25,8 +25,8 @@ def report_vol_up_250():
 
         try:
             # 抓取k线数据
-            StockTradeDay.record_data(provider='joinquant')
-            Stock1dKdata.record_data(provider='joinquant')
+            # StockTradeDay.record_data(provider='joinquant')
+            # Stock1dKdata.record_data(provider='joinquant')
 
             latest_day: StockTradeDay = StockTradeDay.query_data(order=StockTradeDay.timestamp.desc(), limit=1,
                                                                  return_type='domain')
@@ -55,7 +55,7 @@ def report_vol_up_250():
 
             logger.info(msg)
 
-            email_action.send_message(["5533061@qq.com","2242535441@qq.com",'manstiilin@protonmail.com'], f'{target_date} 放量突破年线选股结果', msg)
+            email_action.send_message(['5533061@qq.com','2242535441@qq.com','manstiilin@protonmail.com'], f'{target_date} 放量突破年线选股结果', msg)
 
             break
         except Exception as e:
