@@ -2,12 +2,13 @@
 import logging
 import time
 
+import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata.api import get_entities
 from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import init_log
-from zvt.domain import Stock, StockTradeDay, Stock1dKdata
+from zvt.domain import Stock, StockTradeDay
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
@@ -48,6 +49,14 @@ def report_vol_up_250():
             if long_targets:
                 stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
+                # add them to eastmoney
+                try:
+                    for stock in stocks:
+                        eastmoneypy.add_to_group(stock.code, group_name='tech')
+                except Exception as e:
+                    email_action.send_message("5533061@qq.com", f'report_vol_up_250 error',
+                                              'report_vol_up_250 error:{}'.format(e))
+
                 info = [f'{stock.name}({stock.code})' for stock in stocks]
                 msg = ' '.join(info)
             else:
@@ -55,7 +64,8 @@ def report_vol_up_250():
 
             logger.info(msg)
 
-            email_action.send_message(['5533061@qq.com','2242535441@qq.com','manstiilin@protonmail.com'], f'{target_date} 放量突破年线选股结果', msg)
+            email_action.send_message(['5533061@qq.com', '2242535441@qq.com', 'manstiilin@protonmail.com'],
+                                      f'{target_date} 放量突破年线选股结果', msg)
 
             break
         except Exception as e:

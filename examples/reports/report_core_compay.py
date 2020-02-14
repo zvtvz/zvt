@@ -2,6 +2,7 @@
 import logging
 import time
 
+import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
@@ -44,6 +45,15 @@ def report_core_company():
             if long_targets:
                 stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_targets,
                                       return_type='domain')
+
+                # add them to eastmoney
+                try:
+                    for stock in stocks:
+                        eastmoneypy.add_to_group(stock.code, group_name='core')
+                except Exception as e:
+                    email_action.send_message("5533061@qq.com", f'report_core_company error',
+                                              'report_core_company error:{}'.format(e))
+
                 info = [f'{stock.name}({stock.code})' for stock in stocks]
                 msg = ' '.join(info)
             else:
