@@ -109,7 +109,7 @@ In [17]: t.run()
 ```
 测试数据里面包含的SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']，试一下传入其任意组合，即可看多标的的效果。
 
-<p align="center"><img src='./docs/imgs/output-value.jpg'/></p>
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/output-value.jpg'/></p>
 
 ## 2. 📝正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
@@ -221,7 +221,7 @@ pip3 install pytest
 ### 3.2 测试案例
 pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试案例
 
-<p align="center"><img src='./docs/imgs/pytest.jpg'/></p>
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pytest.jpg'/></p>
 
 大部分功能使用都可以从tests里面参考
 
@@ -251,19 +251,19 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 ## 💌请作者喝杯咖啡
 
 如果你觉得项目对你有帮助,可以请作者喝杯咖啡  
-<img src="./docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
-<img src="./docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
+<img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
+<img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
 
 ## 🤝联系方式  
 
 QQ群:300911873  
 
 个人微信:foolcage 添加暗号:zvt  
-<img src="./docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
+<img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
 ------
 微信公众号:  
-<img src="./docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
+<img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
 
 知乎专栏:  
 https://zhuanlan.zhihu.com/automoney
