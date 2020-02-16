@@ -55,7 +55,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
                                   FinanceFactor.debt_asset_ratio <= 0.5),
                  order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = True,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
                  accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False,
                  # 3 years

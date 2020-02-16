@@ -32,7 +32,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                  codes=None,
                  batch_size=10,
                  force_update=True,
-                 sleeping_time=10,
+                 sleeping_time=0,
                  default_size=2000,
                  real_time=False,
                  fix_duplicate_way='ignore',
