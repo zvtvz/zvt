@@ -74,4 +74,4 @@ if __name__ == '__main__':
 
     assert round(diff.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.06
     assert round(dea.loc[('stock_sz_000338', '2019-06-17')], 2) == -0.03
-    assert round(macd.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.19
+    assert round(macd.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.18

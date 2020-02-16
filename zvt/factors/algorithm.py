@@ -23,6 +23,31 @@ class MaTransformer(Transformer):
         return input_df
 
 
+class MaAndVolumeTransformer(Transformer):
+    def __init__(self, windows=[5, 10], vol_windows=[30]) -> None:
+        self.windows = windows
+        self.vol_windows = vol_windows
+
+    def transform(self, input_df) -> pd.DataFrame:
+        for window in self.windows:
+            col = 'ma{}'.format(window)
+            self.indicator_cols.append(col)
+
+            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
+            ma_df = ma_df.reset_index(level=0, drop=True)
+            input_df[col] = ma_df
+
+        for vol_window in self.vol_windows:
+            col = 'vol_ma{}'.format(vol_window)
+            self.indicator_cols.append(col)
+
+            vol_ma_df = input_df['volume'].groupby(level=0).rolling(window=vol_window, min_periods=vol_window).mean()
+            vol_ma_df = vol_ma_df.reset_index(level=0, drop=True)
+            input_df[col] = vol_ma_df
+
+        return input_df
+
+
 class MacdTransformer(Transformer):
     def __init__(self, slow=26, fast=12, n=9) -> None:
         self.slow = slow

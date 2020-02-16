@@ -7,7 +7,6 @@ import pandas as pd
 from pandas import DataFrame
 
 from zvdata import IntervalLevel
-from zvdata.normal_data import NormalData
 from zvdata.utils.pd_utils import index_df, pd_is_not_null
 from zvdata.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
@@ -236,7 +235,8 @@ class TargetSelector(object):
         df['target_type'] = target_type.value
 
         if pd_is_not_null(df):
-            drawer = Drawer(NormalData(df=df))
+            df = df.reset_index(drop=False)
+            drawer = Drawer(df)
 
-            drawer.draw_table(render=render, file_name=file_name, width=width, height=height, title=title,
+            drawer.draw_table(width=width, height=height, title=title,
                               keep_ui_state=keep_ui_state)
