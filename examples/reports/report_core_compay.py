@@ -63,7 +63,7 @@ def report_core_company():
 
             email_action.send_message(
                 ['5533061@qq.com', 'manstiilin@protonmail.com', '2315983623@qq.com', '348886500@qq.com',
-                 'laosiji@protonmail.com', '2242535441@qq.com'], f'{to_time_str(target_date)} 核心资产选股结果', msg)
+                 'laosiji@protonmail.com', '2242535441@qq.com'], '31591084@qq.com',f'{to_time_str(target_date)} 核心资产选股结果', msg)
 
             break
         except Exception as e:
