@@ -64,7 +64,7 @@ def report_vol_up_250():
 
             logger.info(msg)
 
-            email_action.send_message(['5533061@qq.com', '2242535441@qq.com', 'manstiilin@protonmail.com'],
+            email_action.send_message(['5533061@qq.com', '2242535441@qq.com', 'manstiilin@protonmail.com','359101562@qq.com'],
                                       f'{target_date} 放量突破年线选股结果', msg)
 
             break
