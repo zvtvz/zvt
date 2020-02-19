@@ -52,6 +52,11 @@ def report_vol_up_250():
                                       return_type='domain')
                 # add them to eastmoney
                 try:
+                    try:
+                        eastmoneypy.del_group('tech')
+                    except:
+                        pass
+                    eastmoneypy.create_group('tech')
                     for stock in stocks:
                         eastmoneypy.add_to_group(stock.code, group_name='tech')
                 except Exception as e:

@@ -49,6 +49,11 @@ def report_core_company():
 
                 # add them to eastmoney
                 try:
+                    try:
+                        eastmoneypy.del_group('core')
+                    except:
+                        pass
+                    eastmoneypy.create_group('core')
                     for stock in stocks:
                         eastmoneypy.add_to_group(stock.code, group_name='core')
                 except Exception as e:
