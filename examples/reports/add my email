@@ -1,0 +1,7 @@
+logger.info(msg)
+
+            email_action.send_message(['evergreen214@163.com','lh200214@163.com'], f'{to_time_str(target_date)} 核心资产选股结果', msg)
+            email_action.send_message(['evergreen214@163.com','lh200214@163.com'], f'{to_time_str(target_date)} 核心资产选股结果', msg)
+
+            break
+        except Exception as e:
