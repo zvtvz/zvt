@@ -32,7 +32,7 @@ def report_core_company():
             # FinanceFactor.record_data(provider='eastmoney')
             # BalanceSheet.record_data(provider='eastmoney')
 
-            target_date = now_pd_timestamp()
+            target_date = to_time_str(now_pd_timestamp())
 
             my_selector: TargetSelector = FundamentalSelector(start_timestamp='2015-01-01', end_timestamp=target_date)
             my_selector.run()
