@@ -10,7 +10,7 @@ from examples.reports import subscriber_emails
 from zvdata.api import get_entities
 from zvdata.utils.time_utils import now_pd_timestamp, to_time_str
 from zvt import init_log
-from zvt.domain import Stock, StockTradeDay
+from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
 
@@ -27,17 +27,12 @@ def report_core_company():
         email_action = EmailInformer()
 
         try:
-            StockTradeDay.record_data(provider='joinquant')
+            # StockTradeDay.record_data(provider='joinquant')
             # Stock.record_data(provider='joinquant')
             # FinanceFactor.record_data(provider='eastmoney')
             # BalanceSheet.record_data(provider='eastmoney')
 
-            latest_day: StockTradeDay = StockTradeDay.query_data(order=StockTradeDay.timestamp.desc(), limit=1,
-                                                                 return_type='domain')
-            if latest_day:
-                target_date = latest_day[0].timestamp
-            else:
-                target_date = now_pd_timestamp()
+            target_date = now_pd_timestamp()
 
             my_selector: TargetSelector = FundamentalSelector(start_timestamp='2015-01-01', end_timestamp=target_date)
             my_selector.run()

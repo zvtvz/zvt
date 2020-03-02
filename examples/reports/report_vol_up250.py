@@ -5,11 +5,10 @@ import time
 import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.reports import subscriber_emails
+from examples.reports import get_subscriber_emails
 from zvdata.api import get_entities
-from zvdata.utils.time_utils import now_pd_timestamp
 from zvt import init_log
-from zvt.domain import Stock, StockTradeDay
+from zvt.domain import Stock, Stock1dKdata
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
@@ -27,15 +26,12 @@ def report_vol_up_250():
 
         try:
             # 抓取k线数据
-            StockTradeDay.record_data(provider='joinquant')
+            # StockTradeDay.record_data(provider='joinquant')
             # Stock1dKdata.record_data(provider='joinquant')
 
-            latest_day: StockTradeDay = StockTradeDay.query_data(order=StockTradeDay.timestamp.desc(), limit=1,
-                                                                 return_type='domain')
-            if latest_day:
-                target_date = latest_day[0].timestamp
-            else:
-                target_date = now_pd_timestamp()
+            latest_day: Stock1dKdata = Stock1dKdata.query_data(order=Stock1dKdata.timestamp.desc(), limit=1,
+                                                               return_type='domain')
+            target_date = latest_day[0].timestamp
 
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
@@ -70,7 +66,7 @@ def report_vol_up_250():
 
             logger.info(msg)
 
-            email_action.send_message(subscriber_emails, f'{target_date} 放量突破年线选股结果', msg)
+            email_action.send_message(get_subscriber_emails(), f'{target_date} 放量突破年线选股结果', msg)
 
             break
         except Exception as e:
