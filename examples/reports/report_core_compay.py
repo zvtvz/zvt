@@ -6,7 +6,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
-from examples.reports import subscriber_emails
+from examples.reports import get_subscriber_emails
 from zvdata.api import get_entities
 from zvdata.utils.time_utils import now_pd_timestamp, to_time_str
 from zvt import init_log
@@ -62,7 +62,7 @@ def report_core_company():
 
             logger.info(msg)
 
-            email_action.send_message(subscriber_emails, f'{to_time_str(target_date)} 核心资产选股结果', msg)
+            email_action.send_message(get_subscriber_emails(), f'{to_time_str(target_date)} 核心资产选股结果', msg)
             break
         except Exception as e:
             logger.exception('report_core_company error:{}'.format(e))
