@@ -27,6 +27,7 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         df = pd.DataFrame()
         dates = get_trade_days(start_date=start)
+        self.logger.info(f'add dates:{dates}')
         df['timestamp'] = pd.to_datetime(dates)
         df['id'] = [to_time_str(date) for date in dates]
         df['entity_id'] = 'stock_sz_000001'
