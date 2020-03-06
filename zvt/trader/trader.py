@@ -307,7 +307,8 @@ class Trader(object):
             import plotly.io as pio
             pio.renderers.default = "browser"
             reader = AccountReader(trader_names=[self.trader_name])
-            drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
+            df = reader.data_df.reset_index()
+            drawer = Drawer(main_data=NormalData(df.copy()[['trader_name', 'timestamp', 'all_value']],
                                                  category_field='trader_name'))
             drawer.draw_line()
 
@@ -352,8 +353,9 @@ class Trader(object):
 
             for level in self.trading_level_asc:
                 # in every cycle, all level selector do its job in its time
-                if (is_in_finished_timestamps(entity_type=self.entity_schema, exchange=self.exchanges[0],
-                                              timestamp=timestamp, level=level)):
+                if (
+                is_in_finished_timestamps(entity_type=self.entity_schema.__name__.lower(), exchange=self.exchanges[0],
+                                          timestamp=timestamp, level=level)):
                     long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
                                                                                           trading_level=level)
 
