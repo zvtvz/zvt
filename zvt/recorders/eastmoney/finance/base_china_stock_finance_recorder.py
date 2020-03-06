@@ -156,7 +156,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                                                  FinanceFactor.report_date <= the_data_list[-1].report_date, ])
 
                 if pd_is_not_null(df):
-                    index_df(df, index='report_date')
+                    index_df(df, index='report_date',time_field='report_date')
 
                 for the_data in the_data_list:
                     if (df is not None) and (not df.empty) and the_data.report_date in df.index:
