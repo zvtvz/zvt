@@ -8,92 +8,96 @@
 
 **Read this in other languages: [English](README-en.md).**  
 
-项目前身:[fooltrader](https://github.com/foolcage/fooltrader)
+ZVT是在[fooltrader](https://github.com/foolcage/fooltrader)的基础上重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
-##  1. 安装
+相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
 
-要求python版本>=3.6
+编写该系统的初心:
+* 构造一个中立标准的数据schema
+* 能够容易地把各provider的数据适配到系统
+* 相同的算法，只写一次，可以应用到任何市场
+* 适用于低耗能的人脑+个人电脑
+
+## 详细文档
+文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
+[http://zvt.foolcage.com](http://zvt.foolcage.com)  
+[https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
+
+##  1. 🔖5分钟用起来
+
+>一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。
+
+### 1.1 安装
+
+假设你已经在>=python3.6的环境中(建议新建一个干净的virtual env环境)
 ```
-pip3 install --upgrade zvt
-```
+pip3 install zvt -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
 
-## 2. 数据
-
-### 2.1 有什么
-进入ipython
-```
-In [1]: from zvt.domain import *
-In [2]: global_schemas
-[zvt.domain.dividend_financing.DividendFinancing,
- zvt.domain.dividend_financing.DividendDetail,
- zvt.domain.dividend_financing.SpoDetail...]
-```
-global_schemas为系统支持的schema,schema即表结构，即数据，其字段含义的查看方式如下：
-
-* 源码
-
-[domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)里的文件为schema的定义，查看相应字段的注释即可。
-
-* help
-
-输入schema.按tab提示其包含的字段，或者.help()
-```
-In [4]: FinanceFactor.help()
+pip3 show zvt
 ```
 
-### 2.2 数据获取
-#### 只需要一个方法：record_data()
-
+如果不是最新版本
 ```
-#股票列表
-In [2]: Stock.record_data(provider='eastmoney')
-#财务指标
-In [3]: FinanceFactor.record_data(codes=['000338'])
-#资产负债表
-In [4]: BalanceSheet.record_data(codes=['000338'])
-#利润表
-In [5]: IncomeStatement.record_data(codes=['000338'])
-#现金流量表
-In [5]: CashFlowStatement.record_data(codes=['000338'])
-```
-其他数据依样画葫芦即可。
-
-注意可选参数provider，其代表数据提供商，一个schema可以有多个provider,这是系统稳定的基石。
-
-查看**已实现**的provider
-```
-In [12]: Stock.provider_map_recorder
-Out[12]:
-{'joinquant': zvt.recorders.joinquant.meta.china_stock_meta_recorder.JqChinaStockRecorder,
- 'exchange': zvt.recorders.exchange.china_stock_list_spider.ExchangeChinaStockListRecorder,
- 'eastmoney': zvt.recorders.eastmoney.meta.china_stock_meta_recorder.EastmoneyChinaStockListRecorder}
-```
-你可以使用任意一个provider来获取数据，默认使用第一个。
-
-
-再举个例子，股票板块数据获取：
-```
-In [13]: Block.provider_map_recorder
-Out[13]:
-{'eastmoney': zvt.recorders.eastmoney.meta.china_stock_category_recorder.EastmoneyChinaBlockRecorder,
- 'sina': zvt.recorders.sina.meta.sina_china_stock_category_recorder.SinaChinaBlockRecorder}
-
-In [14]: Block.record_data(provider='sina')
-Block registered recorders:{'eastmoney': <class 'zvt.recorders.eastmoney.meta.china_stock_category_recorder.EastmoneyChinaBlockRecorder'>, 'sina': <class 'zvt.recorders.sina.meta.sina_china_stock_category_recorder.SinaChinaBlockRecorder'>}
-2020-03-04 23:56:48,931  INFO  MainThread  finish record sina blocks:industry
-2020-03-04 23:56:49,450  INFO  MainThread  finish record sina blocks:concept
+pip3 install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
 ```
 
-再多了解一点record_data：
-* 参数codes代表需要抓取的股票代码
-* 不传入codes则是全市场抓取
-* 该方法会把数据存储到本地并只做增量更新
-
-### 2.3 数据查询
-#### 只需要一个方法：query_data()
+> 请根据需要决定是否使用豆瓣镜像源
 
 
-## 3. 计算
+###  1.2 进入ipython,体验一把
+```
+In [1]: import os
+
+#这一句会进入测试环境，使用自带的测试数据
+In [2]: os.environ["TESTING_ZVT"] = "1"
+
+In [3]: from zvt import *
+{'data_path': '/Users/xuanqi/zvt-test-home/data',
+ 'domain_module': 'zvt.domain',
+ 'email_password': '',
+ 'email_username': '',
+ 'http_proxy': '127.0.0.1:1087',
+ 'https_proxy': '127.0.0.1:1087',
+ 'jq_password': '',
+ 'jq_username': '',
+ 'log_path': '/Users/xuanqi/zvt-test-home/logs',
+ 'smtp_host': 'smtpdm.aliyun.com',
+ 'smtp_port': '80',
+ 'ui_path': '/Users/xuanqi/zvt-test-home/ui',
+ 'wechat_app_id': '',
+ 'wechat_app_secrect': '',
+ 'zvt_home': '/Users/xuanqi/zvt-test-home'}
+In [5]: from zvt.api import *
+
+In [6]: df = get_kdata(entity_id='stock_sz_000338',provider='joinquant')
+
+n [8]: df.tail()
+Out[8]:
+                                    id        entity_id  timestamp   provider    code  name level   open  close   high    low       volume      turnover change_pct turnover_rate
+timestamp
+2019-10-29  stock_sz_000338_2019-10-29  stock_sz_000338 2019-10-29  joinquant  000338  潍柴动力    1d  12.00  11.78  12.02  11.76   28533132.0  3.381845e+08       None          None
+2019-10-30  stock_sz_000338_2019-10-30  stock_sz_000338 2019-10-30  joinquant  000338  潍柴动力    1d  11.74  12.05  12.08  11.61   42652561.0  5.066013e+08       None          None
+2019-10-31  stock_sz_000338_2019-10-31  stock_sz_000338 2019-10-31  joinquant  000338  潍柴动力    1d  12.05  11.56  12.08  11.50   77329380.0  9.010439e+08       None          None
+2019-11-01  stock_sz_000338_2019-11-01  stock_sz_000338 2019-11-01  joinquant  000338  潍柴动力    1d  11.55  12.69  12.70  11.52  160732771.0  1.974125e+09       None          None
+2019-11-04  stock_sz_000338_2019-11-04  stock_sz_000338 2019-11-04  joinquant  000338  潍柴动力    1d  12.77  13.00  13.11  12.77  126673139.0  1.643788e+09       None          None
+```
+
+### 1.3 财务数据
+```
+In [12]: from zvt.domain import *
+In [13]: df = get_finance_factor(entity_id='stock_sz_000338',columns=FinanceFactor.important_cols())
+
+In [14]: df.tail()
+Out[14]:
+            basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+timestamp
+2018-10-31       0.73     1.182000e+11  6.001000e+09                0.0595                 0.3037  0.1647  0.0414               0.2164      0.0681 2018-10-31
+2019-03-26       1.08     1.593000e+11  8.658000e+09                0.0507                 0.2716  0.2273  0.0589               0.2233      0.0730 2019-03-26
+2019-04-29       0.33     4.521000e+10  2.591000e+09                0.1530                 0.3499  0.0637  0.0160               0.2166      0.0746 2019-04-29
+2019-08-30       0.67     9.086000e+10  5.287000e+09                0.1045                 0.2037  0.1249  0.0315               0.2175      0.0759 2019-08-30
+2019-10-31       0.89     1.267000e+11  7.058000e+09                0.0721                 0.1761  0.1720  0.0435               0.2206      0.0736 2019-10-31
+
+```
 
 ### 1.4 跑个策略
 ```
@@ -172,6 +176,16 @@ https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4
 
 ### 2.4 更新数据
 
+```
+
+In [1]: from zvt.domain import *
+In [2]: global_schemas
+[zvt.domain.dividend_financing.DividendFinancing,
+ zvt.domain.dividend_financing.DividendDetail,
+ zvt.domain.dividend_financing.SpoDetail...]
+```
+整个系统的schema和其对应的recorders采取自注册的方式，global_schemas为系统支持的schema,而其对应的recorder以及如何更新数据，方法如下：
+```
 In [17]: FinanceFactor.provider_map_recorder
 Out[17]: {'eastmoney': zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder.ChinaStockFinanceFactorRecorder}
 
