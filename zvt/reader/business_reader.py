@@ -3,7 +3,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel
+from zvdata import IntervalLevel, Mixin, EntityMixin
 from zvdata.normal_data import NormalData
 from zvdata.reader import DataReader
 from zvt.domain import SimAccount, Order
@@ -30,8 +30,8 @@ class AccountReader(DataReader):
                 self.filters += filter
             else:
                 self.filters = filter
-        super().__init__(SimAccount, None, None, None, None, None, the_timestamp,
-                         start_timestamp, end_timestamp, columns, filters, order, None, 'zvt', level,
+        super().__init__(SimAccount, None, None, None, None, None, None,
+                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, None, level,
                          'trader_name', 'timestamp', None)
 
 
