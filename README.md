@@ -271,12 +271,96 @@ code
 603379  603379     2.9400     4.454000e+09  1.108000e+09                0.1423                 0.1609  0.5476  0.3547               0.3959      0.2488 2019-03-13
 ```
 
-
-解决了这三个问题，基本上就可以应付大部分日常数据的使用了。
+以上，基本上就可以应付大部分日常数据的使用了。  
 如果你想扩展数据，可以参考详细文档里的数据部分。
 
 ## 4. 计算
 简单的计算可以通过query_data来完成，这里说的是系统设计的一种计算模型。
+
+下面以技术因子为例对**计算流程**进行说明:
+```
+In [7]: from zvt.factors.technical_factor import *
+In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer())
+```
+### data_df
+data_df为factor的原始数据，即通过query_data从数据库读取到的数据,为一个**二维索引**DataFrame
+```
+In [11]: factor.data_df
+Out[11]:
+                           level   high                          id        entity_id   open    low  timestamp  close
+entity_id       timestamp
+stock_sh_601318 2019-01-02    1d  54.91  stock_sh_601318_2019-01-02  stock_sh_601318  54.78  53.70 2019-01-02  53.94
+                2019-01-03    1d  55.06  stock_sh_601318_2019-01-03  stock_sh_601318  53.91  53.82 2019-01-03  54.42
+                2019-01-04    1d  55.71  stock_sh_601318_2019-01-04  stock_sh_601318  54.03  53.98 2019-01-04  55.31
+                2019-01-07    1d  55.88  stock_sh_601318_2019-01-07  stock_sh_601318  55.80  54.64 2019-01-07  55.03
+                2019-01-08    1d  54.83  stock_sh_601318_2019-01-08  stock_sh_601318  54.79  53.96 2019-01-08  54.54
+...                          ...    ...                         ...              ...    ...    ...        ...    ...
+stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_000338  10.93  10.74 2019-06-03  10.81
+                2019-06-04    1d  10.85  stock_sz_000338_2019-06-04  stock_sz_000338  10.84  10.57 2019-06-04  10.73
+                2019-06-05    1d  10.92  stock_sz_000338_2019-06-05  stock_sz_000338  10.87  10.59 2019-06-05  10.59
+                2019-06-06    1d  10.71  stock_sz_000338_2019-06-06  stock_sz_000338  10.59  10.49 2019-06-06  10.65
+                2019-06-10    1d  11.05  stock_sz_000338_2019-06-10  stock_sz_000338  10.73  10.71 2019-06-10  11.02
+
+[208 rows x 8 columns]
+```
+
+### factor_df
+factor_df为transformer对data_df进行计算后得到的数据，设计因子即对[transformer](https://github.com/zvtvz/zvt/blob/master/zvt/factors/factor.py#L18)进行扩展，例子中用的是MacdTransformer()。
+
+```
+In [12]: factor.factor_df
+Out[12]:
+                           level   high                          id        entity_id   open    low  timestamp  close      diff       dea      macd
+entity_id       timestamp
+stock_sh_601318 2019-01-02    1d  54.91  stock_sh_601318_2019-01-02  stock_sh_601318  54.78  53.70 2019-01-02  53.94       NaN       NaN       NaN
+                2019-01-03    1d  55.06  stock_sh_601318_2019-01-03  stock_sh_601318  53.91  53.82 2019-01-03  54.42       NaN       NaN       NaN
+                2019-01-04    1d  55.71  stock_sh_601318_2019-01-04  stock_sh_601318  54.03  53.98 2019-01-04  55.31       NaN       NaN       NaN
+                2019-01-07    1d  55.88  stock_sh_601318_2019-01-07  stock_sh_601318  55.80  54.64 2019-01-07  55.03       NaN       NaN       NaN
+                2019-01-08    1d  54.83  stock_sh_601318_2019-01-08  stock_sh_601318  54.79  53.96 2019-01-08  54.54       NaN       NaN       NaN
+...                          ...    ...                         ...              ...    ...    ...        ...    ...       ...       ...       ...
+stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_000338  10.93  10.74 2019-06-03  10.81 -0.121336 -0.145444  0.048215
+                2019-06-04    1d  10.85  stock_sz_000338_2019-06-04  stock_sz_000338  10.84  10.57 2019-06-04  10.73 -0.133829 -0.143121  0.018583
+                2019-06-05    1d  10.92  stock_sz_000338_2019-06-05  stock_sz_000338  10.87  10.59 2019-06-05  10.59 -0.153260 -0.145149 -0.016223
+                2019-06-06    1d  10.71  stock_sz_000338_2019-06-06  stock_sz_000338  10.59  10.49 2019-06-06  10.65 -0.161951 -0.148509 -0.026884
+                2019-06-10    1d  11.05  stock_sz_000338_2019-06-10  stock_sz_000338  10.73  10.71 2019-06-10  11.02 -0.137399 -0.146287  0.017776
+
+[208 rows x 11 columns]
+```
+
+### result_df
+result_df为可用于选股器的**二维索引**DataFrame，通过对data_df或factor_df计算来实现。
+该例子在计算macd之后，利用factor_df,黄白线在0轴上为True,否则为False，[具体代码](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_factor.py#L56)
+
+```
+In [14]: factor.result_df
+Out[14]:
+                            score
+entity_id       timestamp
+stock_sh_601318 2019-01-02  False
+                2019-01-03  False
+                2019-01-04  False
+                2019-01-07  False
+                2019-01-08  False
+...                           ...
+stock_sz_000338 2019-06-03  False
+                2019-06-04  False
+                2019-06-05  False
+                2019-06-06  False
+                2019-06-10  False
+
+[208 rows x 1 columns]
+```
+
+不同类型Factor的result_df格式如下：
+
+* filter类型
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/filter_factor.png'/></p>
+
+* score类型
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/score_factor.png'/></p>
+
+结合选股器和回测，整个流程如下：
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/flow.png'/></p>
 
 ## 5. 🚀开发
 
