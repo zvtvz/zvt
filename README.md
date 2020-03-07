@@ -121,7 +121,7 @@ In [1]: from zvt import *
 
 所有操作跟测试环境是一致的，只是操作的目录不同。
 
-### 2.1 配置
+### 2.1 配置（可选）
 在zvt_home目录中找到config.json进行配置：
 
 #### 使用聚宽数据需要设置：
@@ -164,7 +164,7 @@ https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4
 > 添加其他数据提供商，请参考[数据扩展教程](http://zvt.foolcage.com/#/data_extending)
 
 ## 3. 数据
-下面介绍如何用一种**统一**的方式来回答三个问题：**有什么数据？如何更新更新？如何查询数据？**
+下面介绍如何用一种**统一**的方式来回答三个问题：**有什么数据？如何更新数据？如何查询数据？**
 
 ### 3.1 有什么数据?
 ```
@@ -202,6 +202,7 @@ In [5]: IncomeStatement.record_data(codes=['000338'])
 #现金流量表
 In [5]: CashFlowStatement.record_data(codes=['000338'])
 ```
+
 其他数据依样画葫芦即可。
 
 注意可选参数provider，其代表数据提供商，一个schema可以有多个provider,这是系统稳定的基石。
