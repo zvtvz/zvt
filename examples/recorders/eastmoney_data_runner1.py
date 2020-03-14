@@ -27,13 +27,13 @@ def run():
             IncomeStatement.record_data(provider='eastmoney')
             CashFlowStatement.record_data(provider='eastmoney')
 
-            email_action.send_message("5533061@qq.com", 'eastmoney recorder1 finished', '')
+            email_action.send_message("5533061@qq.com", 'eastmoney runner1 finished', '')
             break
         except Exception as e:
-            msg = f'eastmoney recorder error:{e}'
+            msg = f'eastmoney runner1 error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'eastmoney recorder1 error', msg)
+            email_action.send_message("5533061@qq.com", 'eastmoney runner1 error', msg)
             time.sleep(60)
 
 
