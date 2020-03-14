@@ -16,7 +16,7 @@ class BlockSelector(TargetSelector):
     def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
         block_factor = BlockMoneyFlowFactor(start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                            provider='sina')
+                                            provider='sina', window=10)
         self.score_factors.append(block_factor)
 
 
