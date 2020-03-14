@@ -43,7 +43,7 @@ def report_real():
             msg = 'no targets'
             if long_stocks:
                 # use block to filter
-                block_selector = BlockSelector(start_timestamp='2020-01-01')
+                block_selector = BlockSelector(start_timestamp='2020-01-01', long_threshold=0.7)
                 block_selector.run()
                 long_blocks = block_selector.get_open_long_targets(timestamp=target_date)
 
