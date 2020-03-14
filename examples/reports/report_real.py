@@ -71,7 +71,7 @@ def report_real():
                             stocks = block_map_stocks.get(block_stock.name)
                             if not stocks:
                                 stocks = []
-                                block_stocks[block_stock.name] = stocks
+                                block_map_stocks[block_stock.name] = stocks
                             stocks.append(f'{block_stock.stock_name}({block_stock.stock_code})')
 
                         msg = ''
