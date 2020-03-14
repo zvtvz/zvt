@@ -19,26 +19,22 @@ def run():
         email_action = EmailInformer()
 
         try:
-            Stock.record_data(provider='joinquant')
-            StockTradeDay.record_data(provider='joinquant')
-            Stock1dKdata.record_data(provider='joinquant')
-            StockValuation.record_data(provider='joinquant')
+            Block.record_data(provider='sina')
+            BlockStock.record_data(provider='sina')
+            BlockMoneyFlow.record_data(provider='sina')
 
-            Etf.record_data(provider='joinquant')
-            EtfStock.record_data(provider='joinquant')
-
-            email_action.send_message("5533061@qq.com", 'joinquant runner finished', '')
+            email_action.send_message("5533061@qq.com", 'sina runner finished', '')
             break
         except Exception as e:
-            msg = f'joinquant runner error:{e}'
+            msg = f'sina runner error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'joinquant runner error', msg)
+            email_action.send_message("5533061@qq.com", 'sina runner error', msg)
             time.sleep(60)
 
 
 if __name__ == '__main__':
-    init_log('joinquant_data_runner.log')
+    init_log('sina_data_runner.log')
 
     run()
 
