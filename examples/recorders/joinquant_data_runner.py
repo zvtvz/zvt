@@ -19,13 +19,13 @@ def run():
         email_action = EmailInformer()
 
         try:
-            Stock.record_data(provider='joinquant')
-            StockTradeDay.record_data(provider='joinquant')
-            Stock1dKdata.record_data(provider='joinquant')
-            StockValuation.record_data(provider='joinquant')
+            Stock.record_data(provider='joinquant', sleeping_time=0)
+            StockTradeDay.record_data(provider='joinquant', sleeping_time=0)
+            Stock1dKdata.record_data(provider='joinquant', sleeping_time=0)
+            StockValuation.record_data(provider='joinquant', sleeping_time=0)
 
-            Etf.record_data(provider='joinquant')
-            EtfStock.record_data(provider='joinquant')
+            Etf.record_data(provider='joinquant', sleeping_time=0)
+            EtfStock.record_data(provider='joinquant', sleeping_time=0)
 
             email_action.send_message("5533061@qq.com", 'joinquant runner finished', '')
             break
