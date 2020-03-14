@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from examples.reports import get_subscriber_emails
 from zvdata.api import get_entities
 from zvt import init_log
-from zvt.domain import Stock, Stock1dKdata
+from zvt.domain import Stock, Stock1dKdata, StockValuation
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
@@ -42,9 +42,16 @@ def report_vol_up_250():
 
             my_selector.run()
 
-            long_targets = my_selector.get_open_long_targets(timestamp=target_date)
-            if long_targets:
-                stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_targets,
+            long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
+
+            # 过滤亏损股
+            positive_df = StockValuation.query_data(provider='joinquant', entity_ids=long_stocks,
+                                                    start_timestamp=target_date, end_timestamp=target_date,
+                                                    filters=[StockValuation.pe > 0],
+                                                    columns=['entity_id'])
+            long_stocks = positive_df['entity_id'].tolist()
+            if long_stocks:
+                stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_stocks,
                                       return_type='domain')
                 # add them to eastmoney
                 try:

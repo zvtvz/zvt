@@ -21,11 +21,15 @@ class Informer(object):
 
 
 class EmailInformer(Informer):
-    def __init__(self) -> None:
+    def __init__(self, ssl=True) -> None:
         super().__init__()
+        self.ssl = ssl
 
     def send_message(self, to_user, title, body, **kwargs):
-        smtp_client = smtplib.SMTP()
+        if self.ssl:
+            smtp_client = smtplib.SMTP_SSL()
+        else:
+            smtp_client = smtplib.SMTP()
         smtp_client.connect(zvt_env['smtp_host'], zvt_env['smtp_port'])
         smtp_client.login(zvt_env['email_username'], zvt_env['email_password'])
         msg = MIMEMultipart('alternative')
@@ -130,8 +134,8 @@ class WechatInformer(Informer):
 
 
 if __name__ == '__main__':
-    email_action = EmailInformer()
-    email_action.send_message(["5533061@qq.com",'2315983623@qq.com'], 'helo', 'just a test')
+    email_action = EmailInformer(ssl=True)
+    email_action.send_message(["5533061@qq.com", '2315983623@qq.com'], 'helo', 'just a test')
 
     # weixin_action = WechatInformer()
     # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',

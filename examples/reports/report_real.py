@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.block_selector import BlockSelector
 from zvt import init_log
-from zvt.domain import Stock1dKdata, BlockStock
+from zvt.domain import Stock1dKdata, BlockStock, Block, StockValuation
 from zvt.factors import TargetSelector
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
 from zvt.informer.informer import EmailInformer
@@ -22,13 +22,13 @@ sched = BackgroundScheduler()
 def report_real():
     while True:
         error_count = 0
-        email_action = EmailInformer()
+        email_action = EmailInformer(ssl=True)
 
         try:
             latest_day: Stock1dKdata = Stock1dKdata.query_data(order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
-            target_date = latest_day[0].timestamp
-            # target_date = '2020-02-04'
+            # target_date = latest_day[0].timestamp
+            target_date = '2020-02-04'
 
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
@@ -41,14 +41,27 @@ def report_real():
 
             long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
 
+            # 过滤亏损股
+            positive_df = StockValuation.query_data(provider='joinquant', entity_ids=long_stocks,
+                                                    start_timestamp=target_date, end_timestamp=target_date,
+                                                    filters=[StockValuation.pe > 0],
+                                                    columns=['entity_id'])
+            long_stocks = positive_df['entity_id'].tolist()
+
             msg = 'no targets'
             if long_stocks:
                 # use block to filter
-                block_selector = BlockSelector(start_timestamp='2020-01-01', long_threshold=0.7)
+                block_selector = BlockSelector(start_timestamp='2020-01-01', long_threshold=0.8)
                 block_selector.run()
                 long_blocks = block_selector.get_open_long_targets(timestamp=target_date)
 
                 if long_blocks:
+                    blocks: List[Block] = Block.query_data(provider='sina', entity_ids=long_blocks,
+                                                           return_type='domain')
+
+                    info = [f'{block.name}({block.code})' for block in blocks]
+                    msg = ' '.join(info) + '\n'
+
                     block_stocks: List[BlockStock] = BlockStock.query_data(provider='sina',
                                                                            filters=[
                                                                                BlockStock.stock_id.in_(long_stocks)],
@@ -75,12 +88,12 @@ def report_real():
                                 block_map_stocks[block_stock.name] = stocks
                             stocks.append(f'{block_stock.stock_name}({block_stock.stock_code})')
 
-                        msg = ''
                         for block in block_map_stocks:
                             stocks = block_map_stocks[block]
                             stock_msg = ' '.join(stocks)
                             msg = msg + f'{block}:\n' + stock_msg + '\n'
 
+            logger.info(msg)
             email_action.send_message('5533061@qq.com', f'{target_date} 放量突破年线real选股结果', msg)
             break
         except Exception as e:
