@@ -75,7 +75,8 @@ def report_real():
                             stocks.append(f'{block_stock.stock_name}({block_stock.stock_code})')
 
                         msg = ''
-                        for block, stocks in block_map_stocks:
+                        for block in block_map_stocks:
+                            stocks = block_map_stocks[block]
                             info = [f'{stock.name}({stock.code})' for stock in stocks]
                             stock_msg = ' '.join(info)
                             msg = msg + f'{block}:\n' + stock_msg + '\n'
