@@ -14,7 +14,7 @@ sched = BackgroundScheduler()
 
 
 @sched.scheduled_job('cron', hour=15, minute=30)
-def run():
+def record_kdata():
     while True:
         email_action = EmailInformer()
 
@@ -24,8 +24,24 @@ def run():
             Stock1dKdata.record_data(provider='joinquant', sleeping_time=1)
             StockValuation.record_data(provider='joinquant', sleeping_time=1)
 
-            Etf.record_data(provider='joinquant', sleeping_time=0)
-            EtfStock.record_data(provider='joinquant', sleeping_time=0)
+            email_action.send_message("5533061@qq.com", 'joinquant record kdata finished', '')
+            break
+        except Exception as e:
+            msg = f'joinquant runner error:{e}'
+            logger.exception(msg)
+
+            email_action.send_message("5533061@qq.com", 'joinquant runner error', msg)
+            time.sleep(60)
+
+
+@sched.scheduled_job('cron', hour=18, minute=30)
+def record_others():
+    while True:
+        email_action = EmailInformer()
+
+        try:
+            Etf.record_data(provider='joinquant', sleeping_time=1)
+            EtfStock.record_data(provider='joinquant', sleeping_time=1)
 
             email_action.send_message("5533061@qq.com", 'joinquant runner finished', '')
             break
@@ -40,7 +56,7 @@ def run():
 if __name__ == '__main__':
     init_log('joinquant_data_runner.log')
 
-    run()
+    record_kdata()
 
     sched.start()
 

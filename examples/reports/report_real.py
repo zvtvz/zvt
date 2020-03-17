@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 import time
 from typing import List
@@ -7,8 +8,9 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.block_selector import BlockSelector
+from zvdata.api import get_entities
 from zvt import init_log
-from zvt.domain import Stock1dKdata, BlockStock, Block, StockValuation
+from zvt.domain import Stock1dKdata, BlockStock, Block, StockValuation, Stock
 from zvt.factors import TargetSelector
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
 from zvt.informer.informer import EmailInformer
@@ -27,8 +29,8 @@ def report_real():
         try:
             latest_day: Stock1dKdata = Stock1dKdata.query_data(order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
-            # target_date = latest_day[0].timestamp
-            target_date = '2020-02-04'
+            target_date = latest_day[0].timestamp
+            # target_date = '2020-02-04'
 
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
@@ -41,14 +43,24 @@ def report_real():
 
             long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
 
-            # 过滤亏损股
-            positive_df = StockValuation.query_data(provider='joinquant', entity_ids=long_stocks,
-                                                    start_timestamp=target_date, end_timestamp=target_date,
-                                                    filters=[StockValuation.pe > 0],
-                                                    columns=['entity_id'])
-            long_stocks = positive_df['entity_id'].tolist()
-
             msg = 'no targets'
+            # 过滤亏损股
+            # check StockValuation data
+            pe_date = target_date - datetime.timedelta(10)
+            if StockValuation.query_data(start_timestamp=pe_date, limit=1, return_type='domain'):
+                positive_df = StockValuation.query_data(provider='joinquant', entity_ids=long_stocks,
+                                                        start_timestamp=pe_date,
+                                                        filters=[StockValuation.pe > 0],
+                                                        columns=['entity_id'])
+                bad_stocks = set(long_stocks) - set(positive_df['entity_id'].tolist())
+                if bad_stocks:
+                    stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=bad_stocks,
+                                          return_type='domain')
+                    info = [f'{stock.name}({stock.code})' for stock in stocks]
+                    msg = '亏损股:' + ' '.join(info) + '\n'
+
+                long_stocks = set(positive_df['entity_id'].tolist())
+
             if long_stocks:
                 # use block to filter
                 block_selector = BlockSelector(start_timestamp='2020-01-01', long_threshold=0.8)
