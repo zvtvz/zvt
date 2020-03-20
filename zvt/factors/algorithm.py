@@ -8,10 +8,14 @@ from zvt.factors.factor import Scorer, Transformer
 
 
 class MaTransformer(Transformer):
-    def __init__(self, windows=[5, 10]) -> None:
+    def __init__(self, windows=[5, 10], cal_change_pct=False) -> None:
         self.windows = windows
+        self.cal_change_pct = cal_change_pct
 
     def transform(self, input_df) -> pd.DataFrame:
+        if self.cal_change_pct:
+            input_df['change_pct'] = input_df['close'].pct_change()
+
         for window in self.windows:
             col = 'ma{}'.format(window)
             self.indicator_cols.append(col)
