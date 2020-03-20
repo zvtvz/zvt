@@ -43,6 +43,7 @@ class MaAccumulator(Accumulator):
 
         for entity_id, df in input_df.groupby(level=0):
             count = 0
+            pct = 1
             current_state = None
             pre_index = None
             check_acc = False
@@ -62,6 +63,11 @@ class MaAccumulator(Accumulator):
                         count = count + 1
                     else:
                         count = count - 1
+                    if pct == 0:
+                        pct = df['change_pct'][index]
+                    else:
+                        pct = (1 + pct) * (1 + df['change_pct'][index]) - 1
+
                 else:
                     # 状态切换，设置前一状态的总和
                     if count != 0:
@@ -72,6 +78,7 @@ class MaAccumulator(Accumulator):
                         count = 1
                     else:
                         count = -1
+                    pct = 0
 
                     # 增量计算，需要累加之前的结果
                     if pd_is_not_null(acc_df) and not check_acc:
@@ -92,6 +99,7 @@ class MaAccumulator(Accumulator):
 
                 # 设置目前状态
                 input_df.loc[index, self.current_col] = count
+                input_df.loc[index, 'current_pct'] = pct
 
                 pre_index = index
 
@@ -108,7 +116,7 @@ class MaAccumulator(Accumulator):
         return acc_df
 
 
-class MaStateStas(TechnicalFactor):
+class MaStateStatsFactor(TechnicalFactor):
 
     def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
@@ -127,7 +135,7 @@ class MaStateStas(TechnicalFactor):
         self.short_window = short_window
         self.long_window = long_window
 
-        transformer: Transformer = MaTransformer(windows=[short_window, long_window])
+        transformer: Transformer = MaTransformer(windows=[short_window, long_window], cal_change_pct=True)
         accumulator = MaAccumulator(short_window=short_window, long_window=long_window)
 
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
@@ -154,6 +162,7 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = MaStateStas(codes=codes, start_timestamp='2005-01-01',
-                         end_timestamp=now_pd_timestamp(),
-                         level=level)
+    factor = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
+                                end_timestamp=now_pd_timestamp(), persist_factor=False,
+                                level=level)
+    print(factor.factor_df)
