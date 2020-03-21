@@ -7,7 +7,6 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvdata.api import get_entities
-from zvdata.utils.time_utils import to_pd_timestamp
 from zvt import init_log
 from zvt.domain import Stock1dKdata, StockValuation, Stock
 from zvt.factors import TargetSelector
@@ -29,8 +28,8 @@ def report_state():
         try:
             latest_day: Stock1dKdata = Stock1dKdata.query_data(order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
-            # target_date = latest_day[0].timestamp
-            target_date = to_pd_timestamp('2020-01-02')
+            target_date = latest_day[0].timestamp
+            # target_date = to_pd_timestamp('2020-01-02')
 
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
