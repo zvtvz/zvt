@@ -24,7 +24,7 @@ class Stock1dMaStateStats(Stock1dMaStateStatsBase, Mixin):
     # 此轮维持状态的最大值，即切换点
     total_count = Column(Integer)
     # 涨跌幅
-    total_pct = Column(Integer)
+    # total_pct = Column(Integer)
 
 
 register_schema(providers=['zvt'], db_name='stock_1d_ma_stats', schema_base=Stock1dMaStateStatsBase)
