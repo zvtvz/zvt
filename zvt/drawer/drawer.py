@@ -5,25 +5,33 @@ import pandas as pd
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
-from zvdata.api import decode_entity_id, get_data
+from zvdata.api import decode_entity_id
 from zvdata.normal_data import NormalData
+from zvdata.reader import DataReader
 from zvdata.utils.pd_utils import pd_is_not_null
 from zvdata.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
 from zvt import zvt_env
-from zvt.domain import Stock1dKdata, Stock1dMaStateStats
+from zvt.domain import Stock1dKdata, Stock1dMaStateStats, Stock
 
 
 class Drawer(object):
     def __init__(self,
                  main_df: pd.DataFrame = None,
+                 factor_df: pd.DataFrame = None,
                  sub_df: pd.DataFrame = None,
                  main_data: NormalData = None,
+                 factor_data: NormalData = None,
                  sub_data: NormalData = None,
                  annotation_df: pd.DataFrame = None) -> None:
         # 主图数据
         if main_data is None:
             main_data = NormalData(main_df)
         self.main_data: NormalData = main_data
+
+        # 主图因子
+        if factor_data is None:
+            factor_data = NormalData(factor_df)
+        self.factor_data: NormalData = factor_data
 
         # 副图数据
         if sub_data is None:
@@ -36,7 +44,7 @@ class Drawer(object):
     def _draw(self,
               main_chart='kline',
               sub_chart='bar',
-              mode='markers',
+              mode='lines',
               width=None,
               height=None,
               title=None,
@@ -65,6 +73,16 @@ class Drawer(object):
                     trace_name = '{}_{}'.format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, **kwargs))
+
+            # 绘制幅图
+            factor_df = self.factor_data.entity_map_df.get(entity_id)
+            if pd_is_not_null(factor_df):
+                for col in factor_df.columns:
+                    trace_name = '{}_{}'.format(code, col)
+                    ydata = factor_df[col].values.tolist()
+
+                    line = go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, **kwargs)
+                    traces.append(line)
 
             if subplot:
                 # 绘制幅图
@@ -256,9 +274,10 @@ def to_annotations(annotation_df: pd.DataFrame):
 
 
 if __name__ == '__main__':
-    df = get_data(data_schema=Stock1dKdata, provider='joinquant', entity_ids=['stock_sz_000001', 'stock_sz_000002'])
-    df1 = get_data(data_schema=Stock1dMaStateStats, provider='zvt', entity_ids=['stock_sz_000001', 'stock_sz_000002'],
-                   columns=['current_count'])
+    data_reader1 = DataReader(codes=['002223'], data_schema=Stock1dKdata, entity_schema=Stock)
+    data_reader2 = DataReader(codes=['002223'], data_schema=Stock1dMaStateStats, entity_schema=Stock,
+                              columns=['ma5', 'ma10', 'current_count', 'current_pct'])
 
-    drawer = Drawer(df, df1[['current_count']])
+    drawer = Drawer(main_df=data_reader1.data_df, factor_df=data_reader2.data_df[['ma5', 'ma10']],
+                    sub_df=data_reader2.data_df[['current_pct']])
     drawer.draw_kline()

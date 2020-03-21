@@ -6,7 +6,6 @@ import pandas as pd
 
 from zvdata import IntervalLevel, EntityMixin
 from zvdata.utils.pd_utils import pd_is_not_null
-from zvdata.utils.time_utils import now_pd_timestamp
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_ma_state_stats_schema
 from zvt.factors.algorithm import MaTransformer
@@ -88,13 +87,22 @@ class MaAccumulator(Accumulator):
                                 # up
                                 if acc_col_current > 0 and (current_state == 'up'):
                                     count = acc_col_current + 1
+
+                                    pct = acc_df.loc[(entity_id,)].iloc[-1]["current_pct"]
+                                    pct = (1 + pct) * (1 + df['change_pct'][index]) - 1
+
                                 # down
                                 elif acc_col_current < 0 and (current_state == 'down'):
                                     count = acc_col_current - 1
+
+                                    pct = acc_df.loc[(entity_id,)].iloc[-1]["current_pct"]
+                                    pct = (1 + pct) * (1 + df['change_pct'][index]) - 1
+
                                 # state has changed
                                 else:
                                     pre_timestamp = acc_df.loc[(entity_id,), 'timestamp'][-1]
                                     acc_df.loc[(entity_id, pre_timestamp), self.total_col] = acc_col_current
+
                         check_acc = True
 
                 # 设置目前状态
@@ -148,8 +156,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d',
                         choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--start', help='start code', default='000338')
-    parser.add_argument('--end', help='end code', default='000339')
+    parser.add_argument('--start', help='start code', default='002223')
+    parser.add_argument('--end', help='end code', default='002224')
 
     args = parser.parse_args()
 
@@ -163,6 +171,9 @@ if __name__ == '__main__':
     codes = entities.index.to_list()
 
     factor = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
-                                end_timestamp=now_pd_timestamp(), persist_factor=False,
+                                end_timestamp='2020-04-01', persist_factor=True,
                                 level=level)
     print(factor.factor_df)
+
+    for entity_id, df in factor.factor_df.groupby(level=0):
+        print(df['current_pct'].max)

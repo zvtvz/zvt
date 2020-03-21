@@ -307,7 +307,7 @@ class Trader(object):
             import plotly.io as pio
             pio.renderers.default = "browser"
             reader = AccountReader(trader_names=[self.trader_name])
-            df = reader.data_df.reset_index()
+            df = reader.data_df
             drawer = Drawer(main_data=NormalData(df.copy()[['trader_name', 'timestamp', 'all_value']],
                                                  category_field='trader_name'))
             drawer.draw_line()

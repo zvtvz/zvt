@@ -36,7 +36,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.7.7',  # Required
+    version='0.7.8',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -119,7 +119,7 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
 
-    install_requires=['zvdata>=1.2.2', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2',
+    install_requires=['zvdata>=1.2.3', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2',
                       'arrow>=0.11.0', 'marshmallow >= 3.2.2', 'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0',
                       'jqdatasdk', 'demjson>=2.2.4', 'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191',
                       'plotly>=4.1.0', 'simplejson>=3.16.0',
