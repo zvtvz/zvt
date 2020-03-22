@@ -6,7 +6,8 @@ import time
 import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvdata.api import get_entities
+from examples.reports import risky_company
+from zvdata.api import get_entities, get_entity_code
 from zvt import init_log
 from zvt.domain import Stock1dKdata, StockValuation, Stock
 from zvt.factors import TargetSelector
@@ -61,12 +62,32 @@ def report_state():
                 long_stocks = set(positive_df['entity_id'].tolist())
 
             if long_stocks:
-                ma_state = MaStateStatsFactor(entity_ids=long_stocks, start_timestamp='2016-01-01',
+                pre_date = target_date - datetime.timedelta(3 * 365)
+                ma_state = MaStateStatsFactor(entity_ids=long_stocks, start_timestamp=pre_date,
                                               end_timestamp=target_date, persist_factor=False)
+                bad_stocks = []
                 for entity_id, df in ma_state.factor_df.groupby(level=0):
-                    if df['current_pct'].max() >= 0.3:
+                    if df['current_pct'].max() >= 0.35:
+                        bad_stocks.append(entity_id)
                         long_stocks.remove(entity_id)
+                if bad_stocks:
+                    stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=bad_stocks,
+                                          return_type='domain')
+                    info = [f'{stock.name}({stock.code})' for stock in stocks]
+                    msg = '3年内高潮过:' + ' '.join(info) + '\n'
 
+            # 过滤风险股
+            if long_stocks:
+                risky_codes = risky_company(the_date=target_date, entity_ids=long_stocks)
+
+                if risky_codes:
+                    long_stocks = [entity_id for entity_id in long_stocks if
+                                   get_entity_code(entity_id) not in risky_codes]
+
+                    stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=risky_codes,
+                                          return_type='domain')
+                    info = [f'{stock.name}({stock.code})' for stock in stocks]
+                    msg = '风险股:' + ' '.join(info) + '\n'
             if long_stocks:
                 stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_stocks,
                                       return_type='domain')
