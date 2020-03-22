@@ -74,7 +74,7 @@ def report_state():
                     stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=bad_stocks,
                                           return_type='domain')
                     info = [f'{stock.name}({stock.code})' for stock in stocks]
-                    msg = '3年内高潮过:' + ' '.join(info) + '\n'
+                    msg = msg + '3年内高潮过:' + ' '.join(info) + '\n'
 
             # 过滤风险股
             if long_stocks:
@@ -87,7 +87,7 @@ def report_state():
                     stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=risky_codes,
                                           return_type='domain')
                     info = [f'{stock.name}({stock.code})' for stock in stocks]
-                    msg = '风险股:' + ' '.join(info) + '\n'
+                    msg = msg + '风险股:' + ' '.join(info) + '\n'
             if long_stocks:
                 stocks = get_entities(provider='joinquant', entity_schema=Stock, entity_ids=long_stocks,
                                       return_type='domain')
