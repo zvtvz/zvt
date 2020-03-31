@@ -19,8 +19,6 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 * 适用于低耗能的人脑+个人电脑
 
 ## 详细文档
-文档地址(两个是一样的,只是为了方便有些不方便访问github的同学)  
-[http://zvt.foolcage.com](http://zvt.foolcage.com)  
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
 ##  1. 🔖5分钟用起来
