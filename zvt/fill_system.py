@@ -1,4 +1,7 @@
-# script for generate api for the domain with decorator @register_api
+# script to auto generate some files
+from zvt import ZVT_TEST_DATA_PATH, DATA_SAMPLE_ZIP_PATH
+from zvt.core.utils.zip_utils import zip_dir
+
 if __name__ == '__main__':
     import os
 
@@ -11,3 +14,5 @@ if __name__ == '__main__':
     api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'api'))
 
     generate_api(api_path=api_path)
+
+    zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
