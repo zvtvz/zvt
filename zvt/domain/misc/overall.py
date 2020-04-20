@@ -2,8 +2,8 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import Mixin
-from zvdata.contract import register_schema, register_api
+from zvt.core import Mixin
+from zvt.core.contract import register_schema, register_api
 
 OverallBase = declarative_base()
 

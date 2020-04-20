@@ -4,9 +4,9 @@ import demjson
 import pandas as pd
 import requests
 
-from zvdata import IntervalLevel
-from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.utils.time_utils import to_time_str
+from zvt.core import IntervalLevel
+from zvt.core.recorder import FixedCycleDataRecorder
+from zvt.core.utils.time_utils import to_time_str
 from zvt import init_log
 from zvt.api.common import generate_kdata_id
 from zvt.api.quote import get_kdata

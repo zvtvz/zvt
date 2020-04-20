@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import String, Column, Float
 
-from zvdata import Mixin
+from zvt.core import Mixin
 
 
 class KdataCommon(Mixin):

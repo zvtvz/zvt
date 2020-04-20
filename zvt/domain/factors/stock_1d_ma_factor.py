@@ -2,8 +2,8 @@
 from sqlalchemy import Column, Float, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import Mixin
-from zvdata.contract import register_schema
+from zvt.core import Mixin
+from zvt.core.contract import register_schema
 
 Stock1dMaFactorBase = declarative_base()
 

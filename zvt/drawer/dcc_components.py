@@ -8,7 +8,7 @@ from zvt.api.quote import get_current_price
 from zvt.domain import business
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.reader.business_reader import OrderReader, AccountReader
-from zvdata.utils.pd_utils import pd_is_not_null
+from zvt.core.utils.pd_utils import pd_is_not_null
 
 
 def get_account_figure(account_reader: AccountReader):

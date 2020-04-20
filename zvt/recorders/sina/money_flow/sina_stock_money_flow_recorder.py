@@ -3,10 +3,10 @@ import time
 
 import requests
 
-from zvdata import IntervalLevel
-from zvdata.recorder import FixedCycleDataRecorder
-from zvdata.utils.time_utils import to_pd_timestamp, is_same_date, now_pd_timestamp
-from zvdata.utils.utils import to_float
+from zvt.core import IntervalLevel
+from zvt.core.recorder import FixedCycleDataRecorder
+from zvt.core.utils.time_utils import to_pd_timestamp, is_same_date, now_pd_timestamp
+from zvt.core.utils.utils import to_float
 from zvt.domain import StockMoneyFlow, Stock, StockTradeDay
 
 

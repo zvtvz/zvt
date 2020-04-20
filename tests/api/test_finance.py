@@ -4,8 +4,8 @@ init_test_context()
 
 from zvt.api.api import get_balance_sheet, get_income_statement, get_cash_flow_statement, get_finance_factor
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, CashFlowStatement
-from zvdata.contract import get_db_session
-from zvdata.utils.time_utils import to_time_str
+from zvt.core import get_db_session
+from zvt.core import to_time_str
 
 session = get_db_session(provider='eastmoney', db_name='finance')  # type: sqlalchemy.orm.Session
 

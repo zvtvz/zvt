@@ -5,7 +5,7 @@ from typing import List
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt import init_log
 from zvt.domain import Block, BlockMoneyFlow, BlockCategory
 from zvt.factors import TargetSelector

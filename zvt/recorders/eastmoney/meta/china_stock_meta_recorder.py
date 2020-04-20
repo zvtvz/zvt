@@ -2,9 +2,9 @@
 
 import requests
 
-from zvdata.recorder import Recorder
-from zvdata.utils.time_utils import to_pd_timestamp
-from zvdata.utils.utils import to_float, pct_to_float
+from zvt.core.recorder import Recorder
+from zvt.core.utils.time_utils import to_pd_timestamp
+from zvt.core.utils.utils import to_float, pct_to_float
 from zvt.api.quote import get_entities
 from zvt.domain.meta.stock_meta import StockDetail, Stock
 from zvt.recorders.exchange.china_stock_list_spider import ExchangeChinaStockListRecorder

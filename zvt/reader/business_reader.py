@@ -3,9 +3,9 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel, Mixin, EntityMixin
-from zvdata.normal_data import NormalData
-from zvdata.reader import DataReader
+from zvt.core import IntervalLevel, Mixin, EntityMixin
+from zvt.core.normal_data import NormalData
+from zvt.core.reader import DataReader
 from zvt.domain import SimAccount, Order
 from zvt.drawer.drawer import Drawer
 

@@ -8,7 +8,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.block_selector import BlockSelector
-from zvdata.api import get_entities
+from zvt.core import get_entities
 from zvt import init_log
 from zvt.domain import Stock1dKdata, BlockStock, Block, StockValuation, Stock
 from zvt.factors import TargetSelector

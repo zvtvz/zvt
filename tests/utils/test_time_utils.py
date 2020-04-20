@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
-from zvdata.utils.time_utils import evaluate_size_from_timestamp, next_timestamp, to_pd_timestamp, \
+from zvt.core import IntervalLevel
+from zvt.core import evaluate_size_from_timestamp, next_timestamp, to_pd_timestamp, \
     is_finished_kdata_timestamp
 
 

@@ -5,9 +5,9 @@ import demjson
 import pandas as pd
 import requests
 
-from zvdata.api import df_to_db
-from zvdata.recorder import Recorder, TimeSeriesDataRecorder
-from zvdata.utils.time_utils import now_pd_timestamp
+from zvt.core.api import df_to_db
+from zvt.core.recorder import Recorder, TimeSeriesDataRecorder
+from zvt.core.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
 from zvt.domain import BlockStock, BlockCategory, Block
 

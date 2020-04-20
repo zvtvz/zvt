@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
-from zvdata.contract import init_data_env
+from zvt.core.contract import init_data_env
 from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
 from zvt.utils.zip_utils import unzip
 

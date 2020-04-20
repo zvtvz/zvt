@@ -1,5 +1,5 @@
-from zvdata.contract import get_db_session
-from zvdata import IntervalLevel
+from zvt.core import get_db_session
+from zvt.core import IntervalLevel
 from ..context import init_test_context
 
 init_test_context()

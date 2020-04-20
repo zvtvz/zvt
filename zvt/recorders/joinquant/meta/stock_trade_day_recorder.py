@@ -2,9 +2,9 @@
 import pandas as pd
 from jqdatasdk import auth, get_trade_days
 
-from zvdata.api import df_to_db
-from zvdata.recorder import TimeSeriesDataRecorder
-from zvdata.utils.time_utils import to_time_str
+from zvt.core.api import df_to_db
+from zvt.core.recorder import TimeSeriesDataRecorder
+from zvt.core.utils.time_utils import to_time_str
 from zvt import zvt_env
 from zvt.domain import StockTradeDay, Stock
 

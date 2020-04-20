@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt.domain import Stock
 from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector

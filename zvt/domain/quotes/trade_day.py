@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import Mixin
-from zvdata.contract import register_api, register_schema
+from zvt.core import Mixin
+from zvt.core.contract import register_api, register_schema
 
 TradeDayBase = declarative_base()
 

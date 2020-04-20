@@ -3,7 +3,7 @@ import json
 
 from sqlalchemy.sql.elements import BinaryExpression
 
-from zvdata.contract import zvdata_env, table_name_to_domain_name
+from zvt.core.contract import zvdata_env, table_name_to_domain_name
 
 
 class CustomJsonEncoder(json.JSONEncoder):

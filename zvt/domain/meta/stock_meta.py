@@ -3,9 +3,9 @@
 from sqlalchemy import Column, String, DateTime, BigInteger, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvdata import EntityMixin
-from zvdata.contract import register_schema, register_entity
-from zvdata.utils.time_utils import now_pd_timestamp
+from zvt.core import EntityMixin
+from zvt.core.contract import register_schema, register_entity
+from zvt.core.utils.time_utils import now_pd_timestamp
 
 StockMetaBase = declarative_base()
 

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from zvdata.utils.pd_utils import normal_index_df
+from zvt.core.utils.pd_utils import normal_index_df
 from zvt.api.computing import macd
 from zvt.factors.factor import Scorer, Transformer
 

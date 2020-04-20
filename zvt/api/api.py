@@ -6,8 +6,8 @@ from typing import List, Union
 
 import pandas as pd
 from sqlalchemy.orm import Session
-from zvdata.api import get_data
-from zvdata import IntervalLevel
+from zvt.core.api import get_data
+from zvt.core import IntervalLevel
 
 from zvt.domain import HolderTrading
 

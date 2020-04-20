@@ -2,7 +2,7 @@
 if __name__ == '__main__':
     import os
 
-    from zvdata.contract import generate_api
+    from zvt.core.contract import generate_api
     from zvt import *
 
     print(domain.global_schemas)

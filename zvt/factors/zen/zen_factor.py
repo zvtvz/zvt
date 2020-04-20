@@ -3,9 +3,9 @@ import argparse
 from typing import List, Union
 
 import pandas as pd
-from zvdata import IntervalLevel
-from zvdata.utils.pd_utils import pd_is_not_null
-from zvdata.utils.time_utils import now_pd_timestamp
+from zvt.core import IntervalLevel
+from zvt.core.utils.pd_utils import pd_is_not_null
+from zvt.core.utils.time_utils import now_pd_timestamp
 
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_zen_factor_schema

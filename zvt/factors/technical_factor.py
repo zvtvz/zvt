@@ -2,7 +2,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvdata import IntervalLevel, EntityMixin
+from zvt.core import IntervalLevel, EntityMixin
 from zvt.api.common import get_kdata_schema, Stock
 from zvt.factors.algorithm import MacdTransformer
 from zvt.factors.factor import Factor, Transformer, Accumulator

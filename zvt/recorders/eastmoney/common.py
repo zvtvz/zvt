@@ -3,9 +3,9 @@ import logging
 
 import requests
 
-from zvdata.api import get_count, get_data
-from zvdata.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
-from zvdata.utils.time_utils import to_pd_timestamp
+from zvt.core.api import get_count, get_data
+from zvt.core.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
+from zvt.core.utils.time_utils import to_pd_timestamp
 from zvt.domain import CompanyType, Stock, StockDetail
 
 logger = logging.getLogger(__name__)

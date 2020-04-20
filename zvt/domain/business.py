@@ -4,8 +4,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # business data
-from zvdata import Mixin
-from zvdata.contract import register_schema
+from zvt.core import Mixin
+from zvt.core.contract import register_schema
 
 BusinessBase = declarative_base()
 

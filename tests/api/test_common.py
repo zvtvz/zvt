@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt.api import get_kdata
 from zvt.api.common import to_high_level_kdata, get_recent_report_date
 from ..context import init_test_context

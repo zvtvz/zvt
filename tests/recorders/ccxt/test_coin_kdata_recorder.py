@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt.recorders.ccxt.coin_kdata_recorder import CoinKdataRecorder
 from zvt.recorders.ccxt.coin_meta_recorder import CoinMetaRecorder
 from ...context import init_test_context

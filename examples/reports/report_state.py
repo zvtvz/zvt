@@ -7,7 +7,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.reports import risky_company
-from zvdata.api import get_entities, get_entity_code
+from zvt.core import get_entities, get_entity_code
 from zvt import init_log
 from zvt.domain import Stock1dKdata, StockValuation, Stock
 from zvt.factors import TargetSelector

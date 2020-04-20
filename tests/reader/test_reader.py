@@ -8,10 +8,10 @@ import time
 from zvt.api.rules import iterate_timestamps
 from zvt.domain import Stock1dKdata, Stock
 
-from zvdata.utils.time_utils import to_time_str
+from zvt.core import to_time_str
 
-from zvdata.reader import DataReader
-from zvdata import IntervalLevel
+from zvt.core import DataReader
+from zvt.core import IntervalLevel
 
 
 def test_china_stock_reader():

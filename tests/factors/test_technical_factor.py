@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt.factors.algorithm import MaTransformer, MacdTransformer
 from zvt.factors.ma.ma_factor import CrossMaFactor
 from ..context import init_test_context

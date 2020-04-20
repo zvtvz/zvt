@@ -56,7 +56,7 @@ from zvt.domain.misc import *
 from zvt.domain.quotes import *
 from zvt.domain.factors import *
 
-from zvdata.contract import global_schemas
+from zvt.core.contract import global_schemas
 
 schemas = []
 for item in global_schemas:

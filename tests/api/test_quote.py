@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvdata import IntervalLevel
+from zvt.core import IntervalLevel
 from zvt.api.quote import get_kdata
 
 
