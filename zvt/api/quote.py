@@ -4,7 +4,6 @@ from typing import Union, List
 from zvt.core import IntervalLevel, Mixin
 from zvt.core.api import get_entities, decode_entity_id
 from zvt.core.contract import get_db_session
-from zvt.accounts.ccxt_account import CCXTAccount
 from zvt.api.common import get_kdata_schema
 from zvt.domain import BlockCategory, BlockMoneyFlow
 from zvt.domain.meta.stock_meta import Index
@@ -43,29 +42,6 @@ def get_kdata(entity_id=None, level=IntervalLevel.LEVEL_1DAY.value, provider='jo
                                   end_timestamp=end_timestamp, filters=filters, session=session, order=order,
                                   limit=limit,
                                   index=index)
-
-
-def get_current_price(entity_ids=None, entity_type='coin'):
-    result = {}
-    if entity_type == 'coin':
-        if entity_ids:
-            for entity_id in entity_ids:
-                a, exchange, code = decode_entity_id(entity_id)
-                assert a == entity_type
-                ccxt_exchange = CCXTAccount.get_ccxt_exchange(exchange_str=exchange)
-
-                if not ccxt_exchange:
-                    raise Exception('{} not support'.format(exchange))
-
-                orderbook = ccxt_exchange.fetch_order_book(code)
-
-                bid = orderbook['bids'][0][0] if len(orderbook['bids']) > 0 else None
-                ask = orderbook['asks'][0][0] if len(orderbook['asks']) > 0 else None
-                entity_id = f'coin_{exchange}_{code}'
-                result[entity_id] = (bid, ask)
-
-    return result
-
 
 if __name__ == '__main__':
     money_flow_session = get_db_session(provider='sina', data_schema=BlockMoneyFlow)

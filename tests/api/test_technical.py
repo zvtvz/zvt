@@ -11,5 +11,3 @@ def test_basic_get_securities():
     print(items)
     items = get_entities(entity_type='index', provider='eastmoney')
     print(items)
-    items = get_entities(entity_type='coin', provider='ccxt')
-    print(items)
