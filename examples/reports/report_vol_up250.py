@@ -7,7 +7,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.reports import get_subscriber_emails
-from zvt.core import get_entities
+from zvt.core.api import get_entities
 from zvt import init_log
 from zvt.domain import Stock, Stock1dKdata, StockValuation
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=17, minute=0, day_of_week='mon-fri')
+@sched.scheduled_job('cron', hour=19, minute=0, day_of_week='mon-fri')
 def report_vol_up_250():
     while True:
         error_count = 0

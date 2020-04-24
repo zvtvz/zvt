@@ -7,8 +7,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
 from examples.reports import get_subscriber_emails
-from zvt.core import get_entities
-from zvt.core import now_pd_timestamp, to_time_str
+from zvt.core.api import get_entities
+from zvt.core.utils.time_utils import now_pd_timestamp, to_time_str
 from zvt import init_log
 from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector

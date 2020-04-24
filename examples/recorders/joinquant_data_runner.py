@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=15, minute=30)
+@sched.scheduled_job('cron', hour=15, minute=20)
 def record_kdata():
     while True:
         email_action = EmailInformer()

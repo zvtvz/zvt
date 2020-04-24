@@ -7,7 +7,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.reports import risky_company
-from zvt.core import get_entities, get_entity_code
+from zvt.core.api import get_entities, get_entity_code
 from zvt import init_log
 from zvt.domain import Stock1dKdata, StockValuation, Stock
 from zvt.factors import TargetSelector
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=17, minute=30, day_of_week='mon-fri')
+@sched.scheduled_job('cron', hour=19, minute=30, day_of_week='mon-fri')
 def report_state():
     while True:
         error_count = 0
