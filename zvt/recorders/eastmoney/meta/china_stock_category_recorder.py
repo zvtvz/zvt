@@ -4,8 +4,8 @@ import requests
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import Recorder, TimeSeriesDataRecorder
-from zvt.core.utils.time_utils import now_pd_timestamp
-from zvt.core.utils.utils import json_callback_param
+from zvt.utils.time_utils import now_pd_timestamp
+from zvt.utils.utils import json_callback_param
 from zvt.api.common import china_stock_code_to_id
 from zvt.domain import BlockStock, BlockCategory, Block
 

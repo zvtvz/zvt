@@ -8,27 +8,26 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import sessionmaker, Session
 
+from zvt import zvt_env
 from zvt.core import EntityMixin, Mixin
-from zvt.core.utils.utils import add_to_map_list
+from zvt.utils.utils import add_to_map_list
 
 logger = logging.getLogger(__name__)
 
 # all registered providers
-global_providers = []
+zvt_providers = []
 
 # all registered entity types
-global_entity_types = []
+zvt_entity_types = []
 
 # all registered schemas
-global_schemas = []
+zvt_schemas = []
 
 # entity_type -> schema
-global_entity_schema = {
-
-}
+zvt_entity_schema_map = {}
 
 # global sessions
-global_sessions = {}
+_zvt_sessions = {}
 
 # provider_dbname -> engine
 _db_engine_map = {}
@@ -37,43 +36,16 @@ _db_engine_map = {}
 _db_session_map = {}
 
 # provider -> [db_name1,db_name2...]
-_provider_map_dbnames = {
-}
+_provider_map_dbnames = {}
 
 # db_name -> [declarative_base1,declarative_base2...]
-_dbname_map_base = {
-}
+_dbname_map_base = {}
 
 # db_name -> [declarative_meta1,declarative_meta2...]
-_dbname_map_schemas = {
-}
+_dbname_map_schemas = {}
 
 # entity_type -> schema
-_entity_map_schemas = {
-
-}
-
-zvdata_env = {}
-
-
-def init_data_env(data_path: str, domain_module: str) -> None:
-    """
-    now we just support sqlite engine for storing the data,you need to set the path for the db
-
-    :param data_path: the db file path
-    :type data_path:
-    :param domain_module: the module name of your domains
-    :type domain_module:
-    """
-    zvdata_env['data_path'] = data_path
-    zvdata_env['domain_module'] = domain_module
-
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-
-    zvdata_env['api_dir'] = os.path.join(data_path, 'api')
-    if not os.path.exists(zvdata_env['api_dir']):
-        os.makedirs(zvdata_env['api_dir'])
+_entity_map_schemas = {}
 
 
 def table_name_to_domain_name(table_name: str) -> DeclarativeMeta:
@@ -111,10 +83,6 @@ def domain_name_to_table_name(domain_name: str) -> str:
         return parts[0]
 
 
-def enum_value(x):
-    return [e.value for e in x]
-
-
 def get_db_name(data_schema: DeclarativeMeta) -> str:
     """
     get db name of the domain schema
@@ -131,11 +99,13 @@ def get_db_name(data_schema: DeclarativeMeta) -> str:
 
 def get_db_engine(provider: str,
                   db_name: str = None,
-                  data_schema: object = None) -> Engine:
+                  data_schema: object = None,
+                  data_path: str = zvt_env['data_path']) -> Engine:
     """
     get db engine of the (provider,db_name) or (provider,data_schema)
 
 
+    :param data_path:
     :param provider:
     :type provider:
     :param db_name:
@@ -148,7 +118,7 @@ def get_db_engine(provider: str,
     if data_schema:
         db_name = get_db_name(data_schema=data_schema)
 
-    db_path = os.path.join(zvdata_env['data_path'], '{}_{}.db?check_same_thread=False'.format(provider, db_name))
+    db_path = os.path.join(data_path, '{}_{}.db?check_same_thread=False'.format(provider, db_name))
 
     engine_key = '{}_{}'.format(provider, db_name)
     db_engine = _db_engine_map.get(engine_key)
@@ -185,10 +155,10 @@ def get_db_session(provider: str,
     if force_new:
         return get_db_session_factory(provider, db_name, data_schema)()
 
-    session = global_sessions.get(session_key)
+    session = _zvt_sessions.get(session_key)
     if not session:
         session = get_db_session_factory(provider, db_name, data_schema)()
-        global_sessions[session_key] = session
+        _zvt_sessions[session_key] = session
     return session
 
 
@@ -219,7 +189,7 @@ def get_db_session_factory(provider: str,
 
 
 def get_providers():
-    return global_providers
+    return zvt_providers
 
 
 def get_schemas(provider: str) -> List[DeclarativeMeta]:
@@ -242,7 +212,7 @@ def get_schemas(provider: str) -> List[DeclarativeMeta]:
 
 
 def get_entity_types():
-    return global_entity_types
+    return zvt_entity_types
 
 
 def get_schema_by_name(name: str) -> DeclarativeMeta:
@@ -254,7 +224,7 @@ def get_schema_by_name(name: str) -> DeclarativeMeta:
     :return:
     :rtype:
     """
-    for schema in global_schemas:
+    for schema in zvt_schemas:
         if schema.__name__ == name:
             return schema
 
@@ -279,20 +249,22 @@ from typing import List, Union
 
 import pandas as pd
 from sqlalchemy.orm import Session
-from zvt.zvdata.api import get_data
-from zvt.zvdata import IntervalLevel
+from zvt.core.api import get_data
+from zvt.core import IntervalLevel
+
+__all__ = []
 '''
 api_template = '''
-{}
+{0}
 
-def get_{}(
+def get_{1}(
         ids: List[str] = None,
         entity_ids: List[str] = None,
         entity_id: str = None,
         codes: List[str] = None,
         code: str = None,
         level: Union[IntervalLevel, str] = None,
-        provider: str = \'{}\',
+        provider: str = \'{2}\',
         columns: List = None,
         return_type: str = 'df',
         start_timestamp: Union[pd.Timestamp, str] = None,
@@ -303,10 +275,12 @@ def get_{}(
         limit: int = None,
         index: Union[str, list] = 'timestamp',
         time_field: str = 'timestamp'):
-    return get_data(data_schema={}, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
+    return get_data(data_schema={3}, ids=ids, entity_ids=entity_ids, entity_id=entity_id, codes=codes,
                     code=code, level=level, provider=provider, columns=columns, return_type=return_type,
                     start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters, session=session,
                     order=order, limit=limit,index=index,time_field=time_field)
+
+__all__.append(\'get_{1}\')
 '''
 
 
@@ -321,10 +295,10 @@ def register_api(provider: str) -> object:
     """
 
     def generate(cls):
-        import_str = 'from {} import {}'.format(zvdata_env['domain_module'], cls.__name__)
+        import_str = 'from {} import {}'.format(zvt_env['domain_module'], cls.__name__)
         the_func = api_template.format(import_str, cls.__tablename__, provider, cls.__name__)
 
-        with open(os.path.join(zvdata_env['api_dir'], f'{cls.__tablename__}.api'), "w") as myfile:
+        with open(os.path.join(zvt_env['api_dir'], f'{cls.__tablename__}.api'), "w") as myfile:
             myfile.write(the_func)
             myfile.write('\n')
 
@@ -342,8 +316,8 @@ def generate_api(api_path: str) -> object:
     """
     from os import listdir
     from os.path import isfile, join
-    api_files = [os.path.join(zvdata_env['api_dir'], f) for f in listdir(zvdata_env['api_dir']) if
-                 isfile(join(zvdata_env['api_dir'], f)) and f.endswith('.api')]
+    api_files = [os.path.join(zvt_env['api_dir'], f) for f in listdir(zvt_env['api_dir']) if
+                 isfile(join(zvt_env['api_dir'], f)) and f.endswith('.api')]
     with open(os.path.join(api_path, 'api.py'), 'w') as outfile:
         outfile.write(api_header)
 
@@ -370,9 +344,9 @@ def register_entity(entity_type: str = None):
             if not entity_type:
                 entity_type_ = cls.__name__.lower()
 
-            if entity_type_ not in global_entity_types:
-                global_entity_types.append(entity_type_)
-            global_entity_schema[entity_type_] = cls
+            if entity_type_ not in zvt_entity_types:
+                zvt_entity_types.append(entity_type_)
+            zvt_entity_schema_map[entity_type_] = cls
 
             add_to_map_list(the_map=_entity_map_schemas, key=entity_type, value=cls)
         return cls
@@ -409,7 +383,7 @@ def register_schema(providers: List[str],
 
             if _dbname_map_schemas.get(db_name):
                 schemas = _dbname_map_schemas[db_name]
-            global_schemas.append(cls)
+            zvt_schemas.append(cls)
             add_to_map_list(the_map=_entity_map_schemas, key=entity_type, value=cls)
             schemas.append(cls)
 
@@ -417,8 +391,8 @@ def register_schema(providers: List[str],
 
     for provider in providers:
         # track in in  _providers
-        if provider not in global_providers:
-            global_providers.append(provider)
+        if provider not in zvt_providers:
+            zvt_providers.append(provider)
 
         if not _provider_map_dbnames.get(provider):
             _provider_map_dbnames[provider] = []

@@ -7,7 +7,7 @@ import requests
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import Recorder
-from zvt.core.utils.time_utils import to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 from zvt.domain import Stock, StockDetail
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 

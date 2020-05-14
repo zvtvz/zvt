@@ -6,7 +6,7 @@ init_test_context()
 from zvt.core import IntervalLevel
 from zvt.api.rules import coin_finished_timestamp, iterate_timestamps, is_open_time, is_close_time, \
     is_in_finished_timestamps, is_in_trading, is_trading_date
-from zvt.core.utils.time_utils import is_same_time
+from zvt.utils.time_utils import is_same_time
 
 
 def test_is_trading_date():

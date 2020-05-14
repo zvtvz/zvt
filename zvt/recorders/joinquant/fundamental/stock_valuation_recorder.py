@@ -5,7 +5,7 @@ from jqdatasdk import auth, logout, query, valuation, get_fundamentals_continuou
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import TimeSeriesDataRecorder
-from zvt.core.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
+from zvt.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
 from zvt import zvt_env
 from zvt.domain import Stock, StockValuation, Etf
 from zvt.recorders.joinquant.common import to_jq_entity_id

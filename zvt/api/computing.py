@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from zvt.api.quote import get_kdata
+from zvt.api import get_kdata
 
 
 def ma(s, window=5):

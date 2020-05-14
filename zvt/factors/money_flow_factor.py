@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from zvt.core.utils.pd_utils import normal_index_df
+from zvt.utils.pd_utils import normal_index_df
 from zvt.domain import BlockMoneyFlow, Block, BlockCategory
 from zvt.factors import ScoreFactor, Union, Scorer
 from zvt.factors.algorithm import RankScorer

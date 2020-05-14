@@ -6,8 +6,7 @@ from logging.handlers import RotatingFileHandler
 
 import pandas as pd
 
-from zvt.core.contract import init_data_env
-from zvt.core.utils.zip_utils import unzip
+from zvt.utils.zip_utils import unzip
 from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
 
 
@@ -61,11 +60,14 @@ def init_env(zvt_home: str) -> None:
     if not os.path.exists(data_path):
         os.makedirs(data_path)
 
-    init_data_env(data_path=data_path, domain_module='zvt.domain')
-
     zvt_env['zvt_home'] = zvt_home
     zvt_env['data_path'] = data_path
     zvt_env['domain_module'] = 'zvt.domain'
+
+    # path for generate api
+    zvt_env['api_dir'] = os.path.join(data_path, 'api')
+    if not os.path.exists(zvt_env['api_dir']):
+        os.makedirs(zvt_env['api_dir'])
 
     # path for storing ui results
     zvt_env['ui_path'] = os.path.join(zvt_home, 'ui')

@@ -4,7 +4,7 @@ from jqdatasdk import auth, get_all_securities, logout, query, finance
 
 from zvt.core.api import df_to_db, get_entity_exchange, get_entity_code
 from zvt.core.recorder import Recorder, TimeSeriesDataRecorder
-from zvt.core.utils.pd_utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 from zvt import zvt_env
 from zvt.api.common import china_stock_code_to_id, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf, StockDetail

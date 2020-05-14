@@ -2,8 +2,8 @@
 import json
 
 from sqlalchemy.sql.elements import BinaryExpression
-
-from zvt.core.contract import zvdata_env, table_name_to_domain_name
+from zvt import zvt_env
+from zvt.core.contract import table_name_to_domain_name
 
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -18,7 +18,7 @@ class CustomJsonEncoder(json.JSONEncoder):
             if expression == '=':
                 expression = '=='
 
-            exec(f'from {zvdata_env["domain_module"]} import {domain_name}')
+            exec(f'from {zvt_env["domain_module"]} import {domain_name}')
 
             if isinstance(value, str):
                 filter_str = '{}.{} {} "{}"'.format(domain_name, col, expression, value)
@@ -47,7 +47,7 @@ class CustomJsonDecoder(json.JSONDecoder):
             left, _, _ = filter_str.split()
             domain_name, col = left.split('.')
 
-            exec(f'from {zvdata_env["domain_module"]} import {domain_name}')
+            exec(f'from {zvt_env["domain_module"]} import {domain_name}')
             return eval(filter_str)
 
         return obj

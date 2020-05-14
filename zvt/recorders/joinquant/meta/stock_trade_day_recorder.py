@@ -4,7 +4,7 @@ from jqdatasdk import auth, get_trade_days
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import TimeSeriesDataRecorder
-from zvt.core.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_time_str
 from zvt import zvt_env
 from zvt.domain import StockTradeDay, Stock
 

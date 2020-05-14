@@ -3,9 +3,9 @@ import logging
 
 import requests
 
-from zvt.core.api import get_count, get_data
+from zvt.core.api import get_data_count, get_data
 from zvt.core.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
-from zvt.core.utils.time_utils import to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 from zvt.domain import CompanyType, Stock, StockDetail
 
 logger = logging.getLogger(__name__)
@@ -186,8 +186,8 @@ class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder
             return None, None, 0, None
 
         # get local count
-        local_count = get_count(data_schema=self.data_schema, session=self.session,
-                                filters=[self.data_schema.entity_id == entity.id])
+        local_count = get_data_count(data_schema=self.data_schema, session=self.session,
+                                     filters=[self.data_schema.entity_id == entity.id])
         # FIXME:the > case
         if local_count >= remote_count:
             return None, None, 0, None

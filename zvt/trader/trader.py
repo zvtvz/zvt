@@ -8,7 +8,7 @@ import pandas as pd
 from zvt.core import IntervalLevel, EntityMixin
 from zvt.core.contract import get_db_session
 from zvt.core.normal_data import NormalData
-from zvt.core.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.business import get_trader
 from zvt.api.common import get_one_day_trading_minutes
 from zvt.api.rules import iterate_timestamps, is_open_time, is_in_finished_timestamps, is_close_time, is_trading_date

@@ -6,8 +6,8 @@ from zvt.core import IntervalLevel
 from zvt.core.api import get_entities
 from zvt.core.contract import get_db_session
 from zvt.core.recorder import FixedCycleDataRecorder
-from zvt.core.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
-from zvt.core.utils.utils import json_callback_param, to_float
+from zvt.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
+from zvt.utils.utils import json_callback_param, to_float
 from zvt.api.common import generate_kdata_id, get_kdata_schema
 from zvt.domain import Index, BlockCategory, Block
 

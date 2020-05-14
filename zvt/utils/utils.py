@@ -6,7 +6,7 @@ from enum import Enum
 
 import pandas as pd
 
-from zvt.core.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_time_str
 
 getcontext().prec = 16
 

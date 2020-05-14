@@ -3,7 +3,7 @@ import logging
 
 from zvt.core import IntervalLevel
 from zvt.core.api import get_entities
-from zvt.core.utils.time_utils import now_pd_timestamp
+from zvt.utils.time_utils import now_pd_timestamp
 from zvt.domain import Stock
 from zvt.factors.ma.ma_factor import MaFactor
 from zvt.factors.ma.ma_stats import MaStateStatsFactor

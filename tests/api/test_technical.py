@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from zvt.core.api import get_entities
 from ..context import init_test_context
 
 init_test_context()
 
-from zvt.api.quote import get_entities
 
 
 def test_basic_get_securities():

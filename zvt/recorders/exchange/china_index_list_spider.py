@@ -8,7 +8,7 @@ import requests
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import Recorder
-from zvt.core.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
 from zvt.domain import IndexStock, Index
 

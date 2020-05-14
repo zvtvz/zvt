@@ -8,10 +8,9 @@ from sqlalchemy import exists, and_
 
 from zvt.core import IntervalLevel
 from zvt.core.api import decode_entity_id
-from zvt.core.utils.pd_utils import pd_is_not_null
-from zvt.core.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.core.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 from zvt.domain import *
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
 
 def get_kdata_schema(entity_type: str,
@@ -269,6 +268,19 @@ def get_etf_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp()
 
                 if step >= 20:
                     break
+
+
+def get_kdata(entity_id=None, level=IntervalLevel.LEVEL_1DAY.value, provider='joinquant', columns=None,
+              return_type='df', start_timestamp=None, end_timestamp=None,
+              filters=None, session=None, order=None, limit=None, index='timestamp'):
+    entity_type, exchange, code = decode_entity_id(entity_id)
+    data_schema: Mixin = get_kdata_schema(entity_type, level=level)
+
+    return data_schema.query_data(entity_id=entity_id, level=level, provider=provider,
+                                  columns=columns, return_type=return_type, start_timestamp=start_timestamp,
+                                  end_timestamp=end_timestamp, filters=filters, session=session, order=order,
+                                  limit=limit,
+                                  index=index)
 
 
 if __name__ == '__main__':

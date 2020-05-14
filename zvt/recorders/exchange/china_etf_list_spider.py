@@ -9,7 +9,7 @@ import requests
 
 from zvt.core.api import df_to_db
 from zvt.core.recorder import Recorder
-from zvt.core.utils.time_utils import now_pd_timestamp
+from zvt.utils.time_utils import now_pd_timestamp
 from zvt.api.common import china_stock_code_to_id
 from zvt.domain import EtfStock, BlockCategory, Etf
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER

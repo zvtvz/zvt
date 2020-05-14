@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.core import IntervalLevel
-from zvt.api.quote import get_kdata
+from zvt.api import get_kdata
 
 
 def test_jq_1mon_kdata():

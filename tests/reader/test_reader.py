@@ -8,7 +8,7 @@ import time
 from zvt.api.rules import iterate_timestamps
 from zvt.domain import Stock1dKdata, Stock
 
-from zvt.core.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_time_str
 
 from zvt.core.reader import DataReader
 from zvt.core import IntervalLevel

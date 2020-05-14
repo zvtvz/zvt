@@ -5,8 +5,9 @@ from typing import List, Union
 import pandas as pd
 
 from zvt.core import IntervalLevel, EntityMixin
-from zvt.core.utils.time_utils import now_pd_timestamp
-from zvt.api import get_entities, Stock
+from zvt.domain import Stock
+from zvt.utils.time_utils import now_pd_timestamp
+from zvt.api import get_entities
 from zvt.api.common import get_ma_factor_schema
 from zvt.factors import Accumulator
 from zvt.factors.algorithm import MaTransformer, MaAndVolumeTransformer

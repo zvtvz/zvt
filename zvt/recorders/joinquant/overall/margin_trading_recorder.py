@@ -1,7 +1,7 @@
 from jqdatasdk import auth, query, finance
 
 from zvt.core.recorder import TimeSeriesDataRecorder
-from zvt.core.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_time_str
 from zvt import zvt_env
 from zvt.domain import Index, MarginTradingSummary
 

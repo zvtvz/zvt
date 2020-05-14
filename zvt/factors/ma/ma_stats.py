@@ -5,7 +5,7 @@ from typing import List, Union
 import pandas as pd
 
 from zvt.core import IntervalLevel, EntityMixin
-from zvt.core.utils.pd_utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 from zvt.api import get_entities, Stock
 from zvt.api.common import get_ma_state_stats_schema
 from zvt.factors.algorithm import MaTransformer

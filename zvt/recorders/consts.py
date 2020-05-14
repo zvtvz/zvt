@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.core.utils.utils import chrome_copy_header_to_dict
+from zvt.utils.utils import chrome_copy_header_to_dict
 
 SSE_KDATA_HEADER = chrome_copy_header_to_dict('''
 Host: yunhq.sse.com.cn:32041

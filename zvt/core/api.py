@@ -7,10 +7,10 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import Query, Session
 
 from zvt.core import IntervalLevel, EntityMixin
-from zvt.core.contract import get_db_session, get_db_engine, global_entity_schema, global_providers, \
+from zvt.core.contract import get_db_session, get_db_engine, zvt_entity_schema_map, zvt_providers, \
     get_schema_columns
-from zvt.core.utils.pd_utils import pd_is_not_null, index_df
-from zvt.core.utils.time_utils import to_pd_timestamp
+from zvt.utils.pd_utils import pd_is_not_null, index_df
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 def get_entity_schema(entity_type: str) -> object:
@@ -22,7 +22,7 @@ def get_entity_schema(entity_type: str) -> object:
     :return:
     :rtype:
     """
-    return global_entity_schema[entity_type]
+    return zvt_entity_schema_map[entity_type]
 
 
 def common_filter(query: Query,
@@ -74,7 +74,7 @@ def get_data(data_schema,
              time_field: str = 'timestamp'):
     assert data_schema is not None
     assert provider is not None
-    assert provider in global_providers
+    assert provider in zvt_providers
 
     if not session:
         session = get_db_session(provider=provider, data_schema=data_schema)
@@ -140,7 +140,7 @@ def data_exist(session, schema, id):
     return session.query(exists().where(and_(schema.id == id))).scalar()
 
 
-def get_count(data_schema, filters=None, session=None):
+def get_data_count(data_schema, filters=None, session=None):
     query = session.query(data_schema)
     if filters:
         for filter in filters:
@@ -191,6 +191,7 @@ def df_to_db(df: pd.DataFrame,
              force_update: bool = False,
              sub_size: int = 5000) -> object:
     """
+    FIXME:improve
     store the df to db
 
     :param df:
@@ -270,7 +271,7 @@ def get_entities(
         limit: int = None,
         index: Union[str, list] = 'code') -> object:
     if not entity_schema:
-        entity_schema = global_entity_schema[entity_type]
+        entity_schema = zvt_entity_schema_map[entity_type]
 
     if not provider:
         provider = entity_schema.providers[0]

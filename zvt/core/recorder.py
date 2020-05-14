@@ -10,9 +10,9 @@ from sqlalchemy.orm import Session
 from zvt.core import IntervalLevel, Mixin, EntityMixin
 from zvt.core.api import get_entities, get_data
 from zvt.core.contract import get_db_session, get_schema_columns
-from zvt.core.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
+from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
     evaluate_size_from_timestamp, is_in_same_interval
-from zvt.core.utils.utils import fill_domain_from_dict
+from zvt.utils.utils import fill_domain_from_dict
 
 
 class Meta(type):
