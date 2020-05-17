@@ -150,3 +150,6 @@ check http://www.imqq.com/html/FAQ_en/html/Discussions_3.html
 
 wechat Public number (some tutorials would be here):  
 <img src="./docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
+
+## Thanks
+<p><a href=https://www.jetbrains.com/?from=zvt><img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/jetbrains.png" width="50%" alt="jetbrains"></a></p>

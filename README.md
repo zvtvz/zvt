@@ -144,7 +144,6 @@ In [1]: from zvt import *
 
 数据的更新是增量的，下载历史数据只是为了节省时间，全部自己更新也是可以的。
 
-> 建议进qq群，大家共享历史数据，有些数据爬多了会被封，没必要都自己去抓
 
 ### 2.3 注册聚宽(可选)
 项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，网易,交易所，ccxt等免费数据。
@@ -412,8 +411,6 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 
 ## 🤝联系方式  
 
-QQ群:300911873  
-
 个人微信:foolcage 添加暗号:zvt  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
@@ -423,3 +420,6 @@ QQ群:300911873
 
 知乎专栏:  
 https://zhuanlan.zhihu.com/automoney
+
+## Thanks
+<p><a href=https://www.jetbrains.com/?from=zvt><img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/jetbrains.png" width="50%" alt="jetbrains"></a></p>
