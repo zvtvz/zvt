@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.core import IntervalLevel
+from zvt.contract import IntervalLevel
 from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import BullFactor

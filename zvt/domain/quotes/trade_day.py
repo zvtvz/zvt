@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_api, register_schema
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 TradeDayBase = declarative_base()
 
 
-@register_api(provider='joinquant')
 class StockTradeDay(TradeDayBase, Mixin):
     __tablename__ = 'stock_trade_day'
 

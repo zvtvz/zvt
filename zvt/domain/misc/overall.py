@@ -2,14 +2,14 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 OverallBase = declarative_base()
 
 
 # 市场整体估值
-@register_api(provider='joinquant')
+
 class StockSummary(OverallBase, Mixin):
     __tablename__ = 'stock_summary'
 
@@ -27,7 +27,7 @@ class StockSummary(OverallBase, Mixin):
 
 
 # 融资融券概况
-@register_api(provider='joinquant')
+
 class MarginTradingSummary(OverallBase, Mixin):
     __tablename__ = 'margin_trading_summary'
     provider = Column(String(length=32))
@@ -49,7 +49,7 @@ class MarginTradingSummary(OverallBase, Mixin):
 
 
 # 北向/南向成交概况
-@register_api(provider='joinquant')
+
 class CrossMarketSummary(OverallBase, Mixin):
     __tablename__ = 'cross_market_summary'
     provider = Column(String(length=32))

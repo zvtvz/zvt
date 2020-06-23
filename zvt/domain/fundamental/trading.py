@@ -2,13 +2,12 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 TradingBase = declarative_base()
 
 
-@register_api(provider='eastmoney')
 class ManagerTrading(TradingBase, Mixin):
     __tablename__ = 'manager_trading'
 
@@ -35,7 +34,6 @@ class ManagerTrading(TradingBase, Mixin):
     relationship_with_manager = Column(String(length=32))
 
 
-@register_api(provider='eastmoney')
 class HolderTrading(TradingBase, Mixin):
     __tablename__ = 'holder_trading'
 
@@ -52,7 +50,6 @@ class HolderTrading(TradingBase, Mixin):
     holding_pct = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class BigDealTrading(TradingBase, Mixin):
     __tablename__ = 'big_deal_trading'
 
@@ -71,7 +68,6 @@ class BigDealTrading(TradingBase, Mixin):
     compare_rate = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class MarginTrading(TradingBase, Mixin):
     __tablename__ = 'margin_trading'
 
@@ -82,7 +78,6 @@ class MarginTrading(TradingBase, Mixin):
     short_balance = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class DragonAndTiger(TradingBase, Mixin):
     __tablename__ = 'dragon_and_tiger'
 

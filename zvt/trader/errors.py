@@ -24,6 +24,6 @@ class InvalidOrderError(TraderError):
         self.message = message
 
 
-class WrongOrderKdataError(TraderError):
-    def __init__(self, message="wrong order kdata"):
+class WrongKdataError(TraderError):
+    def __init__(self, message="wrong kdata"):
         self.message = message

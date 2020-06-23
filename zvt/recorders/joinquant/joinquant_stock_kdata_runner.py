@@ -4,7 +4,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.core import IntervalLevel
+from zvt.contract import IntervalLevel
 from zvt import init_log
 from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JqChinaStockKdataRecorder
 

@@ -2,13 +2,12 @@
 from sqlalchemy import Column, String, DateTime, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 FinanceBase = declarative_base()
 
 
-@register_api(provider='eastmoney')
 class BalanceSheet(FinanceBase, Mixin):
 
     @classmethod
@@ -452,7 +451,6 @@ class BalanceSheet(FinanceBase, Mixin):
     # 负债和股东权益总计
 
 
-@register_api(provider='eastmoney')
 class IncomeStatement(FinanceBase, Mixin):
 
     @classmethod
@@ -616,7 +614,6 @@ class IncomeStatement(FinanceBase, Mixin):
     fi_income_from_fair_value_change_of_fi_salable = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class CashFlowStatement(FinanceBase, Mixin):
     @classmethod
     def important_cols(cls):
@@ -817,7 +814,7 @@ class CashFlowStatement(FinanceBase, Mixin):
 
 
 # 主要财务指标
-@register_api(provider='eastmoney')
+
 class FinanceFactor(FinanceBase, Mixin):
     @classmethod
     def important_cols(cls):

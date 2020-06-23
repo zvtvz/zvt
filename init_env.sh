@@ -35,7 +35,7 @@ if ! which virtualenv > /dev/null; then
 fi
 
 if [ ! -d "$BASEDIR/ve" ]; then
-    virtualenv -p python3 $BASEDIR/ve
+    virtualenv -p python3 $BASEDIR/ve --no-download
     echo "Virtualenv created."
 fi
 

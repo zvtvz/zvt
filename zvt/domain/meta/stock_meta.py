@@ -3,8 +3,8 @@
 from sqlalchemy import Column, String, DateTime, BigInteger, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import EntityMixin
-from zvt.core.contract import register_schema, register_entity
+from zvt.contract import EntityMixin
+from zvt.contract.register import register_schema, register_entity
 from zvt.utils.time_utils import now_pd_timestamp
 
 StockMetaBase = declarative_base()
@@ -69,7 +69,7 @@ class Etf(StockMetaBase, BasePortfolio):
 
     @classmethod
     def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
-        from zvt.api.common import get_etf_stocks
+        from zvt.api.quote import get_etf_stocks
         return get_etf_stocks(code=code, codes=codes, ids=ids, timestamp=timestamp, provider=provider)
 
 

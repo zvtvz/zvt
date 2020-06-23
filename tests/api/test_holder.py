@@ -1,5 +1,4 @@
-from zvt.core.contract import get_db_session
-from zvt.api.api import get_top_ten_holder, get_top_ten_tradable_holder
+from zvt.contract.api import get_db_session
 from ..context import init_test_context
 
 init_test_context()
@@ -13,11 +12,11 @@ session = get_db_session(provider='eastmoney', db_name='holder')  # type: sqlalc
 
 # 十大股东
 def test_000778_top_ten_holder():
-    result: List[TopTenHolder] = get_top_ten_holder(session=session, provider='eastmoney',
-                                                    return_type='domain',
-                                                    codes=['000778'], end_timestamp='2018-09-30',
-                                                    start_timestamp='2018-09-30',
-                                                    order=TopTenHolder.shareholding_ratio.desc())
+    result: List[TopTenHolder] = TopTenHolder.query_data(session=session, provider='eastmoney',
+                                                         return_type='domain',
+                                                         codes=['000778'], end_timestamp='2018-09-30',
+                                                         start_timestamp='2018-09-30',
+                                                         order=TopTenHolder.shareholding_ratio.desc())
     assert len(result) == 10
     assert result[0].holder_name == '新兴际华集团有限公司'
     assert result[0].shareholding_numbers == 1595000000
@@ -27,11 +26,11 @@ def test_000778_top_ten_holder():
 
 
 def test_000778_top_ten_tradable_holder():
-    result: List[TopTenHolder] = get_top_ten_tradable_holder(session=session, provider='eastmoney',
-                                                             return_type='domain',
-                                                             codes=['000778'], end_timestamp='2018-09-30',
-                                                             start_timestamp='2018-09-30',
-                                                             order=TopTenTradableHolder.shareholding_ratio.desc())
+    result: List[TopTenHolder] = TopTenTradableHolder.query_data(session=session, provider='eastmoney',
+                                                                 return_type='domain',
+                                                                 codes=['000778'], end_timestamp='2018-09-30',
+                                                                 start_timestamp='2018-09-30',
+                                                                 order=TopTenTradableHolder.shareholding_ratio.desc())
     assert len(result) == 10
     assert result[0].holder_name == '新兴际华集团有限公司'
     assert result[0].shareholding_numbers == 1525000000

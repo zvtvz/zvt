@@ -2,13 +2,12 @@
 from sqlalchemy import Column, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 DividendFinancingBase = declarative_base()
 
 
-@register_api(provider='eastmoney')
 class DividendFinancing(DividendFinancingBase, Mixin):
     __tablename__ = 'dividend_financing'
 
@@ -30,7 +29,6 @@ class DividendFinancing(DividendFinancingBase, Mixin):
     rights_raising_fund = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class DividendDetail(DividendFinancingBase, Mixin):
     __tablename__ = "dividend_detail"
 
@@ -48,7 +46,6 @@ class DividendDetail(DividendFinancingBase, Mixin):
     dividend = Column(String(length=128))
 
 
-@register_api(provider='eastmoney')
 class SpoDetail(DividendFinancingBase, Mixin):
     __tablename__ = "spo_detail"
 
@@ -60,7 +57,6 @@ class SpoDetail(DividendFinancingBase, Mixin):
     spo_raising_fund = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class RightsIssueDetail(DividendFinancingBase, Mixin):
     __tablename__ = "rights_issue_detail"
 

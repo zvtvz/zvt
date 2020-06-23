@@ -2,14 +2,14 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 MoneyFlowBase = declarative_base()
 
 
 # 板块资金流向
-@register_api(provider='sina')
+
 class BlockMoneyFlow(MoneyFlowBase, Mixin):
     __tablename__ = 'block_money_flow'
 
@@ -44,7 +44,6 @@ class BlockMoneyFlow(MoneyFlowBase, Mixin):
     net_small_inflow_rate = Column(Float)
 
 
-@register_api(provider='sina')
 class StockMoneyFlow(MoneyFlowBase, Mixin):
     __tablename__ = 'stock_money_flow'
 

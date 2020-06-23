@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import String, Column, Float
 
-from zvt.core import Mixin
+from zvt.contract import Mixin
 
 
 class KdataCommon(Mixin):
@@ -58,14 +58,6 @@ class EtfKdataCommon(KdataCommon):
     change_pct = Column(Float)
 
 
-class CoinKdataCommon(KdataCommon):
-    pass
-
-
-class CoinTickCommon(TickCommon):
-    pass
-
-
 class StockKdataCommon(KdataCommon):
     # 涨跌幅
     change_pct = Column(Float)
@@ -74,7 +66,6 @@ class StockKdataCommon(KdataCommon):
 
 
 from zvt.domain.quotes.block import *
-from zvt.domain.quotes.coin import *
 from zvt.domain.quotes.stock import *
 from zvt.domain.quotes.etf import *
 from zvt.domain.quotes.index import *

@@ -2,10 +2,10 @@
 
 import requests
 
-from zvt.core.recorder import Recorder
+from zvt.contract.recorder import Recorder
 from zvt.utils.time_utils import to_pd_timestamp
 from zvt.utils.utils import to_float, pct_to_float
-from zvt.core.api import get_entities
+from zvt.contract.api import get_entities
 from zvt.domain.meta.stock_meta import StockDetail, Stock
 from zvt.recorders.exchange.china_stock_list_spider import ExchangeChinaStockListRecorder
 

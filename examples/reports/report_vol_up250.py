@@ -7,7 +7,7 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.reports import get_subscriber_emails
-from zvt.core.api import get_entities
+from zvt.contract.api import get_entities
 from zvt import init_log
 from zvt.domain import Stock, Stock1dKdata, StockValuation
 from zvt.factors.ma.ma_factor import VolumeUpMa250Factor

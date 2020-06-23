@@ -2,17 +2,16 @@
 import pandas as pd
 from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
-from zvt.core.api import get_data
-from zvt.utils.pd_utils import index_df
-from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
 from zvt import zvt_env
-from zvt.api.api import get_finance_factor
-from zvt.api.common import to_jq_report_period
+from zvt.api.quote import to_jq_report_period
+from zvt.contract.api import get_data
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
 from zvt.recorders.joinquant.common import to_jq_entity_id
+from zvt.utils.pd_utils import index_df
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import to_time_str, to_pd_timestamp
 
 
 class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
@@ -148,15 +147,16 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                 for the_data in the_data_list:
                     self.fill_timestamp_with_jq(entity, the_data)
             else:
-                df = get_finance_factor(entity_id=entity.id,
-                                        columns=[FinanceFactor.timestamp, FinanceFactor.report_date, FinanceFactor.id],
-                                        filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
-                                                 FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),
-                                                 FinanceFactor.report_date >= the_data_list[0].report_date,
-                                                 FinanceFactor.report_date <= the_data_list[-1].report_date, ])
+                df = FinanceFactor.query_data(entity_id=entity.id,
+                                              columns=[FinanceFactor.timestamp, FinanceFactor.report_date,
+                                                       FinanceFactor.id],
+                                              filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
+                                                       FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),
+                                                       FinanceFactor.report_date >= the_data_list[0].report_date,
+                                                       FinanceFactor.report_date <= the_data_list[-1].report_date, ])
 
                 if pd_is_not_null(df):
-                    index_df(df, index='report_date',time_field='report_date')
+                    index_df(df, index='report_date', time_field='report_date')
 
                 for the_data in the_data_list:
                     if (df is not None) and (not df.empty) and the_data.report_date in df.index:

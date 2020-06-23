@@ -422,4 +422,4 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 https://zhuanlan.zhihu.com/automoney
 
 ## Thanks
-<p><a href=https://www.jetbrains.com/?from=zvt><img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/jetbrains.png" width="50%" alt="jetbrains"></a></p>
+<p><a href=https://www.jetbrains.com/?from=zvt><img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/jetbrains.png" width="25%" alt="jetbrains"></a></p>

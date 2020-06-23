@@ -6,19 +6,25 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.core import IntervalLevel, Mixin, EntityMixin
-from zvt.core.api import get_data, df_to_db
-from zvt.core.normal_data import NormalData
-from zvt.core.reader import DataReader, DataListener
-from zvt.utils.pd_utils import pd_is_not_null
-from zvt.domain import Stock
+from zvt.contract import IntervalLevel, Mixin, EntityMixin
+from zvt.contract.api import get_data, df_to_db
+from zvt.contract.normal_data import NormalData
+from zvt.contract.reader import DataReader, DataListener
 from zvt.drawer.drawer import Drawer
+from zvt.domain import Stock
+from zvt.utils.pd_utils import pd_is_not_null
 
 
-class Transformer(object):
-    logger = logging.getLogger(__name__)
+class Indicator(object):
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.indicators = []
 
-    indicator_cols = []
+
+class Transformer(Indicator):
+
+    def __init__(self) -> None:
+        super().__init__()
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -30,28 +36,29 @@ class Transformer(object):
         return input_df
 
 
-class Accumulator(object):
-    logger = logging.getLogger(__name__)
+class Accumulator(Indicator):
 
     def __init__(self, acc_window: int = 1) -> object:
         """
 
         :param acc_window: the window size of acc for computing,default is 1
         """
+        super().__init__()
         self.acc_window = acc_window
 
     def acc(self, input_df: pd.DataFrame, acc_df: pd.DataFrame) -> object:
         """
 
-        :param input_df:
-        :param acc_df:
-        :return:
+        :param input_df: new input
+        :param acc_df: previous result
+        :return: next result
         """
         return acc_df
 
 
 class Scorer(object):
-    logger = logging.getLogger(__name__)
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def score(self, input_df: pd.DataFrame) -> object:
         return input_df
@@ -66,7 +73,7 @@ class FactorType(enum.Enum):
 class Factor(DataReader, DataListener):
     factor_type: FactorType = None
 
-    # define the schema for persist
+    # define the schema for persist,its columns should be same as indicators in transformer or accumulator
     factor_schema = None
 
     def __init__(self,
@@ -94,7 +101,7 @@ class Factor(DataReader, DataListener):
                  effective_number: int = None,
                  transformer: Transformer = None,
                  accumulator: Accumulator = None,
-                 persist_factor: bool = False,
+                 need_persist: bool = False,
                  dry_run: bool = False) -> None:
         """
 
@@ -104,7 +111,7 @@ class Factor(DataReader, DataListener):
         :param effective_number:
         :param transformer:
         :param accumulator:
-        :param persist_factor: whether persist factor
+        :param need_persist: whether persist factor
         :param dry_run: True for just computing factor, False for backtesting
         """
 
@@ -120,7 +127,7 @@ class Factor(DataReader, DataListener):
         self.transformer = transformer
         self.accumulator = accumulator
 
-        self.persist_factor = persist_factor
+        self.need_persist = need_persist
         self.dry_run = dry_run
 
         # 中间结果，不持久化
@@ -135,7 +142,7 @@ class Factor(DataReader, DataListener):
         # factor_df->result_df
         self.result_df: pd.DataFrame = None
 
-        if self.persist_factor:
+        if self.need_persist:
             if self.dry_run:
                 # 如果只是为了计算因子，只需要读取acc_window的factor_df
                 if self.accumulator is not None:
@@ -186,10 +193,11 @@ class Factor(DataReader, DataListener):
             self.factor_df = self.pipe_df
 
     def after_compute(self):
-        self.fill_gap()
+        if self.keep_all_timestamp:
+            self.fill_gap()
 
-        if self.persist_factor:
-            self.persist_result()
+        if self.need_persist:
+            self.persist_factor()
 
     def compute(self):
         self.pre_compute()
@@ -206,31 +214,19 @@ class Factor(DataReader, DataListener):
         cost_time = time.time() - start_time
         self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
 
-    def __repr__(self) -> str:
-        return self.result_df.__repr__()
-
-    def get_result_df(self):
-        return self.result_df
-
-    def get_pipe_df(self):
-        return self.pipe_df
-
-    def get_factor_df(self):
-        return self.factor_df
-
-    def pipe_drawer(self) -> Drawer:
-        drawer = Drawer(NormalData(df=self.pipe_df))
+    def factor_drawer(self) -> Drawer:
+        drawer = Drawer(NormalData(df=self.factor_df))
         return drawer
 
     def result_drawer(self) -> Drawer:
         return Drawer(NormalData(df=self.result_df))
 
-    def draw_pipe(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                  width=None, height=None,
-                  title=None, keep_ui_state=True, **kwargs):
-        return self.pipe_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
-                                       render=render, file_name=file_name,
-                                       width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
+    def draw_factor(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
+                    width=None, height=None,
+                    title=None, keep_ui_state=True, **kwargs):
+        return self.factor_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
+                                         render=render, file_name=file_name,
+                                         width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
 
     def draw_result(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
                     width=None, height=None,
@@ -241,13 +237,12 @@ class Factor(DataReader, DataListener):
 
     def fill_gap(self):
         # 该操作较慢，只适合做基本面的运算
-        if self.keep_all_timestamp:
-            idx = pd.date_range(self.start_timestamp, self.end_timestamp)
-            new_index = pd.MultiIndex.from_product([self.result_df.index.levels[0], idx],
-                                                   names=['entity_id', self.time_field])
-            self.result_df = self.result_df.loc[~self.result_df.index.duplicated(keep='first')]
-            self.result_df = self.result_df.reindex(new_index)
-            self.result_df = self.result_df.fillna(method=self.fill_method, limit=self.effective_number)
+        idx = pd.date_range(self.start_timestamp, self.end_timestamp)
+        new_index = pd.MultiIndex.from_product([self.result_df.index.levels[0], idx],
+                                               names=['entity_id', self.time_field])
+        self.result_df = self.result_df.loc[~self.result_df.index.duplicated(keep='first')]
+        self.result_df = self.result_df.reindex(new_index)
+        self.result_df = self.result_df.fillna(method=self.fill_method, limit=self.effective_number)
 
     def on_data_loaded(self, data: pd.DataFrame):
         self.compute()
@@ -273,7 +268,7 @@ class Factor(DataReader, DataListener):
         """
         pass
 
-    def persist_result(self):
+    def persist_factor(self):
         df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt', force_update=False)
 
 
@@ -292,19 +287,19 @@ class ScoreFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, persist_factor: bool = False, dry_run: bool = False,
+                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
                  scorer: Scorer = None) -> None:
         self.scorer = scorer
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, persist_factor, dry_run)
+                         effective_number, transformer, accumulator, need_persist, dry_run)
 
     def do_compute(self):
         super().do_compute()
 
-        if pd_is_not_null(self.pipe_df) and self.scorer:
-            self.result_df = self.scorer.score(self.pipe_df)
+        if pd_is_not_null(self.factor_df) and self.scorer:
+            self.result_df = self.scorer.score(self.factor_df)
 
 
 class StateFactor(Factor):

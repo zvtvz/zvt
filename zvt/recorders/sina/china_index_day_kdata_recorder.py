@@ -5,10 +5,10 @@ import time
 import pandas as pd
 import requests
 
-from zvt.core import IntervalLevel
-from zvt.core.recorder import FixedCycleDataRecorder
+from zvt.contract import IntervalLevel
+from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.utils.time_utils import get_year_quarters, is_same_date
-from zvt.api.common import generate_kdata_id
+from zvt.api.quote import generate_kdata_id
 from zvt.domain import Index, Index1dKdata
 
 

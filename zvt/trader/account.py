@@ -3,16 +3,16 @@
 import logging
 import math
 
-from zvt.core.contract import get_db_session
-from zvt.core import IntervalLevel
-from zvt.api.business import get_account
-from zvt.api.common import decode_entity_id, get_kdata_schema
-from zvt.api.rules import get_trading_meta
 from zvt.api import get_kdata
-from zvt.domain import Order
-from zvt.domain.business import SimAccount, Position
+from zvt.api.business import get_account_stats
+from zvt.api.quote import decode_entity_id, get_kdata_schema
+from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract.api import get_db_session
+from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
-from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError
+from zvt.trader.errors import NotEnoughMoneyError, InvalidOrderError, NotEnoughPositionError, InvalidOrderParamError, \
+    WrongKdataError
+from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
 from zvt.utils.utils import fill_domain_from_dict
 
@@ -21,28 +21,35 @@ ORDER_TYPE_SHORT = 'order_short'
 ORDER_TYPE_CLOSE_LONG = 'order_close_long'
 ORDER_TYPE_CLOSE_SHORT = 'order_close_short'
 
-from marshmallow_sqlalchemy import ModelSchema
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 
-class SimAccountSchema(ModelSchema):
+# FIXME:better way for schema<->domain,now just dump to schema and use dict['field'] for operation
+class AccountDayStatsSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = SimAccount
+        model = AccountStats
+        include_relationships = True
 
 
-class PositionSchema(ModelSchema):
+class PositionSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Position
+        include_relationships = True
 
 
-sim_account_schema = SimAccountSchema()
+account_stats_schema = AccountDayStatsSchema()
 position_schema = PositionSchema()
 
 
 class AccountService(TradingListener):
     logger = logging.getLogger(__name__)
-    trader_name = None
 
     def get_current_position(self, entity_id):
+        """
+        overwrite it to provide your real position
+
+        :param entity_id:
+        """
         pass
 
     def order(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
@@ -75,86 +82,57 @@ class AccountService(TradingListener):
 
     @staticmethod
     def trading_signal_to_order_type(trading_signal_type):
-        if trading_signal_type == TradingSignalType.trading_signal_open_long:
+        if trading_signal_type == TradingSignalType.open_long:
             return ORDER_TYPE_LONG
-        if trading_signal_type == TradingSignalType.trading_signal_open_short:
+        if trading_signal_type == TradingSignalType.open_short:
             return ORDER_TYPE_SHORT
-        if trading_signal_type == TradingSignalType.trading_signal_close_long:
+        if trading_signal_type == TradingSignalType.close_long:
             return ORDER_TYPE_CLOSE_LONG
-        if trading_signal_type == TradingSignalType.trading_signal_close_short:
+        if trading_signal_type == TradingSignalType.close_short:
             return ORDER_TYPE_CLOSE_SHORT
-
-    def on_trading_signal(self, trading_signal: TradingSignal):
-        self.logger.debug('trader:{} received trading signal:{}'.format(self.trader_name, trading_signal))
-        entity_id = trading_signal.entity_id
-        current_timestamp = trading_signal.the_timestamp
-        order_type = AccountService.trading_signal_to_order_type(trading_signal.trading_signal_type)
-        trading_level = trading_signal.trading_level.value
-        if order_type:
-            try:
-                kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
-                                  start_timestamp=current_timestamp, end_timestamp=current_timestamp,
-                                  limit=1)
-                if kdata is not None and not kdata.empty:
-                    entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
-
-                    the_price = kdata['close'][0]
-
-                    if the_price:
-                        self.order(entity_id=entity_id, current_price=the_price,
-                                   current_timestamp=current_timestamp, order_pct=trading_signal.position_pct,
-                                   order_money=trading_signal.order_money,
-                                   order_type=order_type)
-                    else:
-                        self.logger.warning(
-                            'ignore trading signal,wrong kdata,entity_id:{},timestamp:{},kdata:{}'.format(entity_id,
-                                                                                                          current_timestamp,
-                                                                                                          kdata.to_dict(
-                                                                                                              orient='records')))
-
-                else:
-                    self.logger.warning(
-                        'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
-                                                                                                     current_timestamp))
-            except Exception as e:
-                self.logger.exception(e)
 
 
 class SimAccountService(AccountService):
 
-    def __init__(self, trader_name,
+    def __init__(self,
+                 entity_schema: EntityMixin,
+                 trader_name,
                  timestamp,
-                 provider='joinquant',
+                 provider=None,
                  level=IntervalLevel.LEVEL_1DAY,
                  base_capital=1000000,
                  buy_cost=0.001,
                  sell_cost=0.001,
                  slippage=0.001):
-
+        self.entity_schema = entity_schema
         self.base_capital = base_capital
         self.buy_cost = buy_cost
         self.sell_cost = sell_cost
         self.slippage = slippage
         self.trader_name = trader_name
 
-        self.session = get_db_session('zvt', 'business')
+        self.session = get_db_session('zvt', data_schema=TraderInfo)
         self.provider = provider
         self.level = level
         self.start_timestamp = timestamp
 
-        account = get_account(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
+        account = get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
 
         if account:
             self.logger.warning("trader:{} has run before,old result would be deleted".format(trader_name))
-            self.session.query(SimAccount).filter(SimAccount.trader_name == self.trader_name).delete()
+            self.session.query(AccountStats).filter(AccountStats.trader_name == self.trader_name).delete()
             self.session.query(Position).filter(Position.trader_name == self.trader_name).delete()
             self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
             self.session.commit()
 
-        account = SimAccount(trader_name=self.trader_name, cash=self.base_capital,
-                             positions=[], all_value=self.base_capital, value=0, closing=False,
-                             timestamp=timestamp)
-        self.latest_account = sim_account_schema.dump(account)
+        account = AccountStats(entity_id=self.trader_name,
+                               trader_name=self.trader_name,
+                               cash=self.base_capital,
+                               all_value=self.base_capital,
+                               value=0,
+                               closing=False,
+                               timestamp=timestamp)
+        self.latest_account = account_stats_schema.dump(account)
 
         # self.persist_account(timestamp)
 
@@ -163,8 +141,8 @@ class SimAccountService(AccountService):
         if is_same_date(timestamp, self.start_timestamp):
             return
         # get the account for trading at the date
-        accounts = get_account(session=self.session, trader_name=self.trader_name, return_type='domain',
-                               end_timestamp=to_time_str(timestamp), limit=1, order=SimAccount.timestamp.desc())
+        accounts = get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain',
+                                     end_timestamp=to_time_str(timestamp), limit=1, order=AccountStats.timestamp.desc())
         if accounts:
             account = accounts[0]
         else:
@@ -175,12 +153,46 @@ class SimAccountService(AccountService):
         for position_domain in account.positions:
             position_dict = position_schema.dump(position_domain)
             self.logger.info('current position:{}'.format(position_dict))
-            del position_dict['sim_account']
+            del position_dict['account_stats']
             positions.append(position_dict)
 
-        self.latest_account = sim_account_schema.dump(account)
+        self.latest_account = account_stats_schema.dump(account)
         self.latest_account['positions'] = positions
         self.logger.info('on_trading_open:{},latest_account:{}'.format(timestamp, self.latest_account))
+
+    def on_trading_signal(self, trading_signal: TradingSignal):
+        entity_id = trading_signal.entity_id
+        happen_timestamp = trading_signal.happen_timestamp
+        order_type = AccountService.trading_signal_to_order_type(trading_signal.trading_signal_type)
+        trading_level = trading_signal.trading_level.value
+        if order_type:
+            try:
+                kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
+                                  start_timestamp=happen_timestamp, end_timestamp=happen_timestamp,
+                                  limit=1)
+                if pd_is_not_null(kdata):
+                    entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
+
+                    the_price = kdata['close'][0]
+
+                    if the_price:
+                        self.order(entity_id=entity_id, current_price=the_price,
+                                   current_timestamp=happen_timestamp, order_pct=trading_signal.position_pct,
+                                   order_money=trading_signal.order_money,
+                                   order_type=order_type)
+                    else:
+                        self.logger.warning(
+                            'ignore trading signal,wrong kdata,entity_id:{},timestamp:{},kdata:{}'.format(entity_id,
+                                                                                                          happen_timestamp,
+                                                                                                          kdata.to_dict(
+                                                                                                              orient='records')))
+
+                else:
+                    self.logger.warning(
+                        'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
+                                                                                                     happen_timestamp))
+            except Exception as e:
+                raise WrongKdataError("could not get kdata")
 
     def on_trading_close(self, timestamp):
         self.logger.info('on_trading_close:{}'.format(timestamp))
@@ -191,7 +203,7 @@ class SimAccountService(AccountService):
             entity_type, _, _ = decode_entity_id(position['entity_id'])
             data_schema = get_kdata_schema(entity_type, level=self.level)
 
-            kdata = get_kdata(provider=self.provider, level=self.level, entity_id=position['entity_id'],
+            kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position['entity_id'],
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 
@@ -240,23 +252,26 @@ class SimAccountService(AccountService):
             position_domain.id = '{}_{}_{}'.format(self.trader_name, position['entity_id'],
                                                    to_time_str(timestamp, TIME_FORMAT_ISO8601))
             position_domain.timestamp = to_pd_timestamp(timestamp)
-            position_domain.sim_account_id = the_id
+            position_domain.account_stats_id = the_id
 
             positions.append(position_domain)
 
-        account_domain = SimAccount(id=the_id, trader_name=self.trader_name, cash=self.latest_account['cash'],
-                                    positions=positions,
-                                    all_value=self.latest_account['all_value'], value=self.latest_account['value'],
-                                    timestamp=to_pd_timestamp(self.latest_account['timestamp']))
+        account_domain = AccountStats(id=the_id,
+                                      entity_id=self.trader_name,
+                                      trader_name=self.trader_name,
+                                      cash=self.latest_account['cash'],
+                                      positions=positions,
+                                      all_value=self.latest_account['all_value'], value=self.latest_account['value'],
+                                      timestamp=to_pd_timestamp(self.latest_account['timestamp']))
 
-        self.logger.info('persist_account:{}'.format(sim_account_schema.dump(account_domain)))
+        self.logger.info('persist_account:{}'.format(account_stats_schema.dump(account_domain)))
 
         self.session.add(account_domain)
         self.session.commit()
 
     def get_current_position(self, entity_id):
         """
-        get current position to design whether order could make
+        get current position to decide whether order could make
 
         :param entity_id:
         :type entity_id: str
@@ -274,10 +289,10 @@ class SimAccountService(AccountService):
         :param timestamp:
         :type timestamp:
         :return:
-        :rtype:SimAccount
+        :rtype:AccountStats
         """
-        return get_account(session=self.session, trader_name=self.trader_name, return_type='domain',
-                           end_timestamp=timestamp, limit=1)[0]
+        return get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain',
+                                 end_timestamp=timestamp, limit=1)[0]
 
     def update_position(self, current_position, order_amount, current_price, order_type, timestamp):
         """
@@ -313,7 +328,7 @@ class SimAccountService(AccountService):
         elif order_type == ORDER_TYPE_SHORT:
             need_money = (order_amount * current_price) * (1 + self.slippage + self.buy_cost)
             if self.latest_account['cash'] < need_money:
-                raise NotEnoughMoneyError
+                raise NotEnoughMoneyError()
 
             self.latest_account['cash'] -= need_money
 
@@ -388,7 +403,7 @@ class SimAccountService(AccountService):
             current_position = self.get_current_position(entity_id=entity_id)
 
             if not current_position:
-                trading_t = get_trading_meta(entity_id=entity_id)['trading_t']
+                trading_t = self.entity_schema.get_trading_t()
                 current_position = {
                     'trader_name': self.trader_name,
                     'entity_id': entity_id,

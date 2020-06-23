@@ -1,6 +1,6 @@
 import pandas as pd
 
-from zvt.core.api import df_to_db
+from zvt.contract.api import df_to_db
 from zvt.utils.time_utils import to_pd_timestamp
 from zvt.domain import Index
 from zvt.recorders.exchange.china_etf_list_spider import *

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.api import get_kdata
+from zvt.api.quote import get_kdata
 from zvt.factors.algorithm import MaTransformer, MacdTransformer
 
 

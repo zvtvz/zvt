@@ -6,7 +6,7 @@ import arrow
 import pandas as pd
 import tzlocal
 
-from zvt.core import IntervalLevel
+from zvt.contract import IntervalLevel
 
 CHINA_TZ = 'Asia/Shanghai'
 
@@ -34,7 +34,6 @@ def to_pd_timestamp(the_time):
         return pd.Timestamp.fromtimestamp(the_time)
 
     return pd.Timestamp(the_time)
-
 
 def to_timestamp(the_time):
     return int(to_pd_timestamp(the_time).tz_localize(tzlocal.get_localzone()).timestamp() * 1000)

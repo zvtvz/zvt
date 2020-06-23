@@ -3,8 +3,8 @@ import logging
 
 import requests
 
-from zvt.core.api import get_data_count, get_data
-from zvt.core.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
+from zvt.contract.api import get_data_count, get_data
+from zvt.contract.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvt.utils.time_utils import to_pd_timestamp
 from zvt.domain import CompanyType, Stock, StockDetail
 

@@ -4,7 +4,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.core.api import get_entities
+from zvt.contract.api import get_entities
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt import init_log
 from zvt.domain import Stock, StockTradeDay

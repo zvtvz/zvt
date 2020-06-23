@@ -5,13 +5,13 @@ import pandas as pd
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
-from zvt.core.api import decode_entity_id
-from zvt.core.normal_data import NormalData
-from zvt.core.reader import DataReader
+from zvt import zvt_env
+from zvt.contract.api import decode_entity_id
+from zvt.contract.normal_data import NormalData
+from zvt.contract.reader import DataReader
+from zvt.domain import Stock1dKdata, Stock1dMaStateStats, Stock
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
-from zvt import zvt_env
-from zvt.domain import Stock1dKdata, Stock1dMaStateStats, Stock
 
 
 class Drawer(object):
@@ -49,16 +49,17 @@ class Drawer(object):
               height=None,
               title=None,
               keep_ui_state=True,
+              show=False,
               **kwargs):
         if self.sub_data is not None and not self.sub_data.empty():
             subplot = True
             fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], vertical_spacing=0.08, shared_xaxes=True)
+            sub_traces = []
         else:
             subplot = False
             fig = go.Figure()
 
         traces = []
-        sub_traces = []
 
         for entity_id, df in self.main_data.entity_map_df.items():
             entity_type, _, code = decode_entity_id(entity_id)
@@ -74,7 +75,7 @@ class Drawer(object):
                     ydata = df[col].values.tolist()
                     traces.append(go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, **kwargs))
 
-            # 绘制幅图
+            # 绘制指标
             factor_df = self.factor_data.entity_map_df.get(entity_id)
             if pd_is_not_null(factor_df):
                 for col in factor_df.columns:
@@ -99,8 +100,14 @@ class Drawer(object):
                                 return 'green'
 
                         colors = [color(i) for i in ydata]
-                        bar = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2', marker_color=colors)
-                        sub_traces.append(bar)
+
+                        if sub_chart == 'line':
+                            sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
+                                                   marker_color=colors)
+                        else:
+                            sub_trace = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
+                                               marker_color=colors)
+                        sub_traces.append(sub_trace)
 
         if subplot:
             fig.add_traces(traces, rows=[1] * len(traces), cols=[1] * len(traces))
@@ -111,23 +118,27 @@ class Drawer(object):
         fig.update_layout(self.gen_plotly_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                                                  subplot=subplot))
 
-        fig.show()
+        if show:
+            fig.show()
+        else:
+            return fig
 
-    def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, **kwargs):
-        return self._draw('kline', width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
+    def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+        return self._draw('kline', width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show,
+                          **kwargs)
 
-    def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, **kwargs):
+    def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
         return self.draw_scatter(mode='lines', width=width, height=height, title=title,
-                                 keep_ui_state=keep_ui_state, **kwargs)
+                                 keep_ui_state=keep_ui_state, show=show, **kwargs)
 
-    def draw_area(self, width=None, height=None, title=None, keep_ui_state=True, **kwargs):
+    def draw_area(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
         return self.draw_scatter(mode='none', width=width, height=height, title=title,
-                                 keep_ui_state=keep_ui_state, fill='tonexty', **kwargs)
+                                 keep_ui_state=keep_ui_state, show=show, **kwargs)
 
     def draw_scatter(self, mode='markers', width=None, height=None,
-                     title=None, keep_ui_state=True, **kwargs):
+                     title=None, keep_ui_state=True, show=False, **kwargs):
         return self._draw('scatter', mode=mode, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                          **kwargs)
+                          show=show, **kwargs)
 
     def draw_table(self, width=None, height=None, title=None, keep_ui_state=True, **kwargs):
         cols = self.main_data.data_df.index.names + self.main_data.data_df.columns.tolist()
@@ -155,7 +166,6 @@ class Drawer(object):
                           title=None,
                           keep_ui_state=True,
                           subplot=False,
-                          need_range_selector=True,
                           **layout_params):
         if keep_ui_state:
             uirevision = True
@@ -179,44 +189,6 @@ class Drawer(object):
             layout.yaxis2 = dict(autorange=True,
                                  fixedrange=False,
                                  zeroline=False)
-
-        if need_range_selector and len(self.main_data.data_df) > 500:
-            layout.xaxis = dict(
-                rangeselector=dict(
-                    buttons=list([
-                        dict(count=1,
-                             label='1m',
-                             step='month',
-                             stepmode='backward'),
-                        dict(count=6,
-                             label='6m',
-                             step='month',
-                             stepmode='backward'),
-                        dict(count=1,
-                             label='YTD',
-                             step='year',
-                             stepmode='todate'),
-                        dict(count=1,
-                             label='1y',
-                             step='year',
-                             stepmode='backward'),
-                        dict(step='all')
-                    ])
-                ),
-                rangeslider=dict(
-                    visible=False,
-                ),
-                type='date'
-            )
-
-            # 没有子图，显示rangeslider
-            # if not subplot:
-            #     layout.xaxis.rangeslider = dict(
-            #         autorange=True,
-            #         visible=True,
-            #         borderwidth=1
-            #     )
-
         return layout
 
 
@@ -278,6 +250,8 @@ if __name__ == '__main__':
     data_reader2 = DataReader(codes=['002223'], data_schema=Stock1dMaStateStats, entity_schema=Stock,
                               columns=['ma5', 'ma10', 'current_count', 'current_pct'])
 
+    data_reader2.data_df['slope'] = 100 * data_reader2.data_df['current_pct'] / data_reader2.data_df['current_count']
+
     drawer = Drawer(main_df=data_reader1.data_df, factor_df=data_reader2.data_df[['ma5', 'ma10']],
-                    sub_df=data_reader2.data_df[['current_pct']])
+                    sub_df=data_reader2.data_df[['slope']])
     drawer.draw_kline()

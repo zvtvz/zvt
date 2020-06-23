@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.core.api import get_entities
+from zvt.contract.api import get_entities
 from ..context import init_test_context
 
 init_test_context()

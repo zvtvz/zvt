@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.utils import second_item_to_float
-from zvt.api.api import get_dividend_financing
 from zvt.domain.fundamental.dividend_financing import DividendFinancing
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
+from zvt.utils.utils import second_item_to_float
 
 
 class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
@@ -32,12 +31,12 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
         for item in self.entities:
             code_security[item.code] = item
 
-        need_fill_items = get_dividend_financing(provider=self.provider, codes=list(code_security.keys()),
-                                                 return_type='domain',
-                                                 session=self.session,
-                                                 filters=[
-                                                     DividendFinancing.ipo_raising_fund.is_(None),
-                                                     DividendFinancing.ipo_issues != 0])
+        need_fill_items = DividendFinancing.query_data(provider=self.provider, codes=list(code_security.keys()),
+                                                       return_type='domain',
+                                                       session=self.session,
+                                                       filters=[
+                                                           DividendFinancing.ipo_raising_fund.is_(None),
+                                                           DividendFinancing.ipo_issues != 0])
 
         for need_fill_item in need_fill_items:
             if need_fill_item:

@@ -2,13 +2,12 @@
 from sqlalchemy import Column, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema, register_api
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 HolderBase = declarative_base()
 
 
-@register_api(provider='eastmoney')
 class TopTenTradableHolder(HolderBase, Mixin):
     __tablename__ = 'top_ten_tradable_holder'
 
@@ -32,7 +31,6 @@ class TopTenTradableHolder(HolderBase, Mixin):
     change_ratio = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class TopTenHolder(HolderBase, Mixin):
     __tablename__ = 'top_ten_holder'
 
@@ -56,7 +54,6 @@ class TopTenHolder(HolderBase, Mixin):
     change_ratio = Column(Float)
 
 
-@register_api(provider='eastmoney')
 class InstitutionalInvestorHolder(HolderBase, Mixin):
     __tablename__ = 'institutional_investor_holder'
 

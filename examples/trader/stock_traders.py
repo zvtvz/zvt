@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.core import IntervalLevel
+from zvt.contract import IntervalLevel
 from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import BullFactor
@@ -16,7 +16,7 @@ class MyMaTrader(StockTrader):
         myselector.add_filter_factor(
             CrossMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                          windows=[5, 10], persist_factor=False))
+                          windows=[5, 10], need_persist=False))
 
         self.selectors.append(myselector)
 

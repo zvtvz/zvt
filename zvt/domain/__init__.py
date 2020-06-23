@@ -49,15 +49,9 @@ class CompanyType(enum.Enum):
 
 
 # make sure import all the domain schemas before using them
-from zvt.domain.business import *
+from zvt.domain.trader_info import *
 from zvt.domain.meta import *
 from zvt.domain.fundamental import *
 from zvt.domain.misc import *
 from zvt.domain.quotes import *
 from zvt.domain.factors import *
-
-from zvt.core.contract import zvt_schemas
-
-schemas = []
-for item in zvt_schemas:
-    schemas.append(item.__name__)

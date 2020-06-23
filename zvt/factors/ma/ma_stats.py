@@ -4,13 +4,14 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.core import IntervalLevel, EntityMixin
-from zvt.utils.pd_utils import pd_is_not_null
-from zvt.api import get_entities, Stock
-from zvt.api.common import get_ma_state_stats_schema
+from zvt.api import Stock
+from zvt.api.quote import get_ma_state_stats_schema
+from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract.api import get_entities
 from zvt.factors.algorithm import MaTransformer
 from zvt.factors.factor import Accumulator, Transformer
 from zvt.factors.technical_factor import TechnicalFactor
+from zvt.utils.pd_utils import pd_is_not_null
 
 
 # 均线状态统计
@@ -135,7 +136,7 @@ class MaStateStatsFactor(TechnicalFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = 10, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
-                 persist_factor: bool = True, dry_run: bool = True,
+                 need_persist: bool = True, dry_run: bool = True,
                  # added fields
                  short_window: int = 5,
                  long_window: int = 10) -> None:
@@ -149,7 +150,23 @@ class MaStateStatsFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, persist_factor, dry_run)
+                         accumulator, need_persist, dry_run)
+
+
+def show_slope(codes):
+    factor = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
+                                end_timestamp='2020-04-01', need_persist=False,
+                                level='1d')
+    df = factor.factor_df.copy()
+    slope = 100 * df.current_pct / df.current_count
+    import plotly.express as px
+    import plotly.io as pio
+    pio.renderers.default = "browser"
+
+    slope = slope.to_frame(name='x')
+
+    fig = px.histogram(slope, x='x')
+    fig.show()
 
 
 if __name__ == '__main__':
@@ -171,7 +188,7 @@ if __name__ == '__main__':
     codes = entities.index.to_list()
 
     factor = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
-                                end_timestamp='2020-04-01', persist_factor=True,
+                                end_timestamp='2020-04-01', need_persist=True,
                                 level=level)
     print(factor.factor_df)
 

@@ -31,7 +31,7 @@ def risky_company(the_date=to_pd_timestamp(now_time_str()), income_yoy=-0.1, pro
 
     # 高应收，高存货，高商誉
     balance_filter = (BalanceSheet.accounts_receivable + BalanceSheet.inventories + BalanceSheet.goodwill) \
-                     > BalanceSheet.total_equity / 2
+                     > BalanceSheet.total_equity
     df = BalanceSheet.query_data(entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[balance_filter],
                                  columns=['code'])
     if pd_is_not_null(df):

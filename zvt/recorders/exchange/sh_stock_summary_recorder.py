@@ -2,7 +2,7 @@ import demjson
 import pandas as pd
 import requests
 
-from zvt.core.recorder import TimestampsDataRecorder
+from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.utils.time_utils import to_time_str
 from zvt.utils.utils import to_float
 from zvt.domain import Index

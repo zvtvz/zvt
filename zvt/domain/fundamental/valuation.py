@@ -2,8 +2,8 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.core import Mixin
-from zvt.core.contract import register_schema
+from zvt.contract import Mixin
+from zvt.contract.register import register_schema
 
 ValuationBase = declarative_base()
 

@@ -7,6 +7,13 @@ from os import path
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
+try:
+    # for pip >= 10
+    from pip._internal.req import parse_requirements
+except ImportError:
+    # for pip <= 9.0.3
+    from pip.req import parse_requirements
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
@@ -15,6 +22,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
+
+requirements = [str(ir.req) for ir in parse_requirements("requirements.txt", session=False)]
 
 setup(
     # This is the name of your project. The first time you publish this
@@ -119,11 +128,7 @@ setup(
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
 
-    install_requires=['zvdata>=1.2.3', 'requests>=2.20.1', 'SQLAlchemy>=1.2.14', 'pandas>=0.24.2',
-                      'arrow>=0.11.0', 'marshmallow >= 3.2.2', 'tzlocal>=1.5.1', 'xlrd>=1.1.0', 'apscheduler>=3.4.0',
-                      'jqdatasdk', 'demjson>=2.2.4', 'marshmallow-sqlalchemy>=0.19.0', 'ccxt>=1.17.191',
-                      'plotly>=4.1.0', 'simplejson>=3.16.0',
-                      'html5lib>=1.0.1', 'schedule>=0.6.0'],  # Optional
+    install_requires=requirements,  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

@@ -6,12 +6,12 @@ from typing import List
 import pandas as pd
 from pandas import DataFrame
 
-from zvt.core import IntervalLevel
+from zvt.contract import IntervalLevel
+from zvt.drawer.drawer import Drawer
+from zvt.factors.factor import FilterFactor, ScoreFactor, Factor, StateFactor
+from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
 from zvt.utils.pd_utils import index_df, pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.domain.meta.stock_meta import Stock, Etf, Block, Index
-from zvt.drawer.drawer import Drawer
-from zvt.factors.factor import FilterFactor, ScoreFactor, Factor
 
 
 class TargetType(Enum):
@@ -34,7 +34,7 @@ class TargetSelector(object):
                  long_threshold=0.8,
                  short_threshold=0.2,
                  level=IntervalLevel.LEVEL_1DAY,
-                 provider='eastmoney',
+                 provider=None,
                  portfolio_selector=None) -> None:
         self.entity_ids = entity_ids
         self.entity_schema = entity_schema
@@ -64,6 +64,7 @@ class TargetSelector(object):
 
         self.filter_factors: List[FilterFactor] = []
         self.score_factors: List[ScoreFactor] = []
+        self.state_factors: List[StateFactor] = []
         self.filter_result = None
         self.score_result = None
 
@@ -112,7 +113,7 @@ class TargetSelector(object):
         if self.filter_factors:
             musts = []
             for factor in self.filter_factors:
-                df = factor.get_result_df()
+                df = factor.result_df
 
                 if not pd_is_not_null(df):
                     raise Exception('no data for factor:{},{}'.format(factor.factor_name, factor))
@@ -130,7 +131,7 @@ class TargetSelector(object):
         if self.score_factors:
             scores = []
             for factor in self.score_factors:
-                df = factor.get_result_df()
+                df = factor.result_df
                 if not pd_is_not_null(df):
                     raise Exception('no data for factor:{],{}'.format(factor.factor_name, factor))
 

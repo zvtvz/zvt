@@ -2,9 +2,8 @@ from ..context import init_test_context
 
 init_test_context()
 
-from zvt.api.api import get_spo_detail, get_rights_issue_detail, get_dividend_financing
 from zvt.domain import SpoDetail, RightsIssueDetail, DividendFinancing
-from zvt.core.contract import get_db_session
+from zvt.contract.api import get_db_session
 from zvt.utils.time_utils import to_pd_timestamp
 
 session = get_db_session(provider='eastmoney',
@@ -13,9 +12,9 @@ session = get_db_session(provider='eastmoney',
 
 # 增发详情
 def test_000778_spo_detial():
-    result = get_spo_detail(session=session, provider='eastmoney', return_type='domain',
-                            codes=['000778'], end_timestamp='2018-09-30',
-                            order=SpoDetail.timestamp.desc())
+    result = SpoDetail.query_data(session=session, provider='eastmoney', return_type='domain',
+                                  codes=['000778'], end_timestamp='2018-09-30',
+                                  order=SpoDetail.timestamp.desc())
     assert len(result) == 4
     latest: SpoDetail = result[0]
     assert latest.timestamp == to_pd_timestamp('2017-04-01')
@@ -26,9 +25,9 @@ def test_000778_spo_detial():
 
 # 配股详情
 def test_000778_rights_issue_detail():
-    result = get_rights_issue_detail(session=session, provider='eastmoney', return_type='domain',
-                                     codes=['000778'], end_timestamp='2018-09-30',
-                                     order=RightsIssueDetail.timestamp.desc())
+    result = RightsIssueDetail.query_data(session=session, provider='eastmoney', return_type='domain',
+                                          codes=['000778'], end_timestamp='2018-09-30',
+                                          order=RightsIssueDetail.timestamp.desc())
     assert len(result) == 2
     latest: RightsIssueDetail = result[0]
     assert latest.timestamp == to_pd_timestamp('2001-09-10')
@@ -39,9 +38,9 @@ def test_000778_rights_issue_detail():
 
 # 分红融资
 def test_000778_dividend_financing():
-    result = get_dividend_financing(session=session, provider='eastmoney', return_type='domain',
-                                    codes=['000778'], end_timestamp='2018-09-30',
-                                    order=DividendFinancing.timestamp.desc())
+    result = DividendFinancing.query_data(session=session, provider='eastmoney', return_type='domain',
+                                          codes=['000778'], end_timestamp='2018-09-30',
+                                          order=DividendFinancing.timestamp.desc())
     assert len(result) == 22
     latest: DividendFinancing = result[1]
     assert latest.timestamp == to_pd_timestamp('2017')
