@@ -22,11 +22,13 @@ class MySoloTrader(StockTrader):
     def on_time(self, timestamp):
         # 增持5000股以上
         long_df = ManagerTrading.query_data(start_timestamp=timestamp, end_timestamp=timestamp,
-                                            filters=[ManagerTrading.volume > 5000], columns=[ManagerTrading.entity_id])
+                                            filters=[ManagerTrading.volume > 5000], columns=[ManagerTrading.entity_id],
+                                            order=ManagerTrading.volume.desc(), limit=10)
         # 减持5000股以上
         short_df = ManagerTrading.query_data(start_timestamp=timestamp, end_timestamp=timestamp,
                                              filters=[ManagerTrading.volume < -5000],
-                                             columns=[ManagerTrading.entity_id])
+                                             columns=[ManagerTrading.entity_id],
+                                             order=ManagerTrading.volume.asc(), limit=10)
         if pd_is_not_null(long_df) or pd_is_not_null(short_df):
             try:
                 self.send_trading_signals(due_timestamp=timestamp, happen_timestamp=timestamp,
