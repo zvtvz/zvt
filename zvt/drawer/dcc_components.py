@@ -3,9 +3,9 @@
 import dash_core_components as dcc
 
 from zvt.api.business_reader import OrderReader, AccountStatsReader
-from zvt.api.quote import decode_entity_id
+from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.contract.reader import DataReader
-from zvt.domain import Stock1dKdata, Stock
+from zvt.contract.zvt_context import entity_schema_map
 from zvt.drawer.drawer import Drawer
 from zvt.utils.pd_utils import pd_is_not_null
 
@@ -25,11 +25,20 @@ def order_type_flag(order_type):
 
 
 def get_trading_signals_figure(order_reader: OrderReader,
-                               entity_id: str):
+                               entity_id: str,
+                               start_timestamp=None,
+                               end_timestamp=None):
     entity_type, _, _ = decode_entity_id(entity_id)
 
-    #
-    kdata_reader = DataReader(entity_ids=[entity_id], data_schema=Stock1dKdata, entity_schema=Stock)
+    data_schema = get_kdata_schema(entity_type=entity_type, level=order_reader.level)
+    if not start_timestamp:
+        start_timestamp = order_reader.start_timestamp
+    if not end_timestamp:
+        end_timestamp = order_reader.end_timestamp
+    kdata_reader = DataReader(entity_ids=[entity_id], data_schema=data_schema,
+                              entity_schema=entity_schema_map.get(entity_type),
+                              start_timestamp=start_timestamp,
+                              end_timestamp=end_timestamp)
 
     # generate the annotation df
     order_reader.move_on(timeout=0)

@@ -358,9 +358,14 @@ class SimAccountService(AccountService):
         # save the order info to db
         order_id = '{}_{}_{}_{}'.format(self.trader_name, order_type, current_position['entity_id'],
                                         to_time_str(timestamp, TIME_FORMAT_ISO8601))
-        order = Order(id=order_id, timestamp=to_pd_timestamp(timestamp), trader_name=self.trader_name,
-                      entity_id=current_position['entity_id'], order_price=current_price, order_amount=order_amount,
+        order = Order(id=order_id,
+                      timestamp=to_pd_timestamp(timestamp),
+                      trader_name=self.trader_name,
+                      entity_id=current_position['entity_id'],
+                      order_price=current_price,
+                      order_amount=order_amount,
                       order_type=order_type,
+                      level=self.level.value,
                       status='success')
         self.session.add(order)
         self.session.commit()

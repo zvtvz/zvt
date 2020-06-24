@@ -6,8 +6,8 @@ import pandas as pd
 from zvt.contract import IntervalLevel
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader
-from zvt.drawer.drawer import Drawer
 from zvt.domain import AccountStats, Order
+from zvt.drawer.drawer import Drawer
 
 
 class AccountStatsReader(DataReader):
@@ -50,7 +50,6 @@ class OrderReader(DataReader):
                  filters: List = None,
                  order: object = None,
                  level: IntervalLevel = None,
-
                  trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
@@ -66,7 +65,6 @@ class OrderReader(DataReader):
         super().__init__(Order, None, None, None, None, None, None,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, None, level,
                          category_field='trader_name', time_field='timestamp', computing_window=None)
-
 
 
 if __name__ == '__main__':
