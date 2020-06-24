@@ -32,7 +32,7 @@ class AccountStatsReader(DataReader):
             else:
                 self.filters = filter
         super().__init__(AccountStats, None, None, None, None, None, None,
-                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, None, level,
+                         the_timestamp, start_timestamp, end_timestamp, columns, self.filters, order, None, level,
                          category_field='trader_name', time_field='timestamp', computing_window=None)
 
     def draw_line(self, show=True):
@@ -63,7 +63,7 @@ class OrderReader(DataReader):
                 self.filters = filter
 
         super().__init__(Order, None, None, None, None, None, None,
-                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, None, level,
+                         the_timestamp, start_timestamp, end_timestamp, columns, self.filters, order, None, level,
                          category_field='trader_name', time_field='timestamp', computing_window=None)
 
 

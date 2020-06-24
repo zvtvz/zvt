@@ -9,9 +9,9 @@ from zvt.api.business_reader import AccountStatsReader
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
 from zvt.contract.normal_data import NormalData
+from zvt.domain import Stock, TraderInfo
 from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
-from zvt.domain import Stock, TraderInfo
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str
@@ -105,7 +105,8 @@ class Trader(object):
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False,
-                 draw_result: bool = True) -> None:
+                 draw_result: bool = True,
+                 solo: bool = False) -> None:
         assert self.entity_schema is not None
 
         self.logger = logging.getLogger(__name__)
@@ -145,6 +146,7 @@ class Trader(object):
 
         self.kdata_use_begin_time = kdata_use_begin_time
         self.draw_result = draw_result
+        self.solo = solo
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
                                                  trader_name=self.trader_name,
@@ -156,32 +158,24 @@ class Trader(object):
 
         self.init_selectors(entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
                             codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
-        if not self.selectors:
-            raise Exception('please setup self.selectors in init_selectors at first')
 
         self.selectors_comparator = self.init_selectors_comparator()
 
-        self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
-        self.trading_level_asc.sort()
+        if self.selectors:
+            self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
+            self.trading_level_asc.sort()
 
-        self.logger.info(f'trader level:{self.level},selectors level:{self.trading_level_asc}')
+            self.logger.info(f'trader level:{self.level},selectors level:{self.trading_level_asc}')
 
-        if self.level != self.trading_level_asc[0]:
-            raise Exception("trader level should be the min of the selectors")
+            if self.level != self.trading_level_asc[0]:
+                raise Exception("trader level should be the min of the selectors")
 
-        self.trading_level_desc = list(self.trading_level_asc)
-        self.trading_level_desc.reverse()
+            self.trading_level_desc = list(self.trading_level_asc)
+            self.trading_level_desc.reverse()
 
         self.targets_slot: TargetsSlot = TargetsSlot()
 
         self.session = get_db_session('zvt', data_schema=TraderInfo)
-        sim_account = TraderInfo.query_data(filters=[TraderInfo.trader_name == self.trader_name], return_type='domain',
-                                            limit=1)
-
-        if sim_account:
-            self.logger.warning("trader:{} has run before,old result would be deleted".format(self.trader_name))
-            self.session.query(TraderInfo).filter(TraderInfo.trader_name == self.trader_name).delete()
-            self.session.commit()
         self.on_start()
 
     def on_start(self):
@@ -226,7 +220,7 @@ class Trader(object):
         implement this to init selectors
 
         """
-        raise NotImplementedError
+        pass
 
     def init_selectors_comparator(self):
         """
@@ -324,16 +318,20 @@ class Trader(object):
             df = reader.data_df
             drawer = Drawer(main_data=NormalData(df.copy()[['trader_name', 'timestamp', 'all_value']],
                                                  category_field='trader_name'))
-            drawer.draw_line()
+            drawer.draw_line(show=True)
 
     def in_trading_date(self, timestamp):
         return to_time_str(timestamp) in self.trading_dates
+
+    def on_time(self, timestamp):
+        self.logger.debug(f'current timestamp:{timestamp}')
 
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
         # timestamp represents the timestamp in kdata
         for timestamp in self.entity_schema.get_interval_timestamps(start_date=self.start_timestamp,
                                                                     end_date=self.end_timestamp, level=self.level):
+
             if not self.in_trading_date(timestamp=timestamp):
                 continue
 
@@ -360,20 +358,25 @@ class Trader(object):
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
                 self.account_service.on_trading_open(timestamp)
 
-            for level in self.trading_level_asc:
-                # in every cycle, all level selector do its job in its time
-                if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
-                    long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
-                                                                                          trading_level=level)
+            if self.solo:
+                self.on_time(timestamp=timestamp)
+                continue
 
-                    if long_targets or short_targets:
-                        self.targets_slot.input_targets(level, long_targets, short_targets)
-                        # the time always move on by min level step and we could check all level targets in the slot
-                        # 1)the targets is generated for next interval
-                        # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(order_timestamp) when trading signal received
-                        # 3)the suggest price the the close price for generating the signal(generated_timestamp)
-                        due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
-                        self.handle_targets_slot(due_timestamp=due_timestamp, happen_timestamp=timestamp)
+            if self.selectors:
+                for level in self.trading_level_asc:
+                    # in every cycle, all level selector do its job in its time
+                    if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
+                        long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
+                                                                                              trading_level=level)
+
+                        if long_targets or short_targets:
+                            self.targets_slot.input_targets(level, long_targets, short_targets)
+                            # the time always move on by min level step and we could check all level targets in the slot
+                            # 1)the targets is generated for next interval
+                            # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(order_timestamp) when trading signal received
+                            # 3)the suggest price the the close price for generating the signal(generated_timestamp)
+                            due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
+                            self.handle_targets_slot(due_timestamp=due_timestamp, happen_timestamp=timestamp)
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (
