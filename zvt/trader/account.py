@@ -4,7 +4,7 @@ import logging
 import math
 
 from zvt.api import get_kdata
-from zvt.api.business import get_account_stats
+from zvt.api.business import get_account_stats, get_trader_info
 from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
@@ -116,10 +116,11 @@ class SimAccountService(AccountService):
         self.level = level
         self.start_timestamp = timestamp
 
-        account = get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
+        account = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
 
         if account:
             self.logger.warning("trader:{} has run before,old result would be deleted".format(trader_name))
+            self.session.query(TraderInfo).filter(TraderInfo.trader_name == self.trader_name).delete()
             self.session.query(AccountStats).filter(AccountStats.trader_name == self.trader_name).delete()
             self.session.query(Position).filter(Position.trader_name == self.trader_name).delete()
             self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
@@ -192,6 +193,7 @@ class SimAccountService(AccountService):
                         'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
                                                                                                      happen_timestamp))
             except Exception as e:
+                self.logger.error(e)
                 raise WrongKdataError("could not get kdata")
 
     def on_trading_close(self, timestamp):
