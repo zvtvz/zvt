@@ -200,7 +200,7 @@ class Trader(object):
             codes = None
 
         sim_account = TraderInfo(id=self.trader_name,
-                                 entity_id=self.trader_name,
+                                 entity_id=f'trader_zvt_{self.trader_name}',
                                  timestamp=self.start_timestamp,
                                  trader_name=self.trader_name,
                                  entity_ids=entity_ids,
@@ -360,7 +360,6 @@ class Trader(object):
 
             if self.solo:
                 self.on_time(timestamp=timestamp)
-                continue
 
             if self.selectors:
                 for level in self.trading_level_asc:

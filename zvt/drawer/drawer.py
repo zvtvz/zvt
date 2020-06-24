@@ -72,7 +72,11 @@ class Drawer(object):
         traces = []
 
         for entity_id, df in self.main_data.entity_map_df.items():
-            entity_type, _, code = decode_entity_id(entity_id)
+            code = entity_id
+            try:
+                _, _, code = decode_entity_id(entity_id)
+            except Exception:
+                pass
 
             if main_chart == 'kline':
                 trace_name = '{}_kdata'.format(code)

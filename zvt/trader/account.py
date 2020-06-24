@@ -126,7 +126,7 @@ class SimAccountService(AccountService):
             self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
             self.session.commit()
 
-        account = AccountStats(entity_id=self.trader_name,
+        account = AccountStats(entity_id=f'trader_zvt_{self.trader_name}',
                                trader_name=self.trader_name,
                                cash=self.base_capital,
                                all_value=self.base_capital,
@@ -171,30 +171,31 @@ class SimAccountService(AccountService):
                 kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
                                   start_timestamp=happen_timestamp, end_timestamp=happen_timestamp,
                                   limit=1)
-                if pd_is_not_null(kdata):
-                    entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
-
-                    the_price = kdata['close'][0]
-
-                    if the_price:
-                        self.order(entity_id=entity_id, current_price=the_price,
-                                   current_timestamp=happen_timestamp, order_pct=trading_signal.position_pct,
-                                   order_money=trading_signal.order_money,
-                                   order_type=order_type)
-                    else:
-                        self.logger.warning(
-                            'ignore trading signal,wrong kdata,entity_id:{},timestamp:{},kdata:{}'.format(entity_id,
-                                                                                                          happen_timestamp,
-                                                                                                          kdata.to_dict(
-                                                                                                              orient='records')))
-
-                else:
-                    self.logger.warning(
-                        'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
-                                                                                                     happen_timestamp))
             except Exception as e:
                 self.logger.error(e)
                 raise WrongKdataError("could not get kdata")
+
+            if pd_is_not_null(kdata):
+                entity_type, _, _ = decode_entity_id(kdata['entity_id'][0])
+
+                the_price = kdata['close'][0]
+
+                if the_price:
+                    self.order(entity_id=entity_id, current_price=the_price,
+                               current_timestamp=happen_timestamp, order_pct=trading_signal.position_pct,
+                               order_money=trading_signal.order_money,
+                               order_type=order_type)
+                else:
+                    self.logger.warning(
+                        'ignore trading signal,wrong kdata,entity_id:{},timestamp:{},kdata:{}'.format(entity_id,
+                                                                                                      happen_timestamp,
+                                                                                                      kdata.to_dict(
+                                                                                                          orient='records')))
+
+            else:
+                self.logger.warning(
+                    'ignore trading signal,could not get kdata,entity_id:{},timestamp:{}'.format(entity_id,
+                                                                                                 happen_timestamp))
 
     def on_trading_close(self, timestamp):
         self.logger.info('on_trading_close:{}'.format(timestamp))
@@ -259,7 +260,7 @@ class SimAccountService(AccountService):
             positions.append(position_domain)
 
         account_domain = AccountStats(id=the_id,
-                                      entity_id=self.trader_name,
+                                      entity_id=f'trader_zvt_{self.trader_name}',
                                       trader_name=self.trader_name,
                                       cash=self.latest_account['cash'],
                                       positions=positions,
