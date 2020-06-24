@@ -23,6 +23,16 @@ class Drawer(object):
                  factor_data: NormalData = None,
                  sub_data: NormalData = None,
                  annotation_df: pd.DataFrame = None) -> None:
+        """
+
+        :param main_df: df for main chart
+        :param factor_df: factor df on main chart
+        :param sub_df: df for sub chart under main chart
+        :param main_data: NormalData wrap main_df,use either
+        :param factor_data: NormalData wrap factor_df,use either
+        :param sub_data: NormalData wrap sub_df,use either
+        :param annotation_df:
+        """
         # 主图数据
         if main_data is None:
             main_data = NormalData(main_df)

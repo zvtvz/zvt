@@ -3,6 +3,7 @@ from typing import List
 
 import dash_core_components as dcc
 import dash_html_components as html
+from dash import dash
 from dash.dependencies import Input, Output, State
 
 from zvt.api.business import get_trader_info, get_order_securities
@@ -10,6 +11,7 @@ from zvt.api.business_reader import AccountStatsReader, OrderReader
 from zvt.app import app
 from zvt.domain import TraderInfo
 from zvt.drawer.dcc_components import get_account_stats_figure, get_trading_signals_figure
+from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
 
 account_readers = []
 order_readers = []
@@ -27,7 +29,9 @@ def load_traders():
     traders = get_trader_info(return_type='domain')
     for trader in traders:
         account_readers.append(AccountStatsReader(trader_names=[trader.trader_name], level=trader.level))
-        order_readers.append(OrderReader(trader_names=[trader.trader_name]))
+        order_readers.append(
+            OrderReader(trader_names=[trader.trader_name], level=trader.level, start_timestamp=trader.start_timestamp,
+                        end_timestamp=trader.end_timestamp))
 
     trader_names = [item.trader_name for item in traders]
 
@@ -76,10 +80,23 @@ def serve_layout():
                                     html.Div(
                                         className="padding-top-bot",
                                         children=[
-                                            html.H6("select target:"),
+                                            html.H6("select trading target:"),
                                             dcc.Dropdown(id='target-selector',
                                                          placeholder='select the target'
                                                          ),
+                                        ],
+                                    ),
+
+                                    html.Div(
+                                        className="padding-top-bot",
+                                        children=[
+                                            # time range filter
+                                            dcc.DatePickerRange(
+                                                id='date-picker-range',
+                                                start_date='2009-01-01',
+                                                end_date=now_pd_timestamp(),
+                                                display_format=TIME_FORMAT_DAY
+                                            )
                                         ],
                                     ),
                                 ],
@@ -110,25 +127,31 @@ def serve_layout():
 
 @app.callback(
     [Output('trader-details', 'children'),
-     Output('target-selector', 'options')],
+     Output('target-selector', 'options'),
+     Output('date-picker-range', 'start_date'),
+     Output('date-picker-range', 'end_date')],
     [Input('interval-component', 'n_intervals'),
      Input('trader-selector', 'value')])
 def update_trader_details(interval, trader_index):
-    if trader_index is None:
-        return '', []
-
-    return get_account_stats_figure(account_stats_reader=account_readers[trader_index]), \
-           [{'label': security_id, 'value': security_id} for security_id in
-            get_order_securities(trader_name=trader_names[trader_index])]
+    if trader_index is not None:
+        return get_account_stats_figure(account_stats_reader=account_readers[trader_index]), \
+               [{'label': security_id, 'value': security_id} for security_id in
+                get_order_securities(trader_name=trader_names[trader_index])], \
+               traders[trader_index].start_timestamp, \
+               traders[trader_index].end_timestamp
+    raise dash.exceptions.PreventUpdate()
 
 
 @app.callback(
     Output('target-signals', 'children'),
-    [Input('target-selector', 'value')],
+    [Input('target-selector', 'value'),
+     Input('date-picker-range', 'start_date'),
+     Input('date-picker-range', 'end_date')],
     state=[State('trader-selector', 'value')])
-def update_target_signals(entity_id, trader_index):
-    if entity_id is None or trader_index is None:
-        return ''
-    return dcc.Graph(
-        id=f'{entity_id}-signals',
-        figure=get_trading_signals_figure(order_reader=order_readers[trader_index], entity_id=entity_id))
+def update_target_signals(entity_id, start_date, end_date, trader_index):
+    if entity_id and (trader_index is not None):
+        return dcc.Graph(
+            id=f'{entity_id}-signals',
+            figure=get_trading_signals_figure(order_reader=order_readers[trader_index], entity_id=entity_id,
+                                              start_timestamp=start_date, end_timestamp=end_date))
+    raise dash.exceptions.PreventUpdate()
