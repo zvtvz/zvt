@@ -68,7 +68,8 @@ timestamp
 
 #### 财务数据
 ```
-In [13]: df = get_finance_factor(entity_id='stock_sz_000338',columns=FinanceFactor.important_cols())
+In [12]: from zvt.domain import *
+In [13]: df = FinanceFactor.query_data(entity_id='stock_sz_000338',columns=FinanceFactor.important_cols())
 
 In [14]: df.tail()
 Out[14]:
@@ -92,7 +93,24 @@ In [17]: t.run()
 ```
 测试数据里面包含的SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']，试一下传入其任意组合，即可看多标的的效果。
 
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/output-value.jpg'/></p>
+#### 策略展示
+
+```
+from zvt.app import app
+from zvt.apps.trader_app import serve_layout
+
+app.layout = serve_layout
+
+
+def main():
+    app.run_server(debug=True)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/show-trader.gif'/></p>
 
 ## 2. 📝正式环境
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
