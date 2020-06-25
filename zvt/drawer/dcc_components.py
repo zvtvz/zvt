@@ -43,6 +43,7 @@ def get_trading_signals_figure(order_reader: OrderReader,
     # generate the annotation df
     order_reader.move_on(timeout=0)
     df = order_reader.data_df.copy()
+    df = df[df.entity_id == entity_id].copy()
     if pd_is_not_null(df):
         df['value'] = df['order_price']
         df['flag'] = df['order_type'].apply(lambda x: order_type_flag(x))

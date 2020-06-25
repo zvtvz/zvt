@@ -197,6 +197,7 @@ class Drawer(object):
                                fixedrange=False,
                                zeroline=False
                            ),
+                           legend_orientation="h",
                            **layout_params)
 
         if subplot:
