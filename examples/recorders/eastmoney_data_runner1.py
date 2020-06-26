@@ -22,6 +22,7 @@ def run():
 
         try:
             Stock.record_data(provider='eastmoney')
+            StockDetail.record_data(provider='eastmoney')
             FinanceFactor.record_data(provider='eastmoney')
             BalanceSheet.record_data(provider='eastmoney')
             IncomeStatement.record_data(provider='eastmoney')
