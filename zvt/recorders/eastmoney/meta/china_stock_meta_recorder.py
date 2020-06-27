@@ -19,7 +19,7 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
     provider = 'eastmoney'
     data_schema = StockDetail
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=10, codes=None) -> None:
+    def __init__(self, batch_size=10, force_update=False, sleeping_time=5, codes=None) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
         # get list at first
@@ -92,5 +92,6 @@ __all__ = ['EastmoneyChinaStockListRecorder', 'EastmoneyChinaStockDetailRecorder
 if __name__ == '__main__':
     # init_log('china_stock_meta.log')
 
-    recorder = EastmoneyChinaStockDetailRecorder()
-    recorder.run()
+    # recorder = EastmoneyChinaStockDetailRecorder()
+    # recorder.run()
+    StockDetail.record_data(codes=['000338', '000777'], provider='eastmoney')
