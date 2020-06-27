@@ -8,6 +8,13 @@
 
 **Read this in other languages: [English](README-en.md).**  
 
+>
+>### 注意：如果你是在2020-06-27前clone或者fork的版本，请删除并重新clone和fork.
+>### 因为之前有几个大文件，导致整个项目size太大，我已经从commit里面将其彻底删除。
+>### 以后除了必要的跑tests的文件，尽量不引入binary文件。
+>### 然后zvdata已经合并到contract,并提供插件的方式来支持扩展标的和数据，项目依赖会更简洁。
+>### 这些都会在新的版本里面发布。
+
 ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
 相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
