@@ -117,44 +117,6 @@ def china_stock_code_to_id(code):
     return "{}_{}_{}".format('stock', get_exchange(code), code)
 
 
-def get_one_day_trading_minutes(entity_id: str = None, entity_type: str = None):
-    if entity_type is None:
-        entity_type, _, _ = decode_entity_id(entity_id)
-    if entity_type == 'coin':
-        return 24 * 60
-    if entity_type == 'stock':
-        return 4 * 60
-
-
-def get_close_time(entity_id: str):
-    """
-
-    :param entity_id:
-    :type entity_id: str
-    :return:0,0 means never stop
-    :rtype: Tuple[int, int]
-    """
-    entity_type, _, _ = decode_entity_id(entity_id)
-    if entity_type == 'coin':
-        return 0, 0
-    if entity_type == 'stock':
-        return 15, 0
-
-
-def is_close_time(entity_id, the_timestamp):
-    close_hour, close_minute = get_close_time(entity_id)
-
-    return the_timestamp.hour == close_hour and the_timestamp.minute == close_minute
-
-
-def get_open_time(entity_id: str):
-    entity_type, _, _ = decode_entity_id(entity_id)
-    if entity_type == 'coin':
-        return 0, 0
-    if entity_type == 'stock':
-        return 9, 30
-
-
 def generate_kdata_id(entity_id, timestamp, level):
     if level >= IntervalLevel.LEVEL_1DAY:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))

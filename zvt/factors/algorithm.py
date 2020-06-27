@@ -61,6 +61,7 @@ class MaTransformer(Transformer):
 
 class MaAndVolumeTransformer(Transformer):
     def __init__(self, windows=[5, 10], vol_windows=[30]) -> None:
+        super().__init__()
         self.windows = windows
         self.vol_windows = vol_windows
 

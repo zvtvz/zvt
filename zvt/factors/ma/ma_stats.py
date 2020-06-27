@@ -18,12 +18,12 @@ from zvt.utils.pd_utils import pd_is_not_null
 class MaAccumulator(Accumulator):
 
     def __init__(self, short_window, long_window) -> None:
+        super().__init__(acc_window = 1)
         self.short_window = short_window
         self.long_window = long_window
 
         self.current_col = 'current_count'
         self.total_col = 'total_count'
-        self.acc_window = 1
 
     def acc(self, input_df, acc_df) -> pd.DataFrame:
         short_ma_col = 'ma{}'.format(self.short_window)

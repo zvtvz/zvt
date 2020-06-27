@@ -4,14 +4,15 @@ from typing import List, Union
 
 import pandas as pd
 
+from zvt.api import AdjustType
 from zvt.api.quote import get_ma_factor_schema
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_entities
+from zvt.domain import Stock
 from zvt.factors import Accumulator
 from zvt.factors.algorithm import MaTransformer, MaAndVolumeTransformer
 from zvt.factors.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
-from zvt.domain import Stock
 from zvt.utils.time_utils import now_pd_timestamp
 
 
@@ -27,7 +28,9 @@ class MaFactor(TechnicalFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 windows=[5, 10, 34, 55, 89, 144, 120, 250]) -> None:
+                 windows=[5, 10, 34, 55, 89, 144, 120, 250],
+                 adjust_type: Union[AdjustType, str] = None) -> None:
+        self.adjust_type = adjust_type
         self.factor_schema = get_ma_factor_schema(entity_type=entity_schema.__name__, level=level)
         self.windows = windows
 
@@ -36,7 +39,7 @@ class MaFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run)
+                         accumulator, need_persist, dry_run, adjust_type)
 
 
 class CrossMaFactor(MaFactor):
