@@ -133,7 +133,7 @@ class TargetSelector(object):
             for factor in self.score_factors:
                 df = factor.result_df
                 if not pd_is_not_null(df):
-                    raise Exception('no data for factor:{],{}'.format(factor.factor_name, factor))
+                    raise Exception('no data for factor:{},{}'.format(factor.factor_name, factor))
 
                 if len(df.columns) > 1:
                     s = df.agg("mean", axis="columns")
