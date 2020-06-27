@@ -3,6 +3,7 @@ from typing import List, Union
 
 import pandas as pd
 
+from zvt.api import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.reader import DataReader
 from zvt.domain import Stock, Stock1dKdata
@@ -15,6 +16,7 @@ from zvt.utils.time_utils import now_pd_timestamp
 
 class TopBottomTransformer(Transformer):
     def __init__(self, window=20) -> None:
+        super().__init__()
         self.window = window
 
     def transform(self, input_df) -> pd.DataFrame:
@@ -40,18 +42,21 @@ class TopBottomFactor(TechnicalFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 window=30) -> None:
+                 adjust_type: Union[AdjustType, str] = None, window=30) -> None:
+        self.adjust_type = adjust_type
+
         transformer = TopBottomTransformer(window=window)
+
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run)
+                         accumulator, need_persist, dry_run, adjust_type)
 
 
 if __name__ == '__main__':
     factor = TopBottomFactor(codes=['601318'], start_timestamp='2005-01-01',
                              end_timestamp=now_pd_timestamp(),
-                             level=IntervalLevel.LEVEL_1DAY,window=120)
+                             level=IntervalLevel.LEVEL_1DAY, window=120)
     print(factor.factor_df)
 
     data_reader1 = DataReader(codes=['601318'], data_schema=Stock1dKdata, entity_schema=Stock)
