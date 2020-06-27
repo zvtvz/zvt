@@ -131,6 +131,7 @@ class RecorderForEntities(Recorder):
 
         # init the entity list
         self.entities = get_entities(session=self.entity_session,
+                                     entity_schema=self.entity_schema,
                                      entity_type=self.entity_type,
                                      exchanges=self.exchanges,
                                      entity_ids=self.entity_ids,
@@ -186,7 +187,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
     def evaluate_start_end_size_timestamps(self, entity):
         # not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
-            entity.timestamp, None, 0, None
+            return entity.timestamp, None, 0, None
 
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
@@ -533,7 +534,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def evaluate_start_end_size_timestamps(self, entity):
         # not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
-            entity.timestamp, None, 0, None
+            return entity.timestamp, None, 0, None
 
         # get latest record
         latest_saved_record = self.get_latest_saved_record(entity=entity)

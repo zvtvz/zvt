@@ -27,21 +27,24 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
         }
 
     def on_finish(self):
-        code_security = {}
-        for item in self.entities:
-            code_security[item.code] = item
+        try:
+            code_security = {}
+            for item in self.entities:
+                code_security[item.code] = item
 
-        need_fill_items = DividendFinancing.query_data(provider=self.provider, codes=list(code_security.keys()),
-                                                       return_type='domain',
-                                                       session=self.session,
-                                                       filters=[
-                                                           DividendFinancing.ipo_raising_fund.is_(None),
-                                                           DividendFinancing.ipo_issues != 0])
+            need_fill_items = DividendFinancing.query_data(provider=self.provider, codes=list(code_security.keys()),
+                                                           return_type='domain',
+                                                           session=self.session,
+                                                           filters=[
+                                                               DividendFinancing.ipo_raising_fund.is_(None),
+                                                               DividendFinancing.ipo_issues != 0])
 
-        for need_fill_item in need_fill_items:
-            if need_fill_item:
-                need_fill_item.ipo_raising_fund = code_security[item.code].raising_fund
-                self.session.commit()
+            for need_fill_item in need_fill_items:
+                if need_fill_item:
+                    need_fill_item.ipo_raising_fund = code_security[item.code].raising_fund
+                    self.session.commit()
+        except Exception as e:
+            self.logger.exception(e)
 
         super().on_finish()
 
