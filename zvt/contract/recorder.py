@@ -11,7 +11,7 @@ from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
-    evaluate_size_from_timestamp, is_in_same_interval
+    evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp
 from zvt.utils.utils import fill_domain_from_dict
 
 
@@ -184,6 +184,10 @@ class TimeSeriesDataRecorder(RecorderForEntities):
         return None
 
     def evaluate_start_end_size_timestamps(self, entity):
+        # not to list date yet
+        if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
+            entity.timestamp, None, 0, None
+
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
         if latest_saved_record:
@@ -527,6 +531,10 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         return None
 
     def evaluate_start_end_size_timestamps(self, entity):
+        # not to list date yet
+        if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
+            entity.timestamp, None, 0, None
+
         # get latest record
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
