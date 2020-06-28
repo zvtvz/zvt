@@ -31,9 +31,9 @@ class MySoloTrader(StockTrader):
                                              order=ManagerTrading.volume.asc(), limit=10)
         if pd_is_not_null(long_df) or pd_is_not_null(short_df):
             try:
-                self.send_trading_signals(due_timestamp=timestamp, happen_timestamp=timestamp,
-                                          long_selected=set(long_df['entity_id'].to_list()),
-                                          short_selected=set(short_df['entity_id'].to_list()))
+                self.trade_the_targets(due_timestamp=timestamp, happen_timestamp=timestamp,
+                                       long_selected=set(long_df['entity_id'].to_list()),
+                                       short_selected=set(short_df['entity_id'].to_list()))
             except Exception as e:
                 self.logger.error(e)
 

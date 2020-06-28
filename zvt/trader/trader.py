@@ -9,7 +9,7 @@ from zvt.api.business_reader import AccountStatsReader
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
 from zvt.contract.normal_data import NormalData
-from zvt.domain import Stock, TraderInfo
+from zvt.domain import Stock, TraderInfo, AccountStats
 from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType
@@ -237,7 +237,7 @@ class Trader(object):
         if listener in self.trading_signal_listeners:
             self.trading_signal_listeners.remove(listener)
 
-    def handle_targets_slot(self, due_timestamp, happen_timestamp):
+    def handle_targets_slot(self, due_timestamp: pd.Timestamp, happen_timestamp: pd.Timestamp):
         """
         this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
         targets of different levels
@@ -245,7 +245,8 @@ class Trader(object):
         the default implementation is selecting the targets in all levels
 
         :param due_timestamp:
-        :type due_timestamp:
+        :param happen_timestamp:
+
         """
         long_selected = None
         short_selected = None
@@ -269,45 +270,57 @@ class Trader(object):
 
         self.logger.debug('timestamp:{},short_selected:{}'.format(due_timestamp, short_selected))
 
-        self.send_trading_signals(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp,
-                                  long_selected=long_selected, short_selected=short_selected)
+        self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp,
+                               long_selected=long_selected, short_selected=short_selected)
 
-    def send_trading_signals(self, due_timestamp, happen_timestamp, long_selected, short_selected):
+    def get_current_account(self) -> AccountStats:
+        return self.account_service.account
+
+    def buy(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
+        if entity_ids:
+            position_pct = (1.0 / len(entity_ids)) * position_pct
+
+        for entity_id in entity_ids:
+            trading_signal = TradingSignal(entity_id=entity_id,
+                                           due_timestamp=due_timestamp,
+                                           happen_timestamp=happen_timestamp,
+                                           trading_signal_type=TradingSignalType.open_long,
+                                           trading_level=self.level,
+                                           position_pct=position_pct)
+            self.send_trading_signal(trading_signal)
+
+    def sell(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
         # current position
-        account = self.account_service.latest_account
-        current_holdings = [position['entity_id'] for position in account['positions'] if
-                            position['available_long'] > 0]
+        account = self.get_current_account()
+        current_holdings = []
+        if account.positions:
+            current_holdings = [position.entity_id for position in account.positions if position != None and
+                                position.available_long > 0]
 
-        if long_selected:
-            # just long the security not in the positions
-            longed = long_selected - set(current_holdings)
-            if longed:
-                position_pct = 1.0 / len(longed)
-                order_money = account['cash'] * position_pct
+        shorted = set(current_holdings) & entity_ids
 
-                for entity_id in longed:
-                    trading_signal = TradingSignal(entity_id=entity_id,
-                                                   due_timestamp=due_timestamp,
-                                                   happen_timestamp=happen_timestamp,
-                                                   trading_signal_type=TradingSignalType.open_long,
-                                                   trading_level=self.level,
-                                                   order_money=order_money)
-                    for listener in self.trading_signal_listeners:
-                        listener.on_trading_signal(trading_signal)
+        if shorted:
+            position_pct = (1.0 / len(shorted)) * position_pct
 
-        # just short the security in current_holdings and short_selected
-        if short_selected:
-            shorted = set(current_holdings) & short_selected
+        for entity_id in shorted:
+            trading_signal = TradingSignal(entity_id=entity_id,
+                                           due_timestamp=due_timestamp,
+                                           happen_timestamp=happen_timestamp,
+                                           trading_signal_type=TradingSignalType.close_long,
+                                           trading_level=self.level,
+                                           position_pct=position_pct)
+            self.send_trading_signal(trading_signal)
 
-            for entity_id in shorted:
-                trading_signal = TradingSignal(entity_id=entity_id,
-                                               due_timestamp=due_timestamp,
-                                               happen_timestamp=happen_timestamp,
-                                               trading_signal_type=TradingSignalType.close_long,
-                                               position_pct=1.0,
-                                               trading_level=self.level)
-                for listener in self.trading_signal_listeners:
-                    listener.on_trading_signal(trading_signal)
+    def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected, long_pct=1.0,
+                          short_pct=1.0):
+        self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected,
+                 position_pct=long_pct)
+        self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected,
+                  position_pct=short_pct)
+
+    def send_trading_signal(self, signal: TradingSignal):
+        for listener in self.trading_signal_listeners:
+            listener.on_trading_signal(signal)
 
     def on_finish(self):
         # show the result
