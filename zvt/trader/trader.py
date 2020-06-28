@@ -12,7 +12,7 @@ from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock, TraderInfo, AccountStats
 from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
-from zvt.trader import TradingSignal, TradingSignalType
+from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str
 
@@ -116,7 +116,7 @@ class Trader(object):
         else:
             self.trader_name = type(self).__name__.lower()
 
-        self.trading_signal_listeners = []
+        self.trading_signal_listeners: List[TradingListener] = []
 
         self.selectors: List[TargetSelector] = []
 
@@ -320,7 +320,11 @@ class Trader(object):
 
     def send_trading_signal(self, signal: TradingSignal):
         for listener in self.trading_signal_listeners:
-            listener.on_trading_signal(signal)
+            try:
+                listener.on_trading_signal(signal)
+            except Exception as e:
+                self.logger.exception(e)
+                listener.on_trading_error(timestamp=signal.happen_timestamp, error=e)
 
     def on_finish(self):
         # show the result

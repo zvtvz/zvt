@@ -173,6 +173,12 @@ class SimAccountService(AccountService):
         self.account = self.load_account()
         self.logger.info('on_trading_open:{},current_account:{}'.format(timestamp, self.account))
 
+    def on_trading_error(self, timestamp, error):
+        pass
+
+    def on_trading_finish(self, timestamp):
+        pass
+
     def on_trading_signal(self, trading_signal: TradingSignal):
         entity_id = trading_signal.entity_id
         happen_timestamp = trading_signal.happen_timestamp

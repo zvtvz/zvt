@@ -53,5 +53,5 @@ class TradingListener(object):
     def on_trading_finish(self, timestamp):
         raise NotImplementedError
 
-    def on_trading_error(self, timestamp):
+    def on_trading_error(self, timestamp, error):
         raise NotImplementedError
