@@ -8,14 +8,7 @@
 
 **Read this in other languages: [English](README-en.md).**  
 
->
->### 注意：如果你是在2020-06-27前clone或者fork的版本，请删除并重新clone和fork.
->### 因为之前有几个大文件，导致整个项目size太大，我已经从commit里面将其彻底删除。
->### 以后除了必要的跑tests的文件，尽量不引入binary文件。
->### 然后zvdata已经合并到contract,并提供插件的方式来支持扩展标的和数据，项目依赖会更简洁。
->### 这些都会在新的版本里面发布。
-
-ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编写的量化项目，其包含可扩展的数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
+ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编写的量化项目，其包含可扩展的交易标的，数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
 相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
 
@@ -162,13 +155,13 @@ In [1]: from zvt import *
 * wechat_app_secrect
 
 ### 2.2 下载历史数据（可选）
-东财数据: https://pan.baidu.com/s/1CMAlCRYwlhGVxS6drYUEgA 提取码: q2qn  
-市场概况，沪/深港通，融资融券数据(聚宽): https://pan.baidu.com/s/1ijrgjUd1WkRMONrwRQU-4w 提取码: dipd  
+链接: https://pan.baidu.com/s/16BZOkEY2PBTkixJgzls66w 提取码: gfxc
+
+里面包含joinquant的日/周线前/后复权数据，eastmoney的财务，分红，大股东，高管持仓等数据。
 
 把下载的数据解压到正式环境的data_path（所有db文件放到该目录下，没有层级结构）
 
 数据的更新是增量的，下载历史数据只是为了节省时间，全部自己更新也是可以的。
-
 
 ### 2.3 注册聚宽(可选)
 项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，网易,交易所，ccxt等免费数据。
