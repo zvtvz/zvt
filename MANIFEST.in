@@ -1,5 +1,7 @@
 include README.md
 include LICENSE
+include *.txt
 include zvt/samples/data.zip
 include zvt/samples/config.json
 include zvt/accounts/*.json
+include zvt/assets/*.css

@@ -10,8 +10,8 @@ from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_data, df_to_db
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader, DataListener
-from zvt.drawer.drawer import Drawer
 from zvt.domain import Stock
+from zvt.drawer.drawer import Drawer
 from zvt.utils.pd_utils import pd_is_not_null
 
 
@@ -202,6 +202,7 @@ class Factor(DataReader, DataListener):
     def compute(self):
         self.pre_compute()
 
+        self.logger.info('>>>>>>')
         self.logger.info('do_compute start')
         start_time = time.time()
         self.do_compute()
@@ -213,6 +214,7 @@ class Factor(DataReader, DataListener):
         self.after_compute()
         cost_time = time.time() - start_time
         self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
+        self.logger.info('<<<<<<')
 
     def factor_drawer(self) -> Drawer:
         drawer = Drawer(NormalData(df=self.factor_df))

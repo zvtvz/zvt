@@ -2,9 +2,10 @@
 
 import logging
 import math
+from typing import List
 
 from zvt.api import get_kdata
-from zvt.api.business import get_account_stats, get_trader_info
+from zvt.api.business import get_trader_info
 from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
@@ -116,50 +117,69 @@ class SimAccountService(AccountService):
         self.level = level
         self.start_timestamp = timestamp
 
-        account = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain', limit=1)
+        self.account: AccountStats = self.init_account()
 
-        if account:
-            self.logger.warning("trader:{} has run before,old result would be deleted".format(trader_name))
+    def init_account(self) -> AccountStats:
+        trader_info = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain',
+                                      limit=1)
+
+        if trader_info:
+            self.logger.warning("trader:{} has run before,old result would be deleted".format(self.trader_name))
             self.session.query(TraderInfo).filter(TraderInfo.trader_name == self.trader_name).delete()
             self.session.query(AccountStats).filter(AccountStats.trader_name == self.trader_name).delete()
             self.session.query(Position).filter(Position.trader_name == self.trader_name).delete()
             self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
             self.session.commit()
 
-        account = AccountStats(entity_id=f'trader_zvt_{self.trader_name}',
-                               trader_name=self.trader_name,
-                               cash=self.base_capital,
-                               all_value=self.base_capital,
-                               value=0,
-                               closing=False,
-                               timestamp=timestamp)
-        self.latest_account = account_stats_schema.dump(account)
+        return AccountStats(entity_id=f'trader_zvt_{self.trader_name}',
+                            timestamp=self.start_timestamp,
+                            trader_name=self.trader_name,
+                            cash=self.base_capital,
+                            all_value=self.base_capital,
+                            value=0,
+                            closing=False
+                            )
 
-        # self.persist_account(timestamp)
+    def load_account(self) -> AccountStats:
+        records = AccountStats.query_data(filters=[AccountStats.trader_name == self.trader_name],
+                                          order=AccountStats.timestamp.desc(), limit=1, return_type='domain')
+        if not records:
+            return self.account
+        latest_record: AccountStats = records[0]
+
+        # create new orm object from latest record
+        account_dict = account_stats_schema.dump(latest_record)
+        del account_dict['id']
+        del account_dict['positions']
+        account = AccountStats()
+        fill_domain_from_dict(account, account_dict)
+
+        positions: List[Position] = []
+        for position_domain in latest_record.positions:
+            position_dict = position_schema.dump(position_domain)
+            self.logger.info('current position:{}'.format(position_dict))
+            del position_dict['id']
+            del position_dict['account_stats']
+            position = Position()
+            fill_domain_from_dict(position, position_dict)
+            positions.append(position)
+
+        account.positions = positions
+
+        return account
 
     def on_trading_open(self, timestamp):
         self.logger.info('on_trading_open:{}'.format(timestamp))
         if is_same_date(timestamp, self.start_timestamp):
             return
-        # get the account for trading at the date
-        accounts = get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain',
-                                     end_timestamp=to_time_str(timestamp), limit=1, order=AccountStats.timestamp.desc())
-        if accounts:
-            account = accounts[0]
-        else:
-            return
+        self.account = self.load_account()
+        self.logger.info('on_trading_open:{},current_account:{}'.format(timestamp, self.account))
 
-        positions = []
-        # FIXME:dump all directly
-        for position_domain in account.positions:
-            position_dict = position_schema.dump(position_domain)
-            self.logger.info('current position:{}'.format(position_dict))
-            del position_dict['account_stats']
-            positions.append(position_dict)
+    def on_trading_error(self, timestamp, error):
+        pass
 
-        self.latest_account = account_stats_schema.dump(account)
-        self.latest_account['positions'] = positions
-        self.logger.info('on_trading_open:{},latest_account:{}'.format(timestamp, self.latest_account))
+    def on_trading_finish(self, timestamp):
+        pass
 
     def on_trading_signal(self, trading_signal: TradingSignal):
         entity_id = trading_signal.entity_id
@@ -200,43 +220,43 @@ class SimAccountService(AccountService):
     def on_trading_close(self, timestamp):
         self.logger.info('on_trading_close:{}'.format(timestamp))
 
-        self.latest_account['value'] = 0
-        self.latest_account['all_value'] = 0
-        for position in self.latest_account['positions']:
-            entity_type, _, _ = decode_entity_id(position['entity_id'])
+        self.account.value = 0
+        self.account.all_value = 0
+        for position in self.account.positions:
+            entity_type, _, _ = decode_entity_id(position.entity_id)
             data_schema = get_kdata_schema(entity_type, level=self.level)
 
-            kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position['entity_id'],
+            kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position.entity_id,
                               order=data_schema.timestamp.desc(),
                               end_timestamp=timestamp, limit=1)
 
             closing_price = kdata['close'][0]
 
-            position['available_long'] = position['long_amount']
-            position['available_short'] = position['short_amount']
+            position.available_long = position.long_amount
+            position.available_short = position.short_amount
 
             if closing_price:
-                if (position['long_amount'] is not None) and position['long_amount'] > 0:
-                    position['value'] = position['long_amount'] * closing_price
-                    self.latest_account['value'] += position['value']
-                elif (position['short_amount'] is not None) and position['short_amount'] > 0:
-                    position['value'] = 2 * (position['short_amount'] * position['average_short_price'])
-                    position['value'] -= position['short_amount'] * closing_price
-                    self.latest_account['value'] += position['value']
+                if (position.long_amount is not None) and position.long_amount > 0:
+                    position.value = position.long_amount * closing_price
+                    self.account.value += position.value
+                elif (position.short_amount is not None) and position.short_amount > 0:
+                    position.value = 2 * (position.short_amount * position.average_short_price)
+                    position.value -= position.short_amount * closing_price
+                    self.account.value += position.value
             else:
                 self.logger.warning(
                     'could not refresh close value for position:{},timestamp:{}'.format(position['entity_id'],
                                                                                         timestamp))
 
         # remove the empty position
-        self.latest_account['positions'] = [position for position in self.latest_account['positions'] if
-                                            position['long_amount'] > 0 or position['short_amount'] > 0]
+        self.account.positions = [position for position in self.account.positions if
+                                  position.long_amount > 0 or position.short_amount > 0]
 
-        self.latest_account['all_value'] = self.latest_account['value'] + self.latest_account['cash']
-        self.latest_account['closing'] = True
-        self.latest_account['timestamp'] = to_pd_timestamp(timestamp)
+        self.account.all_value = self.account.value + self.account.cash
+        self.account.closing = True
+        self.account.timestamp = to_pd_timestamp(timestamp)
 
-        self.logger.info('on_trading_close:{},latest_account:{}'.format(timestamp, self.latest_account))
+        self.logger.info('on_trading_close:{},latest_account:{}'.format(timestamp, self.account))
         self.persist_account(timestamp)
 
     def persist_account(self, timestamp):
@@ -247,32 +267,21 @@ class SimAccountService(AccountService):
         :type timestamp:
         """
         the_id = '{}_{}'.format(self.trader_name, to_time_str(timestamp, TIME_FORMAT_ISO8601))
-        positions = []
-        for position in self.latest_account['positions']:
-            position_domain = Position()
-            fill_domain_from_dict(position_domain, position, None)
 
-            position_domain.id = '{}_{}_{}'.format(self.trader_name, position['entity_id'],
-                                                   to_time_str(timestamp, TIME_FORMAT_ISO8601))
-            position_domain.timestamp = to_pd_timestamp(timestamp)
-            position_domain.account_stats_id = the_id
+        for position in self.account.positions:
+            position.id = '{}_{}_{}'.format(self.trader_name, position.entity_id,
+                                            to_time_str(timestamp, TIME_FORMAT_ISO8601))
+            position.timestamp = to_pd_timestamp(timestamp)
+            position.account_stats_id = the_id
 
-            positions.append(position_domain)
+        self.account.id = the_id
 
-        account_domain = AccountStats(id=the_id,
-                                      entity_id=f'trader_zvt_{self.trader_name}',
-                                      trader_name=self.trader_name,
-                                      cash=self.latest_account['cash'],
-                                      positions=positions,
-                                      all_value=self.latest_account['all_value'], value=self.latest_account['value'],
-                                      timestamp=to_pd_timestamp(self.latest_account['timestamp']))
+        self.logger.info('persist_account:{}'.format(account_stats_schema.dump(self.account)))
 
-        self.logger.info('persist_account:{}'.format(account_stats_schema.dump(account_domain)))
-
-        self.session.add(account_domain)
+        self.session.add(self.account)
         self.session.commit()
 
-    def get_current_position(self, entity_id):
+    def get_current_position(self, entity_id) -> Position:
         """
         get current position to decide whether order could make
 
@@ -281,21 +290,10 @@ class SimAccountService(AccountService):
         :return:
         :rtype: None
         """
-        for position in self.latest_account['positions']:
-            if position['entity_id'] == entity_id:
+        for position in self.account.positions:
+            if position.entity_id == entity_id:
                 return position
         return None
-
-    def get_account_at_time(self, timestamp):
-        """
-
-        :param timestamp:
-        :type timestamp:
-        :return:
-        :rtype:AccountStats
-        """
-        return get_account_stats(session=self.session, trader_name=self.trader_name, return_type='domain',
-                                 end_timestamp=timestamp, limit=1)[0]
 
     def update_position(self, current_position, order_amount, current_price, order_type, timestamp):
         """
@@ -313,58 +311,57 @@ class SimAccountService(AccountService):
         """
         if order_type == ORDER_TYPE_LONG:
             need_money = (order_amount * current_price) * (1 + self.slippage + self.buy_cost)
-            if self.latest_account['cash'] < need_money:
+            if self.account.cash < need_money:
                 raise NotEnoughMoneyError()
 
-            self.latest_account['cash'] -= need_money
+            self.account.cash -= need_money
 
             # 计算平均价
-            long_amount = current_position['long_amount'] + order_amount
-            current_position['average_long_price'] = (current_position['average_long_price'] * current_position[
-                'long_amount'] + current_price * order_amount) / long_amount
+            long_amount = current_position.long_amount + order_amount
+            current_position.average_long_price = (current_position.average_long_price * current_position.long_amount
+                                                   + current_price * order_amount) / long_amount
 
-            current_position['long_amount'] = long_amount
+            current_position.long_amount = long_amount
 
-            if current_position['trading_t'] == 0:
-                current_position['available_long'] += order_amount
+            if current_position.trading_t == 0:
+                current_position.available_long += order_amount
 
         elif order_type == ORDER_TYPE_SHORT:
             need_money = (order_amount * current_price) * (1 + self.slippage + self.buy_cost)
-            if self.latest_account['cash'] < need_money:
+            if self.account.cash < need_money:
                 raise NotEnoughMoneyError()
 
-            self.latest_account['cash'] -= need_money
+            self.account.cash -= need_money
 
-            short_amount = current_position['short_amount'] + order_amount
-            current_position['average_short_price'] = (current_position['average_short_price'] * current_position[
-                'short_amount']
-                                                       + current_price * order_amount) / short_amount
+            short_amount = current_position.short_amount + order_amount
+            current_position.average_short_price = (current_position.average_short_price * current_position.short_amount
+                                                    + current_price * order_amount) / short_amount
 
-            current_position['short_amount'] = short_amount
+            current_position.short_amount = short_amount
 
-            if current_position['trading_t'] == 0:
-                current_position['available_short'] += order_amount
+            if current_position.trading_t == 0:
+                current_position.available_short += order_amount
 
         elif order_type == ORDER_TYPE_CLOSE_LONG:
-            self.latest_account['cash'] += (order_amount * current_price * (1 - self.slippage - self.sell_cost))
+            self.account.cash += (order_amount * current_price * (1 - self.slippage - self.sell_cost))
 
-            current_position['available_long'] -= order_amount
-            current_position['long_amount'] -= order_amount
+            current_position.available_long -= order_amount
+            current_position.long_amount -= order_amount
 
         elif order_type == ORDER_TYPE_CLOSE_SHORT:
-            self.latest_account['cash'] += 2 * (order_amount * current_position['average_short_price'])
-            self.latest_account['cash'] -= order_amount * current_price * (1 + self.slippage + self.sell_cost)
+            self.account.cash += 2 * (order_amount * current_position.average_short_price)
+            self.account.cash -= order_amount * current_price * (1 + self.slippage + self.sell_cost)
 
-            current_position['available_short'] -= order_amount
-            current_position['short_amount'] -= order_amount
+            current_position.available_short -= order_amount
+            current_position.short_amount -= order_amount
 
         # save the order info to db
-        order_id = '{}_{}_{}_{}'.format(self.trader_name, order_type, current_position['entity_id'],
+        order_id = '{}_{}_{}_{}'.format(self.trader_name, order_type, current_position.entity_id,
                                         to_time_str(timestamp, TIME_FORMAT_ISO8601))
         order = Order(id=order_id,
                       timestamp=to_pd_timestamp(timestamp),
                       trader_name=self.trader_name,
-                      entity_id=current_position['entity_id'],
+                      entity_id=current_position.entity_id,
                       order_price=current_price,
                       order_amount=order_amount,
                       order_type=order_type,
@@ -412,30 +409,29 @@ class SimAccountService(AccountService):
 
             if not current_position:
                 trading_t = self.entity_schema.get_trading_t()
-                current_position = {
-                    'trader_name': self.trader_name,
-                    'entity_id': entity_id,
-                    'long_amount': 0,
-                    'available_long': 0,
-                    'average_long_price': 0,
-                    'short_amount': 0,
-                    'available_short': 0,
-                    'average_short_price': 0,
-                    'profit': 0,
-                    'value': 0,
-                    'trading_t': trading_t
-                }
+                current_position = Position(trader_name=self.trader_name,
+                                            entity_id=entity_id,
+                                            long_amount=0,
+                                            available_long=0,
+                                            average_long_price=0,
+                                            short_amount=0,
+                                            available_short=0,
+                                            average_short_price=0,
+                                            profit=0,
+                                            value=0,
+                                            trading_t=trading_t
+                                            )
                 # add it to latest account
-                self.latest_account['positions'].append(current_position)
+                self.account.positions.append(current_position)
 
             # 按钱交易
             if order_money > 0:
                 # 开多
                 if order_type == ORDER_TYPE_LONG:
-                    if current_position['short_amount'] > 0:
+                    if current_position.short_amount > 0:
                         raise InvalidOrderError("close the short position before open long")
 
-                    if order_money > self.latest_account['cash']:
+                    if order_money > self.account.cash:
                         raise NotEnoughMoneyError()
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
@@ -449,10 +445,10 @@ class SimAccountService(AccountService):
                         raise NotEnoughMoneyError()
                 # 开空
                 elif order_type == ORDER_TYPE_SHORT:
-                    if current_position['long_amount'] > 0:
+                    if current_position.long_amount > 0:
                         raise InvalidOrderError("close the long position before open short")
 
-                    if order_money > self.latest_account['cash']:
+                    if order_money > self.account.cash:
                         raise NotEnoughMoneyError()
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
@@ -470,26 +466,26 @@ class SimAccountService(AccountService):
             elif order_amount > 0:
                 # 开多
                 if order_type == ORDER_TYPE_LONG:
-                    if current_position['short_amount'] > 0:
+                    if current_position.short_amount > 0:
                         raise InvalidOrderError("close the short position before open long")
 
                     self.update_position(current_position, order_amount, current_price, order_type, current_timestamp)
                 # 开空
                 elif order_type == ORDER_TYPE_SHORT:
-                    if current_position['long_amount'] > 0:
+                    if current_position.long_amount > 0:
                         raise InvalidOrderError("close the long position before open short")
 
                     self.update_position(current_position, order_amount, current_price, order_type, current_timestamp)
                 # 平多
                 elif order_type == ORDER_TYPE_CLOSE_LONG:
-                    if current_position['available_long'] >= order_amount:
+                    if current_position.available_long >= order_amount:
                         self.update_position(current_position, order_amount, current_price, order_type,
                                              current_timestamp)
                     else:
                         raise NotEnoughPositionError()
                 # 平空
                 elif order_type == ORDER_TYPE_CLOSE_SHORT:
-                    if current_position['available_short'] >= order_amount:
+                    if current_position.available_short >= order_amount:
                         self.update_position(current_position, order_amount, current_price, order_type,
                                              current_timestamp)
                     else:
@@ -499,11 +495,11 @@ class SimAccountService(AccountService):
             elif 0 < order_pct <= 1:
                 # 开多
                 if order_type == ORDER_TYPE_LONG:
-                    if current_position['short_amount'] > 0:
+                    if current_position.short_amount > 0:
                         raise InvalidOrderError("close the short position before open long")
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
-                    want_pay = self.latest_account['cash'] * order_pct
+                    want_pay = self.account.cash * order_pct
                     # 买的数量
                     order_amount = want_pay // cost
                     if order_amount > 0:
@@ -513,11 +509,11 @@ class SimAccountService(AccountService):
                         raise NotEnoughMoneyError()
                 # 开空
                 elif order_type == ORDER_TYPE_SHORT:
-                    if current_position['long_amount'] > 0:
+                    if current_position.long_amount > 0:
                         raise InvalidOrderError("close the long position before open short")
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
-                    want_pay = self.latest_account['cash'] * order_pct
+                    want_pay = self.account.cash * order_pct
 
                     order_amount = want_pay // cost
                     if order_amount > 0:
@@ -528,33 +524,33 @@ class SimAccountService(AccountService):
 
                 # 平多
                 elif order_type == ORDER_TYPE_CLOSE_LONG:
-                    if current_position['available_long'] > 0:
+                    if current_position.available_long > 0:
                         if order_pct == 1.0:
-                            order_amount = current_position['available_long']
+                            order_amount = current_position.available_long
                         else:
-                            order_amount = math.floor(current_position['available_long'] * order_pct)
+                            order_amount = math.floor(current_position.available_long * order_pct)
 
                         if order_amount != 0:
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
-                                                current_position['available_long'], order_pct, order_amount)
+                            self.logger.warning(
+                                f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise NotEnoughPositionError()
                 # 平空
                 elif order_type == ORDER_TYPE_CLOSE_SHORT:
-                    if current_position['available_short'] > 0:
+                    if current_position.available_short > 0:
                         if order_pct == 1.0:
-                            order_amount = current_position['available_short']
+                            order_amount = current_position.available_short
                         else:
-                            order_amount = math.floor(current_position['available_short'] * order_pct)
+                            order_amount = math.floor(current_position.available_short * order_pct)
 
                         if order_amount != 0:
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
-                                                current_position['available_long'], order_pct, order_amount)
+                            self.logger.warning(
+                                f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise Exception("not enough position")

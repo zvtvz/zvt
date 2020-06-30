@@ -27,6 +27,8 @@ def load_traders():
     global trader_names
 
     traders = get_trader_info(return_type='domain')
+    account_readers.clear()
+    order_readers.clear()
     for trader in traders:
         account_readers.append(AccountStatsReader(trader_names=[trader.trader_name], level=trader.level))
         order_readers.append(

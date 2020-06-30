@@ -586,6 +586,9 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
             timestamps = self.init_timestamps(entity)
             self.security_timestamps_map[entity.id] = timestamps
 
+        if not timestamps:
+            return None, None, 0, timestamps
+
         timestamps.sort()
 
         self.logger.info(

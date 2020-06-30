@@ -74,7 +74,7 @@ def json_callback_param(the_str):
     return eval(json_str)
 
 
-def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict, default_func=lambda x: x):
+def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict = None, default_func=lambda x: x):
     """
     use field map and related func to fill properties from the dict to the domain
 

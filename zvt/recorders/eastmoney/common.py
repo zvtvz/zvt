@@ -156,10 +156,10 @@ class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecor
                                                  path_fields=self.timestamp_list_path_fields,
                                                  param=param)
 
-        if self.timestamp_path_fields:
+        if self.timestamp_path_fields and timestamp_json_list:
             timestamps = [get_from_path_fields(data, self.timestamp_path_fields) for data in timestamp_json_list]
-
-        return [to_pd_timestamp(t) for t in timestamps]
+            return [to_pd_timestamp(t) for t in timestamps]
+        return []
 
 
 class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):

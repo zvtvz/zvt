@@ -27,7 +27,7 @@ class TraderInfo(TraderBase, Mixin):
     kdata_use_begin_time = Column(Boolean)
 
 
-# 账户每日统治
+# account stats of every day
 class AccountStats(TraderBase, Mixin):
     __tablename__ = 'account_stats'
 
@@ -46,7 +46,7 @@ class AccountStats(TraderBase, Mixin):
     closing = Column(Boolean)
 
 
-# 每天持仓情况，可有多条记录
+# the position for specific entity of every day
 class Position(TraderBase, Mixin):
     __tablename__ = 'position'
 
