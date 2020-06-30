@@ -105,8 +105,7 @@ class Trader(object):
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False,
-                 draw_result: bool = True,
-                 solo: bool = False) -> None:
+                 draw_result: bool = True) -> None:
         assert self.entity_schema is not None
 
         self.logger = logging.getLogger(__name__)
@@ -146,7 +145,6 @@ class Trader(object):
 
         self.kdata_use_begin_time = kdata_use_begin_time
         self.draw_result = draw_result
-        self.solo = solo
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
                                                  trader_name=self.trader_name,
@@ -276,7 +274,16 @@ class Trader(object):
     def get_current_account(self) -> AccountStats:
         return self.account_service.account
 
-    def buy(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
+    def buy(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0, ignore_in_position=True):
+        if ignore_in_position:
+            account = self.get_current_account()
+            current_holdings = []
+            if account.positions:
+                current_holdings = [position.entity_id for position in account.positions if position != None and
+                                    position.available_long > 0]
+
+            entity_ids = set(entity_ids) - set(current_holdings)
+
         if entity_ids:
             position_pct = (1.0 / len(entity_ids)) * position_pct
 
@@ -298,9 +305,6 @@ class Trader(object):
                                 position.available_long > 0]
 
         shorted = set(current_holdings) & entity_ids
-
-        if shorted:
-            position_pct = (1.0 / len(shorted)) * position_pct
 
         for entity_id in shorted:
             trading_signal = TradingSignal(entity_id=entity_id,
@@ -375,8 +379,7 @@ class Trader(object):
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
                 self.account_service.on_trading_open(timestamp)
 
-            if self.solo:
-                self.on_time(timestamp=timestamp)
+            self.on_time(timestamp=timestamp)
 
             if self.selectors:
                 for level in self.trading_level_asc:
@@ -389,10 +392,11 @@ class Trader(object):
                             self.targets_slot.input_targets(level, long_targets, short_targets)
                             # the time always move on by min level step and we could check all level targets in the slot
                             # 1)the targets is generated for next interval
-                            # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(order_timestamp) when trading signal received
-                            # 3)the suggest price the the close price for generating the signal(generated_timestamp)
+                            # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(due_timestamp) when trading signal received
+                            # 3)the suggest price the the close price for generating the signal(happen_timestamp)
                             due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
-                            self.handle_targets_slot(due_timestamp=due_timestamp, happen_timestamp=timestamp)
+                            if level == self.level:
+                                self.handle_targets_slot(due_timestamp=due_timestamp, happen_timestamp=timestamp)
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (

@@ -143,6 +143,8 @@ class SimAccountService(AccountService):
     def load_account(self) -> AccountStats:
         records = AccountStats.query_data(filters=[AccountStats.trader_name == self.trader_name],
                                           order=AccountStats.timestamp.desc(), limit=1, return_type='domain')
+        if not records:
+            return self.account
         latest_record: AccountStats = records[0]
 
         # create new orm object from latest record
@@ -532,8 +534,8 @@ class SimAccountService(AccountService):
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
-                                                current_position.available_long, order_pct, order_amount)
+                            self.logger.warning(
+                                f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise NotEnoughPositionError()
                 # 平空
@@ -548,7 +550,7 @@ class SimAccountService(AccountService):
                             self.update_position(current_position, order_amount, current_price, order_type,
                                                  current_timestamp)
                         else:
-                            self.logger.warning("{} available_long:{} order_pct:{} order_amount:{}", entity_id,
-                                                current_position.available_long, order_pct, order_amount)
+                            self.logger.warning(
+                                f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise Exception("not enough position")
