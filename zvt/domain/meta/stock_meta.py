@@ -77,7 +77,7 @@ class Etf(StockMetaBase, BasePortfolio):
 # 该基础类可以这样理解:
 # entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
 class BasePortfolioStock(EntityMixin):
-    stock_id = Column(String)
+    stock_id = Column(String(length=10))
     stock_code = Column(String(length=64))
     stock_name = Column(String(length=128))
 
@@ -114,10 +114,10 @@ class EtfStock(StockMetaBase, BasePortfolioStockHistory):
 class StockDetail(StockMetaBase, BaseSecurity):
     __tablename__ = 'stock_detail'
 
-    industries = Column(String)
-    industry_indices = Column(String)
-    concept_indices = Column(String)
-    area_indices = Column(String)
+    industries = Column(String(length=64))
+    industry_indices = Column(String(length=64))
+    concept_indices = Column(String(length=64))
+    area_indices = Column(String(length=64))
 
     # 成立日期
     date_of_establishment = Column(DateTime)
