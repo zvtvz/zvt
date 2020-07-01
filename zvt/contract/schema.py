@@ -12,9 +12,9 @@ from zvt.utils.time_utils import date_and_time, is_same_time
 
 
 class Mixin(object):
-    id = Column(String, primary_key=True)
+    id = Column(String(length=64), primary_key=True)
     # entity id for this model
-    entity_id = Column(String)
+    entity_id = Column(String(length=128))
 
     # the meaning could be different for different case,most of time it means 'happen time'
     timestamp = Column(DateTime)

@@ -4,6 +4,7 @@ from typing import List
 
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta
+from sqlalchemy.engine.reflection import Inspector
 
 from zvt.contract import EntityMixin, zvt_context, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
@@ -93,22 +94,19 @@ def register_schema(providers: List[str],
 
     for provider in providers:
         engine = get_db_engine(provider, db_name=db_name)
+        inspector = Inspector.from_engine(engine)
 
         # create index for 'timestamp','entity_id','code','report_period','updated_timestamp
         for table_name, table in iter(schema_base.metadata.tables.items()):
-            index_list = []
-            with engine.connect() as con:
-                rs = con.execute("PRAGMA INDEX_LIST('{}')".format(table_name))
-                for row in rs:
-                    index_list.append(row[1])
+            index_column_names = [index['name'] for index in inspector.get_indexes(table_name)]
 
-            logger.debug('engine:{},table:{},index:{}'.format(engine, table_name, index_list))
+            logger.debug('engine:{},table:{},index:{}'.format(engine, table_name, index_column_names))
 
             for col in ['timestamp', 'entity_id', 'code', 'report_period', 'created_timestamp', 'updated_timestamp']:
                 if col in table.c:
                     column = eval('table.c.{}'.format(col))
                     index = sqlalchemy.schema.Index('{}_{}_index'.format(table_name, col), column)
-                    if index.name not in index_list:
+                    if index.name not in index_column_names:
                         index.create(engine)
             for cols in [('timestamp', 'entity_id'), ('timestamp', 'code')]:
                 if (cols[0] in table.c) and (col[1] in table.c):
@@ -116,5 +114,5 @@ def register_schema(providers: List[str],
                     column1 = eval('table.c.{}'.format(col[1]))
                     index = sqlalchemy.schema.Index('{}_{}_{}_index'.format(table_name, col[0], col[1]), column0,
                                                     column1)
-                    if index.name not in index_list:
+                    if index.name not in index_column_names:
                         index.create(engine)
