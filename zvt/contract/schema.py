@@ -12,7 +12,7 @@ from zvt.utils.time_utils import date_and_time, is_same_time
 
 
 class Mixin(object):
-    id = Column(String(length=64), primary_key=True)
+    id = Column(String(length=128), primary_key=True)
     # entity id for this model
     entity_id = Column(String(length=128))
 
