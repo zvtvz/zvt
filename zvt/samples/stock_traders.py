@@ -28,7 +28,7 @@ class MyBullTrader(StockTrader):
                                     provider='joinquant')
 
         myselector.add_filter_factor(
-            BullFactor(entity_ids=entity_ids, entity_type=entity_schema, exchanges=exchanges,
+            BullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp))
 
         self.selectors.append(myselector)

@@ -364,7 +364,7 @@ class Trader(object):
                     real_end_timestamp = timestamp
 
                 seconds = (now_pd_timestamp() - real_end_timestamp).total_seconds()
-                waiting_seconds = self.level.to_second() - seconds,
+                waiting_seconds = self.level.to_second() - seconds
                 # meaning the future kdata not ready yet,we could move on to check
                 if waiting_seconds > 0:
                     # iterate the selector from min to max which in finished timestamp kdata
