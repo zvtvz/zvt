@@ -19,62 +19,6 @@ from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str
 logger = logging.getLogger(__name__)
 
 
-# overwrite it to custom your selector comparator
-class SelectorsComparator(object):
-
-    def __init__(self, selectors: List[TargetSelector]) -> None:
-        self.selectors: List[TargetSelector] = selectors
-
-    def make_decision(self, timestamp, trading_level: IntervalLevel):
-        """
-
-        :param timestamp:
-        :type timestamp:
-        :param trading_level:
-        :type trading_level: zvt.domain.common.IntervalLevel
-        """
-        raise NotImplementedError
-
-
-# a selector comparator select the targets ordered by score and limit the targets number
-class LimitSelectorsComparator(SelectorsComparator):
-
-    def __init__(self, selectors: List[TargetSelector], limit=10) -> None:
-        super().__init__(selectors)
-        self.limit = limit
-
-    def make_decision(self, timestamp, trading_level: IntervalLevel):
-        logger.debug('current timestamp:{}'.format(timestamp))
-
-        all_long_targets = []
-        all_short_targets = []
-        for selector in self.selectors:
-            if selector.level == trading_level:
-                long_targets = selector.get_open_long_targets(timestamp=timestamp)
-                short_targets = selector.get_open_short_targets(timestamp=timestamp)
-                if long_targets:
-                    logger.debug(
-                        '{} selector:{} make_decision,long_targets size:{}'.format(trading_level.value, selector,
-                                                                                   len(long_targets)))
-                    if len(long_targets) > self.limit:
-                        long_targets = long_targets[0:self.limit]
-                        logger.debug('{} selector:{} make_decision,keep:{}'.format(trading_level.value, selector,
-                                                                                   len(long_targets)))
-                if short_targets:
-                    logger.debug(
-                        '{} selector:{} make_decision, short_targets size:{}'.format(trading_level.value, selector,
-                                                                                     len(short_targets)))
-                    if len(short_targets) > self.limit:
-                        short_targets = short_targets[0:self.limit]
-                        logger.debug('{} selector:{} make_decision,keep:{}'.format(trading_level.value, selector,
-                                                                                   len(short_targets)))
-
-                all_long_targets += long_targets
-                all_short_targets += short_targets
-
-        return all_long_targets, all_short_targets
-
-
 # the data structure for storing level:targets map,you should handle the targets of the level before overwrite it
 class TargetsSlot(object):
 
@@ -157,8 +101,6 @@ class Trader(object):
         self.init_selectors(entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
                             codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
 
-        self.selectors_comparator = self.init_selectors_comparator()
-
         if self.selectors:
             self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
             self.trading_level_asc.sort()
@@ -219,13 +161,6 @@ class Trader(object):
 
         """
         pass
-
-    def init_selectors_comparator(self):
-        """
-        overwrite this to set selectors_comparator
-
-        """
-        return LimitSelectorsComparator(self.selectors)
 
     def add_trading_signal_listener(self, listener):
         if listener not in self.trading_signal_listeners:
@@ -341,6 +276,16 @@ class Trader(object):
                                                  category_field='trader_name'))
             drawer.draw_line(show=True)
 
+    def select_long_targets(self, long_targets: List[str]) -> List[str]:
+        if len(long_targets) > 10:
+            return long_targets[0:10]
+        return long_targets
+
+    def select_short_targets(self, short_targets: List[str]) -> List[str]:
+        if len(short_targets) > 10:
+            return short_targets[0:10]
+        return short_targets
+
     def in_trading_date(self, timestamp):
         return to_time_str(timestamp) in self.trading_dates
 
@@ -385,11 +330,21 @@ class Trader(object):
                 for level in self.trading_level_asc:
                     # in every cycle, all level selector do its job in its time
                     if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
-                        long_targets, short_targets = self.selectors_comparator.make_decision(timestamp=timestamp,
-                                                                                              trading_level=level)
+                        all_long_targets = []
+                        all_short_targets = []
+                        for selector in self.selectors:
+                            if selector.level == level:
+                                long_targets = selector.get_open_long_targets(timestamp=timestamp)
+                                long_targets = self.select_long_targets(long_targets)
 
-                        if long_targets or short_targets:
-                            self.targets_slot.input_targets(level, long_targets, short_targets)
+                                short_targets = selector.get_open_short_targets(timestamp=timestamp)
+                                short_targets = self.select_short_targets(short_targets)
+
+                                all_long_targets += long_targets
+                                all_short_targets += short_targets
+
+                        if all_long_targets or all_short_targets:
+                            self.targets_slot.input_targets(level, all_long_targets, all_short_targets)
                             # the time always move on by min level step and we could check all level targets in the slot
                             # 1)the targets is generated for next interval
                             # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(due_timestamp) when trading signal received
