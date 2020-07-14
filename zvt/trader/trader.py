@@ -19,22 +19,6 @@ from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str
 logger = logging.getLogger(__name__)
 
 
-# the data structure for storing level:targets map,you should handle the targets of the level before overwrite it
-class TargetsSlot(object):
-
-    def __init__(self) -> None:
-        self.level_map_targets = {}
-
-    def input_targets(self, level: IntervalLevel, long_targets: List[str], short_targets: List[str]):
-        logger.debug('level:{},old targets:{},new targets:{}'.format(level,
-                                                                     self.get_targets(level),
-                                                                     (long_targets, short_targets)))
-        self.level_map_targets[level.value] = (long_targets, short_targets)
-
-    def get_targets(self, level: IntervalLevel):
-        return self.level_map_targets.get(level.value)
-
-
 class Trader(object):
     entity_schema: EntityMixin = None
 
@@ -113,9 +97,11 @@ class Trader(object):
             self.trading_level_desc = list(self.trading_level_asc)
             self.trading_level_desc.reverse()
 
-        self.targets_slot: TargetsSlot = TargetsSlot()
-
         self.session = get_db_session('zvt', data_schema=TraderInfo)
+
+        self.level_map_long_targets = {}
+        self.level_map_short_targets = {}
+
         self.on_start()
 
     def on_start(self):
@@ -170,12 +156,12 @@ class Trader(object):
         if listener in self.trading_signal_listeners:
             self.trading_signal_listeners.remove(listener)
 
-    def handle_targets_slot(self, due_timestamp: pd.Timestamp, happen_timestamp: pd.Timestamp):
+    def handle_targets(self, due_timestamp: pd.Timestamp, happen_timestamp: pd.Timestamp):
         """
         this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
         targets of different levels
 
-        the default implementation is selecting the targets in all levels
+        the default implementation is selecting the targets in all level
 
         :param due_timestamp:
         :param happen_timestamp:
@@ -184,16 +170,17 @@ class Trader(object):
         long_selected = None
         short_selected = None
         for level in self.trading_level_desc:
-            targets = self.targets_slot.get_targets(level=level)
-            if targets:
-                long_targets = set(targets[0])
-                short_targets = set(targets[1])
-
+            long_targets = self.level_map_long_targets.get(level)
+            if long_targets:
+                long_targets = set(long_targets)
                 if not long_selected:
                     long_selected = long_targets
                 else:
                     long_selected = long_selected & long_targets
 
+            short_targets = self.level_map_short_targets.get(level)
+            if short_targets:
+                short_targets = set(short_targets)
                 if not short_selected:
                     short_selected = short_targets
                 else:
@@ -252,10 +239,13 @@ class Trader(object):
 
     def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected, long_pct=1.0,
                           short_pct=1.0):
-        self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected,
-                 position_pct=long_pct)
-        self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected,
-                  position_pct=short_pct)
+        if long_selected:
+            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected,
+                     position_pct=long_pct)
+
+        if short_selected:
+            self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected,
+                      position_pct=short_pct)
 
     def send_trading_signal(self, signal: TradingSignal):
         for listener in self.trading_signal_listeners:
@@ -291,6 +281,15 @@ class Trader(object):
 
     def on_time(self, timestamp):
         self.logger.debug(f'current timestamp:{timestamp}')
+
+    def input_long_targets(self, level, targets):
+        logger.debug(f'level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{targets}')
+        self.level_map_long_targets[level] = targets
+
+    def input_short_targets(self, level, targets):
+        logger.debug(
+            f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{targets}')
+        self.level_map_short_targets[level] = targets
 
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
@@ -343,15 +342,19 @@ class Trader(object):
                                 all_long_targets += long_targets
                                 all_short_targets += short_targets
 
-                        if all_long_targets or all_short_targets:
-                            self.targets_slot.input_targets(level, all_long_targets, all_short_targets)
-                            # the time always move on by min level step and we could check all level targets in the slot
-                            # 1)the targets is generated for next interval
-                            # 2)the acceptable price is next interval prices,you could buy it at current price if the time is before the timestamp(due_timestamp) when trading signal received
-                            # 3)the suggest price the the close price for generating the signal(happen_timestamp)
-                            due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
-                            if level == self.level:
-                                self.handle_targets_slot(due_timestamp=due_timestamp, happen_timestamp=timestamp)
+                        if all_long_targets:
+                            self.input_long_targets(level, all_long_targets)
+                        if all_short_targets:
+                            self.input_short_targets(level, all_short_targets)
+
+                        # the time always move on by min level step and we could check all targets of levels
+                        # 1)the targets is generated for next interval
+                        # 2)the acceptable price is next interval prices,you could buy it at current price
+                        # if the time is before the timestamp(due_timestamp) when trading signal received
+                        # 3)the suggest price the the close price for generating the signal(happen_timestamp)
+                        due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
+                        if level == self.level:
+                            self.handle_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp)
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (
