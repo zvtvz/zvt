@@ -26,6 +26,10 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 ### 数据就是entity和entity发生的event，数据即api,数据即策略
 ### 数据是可插入的，发信号到哪是可插入的
 
+[数字货币插件](https://github.com/zvtvz/zvt-ccxt)
+
+[定时选股推送](https://github.com/zvtvz/zvt/issues/48)
+
 ##  0. 展示
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/show-trader.gif'/></p>
