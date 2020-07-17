@@ -8,7 +8,7 @@ from sqlalchemy import exists, and_
 
 from zvt.api import AdjustType
 from zvt.contract import IntervalLevel
-from zvt.contract.api import decode_entity_id
+from zvt.contract.api import decode_entity_id, get_schema_by_name
 from zvt.domain import *
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
@@ -29,8 +29,10 @@ def get_kdata_schema(entity_type: str,
                                           adjust_type.value.capitalize())
     else:
         schema_str = '{}{}Kdata'.format(entity_type.capitalize(), level.value.capitalize())
-
-    return eval(schema_str)
+    try:
+        return eval(schema_str)
+    except:
+        return get_schema_by_name(schema_str)
 
 
 def get_ma_state_stats_schema(entity_type: str,
