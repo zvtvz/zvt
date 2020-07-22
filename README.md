@@ -21,8 +21,9 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 ## 详细文档
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
->详细文档有部分已经落后代码，其实认真看完README并结合代码理解下面的两句话，基本上不需要什么文档了
+>详细文档有部分已经落后代码，其实认真看完README并结合代码理解下面的几句话，基本上不需要什么文档了
 
+### entity抽象了 *交易标的* 不变的东西
 ### 数据就是entity和entity发生的event，数据即api,数据即策略
 ### 数据是可插入的，发信号到哪是可插入的
 
@@ -34,6 +35,9 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 [数字货币插件](https://github.com/zvtvz/zvt-ccxt)
 
 [定时选股推送](https://github.com/zvtvz/zvt/issues/48)
+
+后面打算扩展zvt-future,zvt-macro等，欢迎感兴趣的加入，因为市场在我心目中大概是这样的
+<p align="center"><img src='https://github.com/zvtvz/automoney/blob/master/imgs/market.png'/></p>
 
 ##  0. 展示
 
@@ -327,6 +331,8 @@ class MySoloTrader(StockTrader):
 
 然后，刷新一下[http://127.0.0.1:8050/](http://127.0.0.1:8050/)，看你运行策略的performance
 
+更多可参考[策略例子](https://github.com/zvtvz/zvt/tree/master/examples/trader)
+
 ## 5. 计算
 简单的计算可以通过query_data来完成，这里说的是系统设计的二维索引多标的计算模型。
 
@@ -450,8 +456,9 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 - 支持多种实盘交易(实现中)
 
 ## 💡贡献
-
 期待能有更多的开发者参与到 zvt 的开发中来，我会保证尽快 Reivew PR 并且及时回复。但提交 PR 请确保
+
+先看一下[1分钟代码规范](https://github.com/zvtvz/zvt/blob/master/code_of_conduct.md)
 
 1. 通过所有单元测试，如若是新功能，请为其新增单元测试
 2. 遵守开发规范
@@ -467,7 +474,7 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 
 ## 🤝联系方式  
 
-个人微信:foolcage 添加暗号:zvt  
+加微信进群:foolcage 添加暗号:zvt  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
 ------
