@@ -7,10 +7,10 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.reports import get_subscriber_emails
-from zvt.contract.api import get_entities
 from zvt import init_log
+from zvt.contract.api import get_entities
 from zvt.domain import Stock, Stock1dKdata, StockValuation
-from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
+from zvt.factors.ma.ma_factor import ImprovedMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
 
@@ -37,7 +37,7 @@ def report_vol_up_250():
             # 计算均线
             my_selector = TargetSelector(start_timestamp='2018-01-01', end_timestamp=target_date)
             # add the factors
-            factor1 = VolumeUpMa250Factor(start_timestamp='2018-01-01', end_timestamp=target_date)
+            factor1 = ImprovedMaFactor(start_timestamp='2018-01-01', end_timestamp=target_date)
 
             my_selector.add_filter_factor(factor1)
 
@@ -85,7 +85,7 @@ def report_vol_up_250():
 
             logger.info(msg)
 
-            email_action.send_message(get_subscriber_emails(), f'{target_date} 放量突破年线选股结果', msg)
+            email_action.send_message(get_subscriber_emails(), f'{target_date} 改进版放量突破年线选股结果', msg)
 
             break
         except Exception as e:

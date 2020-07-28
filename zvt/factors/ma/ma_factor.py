@@ -103,17 +103,18 @@ class ImprovedMaFactor(TechnicalFactor):
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume'],
+                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume',
+                                  'turnover'],
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 windows=[250], vol_windows=[10, 60]) -> None:
+                 windows=[250], vol_windows=[30]) -> None:
         self.windows = windows
         self.vol_windows = vol_windows
 
-        transformer: Transformer = MaAndVolumeTransformer(windows=windows, vol_windows=vol_windows)
+        transformer: Transformer = MaAndVolumeTransformer(windows=windows, vol_windows=vol_windows, kdata_overlap=3)
 
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
@@ -126,15 +127,20 @@ class ImprovedMaFactor(TechnicalFactor):
         # 价格刚上均线
         cols = [f'ma{window}' for window in self.windows]
         filter_se = (self.factor_df['close'] > self.factor_df[cols[0]]) & (
-                self.factor_df['close'] <= 1.2 * self.factor_df[cols[0]])
+                self.factor_df['close'] < 1.1 * self.factor_df[cols[0]])
         for col in cols[1:]:
             filter_se = filter_se & (self.factor_df['close'] > self.factor_df[col])
 
         # 放量
         vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
+        filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
+        for col in vol_cols[1:]:
+            filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[col])
 
-        filter_se = filter_se & (self.factor_df['volume'] > 1.3 * self.factor_df[vol_cols[1]])
-        filter_se = filter_se & (self.factor_df[vol_cols[0]] > 1.4 * self.factor_df[vol_cols[1]])
+        # 成交额大于1亿️
+        filter_se = filter_se & (self.factor_df['turnover'] > 100000000)
+        # 最近3k线重叠
+        filter_se = filter_se & (self.factor_df['overlap'] != (0, 0))
 
         print(self.factor_df[filter_se])
         self.result_df = filter_se.to_frame(name='score')
@@ -159,6 +165,7 @@ if __name__ == '__main__':
 
     codes = entities.index.to_list()
 
-    factor = CrossMaFactor(entity_ids=['000001'], start_timestamp='2005-01-01',
-                           end_timestamp=now_pd_timestamp(), need_persist=False,
-                           level=level)
+    factor = ImprovedMaFactor(entity_ids=['stock_sz_000338'], start_timestamp='2020-01-01',
+                              end_timestamp=now_pd_timestamp(), need_persist=False,
+                              level=level)
+    print(factor.result_df)

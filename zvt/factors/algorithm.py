@@ -59,11 +59,40 @@ class MaTransformer(Transformer):
         return input_df
 
 
+def point_in_range(point, range):
+    return point >= range[0] and point <= range[1]
+
+
+def intersect_ranges(range_list):
+    result = intersect(range_list[0], range_list[1])
+    for range_i in range_list[2:]:
+        result = intersect(result, range_i)
+    return result
+
+
+def intersect(range_a, range_b):
+    if not range_a or not range_b:
+        return None
+    # 包含
+    if point_in_range(range_a[0], range_b) and point_in_range(range_a[1], range_b):
+        return range_a
+    if point_in_range(range_b[0], range_a) and point_in_range(range_b[1], range_a):
+        return range_b
+
+    if point_in_range(range_a[0], range_b):
+        return range_a[0], range_b[1]
+
+    if point_in_range(range_b[0], range_a):
+        return range_b[0], range_a[1]
+    return None
+
+
 class MaAndVolumeTransformer(Transformer):
-    def __init__(self, windows=[5, 10], vol_windows=[30]) -> None:
+    def __init__(self, windows=[5, 10], vol_windows=[30], kdata_overlap=0) -> None:
         super().__init__()
         self.windows = windows
         self.vol_windows = vol_windows
+        self.kdata_overlap = kdata_overlap
 
     def transform(self, input_df) -> pd.DataFrame:
         for window in self.windows:
@@ -81,6 +110,21 @@ class MaAndVolumeTransformer(Transformer):
             vol_ma_df = input_df['volume'].groupby(level=0).rolling(window=vol_window, min_periods=vol_window).mean()
             vol_ma_df = vol_ma_df.reset_index(level=0, drop=True)
             input_df[col] = vol_ma_df
+
+        if self.kdata_overlap > 0:
+            input_df['overlap'] = [(0, 0)] * len(input_df.index)
+
+            def cal_overlap(s):
+                high = input_df.loc[s.index, 'high']
+                low = input_df.loc[s.index, 'low']
+                intersection = intersect_ranges(list(zip(low.to_list(), high.to_list())))
+                if intersection:
+                    input_df.at[s.index[-1], 'overlap'] = intersection
+                return 0
+
+            input_df[['high', 'low']].groupby(level=0).rolling(window=self.kdata_overlap,
+                                                               min_periods=self.kdata_overlap).apply(
+                cal_overlap, raw=False)
 
         return input_df
 
