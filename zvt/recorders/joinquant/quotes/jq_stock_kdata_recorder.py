@@ -93,7 +93,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                           unit=self.jq_trading_level,
                           fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
                           fq_ref_date=fq_ref_date,
-                          include_now=self.real_time)
+                          include_now=True)
         else:
             end_timestamp = to_time_str(self.end_timestamp)
             df = get_bars(to_jq_entity_id(entity),
