@@ -6,11 +6,11 @@ import time
 import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.reports import get_subscriber_emails
 from zvt import init_log
 from zvt.contract.api import get_entities
 from zvt.domain import Stock, Stock1dKdata, StockValuation
 from zvt.factors.ma.ma_factor import ImprovedMaFactor
+from zvt.factors.solo_factor import SoloFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
 
@@ -19,17 +19,13 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=19, minute=0, day_of_week='mon-fri')
-def report_vol_up_250():
+@sched.scheduled_job('cron', hour=19, minute=30, day_of_week='mon-fri')
+def report_solo():
     while True:
         error_count = 0
         email_action = EmailInformer()
 
         try:
-            # 抓取k线数据
-            # StockTradeDay.record_data(provider='joinquant')
-            # Stock1dKdata.record_data(provider='joinquant')
-
             latest_day: Stock1dKdata = Stock1dKdata.query_data(order=Stock1dKdata.timestamp.desc(), limit=1,
                                                                return_type='domain')
             target_date = latest_day[0].timestamp
@@ -44,6 +40,19 @@ def report_vol_up_250():
             my_selector.run()
 
             long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
+
+            if long_stocks:
+                my_selector = TargetSelector(start_timestamp=target_date - datetime.timedelta(10),
+                                             end_timestamp=target_date)
+                # add the factors
+                factor1 = SoloFactor(start_timestamp=target_date - datetime.timedelta(10), end_timestamp=target_date,
+                                     entity_ids=long_stocks)
+
+                my_selector.add_filter_factor(factor1)
+
+                my_selector.run()
+
+                long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
 
             msg = 'no targets'
 
@@ -70,37 +79,37 @@ def report_vol_up_250():
                 # add them to eastmoney
                 try:
                     try:
-                        eastmoneypy.del_group('tech')
+                        eastmoneypy.del_group('high')
                     except:
                         pass
-                    eastmoneypy.create_group('tech')
+                    eastmoneypy.create_group('high')
                     for stock in stocks:
-                        eastmoneypy.add_to_group(stock.code, group_name='tech')
+                        eastmoneypy.add_to_group(stock.code, group_name='high')
                 except Exception as e:
-                    email_action.send_message("5533061@qq.com", f'report_vol_up_250 error',
-                                              'report_vol_up_250 error:{}'.format(e))
+                    email_action.send_message("5533061@qq.com", f'report_solo error',
+                                              'report_solo error:{}'.format(e))
 
                 info = [f'{stock.name}({stock.code})' for stock in stocks]
                 msg = msg + '盈利股:' + ' '.join(info) + '\n'
 
             logger.info(msg)
 
-            email_action.send_message(get_subscriber_emails(), f'{target_date} 改进版放量突破年线选股结果', msg)
+            email_action.send_message("5533061@qq.com", f'{target_date} solo选股结果', msg)
 
             break
         except Exception as e:
-            logger.exception('report_vol_up_250 error:{}'.format(e))
+            logger.exception('report_solo error:{}'.format(e))
             time.sleep(60 * 3)
             error_count = error_count + 1
             if error_count == 10:
-                email_action.send_message("5533061@qq.com", f'report_vol_up_250 error',
-                                          'report_vol_up_250 error:{}'.format(e))
+                email_action.send_message("5533061@qq.com", f'report_solo error',
+                                          'report_solo error:{}'.format(e))
 
 
 if __name__ == '__main__':
-    init_log('report_vol_up_250.log')
+    init_log('report_solo.log')
 
-    report_vol_up_250()
+    report_solo()
 
     sched.start()
 

@@ -114,7 +114,7 @@ class ImprovedMaFactor(TechnicalFactor):
         self.windows = windows
         self.vol_windows = vol_windows
 
-        transformer: Transformer = MaAndVolumeTransformer(windows=windows, vol_windows=vol_windows, kdata_overlap=3)
+        transformer: Transformer = MaAndVolumeTransformer(windows=windows, vol_windows=vol_windows)
 
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
@@ -139,8 +139,6 @@ class ImprovedMaFactor(TechnicalFactor):
 
         # 成交额大于1亿️
         filter_se = filter_se & (self.factor_df['turnover'] > 100000000)
-        # 最近3k线重叠
-        filter_se = filter_se & (self.factor_df['overlap'] != (0, 0))
 
         print(self.factor_df[filter_se])
         self.result_df = filter_se.to_frame(name='score')

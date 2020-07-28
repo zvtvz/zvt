@@ -87,6 +87,30 @@ def intersect(range_a, range_b):
     return None
 
 
+class IntersectTransformer(Transformer):
+    def __init__(self, kdata_overlap=0) -> None:
+        super().__init__()
+        self.kdata_overlap = kdata_overlap
+
+    def transform(self, input_df) -> pd.DataFrame:
+        if self.kdata_overlap > 0:
+            input_df['overlap'] = [(0, 0)] * len(input_df.index)
+
+            def cal_overlap(s):
+                high = input_df.loc[s.index, 'high']
+                low = input_df.loc[s.index, 'low']
+                intersection = intersect_ranges(list(zip(low.to_list(), high.to_list())))
+                if intersection:
+                    input_df.at[s.index[-1], 'overlap'] = intersection
+                return 0
+
+            input_df[['high', 'low']].groupby(level=0).rolling(window=self.kdata_overlap,
+                                                               min_periods=self.kdata_overlap).apply(
+                cal_overlap, raw=False)
+
+        return input_df
+
+
 class MaAndVolumeTransformer(Transformer):
     def __init__(self, windows=[5, 10], vol_windows=[30], kdata_overlap=0) -> None:
         super().__init__()
