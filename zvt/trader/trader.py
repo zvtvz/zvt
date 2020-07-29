@@ -80,7 +80,7 @@ class Trader(object):
                                                  provider=self.provider,
                                                  level=self.level)
 
-        self.add_trading_signal_listener(self.account_service)
+        self.register_trading_signal_listener(self.account_service)
 
         self.init_selectors(entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
                             codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
@@ -143,32 +143,48 @@ class Trader(object):
 
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
         """
-        implement this to init selectors
+        overwrite it to init selectors if you want to use selector/factor computing model or just write strategy in on_time
 
         """
         pass
 
-    def add_trading_signal_listener(self, listener):
+    def register_trading_signal_listener(self, listener):
         if listener not in self.trading_signal_listeners:
             self.trading_signal_listeners.append(listener)
 
-    def remove_trading_signal_listener(self, listener):
+    def deregister_trading_signal_listener(self, listener):
         if listener in self.trading_signal_listeners:
             self.trading_signal_listeners.remove(listener)
 
-    def handle_targets(self, due_timestamp: pd.Timestamp, happen_timestamp: pd.Timestamp):
+    def set_long_targets_by_level(self, level: IntervalLevel, targets: List[str]) -> None:
+        logger.debug(
+            f'level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{targets}')
+        self.level_map_long_targets[level] = targets
+
+    def set_short_targets_by_level(self, level: IntervalLevel, targets: List[str]) -> None:
+        logger.debug(
+            f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{targets}')
+        self.level_map_short_targets[level] = targets
+
+    def get_long_targets_by_level(self, level: IntervalLevel) -> List[str]:
+        return self.level_map_long_targets.get(level)
+
+    def get_short_targets_by_level(self, level: IntervalLevel) -> List[str]:
+        return self.level_map_short_targets.get(level)
+
+    def filter_long_targets(self, timestamp):
         """
         this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
         targets of different levels
 
         the default implementation is selecting the targets in all level
 
-        :param due_timestamp:
-        :param happen_timestamp:
+        :param timestamp:
 
         """
+
         long_selected = None
-        short_selected = None
+
         for level in self.trading_level_desc:
             long_targets = self.level_map_long_targets.get(level)
             if long_targets:
@@ -177,7 +193,20 @@ class Trader(object):
                     long_selected = long_targets
                 else:
                     long_selected = long_selected & long_targets
+        return long_selected
 
+    def filter_short_targets(self, timestamp):
+        """
+        this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
+        targets of different levels
+
+        the default implementation is selecting the targets in all level
+
+        :param timestamp:
+
+        """
+        short_selected = None
+        for level in self.trading_level_desc:
             short_targets = self.level_map_short_targets.get(level)
             if short_targets:
                 short_targets = set(short_targets)
@@ -185,13 +214,7 @@ class Trader(object):
                     short_selected = short_targets
                 else:
                     short_selected = short_selected & short_targets
-
-        self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
-
-        self.logger.debug('timestamp:{},short_selected:{}'.format(due_timestamp, short_selected))
-
-        self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp,
-                               long_selected=long_selected, short_selected=short_selected)
+        return short_selected
 
     def get_current_account(self) -> AccountStats:
         return self.account_service.account
@@ -216,7 +239,7 @@ class Trader(object):
                                            trading_signal_type=TradingSignalType.open_long,
                                            trading_level=self.level,
                                            position_pct=position_pct)
-            self.send_trading_signal(trading_signal)
+            self.on_trading_signal(trading_signal)
 
     def sell(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
         # current position
@@ -235,7 +258,7 @@ class Trader(object):
                                            trading_signal_type=TradingSignalType.close_long,
                                            trading_level=self.level,
                                            position_pct=position_pct)
-            self.send_trading_signal(trading_signal)
+            self.on_trading_signal(trading_signal)
 
     def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected, long_pct=1.0,
                           short_pct=1.0):
@@ -247,15 +270,8 @@ class Trader(object):
             self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected,
                       position_pct=short_pct)
 
-    def send_trading_signal(self, signal: TradingSignal):
-        for listener in self.trading_signal_listeners:
-            try:
-                listener.on_trading_signal(signal)
-            except Exception as e:
-                self.logger.exception(e)
-                listener.on_trading_error(timestamp=signal.happen_timestamp, error=e)
-
-    def on_finish(self):
+    def on_finish(self, timestmap):
+        self.on_trading_finish(timestmap)
         # show the result
         if self.draw_result:
             import plotly.io as pio
@@ -282,14 +298,29 @@ class Trader(object):
     def on_time(self, timestamp):
         self.logger.debug(f'current timestamp:{timestamp}')
 
-    def input_long_targets(self, level, targets):
-        logger.debug(f'level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{targets}')
-        self.level_map_long_targets[level] = targets
+    def on_trading_signal(self, trading_signal: TradingSignal):
+        for l in self.trading_signal_listeners:
+            try:
+                l.on_trading_signal(trading_signal)
+            except Exception as e:
+                self.logger.exception(e)
+                l.on_trading_error(timestamp=trading_signal.happen_timestamp, error=e)
 
-    def input_short_targets(self, level, targets):
-        logger.debug(
-            f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{targets}')
-        self.level_map_short_targets[level] = targets
+    def on_trading_open(self, timestamp):
+        for l in self.trading_signal_listeners:
+            l.on_trading_open(timestamp)
+
+    def on_trading_close(self, timestamp):
+        for l in self.trading_signal_listeners:
+            l.on_trading_close(timestamp)
+
+    def on_trading_finish(self, timestamp):
+        for l in self.trading_signal_listeners:
+            l.on_trading_finish(timestamp)
+
+    def on_trading_error(self, timestamp, error):
+        for l in self.trading_signal_listeners:
+            l.on_trading_error(timestamp, error)
 
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
@@ -321,7 +352,7 @@ class Trader(object):
             # on_trading_open to setup the account
             if self.level == IntervalLevel.LEVEL_1DAY or (
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
-                self.account_service.on_trading_open(timestamp)
+                self.on_trading_open(timestamp)
 
             self.on_time(timestamp=timestamp)
 
@@ -343,9 +374,9 @@ class Trader(object):
                                 all_short_targets += short_targets
 
                         if all_long_targets:
-                            self.input_long_targets(level, all_long_targets)
+                            self.set_long_targets_by_level(level, all_long_targets)
                         if all_short_targets:
-                            self.input_short_targets(level, all_short_targets)
+                            self.set_short_targets_by_level(level, all_short_targets)
 
                         # the time always move on by min level step and we could check all targets of levels
                         # 1)the targets is generated for next interval
@@ -354,14 +385,22 @@ class Trader(object):
                         # 3)the suggest price the the close price for generating the signal(happen_timestamp)
                         due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
                         if level == self.level:
-                            self.handle_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp)
+                            long_selected = self.filter_long_targets(timestamp)
+                            short_selected = self.filter_short_targets(timestamp)
+
+                            self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
+
+                            self.logger.debug('timestamp:{},short_selected:{}'.format(due_timestamp, short_selected))
+
+                            self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp,
+                                                   long_selected=long_selected, short_selected=short_selected)
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_close_timestamp(timestamp)):
-                self.account_service.on_trading_close(timestamp)
+                self.on_trading_close(timestamp)
 
-        self.on_finish()
+        self.on_finish(timestamp)
 
 
 class StockTrader(Trader):
