@@ -181,6 +181,14 @@ class SimAccountService(AccountService):
     def on_trading_finish(self, timestamp):
         pass
 
+    def on_trading_signals(self, trading_signals: List[TradingSignal]):
+        for trading_signal in trading_signals:
+            try:
+                self.on_trading_signal(trading_signal)
+            except Exception as e:
+                self.logger.exception(e)
+                self.on_trading_error(timestamp=trading_signal.happen_timestamp, error=e)
+
     def on_trading_signal(self, trading_signal: TradingSignal):
         entity_id = trading_signal.entity_id
         happen_timestamp = trading_signal.happen_timestamp

@@ -43,7 +43,7 @@ def now_timestamp():
     return int(pd.Timestamp.utcnow().timestamp() * 1000)
 
 
-def now_pd_timestamp():
+def now_pd_timestamp() -> pd.Timestamp:
     return pd.Timestamp.now()
 
 

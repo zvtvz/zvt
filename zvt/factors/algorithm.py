@@ -60,7 +60,7 @@ class MaTransformer(Transformer):
 
 
 def point_in_range(point, range):
-    return point >= range[0] and point <= range[1]
+    return range[0] <= point <= range[1]
 
 
 def intersect_ranges(range_list):

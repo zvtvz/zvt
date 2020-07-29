@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
-from typing import Union
+from typing import Union, List
 
 import pandas as pd
 
@@ -41,6 +41,9 @@ class TradingSignal:
 
 
 class TradingListener(object):
+    def on_trading_signals(self, trading_signals: List[TradingSignal]):
+        raise NotImplementedError
+
     def on_trading_signal(self, trading_signal: TradingSignal):
         raise NotImplementedError
 

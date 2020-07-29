@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import time
 from typing import List, Union
 
 import pandas as pd
@@ -14,7 +15,7 @@ from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.account import SimAccountService
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str
+from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, is_same_date
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,7 @@ class Trader(object):
 
         self.level_map_long_targets = {}
         self.level_map_short_targets = {}
+        self.trading_signals: List[TradingSignal] = []
 
         self.on_start()
 
@@ -239,7 +241,7 @@ class Trader(object):
                                            trading_signal_type=TradingSignalType.open_long,
                                            trading_level=self.level,
                                            position_pct=position_pct)
-            self.on_trading_signal(trading_signal)
+            self.trading_signals.append(trading_signal)
 
     def sell(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
         # current position
@@ -258,7 +260,7 @@ class Trader(object):
                                            trading_signal_type=TradingSignalType.close_long,
                                            trading_level=self.level,
                                            position_pct=position_pct)
-            self.on_trading_signal(trading_signal)
+            self.trading_signals.append(trading_signal)
 
     def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected, long_pct=1.0,
                           short_pct=1.0):
@@ -298,6 +300,10 @@ class Trader(object):
     def on_time(self, timestamp):
         self.logger.debug(f'current timestamp:{timestamp}')
 
+    def on_trading_signals(self, trading_signals: List[TradingSignal]):
+        for l in self.trading_signal_listeners:
+            l.on_trading_signals(trading_signals)
+
     def on_trading_signal(self, trading_signal: TradingSignal):
         for l in self.trading_signal_listeners:
             try:
@@ -331,7 +337,19 @@ class Trader(object):
             if not self.in_trading_date(timestamp=timestamp):
                 continue
 
-            if self.real_time:
+            waiting_seconds = 0
+
+            if self.level == IntervalLevel.LEVEL_1DAY:
+                if is_same_date(timestamp, now_pd_timestamp()):
+                    while True:
+                        self.logger.info(f'time is:{now_pd_timestamp()},just smoke for minutes')
+                        time.sleep(60)
+                        current = now_pd_timestamp()
+                        if current.hour >= 19:
+                            waiting_seconds = 20
+                            break
+
+            elif self.real_time:
                 # all selector move on to handle the coming data
                 if self.kdata_use_begin_time:
                     real_end_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
@@ -340,20 +358,23 @@ class Trader(object):
 
                 seconds = (now_pd_timestamp() - real_end_timestamp).total_seconds()
                 waiting_seconds = self.level.to_second() - seconds
-                # meaning the future kdata not ready yet,we could move on to check
-                if waiting_seconds > 0:
-                    # iterate the selector from min to max which in finished timestamp kdata
-                    for level in self.trading_level_asc:
-                        if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
-                            for selector in self.selectors:
-                                if selector.level == level:
-                                    selector.move_on(timestamp, self.kdata_use_begin_time, timeout=waiting_seconds + 20)
+
+            # meaning the future kdata not ready yet,we could move on to check
+            if waiting_seconds > 0:
+                # iterate the selector from min to max which in finished timestamp kdata
+                for level in self.trading_level_asc:
+                    if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
+                        for selector in self.selectors:
+                            if selector.level == level:
+                                selector.move_on(timestamp, self.kdata_use_begin_time, timeout=waiting_seconds + 20)
 
             # on_trading_open to setup the account
             if self.level == IntervalLevel.LEVEL_1DAY or (
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
                 self.on_trading_open(timestamp)
 
+            # clear
+            self.trading_signals = []
             self.on_time(timestamp=timestamp)
 
             if self.selectors:
@@ -394,6 +415,9 @@ class Trader(object):
 
                             self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp,
                                                    long_selected=long_selected, short_selected=short_selected)
+
+            if self.trading_signals:
+                self.on_trading_signals(self.trading_signals)
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (
