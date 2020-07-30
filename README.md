@@ -23,9 +23,9 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 
 >详细文档有部分已经落后代码，其实认真看完README并结合代码理解下面的几句话，基本上不需要什么文档了
 
-### entity抽象了 *交易标的* 不变的东西
-### 数据就是entity和entity发生的event，数据即api,数据即策略
-### 数据是可插入的，发信号到哪是可插入的
+* ### entity抽象了 *交易标的* 不变的东西
+* ### 数据就是entity和entity发生的event，数据即api,数据即策略
+* ### 数据是可插入的，发信号到哪是可插入的
 
 整个架构如图:
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/arch.png'/></p>
@@ -36,14 +36,20 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 
 [定时选股推送](https://github.com/zvtvz/zvt/issues/48)
 
-后面打算扩展zvt-future,zvt-macro等，欢迎感兴趣的加入，因为市场在我心目中大概是这样的
+策略例子:
+
+[多级别例子](https://github.com/zvtvz/zvt/blob/master/examples/trader/multiple_level_trader.py)
+
+[定制策略流程，仓位管理](https://github.com/zvtvz/zvt/blob/master/examples/trader/ma_vol_trader.py)
+
+市场全景图，后面可能会基于此扩展相关的数据:
 <p align="center"><img src='https://github.com/zvtvz/automoney/blob/master/imgs/market.png'/></p>
 
-##  0. 展示
+zvt旨在帮你更好的理解市场，理清交易思路，验证想法，实盘交易接口可以通过插件的方式来连接交易信号，并不是zvt核心的东西。
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/show-trader.gif'/></p>
 
-只做最重要的事:
+策略展示目前只做最重要的事:
 * 策略的净值曲线
 * 策略交易标的的买卖信号
 
