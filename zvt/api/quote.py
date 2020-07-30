@@ -242,13 +242,19 @@ def get_etf_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp()
                     break
 
 
-def get_kdata(entity_id=None, level=IntervalLevel.LEVEL_1DAY.value, provider=None, columns=None,
+def get_kdata(entity_id=None, entity_ids=None, level=IntervalLevel.LEVEL_1DAY.value, provider=None, columns=None,
               return_type='df', start_timestamp=None, end_timestamp=None,
               filters=None, session=None, order=None, limit=None, index='timestamp', adjust_type: AdjustType = None):
+    assert not entity_id or not entity_ids
+    if entity_ids:
+        entity_id = entity_ids[0]
+    else:
+        entity_ids = [entity_id]
+
     entity_type, exchange, code = decode_entity_id(entity_id)
     data_schema: Mixin = get_kdata_schema(entity_type, level=level, adjust_type=adjust_type)
 
-    return data_schema.query_data(entity_id=entity_id, level=level, provider=provider,
+    return data_schema.query_data(entity_ids=entity_ids, level=level, provider=provider,
                                   columns=columns, return_type=return_type, start_timestamp=start_timestamp,
                                   end_timestamp=end_timestamp, filters=filters, session=session, order=order,
                                   limit=limit,

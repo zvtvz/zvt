@@ -10,7 +10,7 @@ from zvt.api.business_reader import AccountStatsReader
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
 from zvt.contract.normal_data import NormalData
-from zvt.domain import Stock, TraderInfo, AccountStats
+from zvt.domain import Stock, TraderInfo, AccountStats, Position
 from zvt.drawer.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
@@ -174,12 +174,9 @@ class Trader(object):
     def get_short_targets_by_level(self, level: IntervalLevel) -> List[str]:
         return self.level_map_short_targets.get(level)
 
-    def filter_long_targets(self, timestamp):
+    def select_long_targets_from_levels(self, timestamp):
         """
-        this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
-        targets of different levels
-
-        the default implementation is selecting the targets in all level
+        overwrite it to select long targets from multiple levels,the default implementation is selecting the targets in all level
 
         :param timestamp:
 
@@ -197,12 +194,9 @@ class Trader(object):
                     long_selected = long_selected & long_targets
         return long_selected
 
-    def filter_short_targets(self, timestamp):
+    def select_short_targets_from_levels(self, timestamp):
         """
-        this function would be called in every cycle, you could overwrite it for your custom algorithm to select the
-        targets of different levels
-
-        the default implementation is selecting the targets in all level
+        overwrite it to select short targets from multiple levels,the default implementation is selecting the targets in all level
 
         :param timestamp:
 
@@ -220,6 +214,9 @@ class Trader(object):
 
     def get_current_account(self) -> AccountStats:
         return self.account_service.account
+
+    def get_current_positions(self) -> List[Position]:
+        return self.get_current_account().positions
 
     def buy(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0, ignore_in_position=True):
         if ignore_in_position:
@@ -251,7 +248,7 @@ class Trader(object):
             current_holdings = [position.entity_id for position in account.positions if position != None and
                                 position.available_long > 0]
 
-        shorted = set(current_holdings) & entity_ids
+        shorted = set(current_holdings) & set(entity_ids)
 
         for entity_id in shorted:
             trading_signal = TradingSignal(entity_id=entity_id,
@@ -284,12 +281,12 @@ class Trader(object):
                                                  category_field='trader_name'))
             drawer.draw_line(show=True)
 
-    def select_long_targets(self, long_targets: List[str]) -> List[str]:
+    def filter_selector_long_targets(self, timestamp, selector: TargetSelector, long_targets: List[str]) -> List[str]:
         if len(long_targets) > 10:
             return long_targets[0:10]
         return long_targets
 
-    def select_short_targets(self, short_targets: List[str]) -> List[str]:
+    def filter_selector_short_targets(self, timestamp, selector: TargetSelector, short_targets: List[str]) -> List[str]:
         if len(short_targets) > 10:
             return short_targets[0:10]
         return short_targets
@@ -373,8 +370,6 @@ class Trader(object):
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
                 self.on_trading_open(timestamp)
 
-            # clear
-            self.trading_signals = []
             self.on_time(timestamp=timestamp)
 
             if self.selectors:
@@ -386,13 +381,18 @@ class Trader(object):
                         for selector in self.selectors:
                             if selector.level == level:
                                 long_targets = selector.get_open_long_targets(timestamp=timestamp)
-                                long_targets = self.select_long_targets(long_targets)
+                                long_targets = self.filter_selector_long_targets(timestamp=timestamp, selector=selector,
+                                                                                 long_targets=long_targets)
 
                                 short_targets = selector.get_open_short_targets(timestamp=timestamp)
-                                short_targets = self.select_short_targets(short_targets)
+                                short_targets = self.filter_selector_short_targets(timestamp=timestamp,
+                                                                                   selector=selector,
+                                                                                   short_targets=short_targets)
 
-                                all_long_targets += long_targets
-                                all_short_targets += short_targets
+                                if long_targets:
+                                    all_long_targets += long_targets
+                                if short_targets:
+                                    all_short_targets += short_targets
 
                         if all_long_targets:
                             self.set_long_targets_by_level(level, all_long_targets)
@@ -406,8 +406,8 @@ class Trader(object):
                         # 3)the suggest price the the close price for generating the signal(happen_timestamp)
                         due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
                         if level == self.level:
-                            long_selected = self.filter_long_targets(timestamp)
-                            short_selected = self.filter_short_targets(timestamp)
+                            long_selected = self.select_long_targets_from_levels(timestamp)
+                            short_selected = self.select_short_targets_from_levels(timestamp)
 
                             self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
 
@@ -418,6 +418,8 @@ class Trader(object):
 
             if self.trading_signals:
                 self.on_trading_signals(self.trading_signals)
+            # clear
+            self.trading_signals = []
 
             # on_trading_close to calculate date account
             if self.level == IntervalLevel.LEVEL_1DAY or (
