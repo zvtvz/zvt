@@ -23,14 +23,25 @@ def ema(s, window=12):
     return s.ewm(span=window, adjust=False, min_periods=window).mean()
 
 
-def macd(s, slow=26, fast=12, n=9, return_type='se'):
+def macd(s, slow=26, fast=12, n=9, return_type='df', normal=False):
+    # 短期均线
     ema_fast = ema(s, window=fast)
-
+    # 长期均线
     ema_slow = ema(s, window=slow)
 
+    # 短期均线 - 长期均线 = 趋势的力度
     diff = ema_fast - ema_slow
+    # 力度均线
     dea = diff.ewm(span=n, adjust=False).mean()
+
+    # 力度 的变化
     m = (diff - dea) * 2
+
+    # normal it
+    if normal:
+        diff = diff / s
+        dea = dea / s
+        m = m / s
 
     if return_type == 'se':
         return diff, dea, m
@@ -154,11 +165,12 @@ class MaAndVolumeTransformer(Transformer):
 
 
 class MacdTransformer(Transformer):
-    def __init__(self, slow=26, fast=12, n=9) -> None:
+    def __init__(self, slow=26, fast=12, n=9, normal=False) -> None:
         super().__init__()
         self.slow = slow
         self.fast = fast
         self.n = n
+        self.normal = normal
 
         self.indicators.append('diff')
         self.indicators.append('dea')
@@ -166,7 +178,7 @@ class MacdTransformer(Transformer):
 
     def transform(self, input_df) -> pd.DataFrame:
         macd_df = input_df.groupby(level=0)['close'].apply(
-            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df'))
+            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
         input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
         return input_df
 

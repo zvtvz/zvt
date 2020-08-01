@@ -91,10 +91,10 @@ class KeepBullFactor(BullFactor):
 
 
 if __name__ == '__main__':
-    factor = TechnicalFactor(codes=['000338'],
+    factor = TechnicalFactor(codes=['000338', '000778'],
                              start_timestamp='2019-01-01',
                              end_timestamp='2019-06-10',
-                             transformer=MacdTransformer())
+                             transformer=MacdTransformer(normal=True))
 
     print(factor.factor_df.tail())
 
@@ -103,6 +103,5 @@ if __name__ == '__main__':
     dea = factor.factor_df['dea']
     macd = factor.factor_df['macd']
 
-    assert round(diff.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.06
-    assert round(dea.loc[('stock_sz_000338', '2019-06-17')], 2) == -0.03
-    assert round(macd.loc[('stock_sz_000338', '2019-06-17')], 2) == 0.18
+    print(factor.factor_df.loc[('stock_sz_000338',)])
+    print(factor.factor_df.loc[('stock_sz_000778',)])
