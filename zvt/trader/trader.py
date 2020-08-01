@@ -218,7 +218,20 @@ class Trader(object):
     def get_current_positions(self) -> List[Position]:
         return self.get_current_account().positions
 
-    def buy(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0, ignore_in_position=True):
+    def long_position_control(self):
+        positions = self.get_current_positions()
+
+        position_pct = 1.0
+        if not positions:
+            position_pct = 0.2
+        elif len(positions) <= 10:
+            position_pct = 0.5
+        return position_pct
+
+    def short_position_control(self):
+        return 1.0
+
+    def buy(self, due_timestamp, happen_timestamp, entity_ids, ignore_in_position=True):
         if ignore_in_position:
             account = self.get_current_account()
             current_holdings = []
@@ -229,18 +242,19 @@ class Trader(object):
             entity_ids = set(entity_ids) - set(current_holdings)
 
         if entity_ids:
+            position_pct = self.long_position_control()
             position_pct = (1.0 / len(entity_ids)) * position_pct
 
-        for entity_id in entity_ids:
-            trading_signal = TradingSignal(entity_id=entity_id,
-                                           due_timestamp=due_timestamp,
-                                           happen_timestamp=happen_timestamp,
-                                           trading_signal_type=TradingSignalType.open_long,
-                                           trading_level=self.level,
-                                           position_pct=position_pct)
-            self.trading_signals.append(trading_signal)
+            for entity_id in entity_ids:
+                trading_signal = TradingSignal(entity_id=entity_id,
+                                               due_timestamp=due_timestamp,
+                                               happen_timestamp=happen_timestamp,
+                                               trading_signal_type=TradingSignalType.open_long,
+                                               trading_level=self.level,
+                                               position_pct=position_pct)
+                self.trading_signals.append(trading_signal)
 
-    def sell(self, due_timestamp, happen_timestamp, entity_ids, position_pct=1.0):
+    def sell(self, due_timestamp, happen_timestamp, entity_ids):
         # current position
         account = self.get_current_account()
         current_holdings = []
@@ -250,24 +264,24 @@ class Trader(object):
 
         shorted = set(current_holdings) & set(entity_ids)
 
-        for entity_id in shorted:
-            trading_signal = TradingSignal(entity_id=entity_id,
-                                           due_timestamp=due_timestamp,
-                                           happen_timestamp=happen_timestamp,
-                                           trading_signal_type=TradingSignalType.close_long,
-                                           trading_level=self.level,
-                                           position_pct=position_pct)
-            self.trading_signals.append(trading_signal)
+        if shorted:
+            position_pct = self.short_position_control()
 
-    def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected, long_pct=1.0,
-                          short_pct=1.0):
+            for entity_id in shorted:
+                trading_signal = TradingSignal(entity_id=entity_id,
+                                               due_timestamp=due_timestamp,
+                                               happen_timestamp=happen_timestamp,
+                                               trading_signal_type=TradingSignalType.close_long,
+                                               trading_level=self.level,
+                                               position_pct=position_pct)
+                self.trading_signals.append(trading_signal)
+
+    def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected):
         if long_selected:
-            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected,
-                     position_pct=long_pct)
+            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected)
 
         if short_selected:
-            self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected,
-                      position_pct=short_pct)
+            self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected)
 
     def on_finish(self, timestmap):
         self.on_trading_finish(timestmap)
@@ -366,7 +380,7 @@ class Trader(object):
                                 selector.move_on(timestamp, self.kdata_use_begin_time, timeout=waiting_seconds + 20)
 
             # on_trading_open to setup the account
-            if self.level == IntervalLevel.LEVEL_1DAY or (
+            if self.level >= IntervalLevel.LEVEL_1DAY or (
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
                 self.on_trading_open(timestamp)
 
@@ -422,7 +436,7 @@ class Trader(object):
             self.trading_signals = []
 
             # on_trading_close to calculate date account
-            if self.level == IntervalLevel.LEVEL_1DAY or (
+            if self.level >= IntervalLevel.LEVEL_1DAY or (
                     self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_close_timestamp(timestamp)):
                 self.on_trading_close(timestamp)
 

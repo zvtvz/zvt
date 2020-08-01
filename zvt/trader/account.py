@@ -232,7 +232,7 @@ class SimAccountService(AccountService):
         self.account.all_value = 0
         for position in self.account.positions:
             entity_type, _, _ = decode_entity_id(position.entity_id)
-            data_schema = get_kdata_schema(entity_type, level=self.level)
+            data_schema = get_kdata_schema(entity_type, level=IntervalLevel.LEVEL_1DAY)
 
             kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position.entity_id,
                               order=data_schema.timestamp.desc(),

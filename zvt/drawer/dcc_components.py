@@ -38,7 +38,8 @@ def get_trading_signals_figure(order_reader: OrderReader,
     kdata_reader = DataReader(entity_ids=[entity_id], data_schema=data_schema,
                               entity_schema=entity_schema_map.get(entity_type),
                               start_timestamp=start_timestamp,
-                              end_timestamp=end_timestamp)
+                              end_timestamp=end_timestamp,
+                              level=order_reader.level)
 
     # generate the annotation df
     order_reader.move_on(timeout=0)
