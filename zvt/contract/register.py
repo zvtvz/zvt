@@ -107,14 +107,16 @@ def register_schema(providers: List[str],
             for col in ['timestamp', 'entity_id', 'code', 'report_period', 'created_timestamp', 'updated_timestamp']:
                 if col in table.c:
                     column = eval('table.c.{}'.format(col))
-                    index = sqlalchemy.schema.Index('{}_{}_index'.format(table_name, col), column)
-                    if index.name not in index_list:
+                    index_name = '{}_{}_index'.format(table_name, col)
+                    if index_name not in index_list:
+                        index = sqlalchemy.schema.Index(index_name, column)
                         index.create(engine)
             for cols in [('timestamp', 'entity_id'), ('timestamp', 'code')]:
                 if (cols[0] in table.c) and (col[1] in table.c):
                     column0 = eval('table.c.{}'.format(col[0]))
                     column1 = eval('table.c.{}'.format(col[1]))
-                    index = sqlalchemy.schema.Index('{}_{}_{}_index'.format(table_name, col[0], col[1]), column0,
-                                                    column1)
-                    if index.name not in index_list:
+                    index_name = '{}_{}_{}_index'.format(table_name, col[0], col[1])
+                    if index_name not in index_list:
+                        index = sqlalchemy.schema.Index(index_name, column0,
+                                                        column1)
                         index.create(engine)
