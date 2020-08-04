@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from typing import List, Union
+import platform
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -420,6 +421,9 @@ def df_to_db(df: pd.DataFrame,
     df = df[cols]
 
     size = len(df)
+
+    if platform.system() == "Windows":
+        sub_size = 900
 
     if size >= sub_size:
         step_size = int(size / sub_size)
