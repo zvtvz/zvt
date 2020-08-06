@@ -34,7 +34,7 @@ def report_core_company():
 
             target_date = to_time_str(now_pd_timestamp())
 
-            my_selector: TargetSelector = FundamentalSelector(start_timestamp='2015-01-01', end_timestamp=target_date)
+            my_selector: TargetSelector = FundamentalSelector(start_timestamp='2016-01-01', end_timestamp=target_date)
             my_selector.run()
 
             long_targets = my_selector.get_open_long_targets(timestamp=target_date)
