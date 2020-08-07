@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-from typing import List
 
 import numpy as np
 
@@ -22,7 +21,7 @@ class GoldBullFactor(TechnicalFactor):
         self.factor_df['cross'] = self.factor_df['diff'] > self.factor_df['dea']
         # 黄白线在0轴上
         self.factor_df['bull'] = (self.factor_df['diff'] > 0) & (self.factor_df['dea'] > 0)
-
+        # 黄白线在0轴上持续了10天以上
         df = self.factor_df['bull'].groupby(level=0).rolling(window=self.keep_window,
                                                              min_periods=self.keep_window).apply(
             lambda x: np.logical_and.reduce(x))
@@ -57,35 +56,25 @@ class VolMacdTrader(StockTrader):
         self.selectors.append(day_selector)
 
     def select_long_targets_from_levels(self, timestamp):
-        long_selected = None
+        # self.level_map_long_targets里面是各级别选中的标的，默认是各级别都选中才要
+        long_targets = super().select_long_targets_from_levels(timestamp)
 
-        for level in self.trading_level_desc:
-            long_targets = self.level_map_long_targets.get(level)
-            if long_targets:
-                long_targets = set(long_targets)
-                if not long_selected:
-                    long_selected = long_targets
-                else:
-                    long_selected = long_selected | long_targets
-        return long_selected
-
-    def filter_selector_long_targets(self, timestamp, selector: TargetSelector, long_targets: List[str]) -> List[str]:
-        # 选择器选出的个股，再做进一步处理
-        if selector.level >= IntervalLevel.LEVEL_1DAY:
+        if self.level >= IntervalLevel.LEVEL_1DAY:
             if not long_targets:
                 return None
 
-            df = get_kdata(entity_ids=long_targets, start_timestamp=timestamp, end_timestamp=timestamp,
+            df = get_kdata(entity_ids=list(long_targets), start_timestamp=timestamp, end_timestamp=timestamp,
                            columns=['entity_id', 'turnover'])
             if pd_is_not_null(df):
                 df.sort_values(by=['turnover'])
-                if len(df['entity_id']) > 20:
-                    return df['entity_id'].iloc[10:15].tolist()
+                if len(df['entity_id']) > 5:
+                    return df['entity_id'].iloc[5:10].tolist()
                 return df['entity_id'].tolist()
             return None
         return long_targets
 
     def select_short_targets_from_levels(self, timestamp):
+        # 因为不能做空，只从持仓里面算出需要卖的个股
         positions = self.get_current_positions()
         if positions:
             entity_ids = [position.entity_id for position in positions]
@@ -100,7 +89,7 @@ class VolMacdTrader(StockTrader):
             input_df = s.to_frame(name='score')
 
             # 连续3日收在5日线下
-            df = input_df['score'].groupby(level=0).rolling(window=4, min_periods=4).apply(
+            df = input_df['score'].groupby(level=0).rolling(window=3, min_periods=3).apply(
                 lambda x: np.logical_and.reduce(x))
             df = df.reset_index(level=0, drop=True)
             input_df['score'] = df
@@ -113,7 +102,7 @@ class VolMacdTrader(StockTrader):
 
 
 if __name__ == '__main__':
-    trader = VolMacdTrader(start_timestamp='2017-01-01', end_timestamp='2020-06-01')
+    trader = VolMacdTrader(start_timestamp='2017-01-01', end_timestamp='2020-01-01')
     trader.run()
     # f = VolFactor(start_timestamp='2020-01-01', end_timestamp='2020-04-01')
     # print(f.result_df)

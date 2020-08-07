@@ -277,11 +277,10 @@ class Trader(object):
                 self.trading_signals.append(trading_signal)
 
     def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected):
-        if long_selected:
-            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected)
-
         if short_selected:
             self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected)
+        if long_selected:
+            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected)
 
     def on_finish(self, timestmap):
         self.on_trading_finish(timestmap)
