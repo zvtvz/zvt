@@ -584,6 +584,12 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
         timestamps = self.security_timestamps_map.get(entity.id)
         if not timestamps:
             timestamps = self.init_timestamps(entity)
+            if self.start_timestamp:
+                timestamps = [t for t in timestamps if t >= self.start_timestamp]
+
+            if self.end_timestamp:
+                timestamps = [t for t in timestamps if t <= self.end_timestamp]
+
             self.security_timestamps_map[entity.id] = timestamps
 
         if not timestamps:
@@ -598,7 +604,7 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
 
         if latest_record:
             self.logger.info('latest record timestamp:{}'.format(latest_record.timestamp))
-            timestamps = [t for t in timestamps if t > latest_record.timestamp]
+            timestamps = [t for t in timestamps if t >= latest_record.timestamp]
 
             if timestamps:
                 return timestamps[0], timestamps[-1], len(timestamps), timestamps

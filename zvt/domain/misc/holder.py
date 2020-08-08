@@ -8,6 +8,24 @@ from zvt.contract.register import register_schema
 HolderBase = declarative_base()
 
 
+class HkHolder(HolderBase, Mixin):
+    __tablename__ = 'hk_holder'
+    # 股票代码
+    code = Column(String(length=32))
+    # 股票名称
+    name = Column(String(length=32))
+
+    # 市场通编码	三种类型：310001-沪股通，310002-深股通，310005-港股通
+    holder_code = Column(String(length=32))
+    # 市场通名称	三种类型：沪股通，深股通，港股通
+    holder_name = Column(String(length=32))
+
+    # 持股数量
+    share_number = Column(Float)
+    # 持股比例
+    share_ratio = Column(Float)
+
+
 class TopTenTradableHolder(HolderBase, Mixin):
     __tablename__ = 'top_ten_tradable_holder'
 
@@ -75,6 +93,6 @@ class InstitutionalInvestorHolder(HolderBase, Mixin):
     shareholding_ratio = Column(Float)
 
 
-register_schema(providers=['eastmoney'], db_name='holder', schema_base=HolderBase)
+register_schema(providers=['eastmoney', 'joinquant'], db_name='holder', schema_base=HolderBase)
 
-__all__ = ['TopTenTradableHolder', 'TopTenHolder', 'InstitutionalInvestorHolder']
+__all__ = ['TopTenTradableHolder', 'TopTenHolder', 'InstitutionalInvestorHolder', 'HkHolder']
