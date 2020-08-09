@@ -104,12 +104,14 @@ class SimAccountService(AccountService):
                  base_capital=1000000,
                  buy_cost=0.001,
                  sell_cost=0.001,
-                 slippage=0.001):
+                 slippage=0.001,
+                 rich_mode=True):
         self.entity_schema = entity_schema
         self.base_capital = base_capital
         self.buy_cost = buy_cost
         self.sell_cost = sell_cost
         self.slippage = slippage
+        self.rich_mode = rich_mode
         self.trader_name = trader_name
 
         self.session = get_db_session('zvt', data_schema=TraderInfo)
@@ -118,6 +120,10 @@ class SimAccountService(AccountService):
         self.start_timestamp = timestamp
 
         self.account: AccountStats = self.init_account()
+
+    def input_money(self, money=1000000):
+        self.account.input_money += money
+        self.account.cash += money
 
     def init_account(self) -> AccountStats:
         trader_info = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain',
@@ -135,6 +141,7 @@ class SimAccountService(AccountService):
                             timestamp=self.start_timestamp,
                             trader_name=self.trader_name,
                             cash=self.base_capital,
+                            input_money=self.base_capital,
                             all_value=self.base_capital,
                             value=0,
                             closing=False
@@ -320,7 +327,10 @@ class SimAccountService(AccountService):
         if order_type == ORDER_TYPE_LONG:
             need_money = (order_amount * current_price) * (1 + self.slippage + self.buy_cost)
             if self.account.cash < need_money:
-                raise NotEnoughMoneyError()
+                if self.rich_mode:
+                    self.input_money()
+                else:
+                    raise NotEnoughMoneyError()
 
             self.account.cash -= need_money
 
@@ -337,7 +347,10 @@ class SimAccountService(AccountService):
         elif order_type == ORDER_TYPE_SHORT:
             need_money = (order_amount * current_price) * (1 + self.slippage + self.buy_cost)
             if self.account.cash < need_money:
-                raise NotEnoughMoneyError()
+                if self.rich_mode:
+                    self.input_money()
+                else:
+                    raise NotEnoughMoneyError()
 
             self.account.cash -= need_money
 
@@ -440,33 +453,45 @@ class SimAccountService(AccountService):
                         raise InvalidOrderError("close the short position before open long")
 
                     if order_money > self.account.cash:
-                        raise NotEnoughMoneyError()
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
                     # 买的数量
                     order_amount = order_money // cost
 
-                    if order_amount > 0:
-                        self.update_position(current_position, order_amount, current_price, order_type,
-                                             current_timestamp)
-                    else:
-                        raise NotEnoughMoneyError()
+                    if order_amount < 100:
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
+
+                    self.update_position(current_position, order_amount, current_price, order_type,
+                                         current_timestamp)
                 # 开空
                 elif order_type == ORDER_TYPE_SHORT:
                     if current_position.long_amount > 0:
                         raise InvalidOrderError("close the long position before open short")
 
                     if order_money > self.account.cash:
-                        raise NotEnoughMoneyError()
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
 
                     cost = current_price * (1 + self.slippage + self.buy_cost)
 
                     order_amount = order_money // cost
-                    if order_amount > 0:
-                        self.update_position(current_position, order_amount, current_price, order_type,
-                                             current_timestamp)
-                    else:
-                        raise NotEnoughMoneyError()
+
+                    if order_amount < 100:
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
+                    self.update_position(current_position, order_amount, current_price, order_type,
+                                         current_timestamp)
                 else:
                     raise InvalidOrderParamError('close long/short not support order_money')
 
@@ -510,11 +535,14 @@ class SimAccountService(AccountService):
                     want_pay = self.account.cash * order_pct
                     # 买的数量
                     order_amount = want_pay // cost
-                    if order_amount > 0:
-                        self.update_position(current_position, order_amount, current_price, order_type,
-                                             current_timestamp)
-                    else:
-                        raise NotEnoughMoneyError()
+
+                    if order_amount < 100:
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
+                    self.update_position(current_position, order_amount, current_price, order_type,
+                                         current_timestamp)
                 # 开空
                 elif order_type == ORDER_TYPE_SHORT:
                     if current_position.long_amount > 0:
@@ -524,11 +552,15 @@ class SimAccountService(AccountService):
                     want_pay = self.account.cash * order_pct
 
                     order_amount = want_pay // cost
-                    if order_amount > 0:
-                        self.update_position(current_position, order_amount, current_price, order_type,
-                                             current_timestamp)
-                    else:
-                        raise NotEnoughMoneyError()
+
+                    if order_amount < 100:
+                        if self.rich_mode:
+                            self.input_money()
+                        else:
+                            raise NotEnoughMoneyError()
+
+                    self.update_position(current_position, order_amount, current_price, order_type,
+                                         current_timestamp)
 
                 # 平多
                 elif order_type == ORDER_TYPE_CLOSE_LONG:

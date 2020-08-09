@@ -105,6 +105,7 @@ class IntersectTransformer(Transformer):
 
     def transform(self, input_df) -> pd.DataFrame:
         if self.kdata_overlap > 0:
+            # 没有重叠，区间就是(0,0)
             input_df['overlap'] = [(0, 0)] * len(input_df.index)
 
             def cal_overlap(s):
@@ -112,6 +113,7 @@ class IntersectTransformer(Transformer):
                 low = input_df.loc[s.index, 'low']
                 intersection = intersect_ranges(list(zip(low.to_list(), high.to_list())))
                 if intersection:
+                    # 设置column overlap为intersection,即重叠区间
                     input_df.at[s.index[-1], 'overlap'] = intersection
                 return 0
 

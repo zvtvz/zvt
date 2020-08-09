@@ -31,6 +31,8 @@ class TraderInfo(TraderBase, Mixin):
 class AccountStats(TraderBase, Mixin):
     __tablename__ = 'account_stats'
 
+    input_money = Column(Float)
+
     # 机器人名字
     trader_name = Column(String(length=128))
     # 可用现金

@@ -34,7 +34,8 @@ class Trader(object):
                  trader_name: str = None,
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False,
-                 draw_result: bool = True) -> None:
+                 draw_result: bool = True,
+                 rich_mode: bool = True) -> None:
         assert self.entity_schema is not None
 
         self.logger = logging.getLogger(__name__)
@@ -74,12 +75,14 @@ class Trader(object):
 
         self.kdata_use_begin_time = kdata_use_begin_time
         self.draw_result = draw_result
+        self.rich_mode = rich_mode
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
                                                  trader_name=self.trader_name,
                                                  timestamp=self.start_timestamp,
                                                  provider=self.provider,
-                                                 level=self.level)
+                                                 level=self.level,
+                                                 rich_mode=rich_mode)
 
         self.register_trading_signal_listener(self.account_service)
 
