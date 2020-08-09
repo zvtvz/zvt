@@ -4,6 +4,7 @@ from typing import List
 
 import numpy as np
 
+from zvt import init_log
 from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities
@@ -140,5 +141,7 @@ class MaVolTrader(StockTrader):
 
 
 if __name__ == '__main__':
+    init_log('ma250_trader.log')
+
     trader = MaVolTrader(start_timestamp='2020-01-01', end_timestamp='2021-01-01')
     trader.run()
