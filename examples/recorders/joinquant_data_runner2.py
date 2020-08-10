@@ -13,7 +13,24 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=16, minute=20)
+# 每天下午17:00抓取
+@sched.scheduled_job('cron', hour=17, minute=00)
+def record_margin_trading():
+    email_action = EmailInformer()
+
+    try:
+        MarginTrading.record_data(provider='joinquant', sleeping_time=1)
+        email_action.send_message("5533061@qq.com", 'joinquant record margin trading finished', '')
+    except Exception as e:
+        msg = f'joinquant record margin trading:{e}'
+        logger.exception(msg)
+
+        email_action.send_message("5533061@qq.com", 'joinquant record week kdata error', msg)
+        time.sleep(60)
+
+
+# 周6抓取
+@sched.scheduled_job('cron', hour=2, minute=00, day_of_week=5)
 def record_kdata():
     while True:
         email_action = EmailInformer()
@@ -35,6 +52,7 @@ def record_kdata():
             time.sleep(60)
 
 
+# 周4抓取
 @sched.scheduled_job('cron', hour=19, minute=00, day_of_week=3)
 def record_others():
     while True:
@@ -57,7 +75,7 @@ def record_others():
 if __name__ == '__main__':
     init_log('joinquant_data_runner2.log')
 
-    record_kdata()
+    record_margin_trading()
 
     sched.start()
 
