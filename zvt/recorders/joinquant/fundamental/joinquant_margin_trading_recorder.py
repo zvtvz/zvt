@@ -8,6 +8,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, MarginTrading
 from zvt.recorders.joinquant.common import to_jq_entity_id
+from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY
 
 
@@ -35,16 +36,16 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         df = get_mtss(to_jq_entity_id(entity), start_date=start)
 
-        df['entity_id'] = entity.id
-        df['code'] = entity.code
-        df.rename(columns={'date': 'timestamp'}, inplace=True)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df['id'] = df[['entity_id', 'timestamp']].apply(
-            lambda se: "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY)),
-            axis=1)
+        if pd_is_not_null(df):
+            df['entity_id'] = entity.id
+            df['code'] = entity.code
+            df.rename(columns={'date': 'timestamp'}, inplace=True)
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['id'] = df[['entity_id', 'timestamp']].apply(
+                lambda se: "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY)), axis=1)
 
-        print(df)
-        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+            print(df)
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
 
@@ -52,4 +53,4 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
 __all__ = ['MarginTradingRecorder']
 
 if __name__ == '__main__':
-    MarginTradingRecorder(codes=['000338']).run()
+    MarginTradingRecorder(codes=['000004']).run()
