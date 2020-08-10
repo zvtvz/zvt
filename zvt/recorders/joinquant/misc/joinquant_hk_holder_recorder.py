@@ -1,5 +1,5 @@
 import pandas as pd
-from jqdatasdk import auth, query, finance
+from jqdatasdk import auth, query, finance, logout
 
 from zvt import zvt_env
 from zvt.contract.api import df_to_db, get_data
@@ -38,6 +38,10 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
         super().__init__('index', ['cn'], None, codes, 10, force_update, sleeping_time,
                          default_size, real_time, 'ignore', start_timestamp, end_timestamp, 0, 0)
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
+
+    def on_finish(self):
+        super().on_finish()
+        logout()
 
     def init_timestamps(self, entity):
         # 聚宽数据从2017年3月17开始

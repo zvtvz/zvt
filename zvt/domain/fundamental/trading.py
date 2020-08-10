@@ -70,12 +70,22 @@ class BigDealTrading(TradingBase, Mixin):
 
 class MarginTrading(TradingBase, Mixin):
     __tablename__ = 'margin_trading'
-
-    provider = Column(String(length=32))
     code = Column(String(length=32))
 
-    margin_balance = Column(Float)
-    short_balance = Column(Float)
+    # 融资余额(元）
+    fin_value = Column(Float)
+    # 融资买入额（元）
+    fin_buy_value = Column(Float)
+    # 融资偿还额（元）
+    fin_refund_value = Column(Float)
+    # 融券余量（股）
+    sec_value = Column(Float)
+    # 融券卖出量（股）
+    sec_sell_value = Column(Float)
+    # 融券偿还量（股）
+    sec_refund_value = Column(Float)
+    # 融资融券余额（元）
+    fin_sec_value = Column(Float)
 
 
 class DragonAndTiger(TradingBase, Mixin):
@@ -146,6 +156,6 @@ class DragonAndTiger(TradingBase, Mixin):
     net_out_dep5_rate = Column(Float)
 
 
-register_schema(providers=['eastmoney'], db_name='trading', schema_base=TradingBase)
+register_schema(providers=['eastmoney', 'joinquant'], db_name='trading', schema_base=TradingBase)
 
 __all__ = ['ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
