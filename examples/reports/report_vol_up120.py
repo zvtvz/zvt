@@ -69,12 +69,12 @@ def report_vol_up_120():
                 # add them to eastmoney
                 try:
                     try:
-                        eastmoneypy.del_group('tech')
+                        eastmoneypy.del_group('high')
                     except:
                         pass
-                    eastmoneypy.create_group('tech')
+                    eastmoneypy.create_group('high')
                     for stock in stocks:
-                        eastmoneypy.add_to_group(stock.code, group_name='tech')
+                        eastmoneypy.add_to_group(stock.code, group_name='high')
                 except Exception as e:
                     email_action.send_message("5533061@qq.com", f'report_vol_up_120 error',
                                               'report_vol_up_120 error:{}'.format(e))
