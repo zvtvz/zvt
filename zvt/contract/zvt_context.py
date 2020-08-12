@@ -18,13 +18,13 @@ entity_schema_map = {}
 # global sessions
 sessions = {}
 
-
-if zvt_env['db_engine'] and zvt_env['db_engine'] == "mysql":
+if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
     mysql_engine = create_engine(f"mysql://{zvt_env['mysql_username']}:{zvt_env['mysql_password']}@{zvt_env['mysql_server_address']}:"
                                  f"{zvt_env['mysql_server_port']}/{zvt_env['db_name']}?charset=utf8mb4", pool_recycle=3600, echo=False)
     # provider_dbname -> engine
     db_engine_map = {
         "joinquant_stock_meta": mysql_engine,
+        "joinquant_stock_factor": mysql_engine,
         "eastmoney_block_1d_kdata": mysql_engine,
         "joinquant_stock_1mon_kdata": mysql_engine,
         "eastmoney_block_1mon_kdata": mysql_engine,
@@ -65,6 +65,9 @@ if zvt_env['db_engine'] and zvt_env['db_engine'] == "mysql":
         "zvt_stock_1wk_ma_stats": mysql_engine,
         "joinquant_stock_1mon_hfq_kdata": mysql_engine,
         "zvt_trader_info": mysql_engine,
+        "joinquant_index_1d_kdata": mysql_engine,
+        "joinquant_stock_1wk_bfq_kdata": mysql_engine,
+        "joinquant_stock_1d_bfq_kdata": mysql_engine,
     }
 else:
     db_engine_map = {}
