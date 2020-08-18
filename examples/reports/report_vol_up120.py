@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=19, minute=0, day_of_week='mon-fri')
+@sched.scheduled_job('cron', hour=19, minute=10, day_of_week='mon-fri')
 def report_vol_up_120():
     while True:
         error_count = 0
@@ -84,7 +84,7 @@ def report_vol_up_120():
 
             logger.info(msg)
 
-            email_action.send_message('5533061@qq.com', f'{target_date} 改进版放量突破年线选股结果', msg)
+            email_action.send_message('5533061@qq.com', f'{target_date} 改进版放量突破半年线选股结果', msg)
 
             break
         except Exception as e:
