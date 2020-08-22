@@ -8,10 +8,10 @@ from zvt.domain.quotes import EtfKdataCommon
 KdataBase = declarative_base()
 
 
-class Etf1dKdata(KdataBase, EtfKdataCommon):
-    __tablename__ = 'etf_1d_kdata'
+class Etf1dBfqKdata(KdataBase, EtfKdataCommon):
+    __tablename__ = 'etf_1d_bfq_kdata'
 
 
-register_schema(providers=['sina','joinquant'], db_name='etf_1d_kdata', schema_base=KdataBase)
+register_schema(providers=['sina','joinquant'], db_name='etf_1d_bfq_kdata', schema_base=KdataBase)
 
-__all__ = ['Etf1dKdata']
+__all__ = ['Etf1dBfqKdata']
