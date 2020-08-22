@@ -11,7 +11,7 @@ from zvt.contract import IntervalLevel
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
-from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata
+from zvt.domain import Stock, StockKdataCommon
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -82,9 +82,10 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         logout()
 
     def record(self, entity, start, end, size, timestamps):
+        fq_ref_date = None
         if self.adjust_type == AdjustType.hfq:
             fq_ref_date = '2000-01-01'
-        else:
+        elif self.adjust_type == AdjustType.qfq:
             fq_ref_date = to_time_str(now_pd_timestamp())
 
         if not self.end_timestamp:
