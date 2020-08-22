@@ -13,6 +13,8 @@ from zvt.domain import *
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
+def get_str_schema(schema_str):
+    return eval(schema_str)
 
 def get_kdata_schema(entity_type: str,
                      level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
@@ -44,6 +46,8 @@ def get_ma_state_stats_schema(entity_type: str,
 
     return eval(schema_str)
 
+def get_stock_factor_schema(schema_str: str):
+    return eval(schema_str)
 
 def get_ma_factor_schema(entity_type: str,
                          level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
@@ -114,7 +118,14 @@ def get_exchange(code):
 
 
 def china_stock_code_to_id(code):
-    return "{}_{}_{}".format('stock', get_exchange(code), code)
+    if 'US' in code:
+        return "{}_{}_{}".format('stock', get_exchange(code).replace('sh','us'), code[:-3])
+    elif 'HK' in code:
+        return "{}_{}_{}".format('stock', get_exchange(code).replace('sz','hk'), code[:-3])
+    elif 'CH' in code:
+        return "{}_{}_{}".format('stock', get_exchange(code), code[:-3])
+    else:
+        return "{}_{}_{}".format('stock', get_exchange(code), code)
 
 
 def generate_kdata_id(entity_id, timestamp, level):
@@ -122,7 +133,6 @@ def generate_kdata_id(entity_id, timestamp, level):
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))
     else:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
-
 
 def to_jq_report_period(timestamp):
     the_date = to_pd_timestamp(timestamp)

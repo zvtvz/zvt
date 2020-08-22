@@ -24,18 +24,24 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
     # provider_dbname -> engine
     db_engine_map = {
         "joinquant_stock_meta": mysql_engine,
+        "joinquant_shares_change": mysql_engine,
+        "joinquant_finance": mysql_engine,
         "joinquant_stock_factor": mysql_engine,
         "eastmoney_block_1d_kdata": mysql_engine,
+        "eastmoney_holder_trading": mysql_engine,
         "joinquant_stock_1mon_kdata": mysql_engine,
         "eastmoney_block_1mon_kdata": mysql_engine,
         "joinquant_stock_1wk_hfq_kdata": mysql_engine,
+        "joinquant_stock_1mon_bfq_kdata": mysql_engine,
         "eastmoney_block_1wk_kdata": mysql_engine,
         "joinquant_stock_1wk_kdata": mysql_engine,
         "eastmoney_dividend_financing": mysql_engine,
+        "joinquant_dividend_financing": mysql_engine,
         "joinquant_stock_30m_hfq_kdata": mysql_engine,
         "eastmoney_finance": mysql_engine,
         "joinquant_stock_30m_kdata": mysql_engine,
         "eastmoney_holder": mysql_engine,
+        "eastmoney_manager_trading": mysql_engine,
         "joinquant_stock_4h_hfq_kdata": mysql_engine,
         "eastmoney_stock_meta": mysql_engine,
         "joinquant_stock_4h_kdata": mysql_engine,
@@ -51,6 +57,13 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
         "sina_etf_1d_kdata": mysql_engine,
         "joinquant_stock_15m_kdata": mysql_engine,
         "sina_index_1d_kdata": mysql_engine,
+        "sina_index_1wk_kdata": mysql_engine,
+        "sina_index_1mon_kdata": mysql_engine,
+        "joinquant_fund_net_value": mysql_engine,
+
+        "joinquant_index_1wk_kdata": mysql_engine,
+        "joinquant_index_1mon_kdata": mysql_engine,
+
         "joinquant_stock_1d_hfq_kdata": mysql_engine,
         "sina_money_flow": mysql_engine,
         "joinquant_stock_1d_kdata": mysql_engine,
@@ -68,10 +81,23 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
         "joinquant_index_1d_kdata": mysql_engine,
         "joinquant_stock_1wk_bfq_kdata": mysql_engine,
         "joinquant_stock_1d_bfq_kdata": mysql_engine,
+        "joinquant_etf_1d_kdata": mysql_engine,
+        "joinquant_etf_1d_bfq_kdata": mysql_engine,
+        "joinquant_etf_1d_hfq_kdata": mysql_engine,
+
+        "joinquant_stock_emotion_factor": mysql_engine,
+        "joinquant_stock_basics_factor": mysql_engine,
+        "joinquant_stock_growth_factor": mysql_engine,
+        "joinquant_stock_momentum_factor": mysql_engine,
+        "joinquant_stock_pershare_factor": mysql_engine,
+        "joinquant_stock_quality_factor": mysql_engine,
+        "joinquant_stock_risk_factor": mysql_engine,
+        "joinquant_stock_style_factor": mysql_engine,
+        "joinquant_stock_technical_factor": mysql_engine,
+
     }
 else:
     db_engine_map = {}
-
 
 # provider_dbname -> session
 db_session_map = {}
