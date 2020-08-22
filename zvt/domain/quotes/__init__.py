@@ -46,7 +46,28 @@ class BlockKdataCommon(KdataCommon):
 
 
 class IndexKdataCommon(KdataCommon):
-    pass
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+
+class FundCommon(Mixin):
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+
+
+class FundNetValueCommon(FundCommon):
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    net_value = Column(Float)  # 单位净值
+    sum_value = Column(Float)  # 累计净值
+    factor = Column(Float)  # 复权因子
+    acc_factor = Column(Float)  # 累计复权因子
+    refactor_net_value = Column(Float)  # 累计复权净值
 
 
 class EtfKdataCommon(KdataCommon):
@@ -426,5 +447,7 @@ class StockTechnicalFactorCommon(StockFactorCommon):
 from zvt.domain.quotes.block import *
 from zvt.domain.quotes.stock import *
 from zvt.domain.quotes.etf import *
+from zvt.domain.quotes.fund import *
 from zvt.domain.quotes.index import *
 from zvt.domain.quotes.trade_day import *
+
