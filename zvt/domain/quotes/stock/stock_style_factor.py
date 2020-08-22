@@ -12,17 +12,17 @@ class StockStyleFactor(FactorBase, StockStyleFactorCommon):
     @classmethod
     def important_cols(cls):
         return [
- 'average_share_turnover_annual',
-                'average_share_turnover_quarterly', 'beta', 'book_leverage', 'book_to_price_ratio',
-                'cash_earnings_to_price_ratio',
-                'cube_of_size', 'cumulative_range', 'daily_standard_deviation',
-                'debt_to_assets', 'earnings_growth', 'earnings_to_price_ratio',
-                'earnings_yield', 'growth', 'historical_sigma',
-                'leverage', 'liquidity', 'long_term_predicted_earnings_growth', 'market_leverage',
-                'momentum', 'natural_log_of_market_cap', 'non_linear_size', 'predicted_earnings_to_price_ratio',
-                'raw_beta', 'relative_strength', 'residual_volatility', 'sales_growth',
-                'share_turnover_monthly', 'short_term_predicted_earnings_growth',
-                'size']
+            'average_share_turnover_annual',
+            'average_share_turnover_quarterly', 'beta', 'book_leverage', 'book_to_price_ratio',
+            'cash_earnings_to_price_ratio',
+            'cube_of_size', 'cumulative_range', 'daily_standard_deviation',
+            'debt_to_assets', 'earnings_growth', 'earnings_to_price_ratio',
+            'earnings_yield', 'growth', 'historical_sigma',
+            'leverage', 'liquidity', 'long_term_predicted_earnings_growth', 'market_leverage',
+            'momentum', 'natural_log_of_market_cap', 'non_linear_size', 'predicted_earnings_to_price_ratio',
+            'raw_beta', 'relative_strength', 'residual_volatility', 'sales_growth',
+            'share_turnover_monthly', 'short_term_predicted_earnings_growth',
+            'size']
 
     __tablename__ = 'stock_style_factor'
 

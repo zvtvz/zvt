@@ -8,7 +8,7 @@ from zvt.domain.quotes import StockQualityFactorCommon
 FactorBase = declarative_base()
 
 
-class StockFactor(FactorBase, StockQualityFactorCommon):
+class StockQualityFactor(FactorBase, StockQualityFactorCommon):
     @classmethod
     def important_cols(cls):
         return ['ACCA', 'accounts_payable_turnover_days', 'accounts_payable_turnover_rate',
@@ -38,9 +38,9 @@ class StockFactor(FactorBase, StockQualityFactorCommon):
                 'SGAI', 'SGI', 'super_quick_ratio', 'total_asset_turnover_rate',
                 'total_profit_to_cost_ratio']
 
-    __tablename__ = 'stock_factor'
+    __tablename__ = 'stock_quality_factor'
 
 
-register_schema(providers=['joinquant'], db_name='stock_factor', schema_base=FactorBase)
+register_schema(providers=['joinquant'], db_name='stock_quality_factor', schema_base=FactorBase)
 
-__all__ = ['StockFactor']
+__all__ = ['StockQualityFactor']
