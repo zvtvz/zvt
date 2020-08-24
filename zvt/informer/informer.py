@@ -25,7 +25,7 @@ class EmailInformer(Informer):
         super().__init__()
         self.ssl = ssl
 
-    def send_message(self, to_user, title, body, **kwargs):
+    def send_message_(self, to_user, title, body, **kwargs):
         if self.ssl:
             smtp_client = smtplib.SMTP_SSL()
         else:
@@ -49,6 +49,22 @@ class EmailInformer(Informer):
             smtp_client.sendmail(zvt_env['email_username'], to_user, msg.as_string())
         except Exception as e:
             self.logger.exception('send email failed', e)
+
+    def send_message(self, to_user, title, body, sub_size=10, **kwargs):
+        if type(to_user) is list and sub_size:
+            size = len(to_user)
+            if size >= sub_size:
+                step_size = int(size / sub_size)
+                if size % sub_size:
+                    step_size = step_size + 1
+            else:
+                step_size = 1
+
+            for step in range(step_size):
+                to_user = to_user[sub_size * step:sub_size * (step + 1)]
+                self.send_message_(to_user, title, body, **kwargs)
+        else:
+            self.send_message_(to_user, title, body, **kwargs)
 
 
 class WechatInformer(Informer):
