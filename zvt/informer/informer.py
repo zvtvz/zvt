@@ -26,11 +26,20 @@ class EmailInformer(Informer):
         self.ssl = ssl
 
     def send_message_(self, to_user, title, body, **kwargs):
+        host = zvt_env['smtp_host']
+        port = zvt_env['smtp_port']
         if self.ssl:
-            smtp_client = smtplib.SMTP_SSL()
+            try:
+                smtp_client = smtplib.SMTP_SSL(host=host, port=port)
+            except:
+                smtp_client = smtplib.SMTP_SSL()
         else:
-            smtp_client = smtplib.SMTP()
-        smtp_client.connect(zvt_env['smtp_host'], zvt_env['smtp_port'])
+            try:
+                smtp_client = smtplib.SMTP(host=host, port=port)
+            except:
+                smtp_client = smtplib.SMTP()
+
+        smtp_client.connect(host=host, port=port)
         smtp_client.login(zvt_env['email_username'], zvt_env['email_password'])
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(title).encode()
@@ -50,7 +59,7 @@ class EmailInformer(Informer):
         except Exception as e:
             self.logger.exception('send email failed', e)
 
-    def send_message(self, to_user, title, body, sub_size=10, **kwargs):
+    def send_message(self, to_user, title, body, sub_size=20, with_sender=True, **kwargs):
         if type(to_user) is list and sub_size:
             size = len(to_user)
             if size >= sub_size:
@@ -61,8 +70,10 @@ class EmailInformer(Informer):
                 step_size = 1
 
             for step in range(step_size):
-                to_user = to_user[sub_size * step:sub_size * (step + 1)]
-                self.send_message_(to_user, title, body, **kwargs)
+                sub_to_user = to_user[sub_size * step:sub_size * (step + 1)]
+                if with_sender:
+                    sub_to_user.append(zvt_env['email_username'])
+                self.send_message_(sub_to_user, title, body, **kwargs)
         else:
             self.send_message_(to_user, title, body, **kwargs)
 
@@ -150,8 +161,8 @@ class WechatInformer(Informer):
 
 
 if __name__ == '__main__':
-    email_action = EmailInformer(ssl=True)
-    email_action.send_message(["5533061@qq.com", '2315983623@qq.com'], 'helo', 'just a test')
+    email_action = EmailInformer()
+    email_action.send_message(["5533061@qq.com", '2315983623@qq.com'], 'helo', 'just a test', sub_size=20)
 
     # weixin_action = WechatInformer()
     # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',
