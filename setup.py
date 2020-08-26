@@ -32,7 +32,7 @@ except:
 
 setup(
     name='zvt',
-    version='0.8.6',
+    version='0.8.7',
     description='unified,modular quantitative system for human beings ',
     long_description=long_description,
     url='https://github.com/zvtvz/zvt',
