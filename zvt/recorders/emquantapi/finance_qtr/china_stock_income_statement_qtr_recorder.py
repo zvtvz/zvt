@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-from zvt.api.quote import to_report_period_type
-from zvt.domain import IncomeStatementQtr,StockDetail
-
+from zvt.domain import IncomeStatementQtr
 from zvt.recorders.emquantapi.finance_qtr.base_china_stock_finance_qtr_recorder import BaseChinaStockFinanceQtrRecorder
-from zvt.utils.time_utils import to_pd_timestamp
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 income_statement_qtr_map = {
@@ -104,7 +101,7 @@ add_func_to_value(income_statement_qtr_map, first_item_to_float)
 class ChinaStockIncomeStatementQtrRecorder(BaseChinaStockFinanceQtrRecorder):
 
     data_schema = IncomeStatementQtr
-    finance_report_type = 'LiRunBiaoList'
+    finance_report_type = 'IncomeStatementQSHSZ'
     data_type = 2
 
     def get_data_map(self):
