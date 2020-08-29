@@ -49,6 +49,9 @@ holdtradedetail_map = {
 
 
 class HoldTradeDetail(HolderBase, Mixin):
+    """
+    高管及相关人员持股变动
+    """
     __tablename__ = 'holder_trade_detail'
 
     def get_data_map(self):
@@ -89,6 +92,7 @@ class HoldTradeDetail(HolderBase, Mixin):
 
 
 class TopTenHolder(HolderBase, Mixin):
+
     __tablename__ = 'top_ten_holder'
 
     provider = Column(String(length=32))

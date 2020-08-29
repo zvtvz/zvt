@@ -5,17 +5,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
 
-FinanceBase = declarative_base()
+FinanceQtrBase = declarative_base()
 
 
-class BalanceSheet(FinanceBase, Mixin):
+class BalanceSheetQtr(FinanceQtrBase, Mixin):
 
     @classmethod
     def important_cols(cls):
         return ['total_assets', 'total_liabilities', 'equity', 'cash_and_cash_equivalents', 'accounts_receivable',
                 'inventories', 'goodwill']
 
-    __tablename__ = 'balance_sheet'
+    __tablename__ = 'balance_sheet_qtr'
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -155,22 +155,10 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_interest_receivable = Column(Float)
     # 发放贷款及垫款
     fi_disbursing_loans_and_advances = Column(Float)
-    # 可供出售金融资产
-    #
     # 持有至到期投资
     fi_held_to_maturity_investment = Column(Float)
     # 应收款项类投资
     fi_account_receivable_investment = Column(Float)
-    # 投资性房地产
-    #
-    # 固定资产
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
     # 其他资产
     fi_other_asset = Column(Float)
     # 资产总计
@@ -194,21 +182,12 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_savings_absorption = Column(Float)
     # 存款证及应付票据
     fi_notes_payable = Column(Float)
-    # 应付职工薪酬
-    #
-    # 应交税费
-    #
-    # 应付利息
-    #
     # 预计负债
     fi_estimated_liabilities = Column(Float)
     # 应付债券
     fi_bond_payable = Column(Float)
     # 其他负债
     fi_other_liability = Column(Float)
-    # 负债合计
-    #
-
     # 所有者权益(或股东权益)
     # 股本
     fi_capital = Column(Float)
@@ -216,25 +195,8 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_other_equity_instruments = Column(Float)
     # 其中:优先股
     fi_preferred_stock = Column(Float)
-    # 资本公积
-    #
-    # 盈余公积
-    #
     # 一般风险准备
     fi_generic_risk_reserve = Column(Float)
-    # 未分配利润
-    #
-    # 归属于母公司股东权益合计
-    #
-    # 股东权益合计
-    #
-    # 负债及股东权益总计
-
-    # 券商相关
-    # 资产
-    #
-    # 货币资金
-    #
     # 其中: 客户资金存款
     fi_client_fund = Column(Float)
     # 结算备付金
@@ -243,99 +205,18 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_client_deposit_reservation_for_balance = Column(Float)
     # 融出资金
     fi_margin_out_fund = Column(Float)
-    # 以公允价值计量且其变动计入当期损益的金融资产
-    #
-    # 衍生金融资产
-    #
-    # 买入返售金融资产
-    #
-    # 应收利息
-    #
     # 应收款项
     fi_receivables = Column(Float)
     # 存出保证金
     fi_deposit_for_recognizance = Column(Float)
-    # 可供出售金融资产
-    #
-    # 持有至到期投资
-    #
-    # 长期股权投资
-    #
-    # 固定资产
-    #
-    # 在建工程
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
-    # 其他资产
-    #
-    # 资产总计
-    #
-    # 负债
-    #
-    # 短期借款
-    #
-    # 拆入资金
-    #
-    # 以公允价值计量且其变动计入当期损益的金融负债
-    #
-    # 衍生金融负债
-    #
-    # 卖出回购金融资产款
-    #
     # 代理买卖证券款
     fi_receiving_as_agent = Column(Float)
-    # 应付账款
-    #
-    # 应付职工薪酬
-    #
-    # 应交税费
-    #
-    # 应付利息
-    #
     # 应付短期融资款
     fi_short_financing_payable = Column(Float)
-    # 预计负债
-    #
-    # 应付债券
-    #
-    # 递延所得税负债
-    #
-    # 其他负债
-    #
-    # 负债合计
-    #
-    # 所有者权益(或股东权益)
-    #
-    # 股本
-    #
-    # 资本公积
-    #
-    # 其他权益工具
-    #
-    # 盈余公积
-    #
-    # 一般风险准备
-    #
+
     # 交易风险准备
     fi_trade_risk_reserve = Column(Float)
-    # 未分配利润
-    #
-    # 归属于母公司股东权益合计
-    #
-    # 少数股东权益
-    #
-    # 股东权益合计
-    #
-    # 负债和股东权益总计
 
-    # 保险相关
-
-    # 资产
     # 应收保费
     fi_premiums_receivable = Column(Float)
     # 应收分保账款
@@ -347,54 +228,14 @@ class BalanceSheet(FinanceBase, Mixin):
     # 发放贷款及垫款
     # 定期存款
     fi_time_deposit = Column(Float)
-    # 可供出售金融资产
-    #
-    # 持有至到期投资
-    #
-    # 应收款项类投资
-    #
-    # 应收账款
-    #
-    # 长期股权投资
-    #
+
     # 存出资本保证金
     fi_deposit_for_capital_recognizance = Column(Float)
-    # 投资性房地产
-    #
-    # 固定资产
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
-    # 其他资产
-    #
+
     # 独立账户资产
     fi_capital_in_independent_accounts = Column(Float)
     # 资产总计
-    #
-    # 负债
-    #
-    # 短期借款
-    #
-    # 同业及其他金融机构存放款项
-    #
-    # 拆入资金
-    #
-    # 以公允价值计量且其变动计入当期损益的金融负债
-    #
-    # 衍生金融负债
-    #
-    # 卖出回购金融资产款
-    #
-    # 吸收存款
-    #
-    # 代理买卖证券款
-    #
-    # 应付账款
-    #
+
     # 预收账款
     fi_advance_from_customers = Column(Float)
     # 预收保费
@@ -403,14 +244,6 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_fees_and_commissions_payable = Column(Float)
     # 应付分保账款
     fi_dividend_payable_for_reinsurance = Column(Float)
-    # 应付职工薪酬
-    #
-    # 应交税费
-    #
-    # 应付利息
-    #
-    # 预计负债
-    #
     # 应付赔付款
     fi_claims_payable = Column(Float)
     # 应付保单红利
@@ -419,64 +252,38 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_policy_holder_deposits_and_investment_funds = Column(Float)
     # 保险合同准备金
     fi_contract_reserve = Column(Float)
-    # 长期借款
-    #
-    # 应付债券
-    #
-    # 递延所得税负债
-    #
-    # 其他负债
-    #
+
     # 独立账户负债
     fi_independent_liability = Column(Float)
-    # 负债合计
-    #
-    # 所有者权益(或股东权益)
-    #
-    # 股本
-    #
-    # 资本公积
-    #
-    # 盈余公积
-    #
-    # 一般风险准备
-    #
-    # 未分配利润
-    #
-    # 归属于母公司股东权益总计
-    #
-    # 少数股东权益
-    #
-    # 股东权益合计
-    #
-    # 负债和股东权益总计
 
 
-class IncomeStatement(FinanceBase, Mixin):
+class IncomeStatementQtr(FinanceQtrBase, Mixin):
 
     @classmethod
     def important_cols(cls):
         return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
                 'managing_costs', 'financing_costs']
 
-    __tablename__ = 'income_statement'
+    __tablename__ = 'income_statement_qtr'
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
 
     report_period = Column(String(length=32))
+    # 报告时间
     report_date = Column(DateTime)
+    # 更新时间
     pub_date = Column(DateTime)
-    # 营业总收入
-    #
+
+    # 营业总收入(元)
+    total_op_income = Column(Float)
     # 营业收入
     operating_income = Column(Float)
     # 营业总成本
     total_operating_costs = Column(Float)
     # 营业成本
     operating_costs = Column(Float)
-    # 研发费用
-    rd_costs = Column(Float)
+
     # 提取保险合同准备金净额
     net_change_in_insurance_contract_reserves = Column(Float)
     # 营业税金及附加
@@ -490,7 +297,7 @@ class IncomeStatement(FinanceBase, Mixin):
     # 资产减值损失
     assets_devaluation = Column(Float)
     # 其他经营收益
-    #
+
     # 加: 投资收益
     investment_income = Column(Float)
     # 其中: 对联营企业和合营企业的投资收益
@@ -503,7 +310,6 @@ class IncomeStatement(FinanceBase, Mixin):
     non_operating_costs = Column(Float)
     # 其中: 非流动资产处置净损失
     loss_on_disposal_non_current_asset = Column(Float)
-
     # 利润总额
     total_profits = Column(Float)
     # 减: 所得税费用
@@ -514,19 +320,8 @@ class IncomeStatement(FinanceBase, Mixin):
     net_profit_as_parent = Column(Float)
     # 少数股东损益
     net_profit_as_minority_interest = Column(Float)
-    # 扣除非经常性损益后的净利润
-    deducted_net_profit = Column(Float)
-    # 每股收益
-    # 基本每股收益
-    eps = Column(Float)
-    # 稀释每股收益
-    diluted_eps = Column(Float)
     # 其他综合收益
     other_comprehensive_income = Column(Float)
-    # 归属于母公司股东的其他综合收益
-    other_comprehensive_income_as_parent = Column(Float)
-    # 归属于少数股东的其他综合收益
-    other_comprehensive_income_as_minority_interest = Column(Float)
     # 综合收益总额
     total_comprehensive_income = Column(Float)
     # 归属于母公司所有者的综合收益总额
@@ -534,88 +329,39 @@ class IncomeStatement(FinanceBase, Mixin):
     # 归属于少数股东的综合收益总额
     total_comprehensive_income_as_minority_interest = Column(Float)
 
-    # 银行相关
-    # 利息净收入
-    fi_net_interest_income = Column(Float)
-    # 其中:利息收入
-    fi_interest_income = Column(Float)
-    # 利息支出
-    fi_interest_expenses = Column(Float)
-    # 手续费及佣金净收入
-    fi_net_incomes_from_fees_and_commissions = Column(Float)
-    # 其中:手续费及佣金收入
-    fi_incomes_from_fees_and_commissions = Column(Float)
-    # 手续费及佣金支出
-    fi_expenses_for_fees_and_commissions = Column(Float)
-    # 公允价值变动收益
-    fi_income_from_fair_value_change = Column(Float)
-    # 汇兑收益
-    fi_income_from_exchange = Column(Float)
-    # 其他业务收入
-    fi_other_income = Column(Float)
-    # 业务及管理费
-    fi_operate_and_manage_expenses = Column(Float)
-
-    # 保险相关
-    # 已赚保费
+    # 已赚保费(元)
     fi_net_income_from_premium = Column(Float)
-    # 其中:保险业务收入
-    fi_income_from_premium = Column(Float)
-    # 分保费收入
-    fi_income_from_reinsurance_premium = Column(Float)
-    # 减:分出保费
-    fi_reinsurance_premium = Column(Float)
-    # 提取未到期责任准备金
-    fi_undue_duty_reserve = Column(Float)
-    # 银行业务利息净收入
-    fi_net_income_from_bank_interest = Column(Float)
-    # 其中:银行业务利息收入
-    fi_income_from_bank_interest = Column(Float)
-    # 银行业务利息支出
-    fi_expenses_for_bank_interest = Column(Float)
-    # 非保险业务手续费及佣金净收入
-    fi_net_incomes_from_fees_and_commissions_of_non_insurance = Column(Float)
-    # 非保险业务手续费及佣金收入
-    fi_incomes_from_fees_and_commissions_of_non_insurance = Column(Float)
-    # 非保险业务手续费及佣金支出
-    fi_expenses_for_fees_and_commissions_of_non_insurance = Column(Float)
-    # 退保金
+    # 手续费及佣金收入
+    fi_incomes_from_fees_and_commissions = Column(Float)
+    # 利息收入(元)
+    fi_interest_income = Column(Float)
+    # 利息支出(元)
+    fi_interest_expenses = Column(Float)
+    # 手续费及佣金支出(元)
+    fi_expenses_for_fees_and_commissions = Column(Float)
+    # 退保金(元)
     fi_insurance_surrender_costs = Column(Float)
-    # 赔付支出
-    fi_insurance_claims_expenses = Column(Float)
-    # 减:摊回赔付支出
-    fi_amortized_insurance_claims_expenses = Column(Float)
-    # 提取保险责任准备金
-    fi_insurance_duty_reserve = Column(Float)
-    # 减:摊回保险责任准备金
-    fi_amortized_insurance_duty_reserve = Column(Float)
-    # 保单红利支出
+    # 赔付支出净额(元)
+    fi_net_payouts = Column(Float)
+    # 保单红利支出(元)
     fi_dividend_expenses_to_insured = Column(Float)
     # 分保费用
     fi_reinsurance_expenses = Column(Float)
-    # 减:摊回分保费用
-    fi_amortized_reinsurance_expenses = Column(Float)
-    # 其他业务成本
-    fi_other_op_expenses = Column(Float)
-
-    # 券商相关
-    # 手续费及佣金净收入
-    #
-    # 其中:代理买卖证券业务净收入
-    fi_net_incomes_from_trading_agent = Column(Float)
-    # 证券承销业务净收入
-    fi_net_incomes_from_underwriting = Column(Float)
-    # 受托客户资产管理业务净收入
-    fi_net_incomes_from_customer_asset_management = Column(Float)
-    # 手续费及佣金净收入其他项目
-    fi_fees_from_other = Column(Float)
-    # 公允价值变动收益
-    #
-    # 其中:可供出售金融资产公允价值变动损益
-    fi_income_from_fair_value_change_of_fi_salable = Column(Float)
+    # 公允价值变动收益(损失以“-”号填列)
+    fi_income_from_fair_value_change = Column(Float)
+    # 汇兑收益(损失以“-”号填列)
+    fi_income_from_exchange = Column(Float)
+    # 资产处置收益
+    fi_asset_disposal_income = Column(Float)
+    # 其他收益
+    fi_other_income = Column(Float)
+    # 持续经营净利润
+    fi_net_profit_continuing_operations = Column(Float)
+    # 终止经营净利润
+    fi_iscontinued_operating_net_profit = Column(Float)
 
 
-class CashFlowStatement(FinanceBase, Mixin):
+class CashFlowStatementQtr(FinanceQtrBase, Mixin):
     @classmethod
     def important_cols(cls):
         return ['net_op_cash_flows', 'net_investing_cash_flows', 'net_financing_cash_flows', 'cash']
@@ -817,7 +563,7 @@ class CashFlowStatement(FinanceBase, Mixin):
 
 # 主要财务指标
 
-class FinanceFactor(FinanceBase, Mixin):
+class FinanceFactorQtr(FinanceQtrBase, Mixin):
     @classmethod
     def important_cols(cls):
         return ['basic_eps', 'total_op_income', 'net_profit', 'op_income_growth_yoy', 'net_profit_growth_yoy', 'roe',
@@ -963,6 +709,7 @@ class FinanceFactor(FinanceBase, Mixin):
     broker_self_operated_fixed_income_securities_net_capital_ratio = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'joinquant'], db_name='finance', schema_base=FinanceBase)
+register_schema(providers=['emquantapi'], db_name='finance_qtr', schema_base=FinanceQtrBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement']
+__all__ = ['FinanceFactorQtr', 'BalanceSheetQtr', 'IncomeStatementQtr', 'CashFlowStatementQtr']
+

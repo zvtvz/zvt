@@ -164,7 +164,7 @@ class FundDetail(StockMetaBase, BaseSecurity):
     underlying_asset_type = Column(String(length=100))
     category = Column(String(length=64))
 
-register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina'], db_name='stock_meta',
+register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina','emquantapi'], db_name='stock_meta',
                 schema_base=StockMetaBase)
 
 __all__ = ['Stock', 'Index', 'Block', 'Etf','Fund', 'IndexStock','FundStock', 'BlockStock', 'EtfStock', 'StockDetail','FundDetail']
