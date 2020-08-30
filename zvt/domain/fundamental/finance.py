@@ -164,20 +164,10 @@ class BalanceSheet(FinanceBase, Mixin):
     # 投资性房地产
     #
     # 固定资产
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
+
     # 其他资产
     fi_other_asset = Column(Float)
-    # 资产总计
-    #
 
-    # 负债
-    #
     # 向中央银行借款
     fi_borrowings_from_central_bank = Column(Float)
     # 同业和其他金融机构存放款项
@@ -194,20 +184,13 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_savings_absorption = Column(Float)
     # 存款证及应付票据
     fi_notes_payable = Column(Float)
-    # 应付职工薪酬
-    #
-    # 应交税费
-    #
-    # 应付利息
-    #
+
     # 预计负债
     fi_estimated_liabilities = Column(Float)
     # 应付债券
     fi_bond_payable = Column(Float)
     # 其他负债
     fi_other_liability = Column(Float)
-    # 负债合计
-    #
 
     # 所有者权益(或股东权益)
     # 股本
@@ -216,25 +199,10 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_other_equity_instruments = Column(Float)
     # 其中:优先股
     fi_preferred_stock = Column(Float)
-    # 资本公积
-    #
-    # 盈余公积
-    #
+
     # 一般风险准备
     fi_generic_risk_reserve = Column(Float)
-    # 未分配利润
-    #
-    # 归属于母公司股东权益合计
-    #
-    # 股东权益合计
-    #
-    # 负债及股东权益总计
 
-    # 券商相关
-    # 资产
-    #
-    # 货币资金
-    #
     # 其中: 客户资金存款
     fi_client_fund = Column(Float)
     # 结算备付金
@@ -243,97 +211,19 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_client_deposit_reservation_for_balance = Column(Float)
     # 融出资金
     fi_margin_out_fund = Column(Float)
-    # 以公允价值计量且其变动计入当期损益的金融资产
-    #
-    # 衍生金融资产
-    #
-    # 买入返售金融资产
-    #
-    # 应收利息
-    #
+
     # 应收款项
     fi_receivables = Column(Float)
     # 存出保证金
     fi_deposit_for_recognizance = Column(Float)
-    # 可供出售金融资产
-    #
-    # 持有至到期投资
-    #
-    # 长期股权投资
-    #
-    # 固定资产
-    #
-    # 在建工程
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
-    # 其他资产
-    #
-    # 资产总计
-    #
-    # 负债
-    #
-    # 短期借款
-    #
-    # 拆入资金
-    #
-    # 以公允价值计量且其变动计入当期损益的金融负债
-    #
-    # 衍生金融负债
-    #
-    # 卖出回购金融资产款
-    #
+
+
     # 代理买卖证券款
     fi_receiving_as_agent = Column(Float)
-    # 应付账款
-    #
-    # 应付职工薪酬
-    #
-    # 应交税费
-    #
-    # 应付利息
-    #
     # 应付短期融资款
     fi_short_financing_payable = Column(Float)
-    # 预计负债
-    #
-    # 应付债券
-    #
-    # 递延所得税负债
-    #
-    # 其他负债
-    #
-    # 负债合计
-    #
-    # 所有者权益(或股东权益)
-    #
-    # 股本
-    #
-    # 资本公积
-    #
-    # 其他权益工具
-    #
-    # 盈余公积
-    #
-    # 一般风险准备
-    #
     # 交易风险准备
     fi_trade_risk_reserve = Column(Float)
-    # 未分配利润
-    #
-    # 归属于母公司股东权益合计
-    #
-    # 少数股东权益
-    #
-    # 股东权益合计
-    #
-    # 负债和股东权益总计
-
-    # 保险相关
 
     # 资产
     # 应收保费
@@ -347,53 +237,12 @@ class BalanceSheet(FinanceBase, Mixin):
     # 发放贷款及垫款
     # 定期存款
     fi_time_deposit = Column(Float)
-    # 可供出售金融资产
-    #
-    # 持有至到期投资
-    #
-    # 应收款项类投资
-    #
-    # 应收账款
-    #
-    # 长期股权投资
-    #
     # 存出资本保证金
     fi_deposit_for_capital_recognizance = Column(Float)
-    # 投资性房地产
-    #
-    # 固定资产
-    #
-    # 无形资产
-    #
-    # 商誉
-    #
-    # 递延所得税资产
-    #
-    # 其他资产
-    #
+
     # 独立账户资产
     fi_capital_in_independent_accounts = Column(Float)
-    # 资产总计
-    #
-    # 负债
-    #
-    # 短期借款
-    #
-    # 同业及其他金融机构存放款项
-    #
-    # 拆入资金
-    #
-    # 以公允价值计量且其变动计入当期损益的金融负债
-    #
-    # 衍生金融负债
-    #
-    # 卖出回购金融资产款
-    #
-    # 吸收存款
-    #
-    # 代理买卖证券款
-    #
-    # 应付账款
+
     #
     # 预收账款
     fi_advance_from_customers = Column(Float)
@@ -405,11 +254,7 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_dividend_payable_for_reinsurance = Column(Float)
     # 应付职工薪酬
     #
-    # 应交税费
-    #
-    # 应付利息
-    #
-    # 预计负债
+
     #
     # 应付赔付款
     fi_claims_payable = Column(Float)
@@ -429,27 +274,91 @@ class BalanceSheet(FinanceBase, Mixin):
     #
     # 独立账户负债
     fi_independent_liability = Column(Float)
-    # 负债合计
     #
-    # 所有者权益(或股东权益)
-    #
-    # 股本
-    #
-    # 资本公积
-    #
-    # 盈余公积
-    #
-    # 一般风险准备
-    #
-    # 未分配利润
-    #
-    # 归属于母公司股东权益总计
-    #
-    # 少数股东权益
-    #
-    # 股东权益合计
-    #
-    # 负债和股东权益总计
+    # 应收股利	其中 应收股利(元)
+    fi_dividend_rec = Column(Float)
+    # 股东权益合计 所有者权益(或股东权益)合计
+    fi_perpetual_bond = Column(Float)
+    # 减 = Column(Float)库存股
+    fi_inventory_share = Column(Float)
+    # 其他综合收益
+    other_comprehensive_income = Column(Float)
+    # 外币报表折算差额		外币报表折算差额(元)
+    fi_diffconversionfc = Column(Float)
+    # 归属于母公司所有者权益的调整项目	 归属于母公司股东权益其他项目(元)
+    fi_parent_equity_other = Column(Float)
+    # 归属于母公司所有者权益的差错金额	 归属于母公司股东权益平衡项目(元)
+    fi_parent_equity_balance = Column(Float)
+    # 所有者权益的调整项目  股东权益其他项目(元)
+    fi_sh_equity_other = Column(Float)
+    # 所有者权益的差错金额	股东权益平衡项目(元)
+    fi_sh_equity_balance = Column(Float)
+    # 应付债券
+    # 负债和权益的调整项目	负债和股东权益其他项目(元)
+    fi_liab_sh_equity_other = Column(Float)
+
+    # 负债和权益的差错金额	负债和股东权益平衡项目(元)
+    fi_liab_sh_equity_balance = Column(Float)
+    # 结算备付金
+    # 交易性金融资产		交易性金融资产
+    fi_trade_finasset_notfvtpl = Column(Float)
+    # 衍生金融资产
+    # 应收保费
+    # 应收分保账款
+    # 应收分保合同准备金
+    # 买入返售金融资产
+    # 流动资产的调整项目		流动资产其他项目(元)
+    fi_lasset_other = Column(Float)
+    # 流动资产的差错金额		流动资产平衡项目(元)
+    fi_lasset_balance = Column(Float)
+    # 发放委托贷款及垫款		发放委托贷款及垫款(元)	LOANADVANCES
+    fi_loan_advances = Column(Float)
+
+    # 工程物资	工程物资(元)
+    fi_construction_material = Column(Float)
+    # 固定资产清理	固定资产清理(元)
+    fi_liquidate_fixed_asset = Column(Float)
+    # 生产性生物资产		生产性生物资产(元)
+    fi_product_biology_asset = Column(Float)
+    # 油气资产	油气资产(元)
+    fi_oil_gas_asset = Column(Float)
+    # 研发支出		开发支出(元)
+    fi_develop_exp = Column(Float)
+    # 非流动资产的调整项目		非流动资产其他项目(元)
+    fi_nonl_asset_other = Column(Float)
+    # 非流动资产的差错金额		非流动资产平衡项目(元)
+    fi_nonl_asset_balance = Column(Float)
+    # 资产的调整项目		资产其他项目(元)
+    fi_asset_other = Column(Float)
+    # 资产的差错金额		资产平衡项目(元)
+    fi_asset_balance = Column(Float)
+    # 向中央银行借款
+    # 拆入资金
+    # 交易性金融负债		交易性金融负债
+    fi_trade_finliab_notfvtpl = Column(Float)
+    # 衍生金融负债
+    # 存款证及应付票据  应付票据
+    # 卖出回购金融资产款
+    # 应付手续费及佣金
+    # 应付股利		其中 应付股利(元)
+    fi_dividend_payable = Column(Float)
+    # 代理买卖证券款
+    # 代理承销证券款		代理承销证券款(元)
+    fi_agentuw_security = Column(Float)
+    # 流动负债的调整项目		流动负债其他项目(元)
+    fi_lliab_other = Column(Float)
+    # 流动负债的差错金额		流动负债平衡项目(元)
+    fi_lliab_balance = Column(Float)
+    # 专项应付款		专项应付款(元)
+    fi_special_pay = Column(Float)
+    # 非流动负债的调整项目		非流动负债其他项目(元)
+    fi_non_liab_other = Column(Float)
+    # 非流动负债的差错金额		非流动负债平衡项目(元)
+    fi_non_liab_balance = Column(Float)
+    # 负债的调整项目		负债其他项目(元)
+    fi_liab_other = Column(Float)
+    # 负债的差错金额		负债平衡项目(元)
+    fi_liab_balance = Column(Float)
 
 
 class IncomeStatement(FinanceBase, Mixin):

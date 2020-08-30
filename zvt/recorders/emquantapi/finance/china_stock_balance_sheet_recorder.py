@@ -224,13 +224,11 @@ balance_sheet_map = {
     # 非流动负债的调整项目		非流动负债其他项目(元)
     "fi_non_liab_other": "NONLLIABOTHER",
     # 非流动负债的差错金额		非流动负债平衡项目(元)
-    "fi_non_liab_balance'": "NONLLIABBALANCE",
+    "fi_non_liab_balance": "NONLLIABBALANCE",
     # 负债的调整项目		负债其他项目(元)	LIABOTHER
     "fi_liab_other": "LIABOTHER",
     # 负债的差错金额		负债平衡项目(元)	LIABBALANCE
     "fi_liab_balance": "LIABBALANCE",
-
-
     # 应付分保账款
     "fi_dividend_payable_for_reinsurance": "RIPAY",
 }
