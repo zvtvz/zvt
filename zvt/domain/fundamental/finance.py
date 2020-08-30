@@ -638,12 +638,14 @@ class CashFlowStatement(FinanceBase, Mixin):
 
     # 收到其他与经营活动有关的现金
     cash_from_other_op = Column(Float)
-
+    # 质押贷款净增加额
+    fi_insured_pledge_loans_increase = Column(Float)
     # 经营活动现金流入小计
     total_op_cash_inflows = Column(Float)
 
     # 购买商品、接受劳务支付的现金
     cash_to_goods_services = Column(Float)
+
     # 支付给职工以及为职工支付的现金
     cash_to_employees = Column(Float)
     # 支付的各项税费
@@ -655,15 +657,15 @@ class CashFlowStatement(FinanceBase, Mixin):
 
     # 经营活动产生的现金流量净额
     net_op_cash_flows = Column(Float)
-
+    # 处置固定资产、无形资产和其他长期资产收回的现金净额
+    cash_from_disposal_fixed_intangible_assets = Column(Float)
     # 投资活动产生的现金流量
 
     # 收回投资收到的现金
     cash_from_disposal_of_investments = Column(Float)
     # 取得投资收益收到的现金
     cash_from_returns_on_investments = Column(Float)
-    # 处置固定资产、无形资产和其他长期资产收回的现金净额
-    cash_from_disposal_fixed_intangible_assets = Column(Float)
+
     # 处置子公司及其他营业单位收到的现金净额
     cash_from_disposal_subsidiaries = Column(Float)
 
@@ -727,16 +729,106 @@ class CashFlowStatement(FinanceBase, Mixin):
     foreign_exchange_rate_effect = Column(Float)
     # 现金及现金等价物净增加额
     net_cash_increase = Column(Float)
-    # 加: 期初现金及现金等价物余额
+    # 加:期初现金及现金等价物余额
     cash_at_beginning = Column(Float)
     # 期末现金及现金等价物余额
     cash = Column(Float)
-
-    # 银行相关
     # 客户存款和同业及其他金融机构存放款项净增加额
+    # 客户存款和同业存放款项净增加额
     fi_deposit_increase = Column(Float)
+    # 支付保单红利的现金
+    fi_cash_to_dividends = Column(Float)
     # 向中央银行借款净增加额
     fi_borrow_from_central_bank_increase = Column(Float)
+    # 向其他金融机构拆入资金净增加额
+    fi_lending_from_increase = Column(Float)
+    # 收到原保险合同保费取得的现金
+    fi_cash_from_premium_of_original = Column(Float)
+    # 收到再保险业务现金净额
+    fi_cash_from_reinsurance = Column(Float)
+    # 保户储金及投资款净增加额
+    fi_insured_deposit_increase = Column(Float)
+
+    # 处置交易性金融资产净增加额
+    fi_disposal_trade_asset_add = Column(Float)
+    # 客户贷款及垫款净增加额
+    fi_loan_advance_increase = Column(Float)
+    # 存放中央银行和同业款项净增加
+    fi_deposit_in_others_add = Column(Float)
+    # 支付原保险合同赔付款项的现金
+    fi_cash_to_insurance_claim = Column(Float)
+    # 支付利息、手续费及佣金的现金
+    fi_cash_to_interest_commission = Column(Float)
+    # 收取的利息、手续费及佣金的现金 收取利息、手续费及佣金的现金
+    fi_cash_from_interest_commission = Column(Float)
+    # 拆入资金净增加额
+    fi_borrowing_increase = Column(Float)
+    # 回购业务资金净增加额
+    fi_cash_from_repurchase_increase = Column(Float)
+
+    # 经营活动现金流入的调整项目
+    # 经营活动现金流入的其他项目
+    fi_operate_flow_inother = Column(Float)
+
+    # 经营活动现金流入的差错金额
+    # 经营活动现金流入的平衡项目(元)
+    fi_operate_flow_in_balance = Column(Float)
+    # 经营活动现金流量净额的差错金额
+    # 经营活动产生的现金流量净额其他项目(元)
+    fi_operate_flow_other = Column(Float)
+
+    # 投资活动现金流入的调整项目
+    # 投资活动现金流入的其他项目(元)
+    fi_inv_flow_in_other = Column(Float)
+    # 投资活动现金流入的差错金额
+    # 投资活动现金流入的平衡项目(元)
+    fi_inv_flow_in_balance = Column(Float)
+
+    # 投资活动现金流出的调整项目
+    # 投资活动现金流出的其他项目(元)
+    fi_inv_flow_out_other = Column(Float)
+    # 投资活动现金流出的差错金额
+    # 投资活动现金流出的平衡项目(元)
+    fi_inv_flow_out_balance = Column(Float)
+
+    # 投资活动现金流量净额的差错金额
+    # 投资活动产生的现金流量净额其他项目(元)
+    fi_inv_flow_other = Column(Float)
+
+    # 筹资活动现金流入的调整项目
+    # 筹资活动现金流入的其他项目(元)
+    fi_fina_flow_in_other = Column(Float)
+
+    # 筹资活动现金流入的差错金额
+    # 筹资活动现金流入的平衡项目(元)
+    fi_fina_flow_in_balance = Column(Float)
+
+    # 筹资活动现金流出的调整项目
+    # 其中= Column(Float)子公司减资支付给少数股东的现金(元)
+    fi_subsidiary_reduct_capital = Column(Float)
+    # 筹资活动现金流出的差错金额
+    # 筹资活动现金流出的其他项目(元)
+    fi_fina_flow_out_other = Column(Float)
+
+    # 筹资活动现金流量净额的差错金额
+    # 筹资活动产生的现金流量净额其他项目(元)
+    fi_fina_flow_other = Column(Float)
+    # 影响现金及现金等价物的调整项目		现金及现金等价物净增加额其他项目(元)
+    fi_ni_cash_equi_other = Column(Float)
+    # 影响现金及现金等价物的差错金额		现金及现金等价物净增加额平衡项目(元)
+    fi_ni_cash_equi_balance = Column(Float)
+    # 影响期末现金及现金等价物余额的调整项目		期末现金及现金等价物余额其他项目(元)
+    fi_cash_equi_ending_other = Column(Float)
+    # 影响期末现金及现金等价物余额的差错金额		期末现金及现金等价物余额平衡项目(元)
+    fi_cash_equi_ending_balance = Column(Float)
+    # 经营活动现金流出的调整项目		经营活动现金流出的其他项目(元)	OPERATEFLOWOUTOTHER
+    fi_operate_flow_out_other = Column(Float)
+    # 经营活动现金流出的差错金额		经营活动现金流出的平衡项目(元)	OPERATEFLOWOUTBALANCE
+    fi_operate_flow_out_balance = Column(Float)
+
+
+
+    # 银行相关
     # 存放中央银行和同业款项及其他金融机构净减少额
     fi_deposit_in_others_decrease = Column(Float)
     # 拆入资金及卖出回购金融资产款净增加额
@@ -749,10 +841,6 @@ class CashFlowStatement(FinanceBase, Mixin):
     fi_lending_decrease = Column(Float)
     # 买入返售金融资产净减少额
     fi_buy_repurchase_decrease = Column(Float)
-    # 收取的利息、手续费及佣金的现金
-    fi_cash_from_interest_commission = Column(Float)
-    # 客户贷款及垫款净增加额
-    fi_loan_advance_increase = Column(Float)
     # 存放中央银行和同业及其他金融机构款项净增加额
     fi_deposit_in_others_increase = Column(Float)
     # 拆出资金及买入返售金融资产净增加额
@@ -765,34 +853,22 @@ class CashFlowStatement(FinanceBase, Mixin):
     fi_borrowing_decrease = Column(Float)
     # 卖出回购金融资产净减少额
     fi_sell_repurchase_decrease = Column(Float)
-    # 支付利息、手续费及佣金的现金
-    fi_cash_to_interest_commission = Column(Float)
     # 应收账款净增加额
     fi_account_receivable_increase = Column(Float)
     # 偿付债券利息支付的现金
     fi_cash_to_pay_interest = Column(Float)
 
     # 保险相关
-    # 收到原保险合同保费取得的现金
-    fi_cash_from_premium_of_original = Column(Float)
-    # 保户储金及投资款净增加额
-    fi_insured_deposit_increase = Column(Float)
     # 银行及证券业务卖出回购资金净增加额
     fi_bank_broker_sell_repurchase_increase = Column(Float)
     # 银行及证券业务买入返售资金净减少额
     fi_bank_broker_buy_repurchase_decrease = Column(Float)
-    # 支付原保险合同赔付等款项的现金
-    fi_cash_to_insurance_claim = Column(Float)
     # 支付再保险业务现金净额
     fi_cash_to_reinsurance = Column(Float)
     # 银行业务及证券业务拆借资金净减少额
     # fi_lending_decrease = Column(Float)
     # 银行业务及证券业务卖出回购资金净减少额
     fi_bank_broker_sell_repurchase_decrease = Column(Float)
-    # 支付保单红利的现金
-    fi_cash_to_dividends = Column(Float)
-    # 保户质押贷款净增加额
-    fi_insured_pledge_loans_increase = Column(Float)
     # 收购子公司及其他营业单位支付的现金净额
     fi_cash_to_acquire_subsidiaries = Column(Float)
     # 处置子公司及其他营业单位流出的现金净额
@@ -801,12 +877,8 @@ class CashFlowStatement(FinanceBase, Mixin):
     fi_cash_to_sell_repurchase = Column(Float)
 
     # 券商相关
-    # 拆入资金净增加额
-    fi_borrowing_increase = Column(Float)
     # 代理买卖证券收到的现金净额
     fi_cash_from_trading_agent = Column(Float)
-    # 回购业务资金净增加额
-    fi_cash_from_repurchase_increase = Column(Float)
     # 处置交易性金融资产的净减少额
     fi_disposal_trade_asset_decrease = Column(Float)
     # 回购业务资金净减少额
@@ -957,12 +1029,13 @@ class FinanceFactor(FinanceBase, Mixin):
     broker_net_capital = Column(Float)
     # 净资产
     broker_net_assets = Column(Float)
+
     # 净资本/净资产
     broker_net_capital_assets_ratio = Column(Float)
     # 自营固定收益类证券规模/净资本
     broker_self_operated_fixed_income_securities_net_capital_ratio = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'joinquant'], db_name='finance', schema_base=FinanceBase)
+register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='finance', schema_base=FinanceBase)
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement']

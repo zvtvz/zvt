@@ -249,7 +249,7 @@ class CashFlowStatementQtr(FinanceQtrBase, Mixin):
     fi_disposal_trade_asset_add = Column(Float)
     # 客户贷款及垫款净增加额
     fi_loan_advance_increase = Column(Float)
-    # 存放中央银行和同业款项及其他金融机构净减少额
+    # 存放中央银行和同业款项及其他金融机构净增加额
     fi_deposit_in_others_add = Column(Float)
     # 支付原保险合同赔付等款项的现金
     fi_cash_to_insurance_claim = Column(Float)
