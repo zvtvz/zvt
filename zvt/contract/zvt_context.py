@@ -39,6 +39,7 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
         "eastmoney_dividend_financing": mysql_engine,
         "joinquant_dividend_financing": mysql_engine,
         "emquantapi_dividend_financing": mysql_engine,
+        "emquantapi_stock_meta": mysql_engine,
         "emquantapi_finance_qtr": mysql_engine,
         "joinquant_stock_30m_hfq_kdata": mysql_engine,
         "eastmoney_finance": mysql_engine,

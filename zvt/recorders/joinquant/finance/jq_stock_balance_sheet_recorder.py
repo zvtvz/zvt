@@ -125,7 +125,7 @@ balance_sheet_map = {
     "fi_expensive_metals": "metal",
     # 拆出资金
     "fi_lending_to_other_fi": "lend_capital",
-    # 以公允价值计量且其变动计入当期损益的金融资产(	交易性金融资产)
+    # 以公允价值计量且其变动计入当期损益的金融资产(交易性金融资产)
     "fi_financial_assets_effect_current_income": "fairvalue_fianancial_asset",
     # 衍生金融资产
     "fi_financial_derivative_asset": "derivative_financial_asset",

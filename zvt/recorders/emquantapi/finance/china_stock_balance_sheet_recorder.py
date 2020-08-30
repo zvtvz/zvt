@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.domain import BalanceSheet
-from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
+from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import EmBaseChinaStockFinanceRecorder
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 balance_sheet_map = {
@@ -236,7 +236,7 @@ balance_sheet_map = {
 add_func_to_value(balance_sheet_map, first_item_to_float)
 
 
-class ChinaStockBalanceSheetRecorder(BaseChinaStockFinanceRecorder):
+class ChinaStockBalanceSheetRecorder(EmBaseChinaStockFinanceRecorder):
     data_schema = BalanceSheet
 
     finance_report_type = 'BalanceStatementSHSZ'

@@ -5,13 +5,12 @@ from EmQuantAPI import *
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import StockDetail
-from zvt.recorders.eastmoney.common import company_type_flag
 from zvt.recorders.emquantapi.common import mainCallback, to_em_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp
 
 
-class BaseChinaStockFinanceQtrRecorder(TimeSeriesDataRecorder):
+class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
     finance_report_type = None
     data_type = 1
 
@@ -61,6 +60,12 @@ class BaseChinaStockFinanceQtrRecorder(TimeSeriesDataRecorder):
             data = pd.DataFrame(data.Data['0']).T
             df = df.append(data)
         df.columns = columns_list
+        # aaa = []
+        # for i in columns_list:
+        #     if i in aaa:
+        #         print(i)
+        #     else:
+        #         aaa.append(i)
         df = df.sort_values("REPORTDATE", ascending=True)
         if pd_is_not_null(df):
             df.reset_index(drop=True, inplace=True)

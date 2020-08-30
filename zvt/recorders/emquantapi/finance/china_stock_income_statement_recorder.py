@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 from zvt.domain import IncomeStatement
-from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
+from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import EmBaseChinaStockFinanceRecorder
 
 income_statement_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
     "report_date": "REPORTDATE",
     # 营业总收入
-    "total_op_income": "Totalincome",
+    "total_op_income": "TOTALOPERATEREVE",
     # 营业收入
     "operating_income": "OPERATEREVE",
     # 营业总成本
@@ -106,10 +106,10 @@ add_func_to_value(income_statement_map, first_item_to_float)
 
 
 
-class ChinaStockIncomeStatementRecorder(BaseChinaStockFinanceRecorder):
+class ChinaStockIncomeStatementRecorder(EmBaseChinaStockFinanceRecorder):
     data_schema = IncomeStatement
 
-    finance_report_type = 'LiRunBiaoList'
+    finance_report_type = 'IncomeStatementSHSZ'
 
     data_type = 2
 

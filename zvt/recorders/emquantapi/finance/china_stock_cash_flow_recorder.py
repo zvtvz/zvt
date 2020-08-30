@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.domain import CashFlowStatement
-from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
+from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import EmBaseChinaStockFinanceRecorder
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 cash_flow_map = {
@@ -46,7 +46,7 @@ cash_flow_map = {
     "cash_from_returns_on_investments": "INVINCOMEREC",
 
     # 处置子公司及其他营业单位收到的现金净额
-    "cash_from_disposal_subsidiaries": "DISPFILASSETREC",
+    "cash_from_disposal_subsidiaries": "DISPSUBSIDIARYREC",
 
     # 收到其他与投资活动有关的现金
     "cash_from_other_investing": "OTHERINVREC",
@@ -172,7 +172,7 @@ cash_flow_map = {
 
     # 投资活动现金流量净额的差错金额
     # 投资活动产生的现金流量净额其他项目(元)
-    "fi_inv_flow_other": "INVFLOWOUTBALANCE",
+    "fi_inv_flow_other": "INVFLOWOTHER",
 
     # 筹资活动现金流入的调整项目
     # 筹资活动现金流入的其他项目(元)
@@ -200,17 +200,17 @@ cash_flow_map = {
     "fi_cash_equi_ending_other": "CASHEQUIENDINGOTHER",
     # 影响期末现金及现金等价物余额的差错金额		期末现金及现金等价物余额平衡项目(元)
     "fi_cash_equi_ending_balance": "CASHEQUIENDINGBALANCE",
-    # 经营活动现金流出的调整项目		经营活动现金流出的其他项目(元)	OPERATEFLOWOUTOTHER
+    # 经营活动现金流出的调整项目		经营活动现金流出的其他项目(元)
     "fi_operate_flow_out_other": "OPERATEFLOWOUTOTHER",
-    # 经营活动现金流出的差错金额		经营活动现金流出的平衡项目(元)	OPERATEFLOWOUTBALANCE
-    "fi_operate_flow_out_balance": "OPERATEFLOWOUTOTHER",
+    # 经营活动现金流出的差错金额		经营活动现金流出的平衡项目(元)
+    "fi_operate_flow_out_balance": "OPERATEFLOWOUTBALANCE",
 
 }
 
 add_func_to_value(cash_flow_map, first_item_to_float)
 
 
-class ChinaStockCashFlowRecorder(BaseChinaStockFinanceRecorder):
+class ChinaStockCashFlowRecorder(EmBaseChinaStockFinanceRecorder):
     data_schema = CashFlowStatement
 
     finance_report_type = 'CashFlowStatementSHSZ'
