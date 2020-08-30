@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.time_utils import to_pd_timestamp
 from zvt.utils.utils import add_func_to_value, first_item_to_float
-from zvt.api.quote import to_report_period_type
 from zvt.domain import IncomeStatement
 from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
 

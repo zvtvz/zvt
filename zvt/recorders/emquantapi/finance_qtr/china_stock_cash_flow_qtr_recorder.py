@@ -130,7 +130,7 @@ cash_flow_qtr_map = {
     "fi_disposal_trade_asset_add": "NIDISPTRADEFASSET_S",
     # 客户贷款及垫款净增加额
     "fi_loan_advance_increase": "NILOANADVANCES_S",
-    # 存放中央银行和同业款项及其他金融机构净减少额
+    # 存放中央银行和同业款项及其他金融机构净增加额
     "fi_deposit_in_others_add": "NIDEPOSITINCBANKFI_S",
     # 支付原保险合同赔付等款项的现金
     "fi_cash_to_insurance_claim": "INDEMNITYPAY_S",
@@ -144,6 +144,9 @@ add_func_to_value(cash_flow_qtr_map, first_item_to_float)
 
 
 class ChinaStockCashFlowRecorder(BaseChinaStockFinanceQtrRecorder):
+    """
+    合并现金流量表
+    """
     data_schema = CashFlowStatementQtr
 
     finance_report_type = 'CashFlowStatementQSHSZ'
