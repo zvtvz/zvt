@@ -90,6 +90,16 @@ class KeepBullFactor(BullFactor):
         self.result_df['score'] = df
 
 
+# 金叉 死叉 持续时间 切换点
+class LiveOrDeadFactor(TechnicalFactor):
+    def do_compute(self):
+        super().do_compute()
+        # 白线在黄线之上
+        s = self.factor_df['diff'] > self.factor_df['dea']
+        self.factor_df['live'] = s.to_frame()
+        self.factor_df['live'].groupby(level=0)
+
+
 if __name__ == '__main__':
     factor = TechnicalFactor(codes=['000338', '000778'],
                              start_timestamp='2019-01-01',
