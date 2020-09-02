@@ -6,7 +6,7 @@ import pandas as pd
 from zvt.api import AdjustType
 from zvt.api.quote import get_kdata_schema, Stock
 from zvt.contract import IntervalLevel, EntityMixin
-from zvt.factors.algorithm import MacdTransformer
+from zvt.factors.algorithm import MacdTransformer, consecutive_count
 from zvt.factors.factor import Factor, Transformer, Accumulator
 
 
@@ -92,12 +92,24 @@ class KeepBullFactor(BullFactor):
 
 # 金叉 死叉 持续时间 切换点
 class LiveOrDeadFactor(TechnicalFactor):
+    pattern = [-5, 1]
+
     def do_compute(self):
         super().do_compute()
         # 白线在黄线之上
         s = self.factor_df['diff'] > self.factor_df['dea']
+        # live=True 白线>黄线
+        # live=False 白线<黄线
         self.factor_df['live'] = s.to_frame()
-        self.factor_df['live'].groupby(level=0)
+        consecutive_count(self.factor_df, 'live', pattern=self.pattern)
+        self.result_df = self.factor_df[['score']]
+
+
+class GoldCrossFactor(LiveOrDeadFactor):
+    def do_compute(self):
+        super().do_compute()
+        s = self.factor_df['live'] == 1
+        self.result_df = s.to_frame(name='score')
 
 
 if __name__ == '__main__':

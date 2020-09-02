@@ -248,9 +248,12 @@ class QuantileScorer(Scorer):
         return result_df
 
 
-def consecutive_count(input_df, col):
+def consecutive_count(input_df, col, pattern=[-5, 1]):
     for entity_id, df in input_df.groupby(level=0):
         count = 0
+
+        negative = 0
+
         current_state = None
         for index, item in df[col].iteritems():
             if item:
@@ -264,6 +267,7 @@ def consecutive_count(input_df, col):
                     count = count + 1
                 else:
                     count = count - 1
+                    negative = count
             else:
                 current_state = state
 
@@ -271,6 +275,14 @@ def consecutive_count(input_df, col):
                     count = 1
                 else:
                     count = -1
+                    negative = count
+
+            if (count >= pattern[1]) and (negative <= pattern[0]):
+                input_df.loc[index, 'score'] = True
+            else:
+                input_df.loc[index, 'score'] = True
 
             # 设置目前状态
             input_df.loc[index, 'count'] = count
+
+        print(f'consecutive_count for {entity_id}')
