@@ -275,21 +275,21 @@ class StockPershareFactorCommon(StockFactorCommon):
     """
     每股指标因子
     """
-    capital_reserve_fund_per_share = Column(Float)  # 每股资本公积金
-    cashflow_per_share_ttm = Column(Float)  # 每股现金流量净额，根据当时日期来获取最近变更日的总股本
-    cash_and_equivalents_per_share = Column(Float)  # 每股现金及现金等价物余额
+    capital_reserve_fund_ps = Column(Float)  # 每股资本公积金
+    cashflow_ps_ttm = Column(Float)  # 每股现金流量净额，根据当时日期来获取最近变更日的总股本
+    cash_and_equivalents_ps = Column(Float)  # 每股现金及现金等价物余额
     eps_ttm = Column(Float)  # 每股收益TTM
-    net_asset_per_share = Column(Float)  # 每股净资产
-    net_operate_cash_flow_per_share = Column(Float)  # 每股经营活动产生的现金流量净额
-    operating_profit_per_share = Column(Float)  # 每股营业利润
-    operating_profit_per_share_ttm = Column(Float)  # 每股营业利润TTM
-    operating_revenue_per_share = Column(Float)  # 每股营业收入
-    operating_revenue_per_share_ttm = Column(Float)  # 每股营业收入TTM
-    retained_earnings_per_share = Column(Float)  # 每股留存收益
-    retained_profit_per_share = Column(Float)  # 每股未分配利润
-    surplus_reserve_fund_per_share = Column(Float)  # 每股盈余公积金
-    total_operating_revenue_per_share = Column(Float)  # 每股营业总收入
-    total_operating_revenue_per_share_ttm = Column(Float)  # 每股营业总收入TTM
+    net_asset_ps = Column(Float)  # 每股净资产
+    net_operate_cash_flow_ps = Column(Float)  # 每股经营活动产生的现金流量净额
+    operating_profit_ps = Column(Float)  # 每股营业利润
+    operating_profit_ps_ttm = Column(Float)  # 每股营业利润TTM
+    operating_revenue_ps = Column(Float)  # 每股营业收入
+    operating_revenue_ps_ttm = Column(Float)  # 每股营业收入TTM
+    retained_earnings_ps = Column(Float)  # 每股留存收益
+    retained_profit_ps = Column(Float)  # 每股未分配利润
+    surplus_reserve_fund_ps = Column(Float)  # 每股盈余公积金
+    total_operating_revenue_ps = Column(Float)  # 每股营业总收入
+    total_operating_revenue_ps_ttm = Column(Float)  # 每股营业总收入TTM
 
 
 class StockQualityFactorCommon(StockFactorCommon):

@@ -51,14 +51,27 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
         df = pd.DataFrame()
         columns_map = {key:value[0] for key,value in self.get_data_map().items()}
         columns_list =list(columns_map.values())
+
         for reportdate in reportdate_list:
-            # 方案
-            data = c.ctr(self.finance_report_type, columns_list,
-                         "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
-            if data.Data == {}:
-                continue
-            data = pd.DataFrame(data.Data['0']).T
-            df = df.append(data)
+            # 获取数据
+            # 三大财务报表 使用ctr方法读取表名
+            if self.finance_report_type not in ['FinanceDerivative','FinancePerShare','FinanceGrowthAbility']:
+                data = c.ctr(self.finance_report_type, columns_list,
+                             "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
+                if data.Data == {}:
+                    continue
+                data = pd.DataFrame(data.Data['0']).T
+                df = df.append(data)
+            # 否则用 css方法读取单个指标
+            else:
+                if 'REPORTDATE' in columns_list:
+                    columns_list.remove('REPORTDATE')
+                data = c.css(em_code, columns_list,"ReportDate="+reportdate)
+                data = pd.DataFrame(data.Data[em_code]).T
+                data[18] = reportdate
+                df = df.append(data)
+        if self.finance_report_type in ['FinanceDerivative','FinancePerShare','FinanceGrowthAbility']:
+            columns_list.append('REPORTDATE')
         df.columns = columns_list
         # aaa = []
         # for i in columns_list:

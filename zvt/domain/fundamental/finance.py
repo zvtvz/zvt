@@ -7,7 +7,7 @@ from zvt.contract.register import register_schema
 
 FinanceBase = declarative_base()
 
-
+# 资产负债表
 class BalanceSheet(FinanceBase, Mixin):
 
     @classmethod
@@ -152,7 +152,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 应收账款
     #
     # 应收利息
-    fi_interest_receivable = Column(Float)
+    fi_interesfi_retained_earningsceivable = Column(Float)
     # 发放贷款及垫款
     fi_disbursing_loans_and_advances = Column(Float)
     # 可供出售金融资产
@@ -160,7 +160,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 持有至到期投资
     fi_held_to_maturity_investment = Column(Float)
     # 应收款项类投资
-    fi_account_receivable_investment = Column(Float)
+    fi_accounfi_retained_earningsceivable_investment = Column(Float)
     # 投资性房地产
     #
     # 固定资产
@@ -206,9 +206,9 @@ class BalanceSheet(FinanceBase, Mixin):
     # 其中: 客户资金存款
     fi_client_fund = Column(Float)
     # 结算备付金
-    fi_deposit_reservation_for_balance = Column(Float)
+    fi_deposifi_retained_earningsservation_for_balance = Column(Float)
     # 其中: 客户备付金
-    fi_client_deposit_reservation_for_balance = Column(Float)
+    fi_client_deposifi_retained_earningsservation_for_balance = Column(Float)
     # 融出资金
     fi_margin_out_fund = Column(Float)
 
@@ -231,7 +231,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 应收分保账款
     fi_reinsurance_premium_receivable = Column(Float)
     # 应收分保合同准备金
-    fi_reinsurance_contract_reserve = Column(Float)
+    fi_reinsurance_contracfi_retained_earningsserve = Column(Float)
     # 保户质押贷款
     fi_policy_pledge_loans = Column(Float)
     # 发放贷款及垫款
@@ -263,7 +263,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 保户储金及投资款
     fi_policy_holder_deposits_and_investment_funds = Column(Float)
     # 保险合同准备金
-    fi_contract_reserve = Column(Float)
+    fi_contracfi_retained_earningsserve = Column(Float)
     # 长期借款
     #
     # 应付债券
@@ -360,7 +360,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 负债的差错金额		负债平衡项目(元)
     fi_liab_balance = Column(Float)
 
-
+# 利润表
 class IncomeStatement(FinanceBase, Mixin):
 
     @classmethod
@@ -387,7 +387,7 @@ class IncomeStatement(FinanceBase, Mixin):
     # 研发费用
     rd_costs = Column(Float)
     # 提取保险合同准备金净额
-    net_change_in_insurance_contract_reserves = Column(Float)
+    net_change_in_insurance_contracfi_retained_earningsserves = Column(Float)
     # 营业税金及附加
     business_taxes_and_surcharges = Column(Float)
     # 销售费用
@@ -523,7 +523,7 @@ class IncomeStatement(FinanceBase, Mixin):
     # 其中:可供出售金融资产公允价值变动损益
     fi_income_from_fair_value_change_of_fi_salable = Column(Float)
 
-
+# 现金流量表
 class CashFlowStatement(FinanceBase, Mixin):
     @classmethod
     def important_cols(cls):
@@ -735,8 +735,6 @@ class CashFlowStatement(FinanceBase, Mixin):
     # 经营活动现金流出的差错金额		经营活动现金流出的平衡项目(元)	OPERATEFLOWOUTBALANCE
     fi_operate_flow_out_balance = Column(Float)
 
-
-
     # 银行相关
     # 存放中央银行和同业款项及其他金融机构净减少额
     fi_deposit_in_others_decrease = Column(Float)
@@ -763,7 +761,7 @@ class CashFlowStatement(FinanceBase, Mixin):
     # 卖出回购金融资产净减少额
     fi_sell_repurchase_decrease = Column(Float)
     # 应收账款净增加额
-    fi_account_receivable_increase = Column(Float)
+    fi_accounfi_retained_earningsceivable_increase = Column(Float)
     # 偿付债券利息支付的现金
     fi_cash_to_pay_interest = Column(Float)
 
@@ -797,12 +795,11 @@ class CashFlowStatement(FinanceBase, Mixin):
 
 
 # 主要财务指标
-
 class FinanceFactor(FinanceBase, Mixin):
     @classmethod
     def important_cols(cls):
-        return ['basic_eps', 'total_op_income', 'net_profit', 'op_income_growth_yoy', 'net_profit_growth_yoy', 'roe',
-                'rota', 'gross_profit_margin', 'net_margin']
+        return ['basic_eps', 'total_op_income', 'net_profit', 'total_op_income_growth_yoy', 'inc_net_profit_shareholders_yoy', 'roe',
+                'rota', 'fi_gross_margin_margin', 'net_margin']
 
     __tablename__ = 'finance_factor'
 
@@ -832,15 +829,15 @@ class FinanceFactor(FinanceBase, Mixin):
     # 营业总收入(元)
     total_op_income = Column(Float)
     # 毛利润(元)
-    gross_profit = Column(Float)
+    fi_gross_margin = Column(Float)
     # 归属净利润(元)
     net_profit = Column(Float)
     # 扣非净利润(元)
     deducted_net_profit = Column(Float)
     # 营业总收入同比增长
-    op_income_growth_yoy = Column(Float)
+    total_op_income_growth_yoy = Column(Float)
     # 归属净利润同比增长
-    net_profit_growth_yoy = Column(Float)
+    inc_net_profit_shareholders_yoy = Column(Float)
     # 扣非净利润同比增长
     deducted_net_profit_growth_yoy = Column(Float)
     # 营业总收入滚动环比增长
@@ -858,7 +855,7 @@ class FinanceFactor(FinanceBase, Mixin):
     # 总资产收益率(加权)
     rota = Column(Float)
     # 毛利率
-    gross_profit_margin = Column(Float)
+    fi_gross_margin_margin = Column(Float)
     # 净利率
     net_margin = Column(Float)
     # 收益质量指标
@@ -945,6 +942,124 @@ class FinanceFactor(FinanceBase, Mixin):
     broker_self_operated_fixed_income_securities_net_capital_ratio = Column(Float)
 
 
+class FinanceDerivative(FinanceBase, Mixin):
+    """
+    财务衍生数据
+    """
+    @classmethod
+    def important_cols(cls):
+        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
+                'managing_costs', 'financing_costs']
+
+    __tablename__ = 'finance_derivative'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    fi_interest_free_current_liabilities = Column(Float)  # 无息流动负债
+    fi_interest_free_non_current_liabilities = Column(Float)  # 无息非流动负债
+
+    fi_interest_bearing_debt = Column(Float)  # 带息债务
+    fi_net_debt = Column(Float)  # 净债务
+    fi_tangible_net_assets = Column(Float)  # 有形净资产
+    fi_working_capital = Column(Float)  # 营运资本
+    fi_net_working_apital = Column(Float)  # 净营运资本
+
+    fi_retained_earnings = Column(Float)  # 留存收益
+    fi_gross_margin = Column(Float)  # 毛利
+    fi_operate_income = Column(Float)  # 经营活动净收益
+    fi_investment_income = Column(Float)  # 价值变动净收益
+
+    fi_ebit = Column(Float)  # 息税前利润
+    fi_ebitda = Column(Float)  # 息税折旧摊销前利润
+
+    fi_extraordinary_item = Column(Float)  # 非经常性损益
+    fi_deducted_income = Column(Float)  # 扣除非经常性损益后的归属于上市公司股东的净利润
+    fi_free_cash_flow_firm = Column(Float)  # 企业自由现金流量
+    fi_free_cash_flow_equity = Column(Float)  # 股权自由现金流量
+    fi_depreciation_amortization = Column(Float)  # 折旧与摊销
+    # INT_CL = Column(Float)  # 带息流动负债
+    # EBIAT = Column(Float)  # 息前税后利润
+    # IC = Column(Float)  # 投入资本
+    # T_FIXED_ASSETS = Column(Float)  # 固定资产合计
+    # N_INT_EXP = Column(Float)  # 净利息费用
+
+
+
+class FinancePerShare(FinanceBase, Mixin):
+    """
+    财务指标 每股
+    """
+    @classmethod
+    def important_cols(cls):
+        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
+                'managing_costs', 'financing_costs']
+
+    __tablename__ = 'finance_derivative'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    eps_diluted_end = Column(Float)  # 每股收益(期末摊薄)
+    eps = Column(Float)  # 基本每股收益
+    diluted_eps = Column(Float)  # 稀释每股收益
+    bps = Column(Float)  # 每股净资产
+    total_operating_revenue_ps = Column(Float)  # 每股营业总收入
+    operating_revenue_pee = Column(Float)  # 每股营业收入
+    operating_profit_ps = Column(Float)  # 每股营业利润
+    earnings_bf_interest_taxes_ps = Column(Float)  # 每股息税前利润
+    capital_reserve_ps = Column(Float)  # 每股资本公积
+    surplus_reserve_fund_ps = Column(Float)  # 每股盈余公积
+    undistributed_profit_ps = Column(Float)  # 每股未分配利润
+    retained_earnings_ps = Column(Float)  # 每股留存收益
+    net_operate_cash_flow_ps = Column(Float)  # 每股经营活动产生的现金流量净额
+    net_cash_flow_ps = Column(Float)  # 每股现金流量净额
+    free_cash_flow_firm_ps = Column(Float)  # 每股企业自由现金流量
+    free_cash_flow_equity_ps = Column(Float)  # 每股股东自由现金流量
+
+
+    T_FIXED_ASSETS = Column(Float)  # 固定资产合计
+
+class FinanceGrowthAbility(FinanceBase, Mixin):
+    """
+    财务指标-成长能力
+    """
+    @classmethod
+    def important_cols(cls):
+        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
+                'managing_costs', 'financing_costs']
+
+    __tablename__ = 'finance_growth_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+
+
+    total_op_income_growth_yoy = Column(Float)  # 营业总收入同比增长率
+    op_profit_growth_yoy = Column(Float)  # 营业利润同比增长率
+    total_profit_growth_yoy = Column(Float)  # 利润总额同比增长率
+    net_profit_growth_yoy = Column(Float)  # 净利润同比增长率
+    inc_net_profit_shareholders_yoy = Column(Float)  # 归属母公司股东的净利润同比增长率
+    inc_net_profit_shareholders_deducted_yoy = Column(Float)  # 归属母公司股东的净利润同比增长率(扣除非经常性损益)
+    basic_eps_you = Column(Float)  # 基本每股收益同比增长率
+    diluted_eps_yoy = Column(Float)  # 稀释每股收益同比增长率
+    roe_liluted_yoy = Column(Float)  # 净资产收益率同比增长率(摊薄)
+    net_op_cash_flows_yoy = Column(Float)  # 经营活动产生的现金流量净额同比增长率
+    net_operate_cash_flow_ps_yoy = Column(Float)  # 每股经营活动中产生的现金流量净额同比增长率
+    total_assets_relative_of_year = Column(Float)  # 资产总计相对年初增长率
+    equity_relative_of_year = Column(Float)  # 归属母公司股东的权益相对年初增长率
+    bps_relativeof_year = Column(Float)  # 每股净资产相对年初增长率
+
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='finance', schema_base=FinanceBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement']
+__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement','FinanceDerivative','FinancePerShare','FinanceGrowthAbility']

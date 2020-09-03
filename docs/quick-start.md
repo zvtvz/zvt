@@ -64,7 +64,7 @@ In [13]: df = get_finance_factor(entity_id='stock_sz_000338',columns=FinanceFact
 
 In [14]: df.tail()
 Out[14]:
-            basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+            basic_eps  total_op_income    net_profit  total_op_income_growth_yoy  inc_net_profit_shareholders_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
 timestamp
 2018-10-31       0.73     1.182000e+11  6.001000e+09                0.0595                 0.3037  0.1647  0.0414               0.2164      0.0681 2018-10-31
 2019-03-26       1.08     1.593000e+11  8.658000e+09                0.0507                 0.2716  0.2273  0.0589               0.2233      0.0730 2019-03-26
