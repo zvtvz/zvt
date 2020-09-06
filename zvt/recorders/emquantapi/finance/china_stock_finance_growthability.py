@@ -3,7 +3,7 @@ from zvt.domain import FinanceGrowthAbility
 from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import EmBaseChinaStockFinanceRecorder
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
-financial_indicators_growth_ability_map = {
+financial_growth_ability_map = {
     # 更新时间
     "report_date": "REPORTDATE",
     'total_op_income_growth_yoy': 'YOYGR',  # 营业总收入同比增长率
@@ -22,7 +22,7 @@ financial_indicators_growth_ability_map = {
     'equity_relative_of_year': 'EQUITYRELATIVE',  # 归属母公司股东的权益相对年初增长率
     'bps_relativeof_year': 'BPSRELATIVE',  # 每股净资产相对年初增长率
 }
-add_func_to_value(financial_indicators_growth_ability_map, first_item_to_float)
+add_func_to_value(financial_growth_ability_map, first_item_to_float)
 
 
 class ChinaStockFinanceGrowthAbilityRecorder(EmBaseChinaStockFinanceRecorder):
@@ -36,7 +36,7 @@ class ChinaStockFinanceGrowthAbilityRecorder(EmBaseChinaStockFinanceRecorder):
     data_type = 6
 
     def get_data_map(self):
-        return financial_indicators_growth_ability_map
+        return financial_growth_ability_map
 
 
 __all__ = ['ChinaStockFinanceGrowthAbilityRecorder']

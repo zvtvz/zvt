@@ -1026,14 +1026,15 @@ class FinancePerShare(FinanceBase, Mixin):
 
     T_FIXED_ASSETS = Column(Float)  # 固定资产合计
 
-class FinanceGrowthAbility(FinanceBase, Mixin):
+
+class FinanceOperationalCapability(FinanceBase, Mixin):
     """
-    财务指标-成长能力
+    财务指标-运营能力
     """
+
     @classmethod
     def important_cols(cls):
-        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
-                'managing_costs', 'financing_costs']
+        return []
 
     __tablename__ = 'finance_growth_ability'
 
@@ -1043,7 +1044,61 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
+    fixed_assets_turnover_rate = Column(Float)  # 固定资产周转率
+    current_asset_turnover_rate = Column(Float)  # 流动资产周转率
+    total_assets_turnover = Column(Float)  # 总资产周转率
+    inventory_turnover = Column(Float)  # 存货周转率
+    inventory_turnover_days = Column(Float)  # 存货周转天数
+    receivables_turnover = Column(Float)  # 应收账款周转率(含应收票据)
+    receivables_turnover_days = Column(Float)  # 应收账款周转天数(含应收票据)
+    operating_cycle = Column(Float)  # 营业周期
+    accounts_payable_turnover_rate = Column(Float)  # 应付账款周转率
+    accounts_payable_turnover_days = Column(Float)  # 应付账款周转天数(含应付票据)
 
+
+class FinanceProfitAbility(FinanceBase, Mixin):
+    """
+    财务指标-盈利能力
+    """
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_growth_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    gross_income_ratio = Column(Float)  # 销售毛利率
+    net_profit_ratio = Column(Float)  # 销售净利率
+    roe_diluted = Column(Float)  # 净资产收益率ROE(摊薄)
+    roe_avg = Column(Float)  # 净资产收益率ROE(平均)
+    roe_wa = Column(Float)  # 净资产收益率ROE(加权)
+    roe_ex_diluted = Column(Float)  # 净资产收益率ROE(扣除/摊薄)
+    roe_ex_wa = Column(Float)  # 净资产收益率ROE(扣除/加权)
+    net_roa = Column(Float)  # 总资产净利率ROA
+    roa = Column(Float)  # 总资产报酬率ROA
+    roic = Column(Float)  # 投入资本回报率ROIC
+
+
+class FinanceGrowthAbility(FinanceBase, Mixin):
+    """
+    财务指标-成长能力
+    """
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_growth_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
 
     total_op_income_growth_yoy = Column(Float)  # 营业总收入同比增长率
     op_profit_growth_yoy = Column(Float)  # 营业利润同比增长率
@@ -1062,4 +1117,5 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='finance', schema_base=FinanceBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement','FinanceDerivative','FinancePerShare','FinanceGrowthAbility']
+__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement','FinanceDerivative','FinancePerShare',
+           'FinanceGrowthAbility','FinanceProfitAbility','FinanceOperationalCapability']
