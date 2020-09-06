@@ -18,7 +18,7 @@ financial_profitability_map = {
     'roic': 'ROIC'  # 投入资本回报率ROIC
 }
 
-add_func_to_value(financial_indicators_profitability_map, first_item_to_float)
+add_func_to_value(financial_profitability_map, first_item_to_float)
 
 
 class ChinaStockFinanceProfitAbilityRecorder(EmBaseChinaStockFinanceRecorder):
@@ -29,10 +29,10 @@ class ChinaStockFinanceProfitAbilityRecorder(EmBaseChinaStockFinanceRecorder):
 
     finance_report_type = 'FinanceProfitAbility'
 
-    data_type = 6
+    data_type = 8
 
     def get_data_map(self):
-        return financial_indicators_profitability_map
+        return financial_profitability_map
 
 
 __all__ = ['ChinaStockFinanceProfitAbilityRecorder']

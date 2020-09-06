@@ -55,7 +55,7 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
         for reportdate in reportdate_list:
             # 获取数据
             # 三大财务报表 使用ctr方法读取表名
-            if self.finance_report_type not in ['FinanceDerivative','FinancePerShare','FinanceGrowthAbility']:
+            if self.data_type < 4:
                 data = c.ctr(self.finance_report_type, columns_list,
                              "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
                 if data.Data == {}:

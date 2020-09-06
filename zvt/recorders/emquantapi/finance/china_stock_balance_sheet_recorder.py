@@ -240,7 +240,7 @@ class ChinaStockBalanceSheetRecorder(EmBaseChinaStockFinanceRecorder):
     data_schema = BalanceSheet
 
     finance_report_type = 'BalanceStatementSHSZ'
-    data_type = 3
+    data_type = 1
 
     def get_data_map(self):
         return balance_sheet_map

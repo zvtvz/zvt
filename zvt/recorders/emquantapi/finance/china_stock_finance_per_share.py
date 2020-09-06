@@ -34,7 +34,7 @@ class ChinaStockFinancePerShareRecorder(EmBaseChinaStockFinanceRecorder):
 
     finance_report_type = 'FinancePerShare'
 
-    data_type = 6
+    data_type = 7
 
     def get_data_map(self):
         return finance_per_share_map

@@ -111,7 +111,7 @@ class ChinaStockIncomeStatementRecorder(EmBaseChinaStockFinanceRecorder):
 
     finance_report_type = 'IncomeStatementSHSZ'
 
-    data_type = 2
+    data_type = 3
 
     def get_data_map(self):
         return income_statement_map

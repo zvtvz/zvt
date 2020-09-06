@@ -214,7 +214,7 @@ class ChinaStockCashFlowRecorder(EmBaseChinaStockFinanceRecorder):
     data_schema = CashFlowStatement
 
     finance_report_type = 'CashFlowStatementSHSZ'
-    data_type = 4
+    data_type = 2
 
     def get_data_map(self):
         return cash_flow_map

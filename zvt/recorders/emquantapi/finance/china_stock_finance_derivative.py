@@ -46,7 +46,7 @@ class ChinaStockFinanceDerivativeRecorder(EmBaseChinaStockFinanceRecorder):
 
     finance_report_type = 'FinanceDerivative'
 
-    data_type = 5
+    data_type = 4
 
     def get_data_map(self):
         return finance_derivative_map

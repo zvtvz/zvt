@@ -33,7 +33,7 @@ class ChinaStockFinanceGrowthAbilityRecorder(EmBaseChinaStockFinanceRecorder):
 
     finance_report_type = 'FinanceGrowthAbility'
 
-    data_type = 6
+    data_type = 5
 
     def get_data_map(self):
         return financial_growth_ability_map
