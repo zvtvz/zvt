@@ -217,7 +217,6 @@ class BalanceSheet(FinanceBase, Mixin):
     # 存出保证金
     fi_deposit_for_recognizance = Column(Float)
 
-
     # 代理买卖证券款
     fi_receiving_as_agent = Column(Float)
     # 应付短期融资款
@@ -523,6 +522,7 @@ class IncomeStatement(FinanceBase, Mixin):
     # 其中:可供出售金融资产公允价值变动损益
     fi_income_from_fair_value_change_of_fi_salable = Column(Float)
 
+
 # 现金流量表
 class CashFlowStatement(FinanceBase, Mixin):
     @classmethod
@@ -798,7 +798,8 @@ class CashFlowStatement(FinanceBase, Mixin):
 class FinanceFactor(FinanceBase, Mixin):
     @classmethod
     def important_cols(cls):
-        return ['basic_eps', 'total_op_income', 'net_profit', 'total_op_income_growth_yoy', 'inc_net_profit_shareholders_yoy', 'roe',
+        return ['basic_eps', 'total_op_income', 'net_profit', 'total_op_income_growth_yoy',
+                'inc_net_profit_shareholders_yoy', 'roe',
                 'rota', 'fi_gross_margin_margin', 'net_margin']
 
     __tablename__ = 'finance_factor'
@@ -946,6 +947,7 @@ class FinanceDerivative(FinanceBase, Mixin):
     """
     财务衍生数据
     """
+
     @classmethod
     def important_cols(cls):
         return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
@@ -988,17 +990,16 @@ class FinanceDerivative(FinanceBase, Mixin):
     # N_INT_EXP = Column(Float)  # 净利息费用
 
 
-
 class FinancePerShare(FinanceBase, Mixin):
     """
     财务指标 每股
     """
+
     @classmethod
     def important_cols(cls):
-        return ['operating_income', 'investment_income', 'total_operating_costs', 'total_profits', 'sales_costs',
-                'managing_costs', 'financing_costs']
+        return []
 
-    __tablename__ = 'finance_derivative'
+    __tablename__ = 'finance_per_share'
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -1023,8 +1024,7 @@ class FinancePerShare(FinanceBase, Mixin):
     free_cash_flow_firm_ps = Column(Float)  # 每股企业自由现金流量
     free_cash_flow_equity_ps = Column(Float)  # 每股股东自由现金流量
 
-
-    T_FIXED_ASSETS = Column(Float)  # 固定资产合计
+    # T_FIXED_ASSETS = Column(Float)  # 固定资产合计
 
 
 class FinanceOperationalCapability(FinanceBase, Mixin):
@@ -1036,7 +1036,7 @@ class FinanceOperationalCapability(FinanceBase, Mixin):
     def important_cols(cls):
         return []
 
-    __tablename__ = 'finance_growth_ability'
+    __tablename__ = 'finance_operational_capability'
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -1060,11 +1060,12 @@ class FinanceProfitAbility(FinanceBase, Mixin):
     """
     财务指标-盈利能力
     """
+
     @classmethod
     def important_cols(cls):
         return []
 
-    __tablename__ = 'finance_growth_ability'
+    __tablename__ = 'finance_profit_ability'
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -1084,10 +1085,49 @@ class FinanceProfitAbility(FinanceBase, Mixin):
     roic = Column(Float)  # 投入资本回报率ROIC
 
 
+class FinanceDebtpayingAbility(FinanceBase, Mixin):
+    """
+     财务指标-偿债能力
+     """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_debtpaying_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    debt_asset_ratio = Column(Float)  # 资产负债率
+    conservative_quick_ratio = Column(Float)  # 保守速动比率
+    equity_ratio = Column(Float)  # 产权比率
+    equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益/带息债务
+    equity_to_libility = Column(Float)  # 归属母公司股东的权益/负债合计
+    cash_to_current_libility = Column(Float)  # 货币资金/流动负债
+    cfo_to_interest_libility = Column(Float)  # 经营活动产生的现金流量净额/带息债务
+    cfo_to_libility = Column(Float)  # 经营活动产生的现金流量净额/负债合计
+    cfo_to_net_libility = Column(Float)  # 经营活动产生的现金流量净额/净债务
+    cfo_to_cl = Column(Float)  # 经营活动产生的现金流量净额/流动负债
+    current_ratio = Column(Float)  # 流动比率
+    quick_ratio = Column(Float)  # 速动比率
+    ebitda_to_int_libility = Column(Float)  # 息税折旧摊销前利润/带息债务
+    ebitda_to_libility = Column(Float)  # 息税折旧摊销前利润/负债合计
+    op_to_libility = Column(Float)  # 营业利润/负债合计
+    op_to_cl = Column(Float)  # 营业利润/流动负债
+    tangible_asset_to_interest_libility = Column(Float)  # 有形资产/带息债务
+    tangible_asset_to_libility = Column(Float)  # 有形资产/负债合计
+    tangible_asset_to_net_libility = Column(Float)  # 有形资产/净债务
+
+
 class FinanceGrowthAbility(FinanceBase, Mixin):
     """
     财务指标-成长能力
     """
+
     @classmethod
     def important_cols(cls):
         return []
@@ -1115,7 +1155,9 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
     equity_relative_of_year = Column(Float)  # 归属母公司股东的权益相对年初增长率
     bps_relativeof_year = Column(Float)  # 每股净资产相对年初增长率
 
-register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='finance', schema_base=FinanceBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement','FinanceDerivative','FinancePerShare',
-           'FinanceGrowthAbility','FinanceProfitAbility','FinanceOperationalCapability']
+register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='finance', schema_base=FinanceBase)
+
+__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
+           'FinancePerShare',
+           'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility']
