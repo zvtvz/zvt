@@ -22,14 +22,10 @@ financial_indicators_growth_ability_map = {
     'equity_relative_of_year': 'EQUITYRELATIVE',  # 归属母公司股东的权益相对年初增长率
     'bps_relativeof_year': 'BPSRELATIVE',  # 每股净资产相对年初增长率
 }
-# 营业收入同比增长率
-# Year-on-year growth rate of operating income
-# Year-on-year growth rate of total operating income
-
 add_func_to_value(financial_indicators_growth_ability_map, first_item_to_float)
 
 
-class ChinaStockFinancePerShareRecorder(EmBaseChinaStockFinanceRecorder):
+class ChinaStockFinanceGrowthAbilityRecorder(EmBaseChinaStockFinanceRecorder):
     """
     财务指标-成长能力
     """
@@ -43,9 +39,9 @@ class ChinaStockFinancePerShareRecorder(EmBaseChinaStockFinanceRecorder):
         return financial_indicators_growth_ability_map
 
 
-__all__ = ['ChinaStockFinancePerShareRecorder']
+__all__ = ['ChinaStockFinanceGrowthAbilityRecorder']
 
 if __name__ == '__main__':
     # init_log('income_statement.log')
-    recorder = ChinaStockFinancePerShareRecorder(codes=['002572'])
+    recorder = ChinaStockFinanceGrowthAbilityRecorder(codes=['002572'])
     recorder.run()
