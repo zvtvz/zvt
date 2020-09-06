@@ -1122,6 +1122,29 @@ class FinanceDebtpayingAbility(FinanceBase, Mixin):
     tangible_asset_to_libility = Column(Float)  # 有形资产/负债合计
     tangible_asset_to_net_libility = Column(Float)  # 有形资产/净债务
 
+class FinanceReceivingAbility(FinanceBase, Mixin):
+    """
+     财务指标-收现能力
+     """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_receiving_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+    cfo_to_gr = Column(Float)  # 经营活动产生的现金流量净额/营业总收入
+    sales_cash_intoor = Column(Float)  # 销售商品提供劳务收到的现金/营业收入
+    qcfi_to_cf = Column(Float)  # 投资活动产生的现金流量净额占比
+    qcfo_to_cfo = Column(Float)  # 经营活动产生的现金流量净额占比
+    qcfo_to_or = Column(Float)  # 经营活动产生的现金流量净额/营业收入
+    qcfo_to_operate_income = Column(Float)  # 经营活动产生的现金流量净额/经营活动净收益
+    qcff_to_cf = Column(Float)  # 筹资活动产生的现金流量净额占比
 
 class FinanceGrowthAbility(FinanceBase, Mixin):
     """
@@ -1160,4 +1183,4 @@ register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='fin
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
            'FinancePerShare',
-           'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility']
+           'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility','FinanceReceivingAbility']
