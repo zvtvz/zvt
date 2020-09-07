@@ -343,7 +343,7 @@ class StockQualityFactorCommon(StockFactorCommon):
     net_operate_cash_flow_to_total_liability = Column(Float)  # 经营活动产生的现金流量净额/负债合计
     net_operating_cash_flow_coverage = Column(Float)  # 净利润现金含量
     net_profit_ratio = Column(Float)  # 销售净利率
-    net_profit_to_total_operate_revenue_ttm = Column(Float)  # 净利润与营业总收入之比
+    net_profit_to_total_operate_revenue = Column(Float)  # 净利润与营业总收入之比
     non_current_asset_ratio = Column(Float)  # 非流动资产比率
     OperatingCycle = Column(Float)  # 营业周期
     operating_cost_to_operating_revenue_ratio = Column(Float)  # 销售成本率

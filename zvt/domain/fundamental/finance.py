@@ -1146,6 +1146,57 @@ class FinanceReceivingAbility(FinanceBase, Mixin):
     qcfo_to_operate_income = Column(Float)  # 经营活动产生的现金流量净额/经营活动净收益
     qcff_to_cf = Column(Float)  # 筹资活动产生的现金流量净额占比
 
+
+class FinanceIncomeStatementStructureAnalysis(FinanceBase, Mixin):
+    """
+      财务指标-利润表结构分析
+      """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_income_statement_structure_analysis'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    financial_expense_rate= Column(Float)  # 财务费用与营业总收入之比
+    operating_profit_to_total_profit = Column(Float)   # 经营活动净收益与利润总额之比
+    net_profit_to_total_operate_revenue = Column(Float)  # 净利润与营业总收入之比
+    admin_expense_rate= Column(Float)   # 管理费用与营业总收入之比
+    operating_profit_to_operating_revenue= Column(Float)  # 营业利润与营业总收入之比
+    total_operating_cost_to_total_operating_income= Column(Float)  # 营业总成本与营业总收入之比
+
+
+class FinanceBalanceSheetStructureAnalysis(FinanceBase, Mixin):
+    """
+     财务指标-资产负债表结构分析
+     """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_balance_sheet_structure_analysis'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+    cfo_to_gr = Column(Float)  # 经营活动产生的现金流量净额/营业总收入
+    sales_cash_intoor = Column(Float)  # 销售商品提供劳务收到的现金/营业收入
+    qcfi_to_cf = Column(Float)  # 投资活动产生的现金流量净额占比
+    qcfo_to_cfo = Column(Float)  # 经营活动产生的现金流量净额占比
+    qcfo_to_or = Column(Float)  # 经营活动产生的现金流量净额/营业收入
+    qcfo_to_operate_income = Column(Float)  # 经营活动产生的现金流量净额/经营活动净收益
+    qcff_to_cf = Column(Float)  # 筹资活动产生的现金流量净额占比
+
+
+
 class FinanceGrowthAbility(FinanceBase, Mixin):
     """
     财务指标-成长能力
@@ -1182,5 +1233,5 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
 register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='finance', schema_base=FinanceBase)
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
-           'FinancePerShare',
+           'FinancePerShare','FinanceBalanceSheetStructureAnalysis','FinanceIncomeStatementStructureAnalysis',
            'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility','FinanceReceivingAbility']
