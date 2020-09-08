@@ -7,6 +7,7 @@ from zvt.contract.register import register_schema
 
 FinanceBase = declarative_base()
 
+
 # 资产负债表
 class BalanceSheet(FinanceBase, Mixin):
 
@@ -358,6 +359,7 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_liab_other = Column(Float)
     # 负债的差错金额		负债平衡项目(元)
     fi_liab_balance = Column(Float)
+
 
 # 利润表
 class IncomeStatement(FinanceBase, Mixin):
@@ -1107,6 +1109,33 @@ class SinglEquarterDerivative(FinanceBase, Mixin):
     equity_ratio = Column(Float)  # 产权比率
     equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益/带息债务
 
+
+class FinanceDuPont(FinanceBase, Mixin):
+    """
+    财务指标--杜邦分析
+    """
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_du_pont'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    inc_net_profit_shareholders_to_net_profit = Column(Float)  # 归属母公司股东的净利润与净利润之比
+    roe_avg = Column(Float)  # 净资产收益率ROE
+    em = Column(Float)  # 权益乘数(杜邦分析)
+    total_assets_turnover = Column(Float)  # 总资产周转率
+    net_profit_to_total_operate_revenue = Column(Float)  # 净利润与营业总收入之比
+    net_profit_to_total_profits = Column(Float)  # 净利润与利润总额之比
+    total_profits_to_fi_ebit = Column(Float)  # 利润总额与息税前利润之比
+    fi_ebit_to_total_op_income = Column(Float)  # 息税前利润与营业总收入之比
+
+
 class FinanceSinglEquarterDerivative(FinanceBase, Mixin):
     """
      单季度财务衍生数据
@@ -1124,11 +1153,12 @@ class FinanceSinglEquarterDerivative(FinanceBase, Mixin):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    fi_investment_income = Column(Float) # 价值变动净收益
-    fi_gross_margin  = Column(Float)# 毛利
-    deducted_net_profit  = Column(Float)# 扣除非经常性损益后的净利润
-    fi_extraordinary_item  = Column(Float)# 非经常性损益
+    fi_investment_income = Column(Float)  # 价值变动净收益
+    fi_gross_margin = Column(Float)  # 毛利
+    deducted_net_profit = Column(Float)  # 扣除非经常性损益后的净利润
+    fi_extraordinary_item = Column(Float)  # 非经常性损益
     fi_operate_income = Column(Float)  # 经营活动净收益
+
 
 class FinanceDebtpayingAbility(FinanceBase, Mixin):
     """
@@ -1150,22 +1180,23 @@ class FinanceDebtpayingAbility(FinanceBase, Mixin):
     debt_asset_ratio = Column(Float)  # 资产负债率
     conservative_quick_ratio = Column(Float)  # 保守速动比率
     equity_ratio = Column(Float)  # 产权比率
-    equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益/带息债务
-    equity_to_libility = Column(Float)  # 归属母公司股东的权益/负债合计
-    cash_to_current_libility = Column(Float)  # 货币资金/流动负债
-    cfo_to_interest_libility = Column(Float)  # 经营活动产生的现金流量净额/带息债务
-    cfo_to_libility = Column(Float)  # 经营活动产生的现金流量净额/负债合计
-    cfo_to_net_libility = Column(Float)  # 经营活动产生的现金流量净额/净债务
-    cfo_to_cl = Column(Float)  # 经营活动产生的现金流量净额/流动负债
+    equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益与带息债务之比
+    equity_to_libility = Column(Float)  # 归属母公司股东的权益与负债合计之比
+    cash_to_current_libility = Column(Float)  # 货币资金与流动负债之比
+    cfo_to_interest_libility = Column(Float)  # 经营活动产生的现金流量净额与带息债务之比
+    cfo_to_libility = Column(Float)  # 经营活动产生的现金流量净额与负债合计之比
+    cfo_to_net_libility = Column(Float)  # 经营活动产生的现金流量净额与净债务之比
+    cfo_to_cl = Column(Float)  # 经营活动产生的现金流量净额与流动负债之比
     current_ratio = Column(Float)  # 流动比率
     quick_ratio = Column(Float)  # 速动比率
-    ebitda_to_int_libility = Column(Float)  # 息税折旧摊销前利润/带息债务
-    ebitda_to_libility = Column(Float)  # 息税折旧摊销前利润/负债合计
-    op_to_libility = Column(Float)  # 营业利润/负债合计
-    op_to_cl = Column(Float)  # 营业利润/流动负债
-    tangible_asset_to_interest_libility = Column(Float)  # 有形资产/带息债务
-    tangible_asset_to_libility = Column(Float)  # 有形资产/负债合计
-    tangible_asset_to_net_libility = Column(Float)  # 有形资产/净债务
+    ebitda_to_int_libility = Column(Float)  # 息税折旧摊销前利润与带息债务之比
+    ebitda_to_libility = Column(Float)  # 息税折旧摊销前利润与负债合计之比
+    op_to_libility = Column(Float)  # 营业利润与负债合计之比
+    op_to_cl = Column(Float)  # 营业利润与流动负债之比
+    tangible_asset_to_interest_libility = Column(Float)  # 有形资产与带息债务之比
+    tangible_asset_to_libility = Column(Float)  # 有形资产与负债合计之比
+    tangible_asset_to_net_libility = Column(Float)  # 有形资产与净债务之比
+
 
 class FinanceReceivingAbility(FinanceBase, Mixin):
     """
@@ -1208,12 +1239,12 @@ class FinanceIncomeStatementStructureAnalysis(FinanceBase, Mixin):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    financial_expense_rate= Column(Float)  # 财务费用与营业总收入之比
-    operating_profit_to_total_profit = Column(Float)   # 经营活动净收益与利润总额之比
+    financial_expense_rate = Column(Float)  # 财务费用与营业总收入之比
+    operating_profit_to_total_profit = Column(Float)  # 经营活动净收益与利润总额之比
     net_profit_to_total_operate_revenue = Column(Float)  # 净利润与营业总收入之比
-    admin_expense_rate= Column(Float)   # 管理费用与营业总收入之比
-    operating_profit_to_operating_revenue= Column(Float)  # 营业利润与营业总收入之比
-    total_operating_cost_to_total_operating_income= Column(Float)  # 营业总成本与营业总收入之比
+    admin_expense_rate = Column(Float)  # 管理费用与营业总收入之比
+    operating_profit_to_operating_revenue = Column(Float)  # 营业利润与营业总收入之比
+    total_operating_cost_to_total_operating_income = Column(Float)  # 营业总成本与营业总收入之比
 
 
 class FinanceBalanceSheetStructureAnalysis(FinanceBase, Mixin):
@@ -1239,7 +1270,6 @@ class FinanceBalanceSheetStructureAnalysis(FinanceBase, Mixin):
     qcfo_to_or = Column(Float)  # 经营活动产生的现金流量净额/营业收入
     qcfo_to_operate_income = Column(Float)  # 经营活动产生的现金流量净额/经营活动净收益
     qcff_to_cf = Column(Float)  # 筹资活动产生的现金流量净额占比
-
 
 
 class FinanceGrowthAbility(FinanceBase, Mixin):
@@ -1278,5 +1308,7 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
 register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='finance', schema_base=FinanceBase)
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
-           'FinancePerShare','FinanceBalanceSheetStructureAnalysis','FinanceIncomeStatementStructureAnalysis','FinanceSinglEquarterDerivative',
-           'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility','FinanceReceivingAbility']
+           'FinancePerShare', 'FinanceBalanceSheetStructureAnalysis', 'FinanceIncomeStatementStructureAnalysis',
+           'FinanceSinglEquarterDerivative',
+           'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility',
+           'FinanceReceivingAbility']

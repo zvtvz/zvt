@@ -8,7 +8,7 @@ from zvt.recorders.joinquant.finance.base_jq_stock_finance_recorder import BaseJ
 finance_factor_map = {
 
     # 基本每股收益(元)
-    "basic_eps": "eps",
+    "basic_eps": "basic_eps",
     # 扣非每股收益(元)
     "deducted_eps": "adjusted_profit",
     # 稀释每股收益(元)
@@ -16,7 +16,7 @@ finance_factor_map = {
     # 每股净资产(元)
     "bps": "net_asset_per_share",
     # 每股资本公积(元)
-    "capital_reserve_ps": "capital_reserve_fund_per_share",
+    ###"capital_reserve_ps": "capital_reserve_fund_per_share",
     # 每股未分配利润(元)
     ###"undistributed_profit_ps": "retained_profit_per_share",
     # 每股经营现金流(元)
@@ -24,11 +24,11 @@ finance_factor_map = {
     # 成长能力指标
     #
     # 营业总收入(元)
-    # "total_op_income": "total_operating_revenue",
+    "total_op_income": "total_operating_revenue",
     # 毛利润(元)
     ### "gross_profit": "Grossprofit",
     # 净利润(元)
-    # "net_profit": "net_profit",
+    "net_profit": "net_profit",
     # 归属于母公司所有者的净利润(元)
     "np_parent_company_owners": "np_parent_company_owners",
     # 扣除非经常损益后的净利润(元)

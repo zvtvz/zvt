@@ -1,6 +1,4 @@
 {
-  "jq_username": "",
-  "jq_password": "",
   "http_proxy": "127.0.0.1:1087",
   "https_proxy": "127.0.0.1:1087",
   "smtp_host": "smtpdm.aliyun.com",
@@ -8,5 +6,20 @@
   "email_username": "",
   "email_password": "",
   "wechat_app_id": "",
-  "wechat_app_secrect": ""
+  "wechat_app_secrect": "",
+  "data_path": "/home/paranoia/zvt/zvt/samples/data",
+  "jq_username": "18911354071",
+  "jq_password": "Wangfan123",
+  "db_engine": "mysql",
+  "mysql_username": "root",
+  "mysql_password": 123456,
+  "mysql_server_address": "127.0.0.1",
+  "mysql_server_port": 3306,
+  "db_name": "zvt",
+
+  "tl_server_address": "123.103.74.231",
+  "tl_username": "tonglian",
+  "tl_password": "service",
+  "tl_db_name": "tonglian_new",
+  "tl_server_port": 3306
 }

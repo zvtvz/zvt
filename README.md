@@ -90,7 +90,7 @@ In [13]: df = FinanceFactor.query_data(entity_id='stock_sz_000338',columns=Finan
 
 In [14]: df.tail()
 Out[14]:
-            basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+            basic_eps  total_op_income    net_profit  total_op_income_growth_yoy  inc_net_profit_shareholders_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
 timestamp
 2018-10-31       0.73     1.182000e+11  6.001000e+09                0.0595                 0.3037  0.1647  0.0414               0.2164      0.0681 2018-10-31
 2019-03-26       1.08     1.593000e+11  8.658000e+09                0.0507                 0.2716  0.2273  0.0589               0.2233      0.0730 2019-03-26
@@ -257,11 +257,11 @@ Block registered recorders:{'eastmoney': <class 'zvt.recorders.eastmoney.meta.ch
 
 2018年年报 roe>8% 营收增长>8% 的前20个股
 ```
-In [38]: df=FinanceFactor.query_data(filters=[FinanceFactor.roe>0.08,FinanceFactor.report_period=='year',FinanceFactor.op_income_growth_yoy>0.08],start_timestamp='2019-01-01',order=FinanceFactor.roe.desc(),limit=20,columns=[FinanceFactor.code]+FinanceFactor.important_cols(),index='code')
+In [38]: df=FinanceFactor.query_data(filters=[FinanceFactor.roe>0.08,FinanceFactor.report_period=='year',FinanceFactor.total_op_income_growth_yoy>0.08],start_timestamp='2019-01-01',order=FinanceFactor.roe.desc(),limit=20,columns=[FinanceFactor.code]+FinanceFactor.important_cols(),index='code')
 
 In [39]: df
 Out[39]:
-          code  basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+          code  basic_eps  total_op_income    net_profit  total_op_income_growth_yoy  inc_net_profit_shareholders_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
 code
 000048  000048     1.1193     3.437000e+09  4.374000e+08                1.2179                 3.8122  0.5495  0.0989               0.4286      0.1308 2019-04-15
 000629  000629     0.3598     1.516000e+10  3.090000e+09                0.6068                 2.5796  0.5281  0.2832               0.2752      0.2086 2019-03-26

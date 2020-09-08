@@ -17,8 +17,8 @@ sched = BackgroundScheduler()
 def run():
     while True:
         try:
-            SinaChinaBlockRecorder().run()
-
+            # SinaChinaBlockRecorder().run()
+            ChinaETFDayKdataRecorder
             SinaBlockMoneyFlowRecorder().run()
             break
         except Exception as e:

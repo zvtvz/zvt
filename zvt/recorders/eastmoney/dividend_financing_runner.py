@@ -21,13 +21,13 @@ def run():
     while True:
         try:
             DividendFinancingRecorder().run()
-            RightsIssueDetailRecorder().run()
-            SPODetailRecorder().run()
-            DividendDetailRecorder().run()
+            # RightsIssueDetailRecorder().run()
+            # SPODetailRecorder().run()
+            # DividendDetailRecorder().run()
 
             break
         except Exception as e:
-            logger.exception('dividend_financing runner error:{}'.format(e))
+            logger.exception('shares_change runner error:{}'.format(e))
             time.sleep(60)
 
 

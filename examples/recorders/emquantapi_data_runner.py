@@ -22,15 +22,24 @@ def run():
 
 
         try:
-            # DividendFinancing.record_data(provider='eastmoney')
+            # DividendDetail.record_data(provider='emquantapi')
             # DividendFinancing.record_data(provider='joinquant')
             # HolderTrading.record_data(codes=['600276'],provider='eastmoney')
-
+            # RightsIssueDetail.record_data(provider='emquantapi')
+            # HoldTradeDetail.record_data(codes=['300628'],provider='emquantapi')
+            # IncomeStatementQtr.record_data(codes=['300628'],provider='emquantapi')
+            # CashFlowStatementQtr.record_data(codes=['300628'],provider='emquantapi')
+            # CashFlowStatement.record_data(codes=['300628'],provider='emquantapi')
+            # IncomeStatement.record_data(codes=['300628'],provider='emquantapi')
+            FinanceDerivative.record_data(codes=['300628'],provider='emquantapi')
+            # BalanceSheet.record_data(codes=['300628'],provider='emquantapi')
+            # {
+                # None: zvt.recorders.emquantapi.finance_qtr.china_stock_income_statement_qtr_recorder.ChinaStockIncomeStatementQtrRecorder}
             # ManagerTrading.record_data(provider='eastmoney')
             # TopTenHolder.record_data(provider='eastmoney')
             # TopTenTradableHolder.record_data(provider='eastmoney')
 
-            email_action.send_message("5533061@qq.com", 'eastmoney runner2 finished', '')
+            # email_action.send_message("5533061@qq.com", 'eastmoney runner2 finished', '')
             break
         except Exception as e:
             msg = f'eastmoney runner2 error:{e}'
@@ -41,7 +50,7 @@ def run():
 
 
 if __name__ == '__main__':
-    init_log('eastmoney_data_runner2.log')
+    init_log('emquantapi_data_runner.log')
 
     run()
 
