@@ -1085,6 +1085,51 @@ class FinanceProfitAbility(FinanceBase, Mixin):
     roic = Column(Float)  # 投入资本回报率ROIC
 
 
+class SinglEquarterDerivative(FinanceBase, Mixin):
+    """
+     财务指标-单季度财务衍生数据
+     """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_debtpaying_ability'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    debt_asset_ratio = Column(Float)  # 资产负债率
+    conservative_quick_ratio = Column(Float)  # 保守速动比率
+    equity_ratio = Column(Float)  # 产权比率
+    equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益/带息债务
+
+class FinanceSinglEquarterDerivative(FinanceBase, Mixin):
+    """
+     单季度财务衍生数据
+     """
+
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finance_singl_equarter_derivative'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    fi_investment_income = Column(Float) # 价值变动净收益
+    fi_gross_margin  = Column(Float)# 毛利
+    deducted_net_profit  = Column(Float)# 扣除非经常性损益后的净利润
+    fi_extraordinary_item  = Column(Float)# 非经常性损益
+    fi_operate_income = Column(Float)  # 经营活动净收益
+
 class FinanceDebtpayingAbility(FinanceBase, Mixin):
     """
      财务指标-偿债能力
@@ -1233,5 +1278,5 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
 register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='finance', schema_base=FinanceBase)
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
-           'FinancePerShare','FinanceBalanceSheetStructureAnalysis','FinanceIncomeStatementStructureAnalysis',
+           'FinancePerShare','FinanceBalanceSheetStructureAnalysis','FinanceIncomeStatementStructureAnalysis','FinanceSinglEquarterDerivative',
            'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility','FinanceReceivingAbility']
