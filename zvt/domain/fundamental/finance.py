@@ -1087,29 +1087,6 @@ class FinanceProfitAbility(FinanceBase, Mixin):
     roic = Column(Float)  # 投入资本回报率ROIC
 
 
-class SinglEquarterDerivative(FinanceBase, Mixin):
-    """
-     财务指标-单季度财务衍生数据
-     """
-
-    @classmethod
-    def important_cols(cls):
-        return []
-
-    __tablename__ = 'finance_debtpaying_ability'
-
-    provider = Column(String(length=32))
-    code = Column(String(length=32))
-
-    report_period = Column(String(length=32))
-    report_date = Column(DateTime)
-
-    debt_asset_ratio = Column(Float)  # 资产负债率
-    conservative_quick_ratio = Column(Float)  # 保守速动比率
-    equity_ratio = Column(Float)  # 产权比率
-    equity_to_interest_libility = Column(Float)  # 归属母公司股东的权益/带息债务
-
-
 class FinanceDuPont(FinanceBase, Mixin):
     """
     财务指标--杜邦分析
@@ -1138,8 +1115,8 @@ class FinanceDuPont(FinanceBase, Mixin):
 
 class FinanceSinglEquarterDerivative(FinanceBase, Mixin):
     """
-     单季度财务衍生数据
-     """
+    财务指标-单季度财务衍生数据
+    """
 
     @classmethod
     def important_cols(cls):
@@ -1309,6 +1286,6 @@ register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='fin
 
 __all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
            'FinancePerShare', 'FinanceBalanceSheetStructureAnalysis', 'FinanceIncomeStatementStructureAnalysis',
-           'FinanceSinglEquarterDerivative',
+           'FinanceSinglEquarterDerivative','FinanceDuPont',
            'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility',
            'FinanceReceivingAbility']
