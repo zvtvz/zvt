@@ -111,6 +111,8 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
                            query_path.end_date >= param['endDate'],
                            query_path.report_type == 0).limit(param['latestCount'])
         df = finance.run_query(q)
+        if df.empty:
+            return None
         # 财报时间  公告时间
         df.set_index(['report_date','pub_date'], drop=True, inplace=True)
         map_data = {value[0]: key for key, value in self.get_data_map().items()}
