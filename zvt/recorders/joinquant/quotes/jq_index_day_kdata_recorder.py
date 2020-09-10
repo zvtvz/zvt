@@ -51,7 +51,6 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare']/10000}万")
 
     def record(self, entity, start, end, size, timestamps):
 

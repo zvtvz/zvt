@@ -20,8 +20,6 @@ def record_kdata():
         email_action = EmailInformer()
 
         try:
-            # SharesChange.record_data(codes=['000977'],provider='joinquant',sleeping_time=1)
-            StkXrXd.record_data(codes=['000977'],provider='joinquant',sleeping_time=1)
 
             # StockDetail.record_data(provider='eastmoney',sleeping_time=0.5)
 
@@ -39,7 +37,7 @@ def record_kdata():
             # Stock1monBfqKdata.record_data(codes=['512800'],provider='joinquant' ,sleeping_time=1,real_time=True) # 不复权
             # StockValuation.record_data(provider='joinquant', sleeping_time=1)
             # Stock1dHfqKdata.record_data(provider='joinquant', sleeping_time=1,real_time=True) # 后复权
-            # IncomeStatement.record_data(codes=['002204'],provider='joinquant',sleeping_time=1)
+            IncomeStatement.record_data(codes=['002204'],provider='joinquant',sleeping_time=1)
             # CashFlowStatement.record_data(codes=['002205'],provider='joinquant',sleeping_time=1)
             # BalanceSheet.record_data(codes=['002204'],provider='joinquant',sleeping_time=1)
             # FinanceFactor.record_data(codes=['002204'],provider='joinquant', sleeping_time=1)

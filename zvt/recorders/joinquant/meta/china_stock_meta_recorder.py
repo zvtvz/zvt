@@ -29,7 +29,6 @@ class BaseJqChinaMetaRecorder(Recorder):
         df['end_date'] = pd.to_datetime(df['end_date'])
 
         df['entity_id'] = df['entity_id'].apply(lambda x: to_entity_id(entity_type=entity_type, jq_code=x))
-        df['main_code'] = normalize_code(df['main_code'])
         df['id'] = df['entity_id']
         df['entity_type'] = entity_type
         df['exchange'] = df['entity_id'].apply(lambda x: get_entity_exchange(x))
