@@ -9,7 +9,7 @@ KdataBase = declarative_base()
 
 
 class FundNetValue(KdataBase, FundNetValueCommon):
-    __tablename__ = 'Fund_net_value'
+    __tablename__ = 'fund_net_value'
 
 
 register_schema(providers=['joinquant'], db_name='fund_net_value', schema_base=KdataBase)
