@@ -11,6 +11,4 @@ marshmallow == 3.2.2
 plotly==4.7.1
 dash==1.1.1
 simplejson==3.16.0
-html5lib == 1.0.1
-schedule == 0.6.0
 pluggy
