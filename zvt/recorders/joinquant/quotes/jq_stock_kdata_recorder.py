@@ -2,16 +2,16 @@
 import argparse
 
 import pandas as pd
-from jqdatasdk import auth, logout, get_bars
 
+from jqdatapy.api import get_token, get_bars
 from zvt import init_log, zvt_env
 from zvt.api import get_kdata, AdjustType
 from zvt.api.quote import generate_kdata_id, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata
+from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -54,7 +54,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
         self.adjust_type = adjust_type
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        get_token(zvt_env['jq_username'], zvt_env['jq_password'], force=True)
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)
@@ -77,10 +77,6 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                 self.session.add_all(kdatas)
                 self.session.commit()
 
-    def on_finish(self):
-        super().on_finish()
-        logout()
-
     def record(self, entity, start, end, size, timestamps):
         if self.adjust_type == AdjustType.hfq:
             fq_ref_date = '2000-01-01'
@@ -91,18 +87,16 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
             df = get_bars(to_jq_entity_id(entity),
                           count=size,
                           unit=self.jq_trading_level,
-                          fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
-                          fq_ref_date=fq_ref_date,
-                          include_now=True)
+                          # fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
+                          fq_ref_date=fq_ref_date)
         else:
             end_timestamp = to_time_str(self.end_timestamp)
             df = get_bars(to_jq_entity_id(entity),
                           count=size,
                           unit=self.jq_trading_level,
-                          fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
-                          end_dt=end_timestamp,
-                          fq_ref_date=fq_ref_date,
-                          include_now=False)
+                          # fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
+                          end_date=end_timestamp,
+                          fq_ref_date=fq_ref_date)
         if pd_is_not_null(df):
             df['name'] = entity.name
             df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)

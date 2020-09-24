@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from jqdatasdk import auth, query, indicator, get_fundamentals, logout
 
-from zvt import zvt_env
+from jqdatapy.api import get_fundamentals
 from zvt.api.quote import to_jq_report_period
 from zvt.contract.api import get_data
 from zvt.domain import FinanceFactor
@@ -31,7 +30,6 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                          close_minute)
 
         try:
-            auth(zvt_env['jq_username'], zvt_env['jq_password'])
             self.fetch_jq_timestamp = True
         except Exception as e:
             self.fetch_jq_timestamp = False
@@ -110,13 +108,8 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
     def fill_timestamp_with_jq(self, security_item, the_data):
         # get report published date from jq
         try:
-            q = query(
-                indicator.pubDate
-            ).filter(
-                indicator.code == to_jq_entity_id(security_item),
-            )
-
-            df = get_fundamentals(q, statDate=to_jq_report_period(the_data.report_date))
+            df = get_fundamentals(table='indicator', code=to_jq_entity_id(security_item), columns='pubDate',
+                                  date=to_jq_report_period(the_data.report_date), count=None)
             if not df.empty and pd.isna(df).empty:
                 the_data.timestamp = to_pd_timestamp(df['pubDate'][0])
                 self.logger.info(
@@ -174,7 +167,3 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                         #                                                                    the_data.report_date))
 
                         self.fill_timestamp_with_jq(entity, the_data)
-
-    def on_finish(self):
-        super().on_finish()
-        logout()

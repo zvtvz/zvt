@@ -1,7 +1,6 @@
 import pandas as pd
-from jqdatasdk import auth, query, finance, logout
 
-from zvt import zvt_env
+from jqdatapy.api import run_query
 from zvt.contract.api import df_to_db, get_data
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Index
@@ -37,11 +36,6 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
 
         super().__init__('index', ['cn'], None, codes, 10, force_update, sleeping_time,
                          default_size, real_time, 'ignore', start_timestamp, end_timestamp, 0, 0)
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
-    def on_finish(self):
-        super().on_finish()
-        logout()
 
     def init_timestamps(self, entity):
         # 聚宽数据从2017年3月17开始
@@ -66,11 +60,8 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
-            q = query(finance.STK_HK_HOLD_INFO).filter(
-                finance.STK_HK_HOLD_INFO.link_id == entity.code,
-                finance.STK_HK_HOLD_INFO.day == to_time_str(timestamp))
-
-            df = finance.run_query(q)
+            df = run_query(table='finance.STK_HK_HOLD_INFO',
+                           conditions=f'link_id#=#{entity.code}&day#=#{to_time_str(timestamp)}')
             print(df)
 
             if pd_is_not_null(df):

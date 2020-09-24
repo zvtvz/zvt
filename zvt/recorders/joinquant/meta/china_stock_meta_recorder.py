@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from jqdatasdk import auth, get_all_securities, logout, query, finance
 
+from jqdatapy.api import get_all_securities, run_query
+from zvt.api.quote import china_stock_code_to_id, portfolio_relate_stock
 from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
-from zvt.utils.pd_utils import pd_is_not_null
-from zvt import zvt_env
-from zvt.api.quote import china_stock_code_to_id, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf, StockDetail
 from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import to_time_str
 
 
 class BaseJqChinaMetaRecorder(Recorder):
@@ -17,9 +17,8 @@ class BaseJqChinaMetaRecorder(Recorder):
     def __init__(self, batch_size=10, force_update=True, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
     def to_zvt_entity(self, df, entity_type, category=None):
+        df = df.set_index('code')
         df.index.name = 'entity_id'
         df = df.reset_index()
         # 上市日期
@@ -46,7 +45,7 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
 
     def run(self):
         # 抓取股票列表
-        df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
+        df_stock = self.to_zvt_entity(get_all_securities(code='stock'), entity_type='stock')
         df_to_db(df_stock, data_schema=Stock, provider=self.provider, force_update=self.force_update)
         # persist StockDetail too
         df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=self.force_update)
@@ -54,20 +53,17 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
         # self.logger.info(df_stock)
         self.logger.info("persist stock list success")
 
-        logout()
-
 
 class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
     data_schema = Etf
 
     def run(self):
         # 抓取etf列表
-        df_index = self.to_zvt_entity(get_all_securities(['etf']), entity_type='etf', category='etf')
+        df_index = self.to_zvt_entity(get_all_securities(code='etf'), entity_type='etf', category='etf')
         df_to_db(df_index, data_schema=Etf, provider=self.provider, force_update=self.force_update)
 
         # self.logger.info(df_index)
         self.logger.info("persist etf list success")
-        logout()
 
 
 class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
@@ -85,16 +81,10 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
-    def on_finish(self):
-        super().on_finish()
-        logout()
 
     def record(self, entity, start, end, size, timestamps):
-        q = query(finance.FUND_PORTFOLIO_STOCK).filter(finance.FUND_PORTFOLIO_STOCK.pub_date >= start).filter(
-            finance.FUND_PORTFOLIO_STOCK.code == entity.code)
-        df = finance.run_query(q)
+        df = run_query(table='finance.FUND_PORTFOLIO_STOCK',
+                       conditions=f'pub_date#>=#{to_time_str(start)}&code#=#{entity.code}')
         if pd_is_not_null(df):
             #          id    code period_start  period_end    pub_date  report_type_id report_type  rank  symbol  name      shares    market_cap  proportion
             # 0   8640569  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     1  601318  中国平安  19869239.0  1.361043e+09        7.09
@@ -116,7 +106,7 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
             # self.logger.info(df.tail())
-            self.logger.info(f"persist etf {entity.code} portfolio success")
+            self.logger.info(f"persist etf {entity.code} portfolio success {df.iloc[-1]['pub_date']}")
 
         return None
 
@@ -124,5 +114,5 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 __all__ = ['JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder']
 
 if __name__ == '__main__':
-    # JqChinaStockRecorder().run()
+    # JqChinaEtfRecorder().run()
     JqChinaStockEtfPortfolioRecorder(codes=['510050']).run()

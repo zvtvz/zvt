@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from jqdatasdk import auth, logout, get_mtss
 
-from zvt import zvt_env
+from jqdatapy.api import get_mtss
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, MarginTrading
@@ -27,14 +26,9 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
-    def on_finish(self):
-        super().on_finish()
-        logout()
 
     def record(self, entity, start, end, size, timestamps):
-        df = get_mtss(to_jq_entity_id(entity), start_date=start)
+        df = get_mtss(code=to_jq_entity_id(entity), date=to_time_str(start))
 
         if pd_is_not_null(df):
             df['entity_id'] = entity.id

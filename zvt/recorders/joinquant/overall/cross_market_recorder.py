@@ -1,10 +1,8 @@
-from jqdatasdk import auth, query, finance
-
+from jqdatapy.api import run_query
 from zvt.contract.recorder import TimeSeriesDataRecorder
+from zvt.domain import Index, CrossMarketSummary
 from zvt.utils.time_utils import to_time_str
 from zvt.utils.utils import multiple_number
-from zvt import zvt_env
-from zvt.domain import Index, CrossMarketSummary
 
 
 class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
@@ -30,18 +28,11 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
     def init_entities(self):
         super().init_entities()
 
     def record(self, entity, start, end, size, timestamps):
-
-        q = query(finance.STK_ML_QUOTA).filter(
-            finance.STK_ML_QUOTA.link_id == entity.code,
-            finance.STK_ML_QUOTA.day >= to_time_str(start)).limit(2000)
-
-        df = finance.run_query(q)
+        df = run_query(table='finance.STK_ML_QUOTA', conditions=f'link_id#=#{entity.code}&day#>=#{to_time_str(start)}')
         print(df)
 
         json_results = []

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from jqdatasdk import auth, logout, query, valuation, get_fundamentals_continuously
+from pandas._libs.tslibs.timedeltas import Timedelta
 
+from jqdatapy.api import get_fundamentals
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
-from zvt.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
-from zvt import zvt_env
 from zvt.domain import Stock, StockValuation, Etf
 from zvt.recorders.joinquant.common import to_jq_entity_id
+from zvt.utils.time_utils import now_pd_timestamp, to_time_str, to_pd_timestamp
 
 
 class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
@@ -26,20 +26,16 @@ class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
-    def on_finish(self):
-        super().on_finish()
-        logout()
 
     def record(self, entity, start, end, size, timestamps):
-        q = query(
-            valuation
-        ).filter(
-            valuation.code == to_jq_entity_id(entity)
-        )
-        count: pd.Timedelta = now_pd_timestamp() - start
-        df = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1, panel=False)
+        start = max(start, to_pd_timestamp('2005-01-01'))
+        end = min(now_pd_timestamp(), start + Timedelta(days=500))
+
+        count: Timedelta = end - start
+
+        # df = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1, panel=False)
+        df = get_fundamentals(table='valuation', code=to_jq_entity_id(entity), date=to_time_str(end),
+                              count=min(count.days, 500))
         df['entity_id'] = entity.id
         df['timestamp'] = pd.to_datetime(df['day'])
         df['code'] = entity.code
@@ -71,4 +67,4 @@ if __name__ == '__main__':
     print(stocks)
     print(len(stocks))
 
-    JqChinaStockValuationRecorder(entity_ids=stocks, force_update=True).run()
+    JqChinaStockValuationRecorder(entity_ids=['stock_sh_600000'], force_update=True).run()
