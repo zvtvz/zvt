@@ -120,4 +120,4 @@ def init_main_index(provider='exchange'):
     df_to_db(df=df, data_schema=Index, provider=provider, force_update=False)
 
 
-init_main_index()
+# init_main_index()
