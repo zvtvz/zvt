@@ -15,7 +15,7 @@ financial_debtpayingability_map = {
     'cfo_to_interest_libility': 'CFOTOINTERESTLIBILITY',  # 经营活动产生的现金流量净额与带息债务之比
     'cfo_to_libility': 'CFOTOLIBILITY',  # 经营活动产生的现金流量净额与负债合计之比
     'cfo_to_net_libility': 'CFOTONETLIBILITY',  # 经营活动产生的现金流量净额与净债务之比
-    'cfo_to_cl': 'CFOTOCL',  # 经营活动产生的现金流量净额与流动负债之比
+    'cfo_to_cl': 'CFOTOSHORTLIBILITY',  # 经营活动产生的现金流量净额与流动负债之比
     'current_ratio': 'CURRENTRATIO',  # 流动比率
     'quick_ratio': 'QUICKRATIO',  # 速动比率
     'ebitda_to_int_libility': 'EBITDATOINTLIBILITY',  # 息税折旧摊销前利润与带息债务之比
