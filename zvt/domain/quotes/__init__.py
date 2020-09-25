@@ -204,7 +204,7 @@ class StockEmotionFactorCommon(StockFactorCommon):
     VOL10 = Column(Float)  # 10日平均换手率
     VOL120 = Column(Float)  # 120日平均换手率
     VOL20 = Column(Float)  # 20日平均换手率
-    VOL240 = Column(Float)  # 120日平均换手率
+    VOL240 = Column(Float)  # 240日平均换手率
     VOL5 = Column(Float)  # 5日平均换手率
     VOL60 = Column(Float)  # 60日平均换手率
     VOSC = Column(Float)  # 成交量震荡
@@ -235,62 +235,62 @@ class StockMomentumFactorCommon(StockFactorCommon):
     """
     动量类因子
     """
-    arron_down_25 = Column(Float)  # 利润总额增长率Aroon指标下轨
-    arron_up_25 = Column(Float)  # 利润总额增长率	Aroon指标上轨
-    BBIC = Column(Float)  # 利润总额增长率BBI 动量
-    bear_power = Column(Float)  # 利润总额增长率	空头力道
-    BIAS10 = Column(Float)  # 利润总额增长率	10日乖离率
-    BIAS20 = Column(Float)  # 利润总额增长率	20日乖离率
-    BIAS5 = Column(Float)  # 利润总额增长率	5日乖离率
-    BIAS60 = Column(Float)  # 利润总额增长率60日乖离率
-    bull_power = Column(Float)  # 利润总额增长率多头力道
-    CCI10 = Column(Float)  # 利润总额增长率10日顺势指标
-    CCI15 = Column(Float)  # 利润总额增长率15日顺势指标
-    CCI20 = Column(Float)  # 利润总额增长率20日顺势指标
-    CCI88 = Column(Float)  # 利润总额增长率88日顺势指标
-    CR20 = Column(Float)  # 利润总额增长率CR指标
-    fifty_two_week_close_rank = Column(Float)  # 利润总额增长率当前价格处于过去1年股价的位置
-    MASS = Column(Float)  # 利润总额增长率梅斯线
-    PLRC12 = Column(Float)  # 利润总额增长率12日收盘价格与日期线性回归系数
-    PLRC24 = Column(Float)  # 利润总额增长率24日收盘价格与日期线性回归系数
-    PLRC6 = Column(Float)  # 利润总额增长率6日收盘价格与日期线性回归系数
-    Price1M = Column(Float)  # 利润总额增长率当前股价除以过去一个月股价均值再减1
-    Price1Y = Column(Float)  # 利润总额增长率当前股价除以过去一年股价均值再减1
-    Price3M = Column(Float)  # 利润总额增长率当前股价除以过去三个月股价均值再减1
-    Rank1M = Column(Float)  # 利润总额增长率1减去 过去一个月收益率排名与股票总数的比值
-    ROC12 = Column(Float)  # 利润总额增长率12日变动速率（Price Rate of Change）
-    ROC120 = Column(Float)  # 利润总额增长率120日变动速率（Price Rate of Change）
-    ROC20 = Column(Float)  # 利润总额增长率20日变动速率（Price Rate of Change）
-    ROC6 = Column(Float)  # 利润总额增长率6日变动速率（Price Rate of Change）
-    ROC60 = Column(Float)  # 利润总额增长率60日变动速率（Price Rate of Change）
-    single_day_VPT = Column(Float)  # 利润总额增长率单日价量趋势
-    single_day_VPT_12 = Column(Float)  # 利润总额增长率	单日价量趋势12均值
-    single_day_VPT_6 = Column(Float)  # 利润总额增长率	单日价量趋势6日均值
-    TRIX10 = Column(Float)  # 利润总额增长率10日终极指标TRIX
-    TRIX5 = Column(Float)  # 利润总额增长率5日终极指标TRIX
-    Volume1M = Column(Float)  # 利润总额增长率当前交易量相比过去1个月日均交易量 与过去过去20日日均收益率乘积
+    arron_down_25 = Column(Float)  # Aroon指标下轨
+    arron_up_25 = Column(Float)  # 	Aroon指标上轨
+    BBIC = Column(Float)  # BBI动量
+    bear_power = Column(Float)  # 	空头力道
+    BIAS10 = Column(Float)  # 	10日乖离率
+    BIAS20 = Column(Float)  # 	20日乖离率
+    BIAS5 = Column(Float)  # 	5日乖离率
+    BIAS60 = Column(Float)  # 60日乖离率
+    bull_power = Column(Float)  # 多头力道
+    CCI10 = Column(Float)  # 10日顺势指标
+    CCI15 = Column(Float)  # 15日顺势指标
+    CCI20 = Column(Float)  # 20日顺势指标
+    CCI88 = Column(Float)  # 88日顺势指标
+    CR20 = Column(Float)  # CR指标
+    fifty_two_week_close_rank = Column(Float)  # 当前价格处于过去1年股价的位置
+    MASS = Column(Float)  # 梅斯线
+    PLRC12 = Column(Float)  # 12日收盘价格与日期线性回归系数
+    PLRC24 = Column(Float)  # 24日收盘价格与日期线性回归系数
+    PLRC6 = Column(Float)  # 6日收盘价格与日期线性回归系数
+    Price1M = Column(Float)  # 当前股价除以过去一个月股价均值再减1
+    Price1Y = Column(Float)  # 当前股价除以过去一年股价均值再减1
+    Price3M = Column(Float)  # 当前股价除以过去三个月股价均值再减1
+    Rank1M = Column(Float)  # 1减去 过去一个月收益率排名与股票总数的比值
+    ROC12 = Column(Float)  # 12日变动速率（Price Rate of Change）
+    ROC120 = Column(Float)  # 120日变动速率（Price Rate of Change）
+    ROC20 = Column(Float)  # 20日变动速率（Price Rate of Change）
+    ROC6 = Column(Float)  # 6日变动速率（Price Rate of Change）
+    ROC60 = Column(Float)  # 60日变动速率（Price Rate of Change）
+    single_day_VPT = Column(Float)  # 单日价量趋势
+    single_day_VPT_12 = Column(Float)  # 单日价量趋势12均值
+    single_day_VPT_6 = Column(Float)  # 单日价量趋势6日均值
+    TRIX10 = Column(Float)  # 10日终极指标TRIX
+    TRIX5 = Column(Float)  # 5日终极指标TRIX
+    Volume1M = Column(Float)  # 当前交易量相比过去1个月日均交易量 与过去过去20日日均收益率乘积
 
 
 class StockPershareFactorCommon(StockFactorCommon):
     """
     每股指标因子
     """
-    capital_reserve_fund_ps = Column(Float)  # 每股资本公积金
-    cashflow_ps_ttm = Column(Float)  # 每股现金流量净额，根据当时日期来获取最近变更日的总股本
-    cash_and_equivalents_ps = Column(Float)  # 每股现金及现金等价物余额
-    eps_ttm = Column(Float)  # 每股收益TTM
-    net_asset_ps = Column(Float)  # 每股净资产
-    net_operate_cash_flow_ps = Column(Float)  # 每股经营活动产生的现金流量净额
-    operating_profit_ps = Column(Float)  # 每股营业利润
-    operating_profit_ps_ttm = Column(Float)  # 每股营业利润TTM
-    operating_revenue_ps = Column(Float)  # 每股营业收入
-    operating_revenue_ps_ttm = Column(Float)  # 每股营业收入TTM
-    retained_earnings_ps = Column(Float)  # 每股留存收益
-    retained_profit_ps = Column(Float)  # 每股未分配利润
-    surplus_reserve_fund_ps = Column(Float)  # 每股盈余公积金
-    total_operating_revenue_ps = Column(Float)  # 每股营业总收入
-    total_operating_revenue_ps_ttm = Column(Float)  # 每股营业总收入TTM
 
+    capital_reserve_fund_per_share= Column(Float) 	#每股资本公积金
+    cashflow_per_share_ttm= Column(Float) 	#每股现金流量净额，根据当时日期来获取最近变更日的总股本
+    cash_and_equivalents_per_share= Column(Float) 	#每股现金及现金等价物余额
+    eps_ttm	= Column(Float) #每股收益TTM
+    net_asset_per_share= Column(Float) 	#每股净资产
+    net_operate_cash_flow_per_share	= Column(Float) #每股经营活动产生的现金流量净额
+    operating_profit_per_share	= Column(Float) #每股营业利润
+    operating_profit_per_share_ttm	= Column(Float) #每股营业利润TTM
+    operating_revenue_per_share	= Column(Float)# 每股营业收入
+    operating_revenue_per_share_ttm	= Column(Float) #每股营业收入TTM
+    retained_earnings_per_share	= Column(Float)# 每股留存收益
+    retained_profit_per_share	= Column(Float)# 每股未分配利润
+    surplus_reserve_fund_per_share= Column(Float) 	#每股盈余公积金
+    total_operating_revenue_per_share	= Column(Float) #每股营业总收入
+    total_operating_revenue_per_share_ttm= Column(Float) #每股营业总收入TTM
 
 class StockQualityFactorCommon(StockFactorCommon):
     """
@@ -343,7 +343,7 @@ class StockQualityFactorCommon(StockFactorCommon):
     net_operate_cash_flow_to_total_liability = Column(Float)  # 经营活动产生的现金流量净额/负债合计
     net_operating_cash_flow_coverage = Column(Float)  # 净利润现金含量
     net_profit_ratio = Column(Float)  # 销售净利率
-    net_profit_to_total_operate_revenue = Column(Float)  # 净利润与营业总收入之比
+    net_profit_to_total_operate_revenue_ttm  = Column(Float)  # 净利润与营业总收入之比
     non_current_asset_ratio = Column(Float)  # 非流动资产比率
     OperatingCycle = Column(Float)  # 营业周期
     operating_cost_to_operating_revenue_ratio = Column(Float)  # 销售成本率
