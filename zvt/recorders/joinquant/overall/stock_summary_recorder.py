@@ -1,11 +1,9 @@
-from jqdatasdk import auth, query, finance
-
+from jqdatapy.api import run_query
 from zvt.contract.recorder import TimeSeriesDataRecorder
-from zvt.utils.time_utils import to_time_str
-from zvt.utils.utils import multiple_number
-from zvt import zvt_env
 from zvt.domain import Index
 from zvt.domain import StockSummary
+from zvt.utils.time_utils import to_time_str
+from zvt.utils.utils import multiple_number
 
 # 聚宽编码
 # 322001	上海市场
@@ -41,16 +39,11 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
     def record(self, entity, start, end, size, timestamps):
         jq_code = code_map_jq.get(entity.code)
 
-        q = query(finance.STK_EXCHANGE_TRADE_INFO).filter(
-            finance.STK_EXCHANGE_TRADE_INFO.exchange_code == jq_code,
-            finance.STK_EXCHANGE_TRADE_INFO.date >= to_time_str(start)).limit(2000)
-
-        df = finance.run_query(q)
+        df = run_query(table='finance.STK_EXCHANGE_TRADE_INFO',
+                       conditions=f'exchange_code#=#{jq_code}&date#>=#{to_time_str(start)}', parse_dates=['date'])
         print(df)
 
         json_results = []

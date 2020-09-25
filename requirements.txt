@@ -1,6 +1,6 @@
 requests == 2.20.1
 SQLAlchemy == 1.2.14
-pandas == 0.25.3
+pandas >= 0.25.3
 arrow == 0.11.0
 tzlocal == 1.5.1
 xlrd == 1.1.0
@@ -12,3 +12,4 @@ plotly==4.7.1
 dash==1.1.1
 simplejson==3.16.0
 pluggy
+jqdatapy>=0.0.6

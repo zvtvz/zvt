@@ -1,9 +1,7 @@
-from jqdatasdk import auth, query, finance
-
+from jqdatapy.api import run_query
 from zvt.contract.recorder import TimeSeriesDataRecorder
-from zvt.utils.time_utils import to_time_str
-from zvt import zvt_env
 from zvt.domain import Index, MarginTradingSummary
+from zvt.utils.time_utils import to_time_str
 
 # 聚宽编码
 # XSHG-上海证券交易所
@@ -31,16 +29,11 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-
     def record(self, entity, start, end, size, timestamps):
         jq_code = code_map_jq.get(entity.code)
 
-        q = query(finance.STK_MT_TOTAL).filter(
-            finance.STK_MT_TOTAL.exchange_code == jq_code,
-            finance.STK_MT_TOTAL.date >= to_time_str(start)).limit(2000)
-
-        df = finance.run_query(q)
+        df = run_query(table='finance.STK_MT_TOTAL',
+                       conditions=f'exchange_code#=#{jq_code}&date#>=#{to_time_str(start)}', parse_dates=['date'])
         print(df)
 
         json_results = []
