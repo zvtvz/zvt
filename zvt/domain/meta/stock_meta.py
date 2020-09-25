@@ -59,13 +59,17 @@ class Index(StockMetaBase, BasePortfolio):
     category = Column(String(length=64))
     # 基准点数
     base_point = Column(Float)
-
+    # 基准点数
+    base_date = Column(DateTime)
 
 # etf
 @register_entity(entity_type='etf')
 class Etf(StockMetaBase, BasePortfolio):
     __tablename__ = 'etf'
     category = Column(String(length=64))
+    # 主要跟踪标的代码
+    underlying_index_code = Column(String(length=64))
+
 
     @classmethod
     def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
@@ -84,7 +88,7 @@ class Fund(StockMetaBase, BaseSecurity):
 # 该基础类可以这样理解:
 # entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
 class BasePortfolioStock(EntityMixin):
-    stock_id = Column(String(length=16))
+    stock_id = Column(String(length=64))
     stock_code = Column(String(length=64))
     stock_name = Column(String(length=128))
 
@@ -162,9 +166,14 @@ class FundDetail(StockMetaBase, BaseSecurity):
     underlying_asset_type_id = Column(Float)
     # 投资标的类型
     underlying_asset_type = Column(String(length=100))
+    # 主要跟踪标的代码
+    underlying_index_code = Column(String(length=64))
+
     category = Column(String(length=64))
 
 register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina','emquantapi'], db_name='stock_meta',
                 schema_base=StockMetaBase)
 
-__all__ = ['Stock', 'Index', 'Block', 'Etf','Fund', 'IndexStock','FundStock', 'BlockStock', 'EtfStock', 'StockDetail','FundDetail']
+__all__ = ['Stock', 'Index', 'Block', 'Etf','Fund',
+           'IndexStock','FundStock', 'BlockStock', 'EtfStock',
+           'StockDetail','FundDetail']
