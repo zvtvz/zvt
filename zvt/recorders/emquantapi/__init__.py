@@ -6,3 +6,4 @@ from zvt.recorders.emquantapi.holder import *
 from zvt.recorders.emquantapi.meta import *
 from zvt.recorders.emquantapi.quotes import *
 from zvt.recorders.emquantapi.trading import *
+from zvt.recorders.emquantapi.fundamental import *
