@@ -190,7 +190,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 应收分保账款
     fi_reinsurance_premium_receivable = Column(Float)
     # 应收分保合同准备金
-    fi_reinsurance_contracfi_retained_earningsserve = Column(Float)
+    fi_reinsurance_contract_reserve = Column(Float)
 
 
     # 应付手续费及佣金
@@ -200,7 +200,7 @@ class BalanceSheet(FinanceBase, Mixin):
     # 应付职工薪酬
 
     # 保险合同准备金
-    fi_contracfi_retained_earningsserve = Column(Float)
+    fi_contract_reserve = Column(Float)
 
     # 独立账户负债
     fi_independent_liability = Column(Float)
@@ -209,7 +209,7 @@ class BalanceSheet(FinanceBase, Mixin):
     fi_dividend_rec = Column(Float)
     # 股东权益合计 所有者权益(或股东权益)合计
     fi_perpetual_bond = Column(Float)
-    # 减 = Column(Float)库存股
+    # 减:库存股
     fi_inventory_share = Column(Float)
     # 其他综合收益
     other_comprehensive_income = Column(Float)
