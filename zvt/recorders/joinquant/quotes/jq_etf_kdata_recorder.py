@@ -54,6 +54,24 @@ class JqChinaEtfValuationRecorder(FixedCycleDataRecorder):
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
         print(f"剩余{get_query_count()['spare']/10000}万")
 
+    def recompute_qfq(self, entity, qfq_factor, last_timestamp):
+        # 重新计算前复权数据
+        if qfq_factor != 0:
+            kdatas = get_kdata(provider=self.provider, entity_id=entity.id, level=self.level.value,
+                               order=self.data_schema.timestamp.asc(),
+                               return_type='domain',
+                               session=self.session,
+                               filters=[self.data_schema.timestamp < last_timestamp])
+            if kdatas:
+                self.logger.info('recomputing {} qfq kdata,factor is:{}'.format(entity.code, qfq_factor))
+                for kdata in kdatas:
+                    kdata.open = round(kdata.open * qfq_factor, 2)
+                    kdata.close = round(kdata.close * qfq_factor, 2)
+                    kdata.high = round(kdata.high * qfq_factor, 2)
+                    kdata.low = round(kdata.low * qfq_factor, 2)
+                self.session.add_all(kdatas)
+                self.session.commit()
+
     def record(self, entity, start, end, size, timestamps):
         if not end:
             end = to_time_str(now_pd_timestamp())
@@ -96,7 +114,7 @@ class JqChinaEtfValuationRecorder(FixedCycleDataRecorder):
             df['code'] = entity.code
 
             # 判断是否需要重新计算之前保存的前复权数据
-            if self.adjust_type == AdjustType.qfq:
+            if self.adjust_type == AdjustType.qfq and df.open.dropna().shape[0] != 0:
                 check_df = df.head(1)
                 check_date = check_df['timestamp'][0]
                 current_df = get_kdata(entity_id=entity.id, provider=self.provider, start_timestamp=check_date,
