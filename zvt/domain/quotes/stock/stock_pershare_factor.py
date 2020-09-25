@@ -12,13 +12,21 @@ class StockPershareFactor(FactorBase, StockPershareFactorCommon):
     @classmethod
     def important_cols(cls):
         return [
-            'capital_reserve_fund_per_share', 'cashflow_per_share_ttm',
-            'cash_and_equivalents_per_share', 'eps_ttm', 'net_asset_per_share', 'net_operate_cash_flow_per_share',
-            'operating_profit_per_share',
-            'operating_profit_per_share_ttm', 'operating_revenue_per_share', 'operating_revenue_per_share_ttm',
-            'retained_earnings_per_share', 'retained_profit_per_share',
-            'surplus_reserve_fund_per_share', 'total_operating_revenue_per_share',
-            'total_operating_revenue_per_share_ttm'
+        "capital_reserve_fund_per_share",  # 每股资本公积金
+        "cashflow_per_share_ttm",  # 每股现金流量净额，根据当时日期来获取最近变更日的总股本
+        "cash_and_equivalents_per_share",  # 每股现金及现金等价物余额
+        "eps_ttm",  # 每股收益TTM
+        "net_asset_per_share",  # 每股净资产
+        "net_operate_cash_flow_per_share",  # 每股经营活动产生的现金流量净额
+        "operating_profit_per_share",  # 每股营业利润
+        "operating_profit_per_share_ttm",  # 每股营业利润TTM
+        "operating_revenue_per_share",  # 每股营业收入
+        "operating_revenue_per_share_ttm",  # 每股营业收入TTM
+        "retained_earnings_per_share",  # 每股留存收益
+        "retained_profit_per_share",  # 每股未分配利润
+        "surplus_reserve_fund_per_share",  # 每股盈余公积金
+        "total_operating_revenue_per_share",  # 每股营业总收入
+        "total_operating_revenue_per_share_ttm",  # 每股营业总收入TTM
         ]
 
     __tablename__ = 'stock_pershare_factor'

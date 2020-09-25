@@ -28,7 +28,7 @@ class StockQualityFactor(FactorBase, StockQualityFactorCommon):
                 'net_operate_cash_flow_to_asset', 'net_operate_cash_flow_to_net_debt',
                 'net_operate_cash_flow_to_operate_income', 'net_operate_cash_flow_to_total_current_liability',
                 'net_operate_cash_flow_to_total_liability', 'net_operating_cash_flow_coverage', 'net_profit_ratio',
-                'net_profit_to_total_operate_revenue', 'non_current_asset_ratio',
+                'net_profit_to_total_operate_revenue_ttm', 'non_current_asset_ratio',
                 'OperatingCycle', 'operating_cost_to_operating_revenue_ratio',
                 'operating_profit_growth_rate', 'operating_profit_ratio', 'operating_profit_to_operating_revenue',
                 'operating_profit_to_total_profit', 'operating_tax_to_operating_revenue_ratio_ttm',
