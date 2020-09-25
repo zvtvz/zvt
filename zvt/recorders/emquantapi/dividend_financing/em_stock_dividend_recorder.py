@@ -71,7 +71,7 @@ class EmDividendDetailRecorder(TimeSeriesDataRecorder):
             # 方案
             div_df = c.css(em_code, div_columns_list,
                            "ReportDate =" + reportdate + ",ispandas=1,AssignFeature=1,YesNo=1")
-
+            div_df['report_date'] = reportdate
             df = df.append(div_df)
         # df.rename(columns=div_columns_dict, inplace=True)
         df = df.dropna(subset=["DIVEXDATE"])
@@ -83,7 +83,7 @@ class EmDividendDetailRecorder(TimeSeriesDataRecorder):
             df.rename(columns=self.data_schema.get_data_map(self), inplace=True)
             df['dividend'] = df['dividend'].apply(lambda x: str(x).split('（')[0])
             df['entity_id'] = entity.id
-            df['timestamp'] = pd.to_datetime(df.dividend_date)
+            df['timestamp'] = pd.to_datetime(df.report_date)
             df['provider'] = 'emquantapi'
             df['code'] = entity.code
 
@@ -91,9 +91,17 @@ class EmDividendDetailRecorder(TimeSeriesDataRecorder):
                 return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 
             df['id'] = df[['entity_id', 'timestamp']].apply(generate_id, axis=1)
+            df.replace('None',pd.NaT,inplace=True)
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         return None
 
+
+# dividend_per_share_after_tax                     object
+# dividend_per_share_before_tax                    object
+
+# dividend_pay_date                                object
+# share_bonus_per_share                            object
+# per_share_conversion_ratio                       object
 
 __all__ = ['EmDividendDetailRecorder']
 
