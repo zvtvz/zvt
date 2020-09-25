@@ -46,6 +46,9 @@ dividenddetail_map = {
 
 
 class DividendDetail(DividendFinancingBase, Mixin):
+    """
+    分红明细
+    """
     __tablename__ = "dividend_detail"
 
     def get_data_map(self):
@@ -54,18 +57,13 @@ class DividendDetail(DividendFinancingBase, Mixin):
     provider = Column(String(length=32))
     code = Column(String(length=32))
 
-    # 公告日  DIVRECORDDATE  股权登记日
-    announce_date = Column(DateTime)
-    # 股权登记日
-    record_date = Column(DateTime)
-    # 除权除息日 DIVEXDATE 除权除息日
-    dividend_date = Column(DateTime)
-    # 方案
-    dividend = Column(String(length=128))
-    # 股东大会公告日
-    announce_date_general_meeting = Column(DateTime)
-    # 分红实施公告日
-    announce_date_dividend_implementation = Column(DateTime)
+    report_date = Column(DateTime)    # 报告时间
+    announce_date = Column(DateTime)  # 公告日  DIVRECORDDATE
+    record_date = Column(DateTime)  # 股权登记日
+    dividend_date = Column(DateTime)  # 除权除息日 DIVEXDATE 除权除息日
+    dividend = Column(String(length=128))    #方案
+    announce_date_general_meeting = Column(DateTime)   # 股东大会公告日
+    announce_date_dividend_implementation = Column(DateTime)   # 分红实施公告日
     # B股最后交易日
     last_trading_day_b_shares = Column(DateTime)
     # 每股股利(税后)
@@ -133,14 +131,11 @@ class RightsIssueDetail(DividendFinancingBase, Mixin):
     record_date = Column(DateTime)
     # 配股除权日
     rtiss_date = Column(DateTime)
-    # 配股上市日
-    rtiss_listing_date = Column(DateTime)
-    #  缴款起始日
-    rtiss_pays_date = Column(DateTime)
-    # 缴款终止日
-    rtiss_paye_date = Column(DateTime)
-    # 每股配股数
-    rtiss_per_share = Column(Float)
+
+    rtiss_listing_date = Column(DateTime)   # 配股上市日
+    rtiss_pays_date = Column(DateTime)  # 缴款起始日
+    rtiss_paye_date = Column(DateTime) # 缴款终止日
+    rtiss_per_share = Column(Float)  # 每股配股数
     # 基准股本
     rtiss_base_shares = Column(Float)
     # 计划配股数

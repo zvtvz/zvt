@@ -113,9 +113,12 @@ class IncomeStatementQtr(FinanceQtrBase, Mixin):
 
 
 class CashFlowStatementQtr(FinanceQtrBase, Mixin):
+    """
+    单季度_现金流量表
+    """
     @classmethod
     def important_cols(cls):
-        return ['net_op_cash_flows', 'net_investing_cash_flows', 'net_financing_cash_flows', 'cash']
+        return []
 
     __tablename__ = 'cash_flow_statement_qtr'
 
