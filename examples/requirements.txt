@@ -1,0 +1,2 @@
+zvt >= 0.8.7
+apscheduler == 3.4.0
