@@ -10,20 +10,20 @@ from zvt.utils.time_utils import to_time_str
 from zvt import init_log
 from zvt.api.quote import generate_kdata_id
 from zvt.api import get_kdata
-from zvt.domain import Index, Etf1dKdata
+from zvt.domain import Etf, Index, Etf1dKdata
 from zvt.recorders.consts import EASTMONEY_ETF_NET_VALUE_HEADER
 
 
 class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
     entity_provider = 'exchange'
-    entity_schema = Index
+    entity_schema = Etf
 
     provider = 'sina'
     data_schema = Etf1dKdata
     url = 'http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?' \
           'symbol={}{}&scale=240&&datalen={}&ma=no'
 
-    def __init__(self, entity_type='index', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+    def __init__(self, entity_type='etf', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
                  force_update=False, sleeping_time=10, default_size=2000, real_time=True, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None,
                  level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=0, close_minute=0,
@@ -94,7 +94,7 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         if start is None or size > self.default_size:
             size = 8000
 
-        return {
+        param = {
             'security_item': entity,
             'level': self.level.value,
             'size': size
@@ -103,7 +103,7 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         security_item = param['security_item']
         size = param['size']
 
-        url = url.format(security_item.exchange, security_item.code, size)
+        url = ChinaETFDayKdataRecorder.url.format(security_item.exchange, security_item.code, size)
 
         response = requests.get(url)
         response_json = demjson.decode(response.text)
