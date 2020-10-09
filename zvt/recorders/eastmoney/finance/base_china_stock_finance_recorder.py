@@ -109,8 +109,8 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
         # get report published date from jq
         try:
             df = get_fundamentals(table='indicator', code=to_jq_entity_id(security_item), columns='pubDate',
-                                  date=to_jq_report_period(the_data.report_date), count=None)
-            if not df.empty and pd.isna(df).empty:
+                                  date=to_jq_report_period(the_data.report_date), count=None, parse_dates=['pubDate'])
+            if pd_is_not_null(df):
                 the_data.timestamp = to_pd_timestamp(df['pubDate'][0])
                 self.logger.info(
                     'jq fill {} {} timestamp:{} for report_date:{}'.format(self.data_schema, security_item.id,

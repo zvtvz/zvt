@@ -11,4 +11,4 @@ plotly==4.7.1
 dash==1.1.1
 simplejson==3.16.0
 pluggy
-jqdatapy>=0.0.6
+jqdatapy>=0.0.8
