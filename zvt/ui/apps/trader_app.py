@@ -8,9 +8,9 @@ from dash.dependencies import Input, Output, State
 
 from zvt.api.business import get_trader_info, get_order_securities
 from zvt.api.business_reader import AccountStatsReader, OrderReader
-from zvt.app import app
 from zvt.domain import TraderInfo
 from zvt.drawer.dcc_components import get_account_stats_figure, get_trading_signals_figure
+from zvt.ui import zvt_app
 from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
 
 account_readers = []
@@ -127,7 +127,7 @@ def serve_layout():
     return layout
 
 
-@app.callback(
+@zvt_app.callback(
     [Output('trader-details', 'children'),
      Output('target-selector', 'options'),
      Output('date-picker-range', 'start_date'),
@@ -144,7 +144,7 @@ def update_trader_details(interval, trader_index):
     raise dash.exceptions.PreventUpdate()
 
 
-@app.callback(
+@zvt_app.callback(
     Output('target-signals', 'children'),
     [Input('target-selector', 'value'),
      Input('date-picker-range', 'start_date'),

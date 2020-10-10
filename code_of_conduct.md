@@ -25,5 +25,3 @@ __all__ = ['IntervalLevel', 'Mixin', 'NormalMixin', 'EntityMixin', 'NormalEntity
 No api is the best api.
 
 Code as comment.
-
-最重要的规则就这些了,commit msg啥的随便，只要你的代码容易懂，没人去看你的msg。

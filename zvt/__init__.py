@@ -112,9 +112,4 @@ else:
 import zvt.domain as domain
 import zvt.recorders as recorders
 
-import pluggy
-
-hookimpl = pluggy.HookimplMarker("zvt")
-"""Marker to be imported and used in plugins (and for own implementations)"""
-
 __all__ = ['domain', 'recorders', 'zvt_env', 'init_log', 'init_env']
