@@ -2,7 +2,6 @@
 from sqlalchemy import create_engine
 from zvt import zvt_env
 
-
 # all registered providers
 providers = []
 
@@ -19,8 +18,9 @@ entity_schema_map = {}
 sessions = {}
 
 if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
-    mysql_engine = create_engine(f"mysql://{zvt_env['mysql_username']}:{zvt_env['mysql_password']}@{zvt_env['mysql_server_address']}:"
-                                 f"{zvt_env['mysql_server_port']}/{zvt_env['db_name']}?charset=utf8mb4", pool_recycle=3600, echo=False)
+    mysql_engine = create_engine(
+        f"mysql://{zvt_env['mysql_username']}:{zvt_env['mysql_password']}@{zvt_env['mysql_server_address']}:"
+        f"{zvt_env['mysql_server_port']}/{zvt_env['db_name']}?charset=utf8mb4", pool_recycle=3600, echo=False)
     # provider_dbname -> engine
     db_engine_map = {
         "joinquant_stock_meta": mysql_engine,
@@ -54,6 +54,7 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
         "joinquant_stock_4h_kdata": mysql_engine,
         "eastmoney_trading": mysql_engine,
         "joinquant_trading": mysql_engine,
+        "emquantapi_trading": mysql_engine,
         "joinquant_stock_5m_hfq_kdata": mysql_engine,
         "exchange_overall": mysql_engine,
         "joinquant_stock_5m_kdata": mysql_engine,
@@ -61,6 +62,7 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
         "joinquant_trade_day": mysql_engine,
         "joinquant_overall": mysql_engine,
         "joinquant_valuation": mysql_engine,
+        "emquantapi_valuation": mysql_engine,
         "joinquant_stock_15m_hfq_kdata": mysql_engine,
         "sina_etf_1d_kdata": mysql_engine,
         "joinquant_stock_15m_kdata": mysql_engine,

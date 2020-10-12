@@ -24,7 +24,8 @@ class IndexValuation(ValuationBase, Mixin):
     pb= Column(Float)  # 市净率PB(最新年报)
     pb_mrq= Column(Float)  # 市净率PB(MRQ)
     ps_ttm= Column(Float)  # 市销率PS(TTM)
-    pcf= Column(Float)  # 市现率PCF(最新年报，经营性现金流)
+    pcf= Column(Float)  # 市现率PCF(TTM)
+    # pcf_ttm= Column(Float)  # 市现率PCF(TTM)
     div_yield= Column(Float)  # 股息率
 
 

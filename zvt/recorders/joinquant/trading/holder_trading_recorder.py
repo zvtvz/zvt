@@ -9,8 +9,6 @@ from zvt.utils.utils import to_float
 from zvt.domain import HolderTrading
 from zvt.domain import Stock, StockKdataCommon
 
-
-# class HolderTradingRecorder(EastmoneyMoreDataRecorder):
 class HolderTradingRecorder(FixedCycleDataRecorder):
     """
     记录公募基金的净值数据
@@ -55,21 +53,17 @@ class HolderTradingRecorder(FixedCycleDataRecorder):
         df = finance.run_query(query(finance.STK_SHAREHOLDERS_SHARE_CHANGE).filter(
             finance.STK_SHAREHOLDERS_SHARE_CHANGE.code == normalize_code(entity.code)).filter(
             finance.STK_SHAREHOLDERS_SHARE_CHANGE.pub_date > to_time_str(start)))
-
-        # df = finance.run_query(query(finance.STK_SHAREHOLDERS_SHARE_CHANGE).filter(
-        #     finance.STK_SHAREHOLDERS_SHARE_CHANGE.code == normalize_code('000002')).filter(
-        #     finance.STK_SHAREHOLDERS_SHARE_CHANGE.end_date > to_time_str(start)))
-
         if pd_is_not_null(df):
             df.reset_index(inplace=True, drop=True)
             df['name'] = entity.name
             df['index_columns'] = df.index
 
-            df.rename(columns={'pub_date': 'timestamp',
+            df.rename(columns={'pub_date': 'end_date',
                                'shareholder_name': 'holder_name',
                                'change_number': 'volume',
                                'change_ratio': 'change_pct',
                                'after_change_ratio': 'holding_pct',
+                               'price_ceiling': 'price',
                                }, inplace=True)
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df.timestamp)
@@ -80,7 +74,6 @@ class HolderTradingRecorder(FixedCycleDataRecorder):
                 lambda x: x.entity_id + '_' + to_time_str(x.timestamp,
                                                           fmt=TIME_FORMAT_DAY) + '_' + x.holder_name + '_' + str(x.index_columns),
                 axis=1)
-
 
             df['holder_name'] = df['holder_name'].apply(lambda x:str(x).replace('(有限合伙)',''))
             df['holder_name'] = df['holder_name'].apply(lambda x:str(x).replace('（有限合伙）',''))

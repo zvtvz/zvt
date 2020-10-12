@@ -33,54 +33,71 @@ class ChinaIndexListSpider(Recorder):
     def on_finish(self):
         logout()
 
-
     def run(self):
         def is_sh(x):
-            if "SH" in x:
+            if ".SH" in x:
                 return x
 
         def is_sz(x):
-            if "SZ" in x:
+            if ".SZ" in x:
                 return x
 
-        self.colums_map={
-         'BASICPOINT':'base_point', #基准点数
-         'BASICDATE':'base_date', # 指数基期
-         'MAKERNAME':'publisher', #编制机构
-         'DELISTDATE':'end_date', #指数退市日期
-         'SHORTNAME':'name',  #指数简称
-         'PUBLISHDATE':'list_date' #指数发布日期
+        self.colums_map = {
+            'BASICPOINT': 'base_point',  # 基准点数
+            'BASICDATE': 'base_date',  # 指数基期
+            'MAKERNAME': 'publisher',  # 编制机构
+            'DELISTDATE': 'end_date',  # 指数退市日期
+            'SHORTNAME': 'name',  # 指数简称
+            'PUBLISHDATE': 'list_date'  # 指数发布日期
         }
 
         self.now_date = to_time_str(now_pd_timestamp())
-        self.index_all=c.sector("905001001",self.now_date)
-
+        # self.index_all=c.sector("905001001",self.now_date)
+        # 905002 上证指数
+        data1 = c.sector("905002", self.now_date)
+        # 905006 深证指数
+        data2 = c.sector("905006", self.now_date)
+        # 905009 中证指数
+        data3 = c.sector("905009", self.now_date)
+        # 905001 市场指数
+        data4 = c.sector("905001", self.now_date)
+        self.index_all = data1.Data + data2.Data + data3.Data + data4.Data
         # 上证、中证
-        self.fetch_csi_index(list(filter(is_sh, self.index_all.Data)))
+        self.fetch_csi_index(list(filter(is_sh, self.index_all)))
 
         # 深证z
-        self.fetch_szse_index(list(filter(is_sz, self.index_all.Data)))
+        self.fetch_szse_index(list(filter(is_sz, self.index_all)))
 
         # 国证
         # FIXME:已不可用
         # self.fetch_cni_index()
 
-    def fetch_csi_index(self,sh_data) -> None:
+    def fetch_csi_index(self, sh_data) -> None:
         """
         抓取上证、中证指数列表
         """
         df = pd.DataFrame()
-        for em_code in sh_data:
-            data = c.css(em_code, [i for i in self.colums_map.keys()], "TradeDate="+self.now_date+ ",ispandas=1")
-            data['code'] = em_code[:6]
-            df  = df.append(data)
+        for em_code in set(sh_data):
+            if len(em_code)>9:
+                continue
+            data = c.css(em_code, [i for i in self.colums_map.keys()], "TradeDate=" + self.now_date + ",ispandas=1")
+            try:
+                data['code'] = em_code[:6]
+            except TypeError:
+                print(em_code)
+                continue
+            df = df.append(data)
         df = df.rename(columns=self.colums_map)
-        df['timestamp'] =pd.to_datetime(df.list_date)
+        df['timestamp'] = pd.to_datetime(df.list_date)
         df['exchange'] = 'sh'
         df['category'] = 'main'
         df['entity_type'] = 'index'
-        df['entity_id'] = df.apply(lambda x:'index'+'_'+'sh'+'_'+x.code,axis=1)
-        df['id'] = df.apply(lambda x: x.entity_id + '_' + to_time_str(x.timestamp), axis=1)
+        df['entity_id'] = df.apply(lambda x: 'index' + '_' + 'sh' + '_' + x.code, axis=1)
+        df['id'] = df['entity_id']
+
+        # df['codes'] = df.index
+        # df['code_len'] = df.apply(lambda x:len(x.codes),axis=1)
+        # df = df.query("code_len==9")
         df_to_db(df=df, data_schema=Index, provider=self.provider, force_update=False)
 
         self.logger.info('上证、中证指数列表写入完成...')
@@ -99,12 +116,14 @@ class ChinaIndexListSpider(Recorder):
         #
         # self.sleep()
 
-    def fetch_szse_index(self,sz_data) -> None:
+    def fetch_szse_index(self, sz_data) -> None:
         """
         抓取深证指数列表
         """
         df = pd.DataFrame()
-        for em_code in sz_data:
+        for em_code in set(sz_data):
+            if len(em_code)>9:
+                continue
             data = c.css(em_code, [i for i in self.colums_map.keys()], "TradeDate=" + self.now_date + ",ispandas=1")
             data['code'] = em_code[:6]
             df = df.append(data)

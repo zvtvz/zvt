@@ -5,26 +5,6 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder, FixedCycleDataRecorder
 from zvt.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
 from zvt.domain import IndexValuation,Index
-from zvt.contract import IntervalLevel
-from zvt.api import get_kdata, AdjustType
-code_map_choice = {
-    '000001': 'SH', '000002': 'SH', '000003': 'SH',
-    '000010': 'SH', '000016': 'SH', '000017': 'SH',
-    '000300': 'SH', '000688': 'SH', '000903': 'SH',
-    '000905': 'SH', '399001': 'SZ', '399004': 'SZ',
-    '399005': 'SZ', '399006': 'SZ', '399008': 'SZ',
-    '399100': 'SZ', '399101': 'SZ', '399102': 'SZ',
-    '399106': 'SZ', '399107': 'SZ', '399108': 'SZ',
-    '399293': 'SZ', '399314': 'SZ', '399315': 'SZ',
-    '399316': 'SZ', '399344': 'SZ', '399372': 'SZ',
-    '399373': 'SZ', '399374': 'SZ', '399375': 'SZ',
-    '399376': 'SZ', '399377': 'SZ', '800000': 'EI',
-    '800001': 'EI', '801001': 'SWI', '801002': 'SWI',
-    '801003': 'SWI', '801005': 'SWI', '801300': 'SWI',
-    '899001': 'CSI', '899002': 'CSI', '910073': 'EI',
-    '910074': 'EI', '910075': 'EI', '910076': 'EI', 'CN2293': 'SZ',
-}
-
 
 class EmChinaStockValuationRecorder(TimeSeriesDataRecorder):
     entity_provider = 'emquantapi'
@@ -43,10 +23,10 @@ class EmChinaStockValuationRecorder(TimeSeriesDataRecorder):
                          close_minute)
 
         # 调用登录函数（激活后使用，不需要用户名密码）
-        # loginResult = c.start("ForceLogin=1", '')
-        # if (loginResult.ErrorCode != 0):
-        #     print("login in fail")
-        #     exit()
+        loginResult = c.start("ForceLogin=1", '')
+        if (loginResult.ErrorCode != 0):
+            print("login in fail")
+            exit()
 
 
     def on_finish(self):
@@ -59,11 +39,14 @@ class EmChinaStockValuationRecorder(TimeSeriesDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         if not end:
             end = to_time_str(now_pd_timestamp())
-        if size >= 2000:
+        if (pd.to_datetime(end) - start).days >=800:
             from datetime import timedelta
-            end = to_time_str(start+timedelta(days=1000))
+            end = to_time_str(start+timedelta(days=800))
         start = to_time_str(start)
-        em_code = entity.code+'.'+code_map_choice[entity.code]
+        exchange = 'SH' if 'sh' in entity.id else  'SZ'
+        em_code = entity.code+'.'+exchange
+        if em_code == '000022.SH':
+            return None
         columns_list = {
             'MV': 'market_cap', #总市值
             'LIQMV': 'circulating_market_cap', #流通市值
@@ -76,7 +59,13 @@ class EmChinaStockValuationRecorder(TimeSeriesDataRecorder):
             'PCFTTM': 'pcf_ttm', #市现率PCF(最新年报，经营性现金流)
             'DIVIDENDYIELD': 'div_yield', #股息率
         }
-        df = c.csd(em_code, [i for i in columns_list.keys()], start,end,"ispandas=1")
+        df = c.csd(em_code, [i for i in columns_list.keys()], start,end,"ispandas=1,DelType=2")
+        if not isinstance(df,pd.DataFrame):
+            return None
+        # 该方法会获取到未来数据,总市值为Nan时删除该条
+        df = df.dropna(subset=['MV'])
+        if df.empty:
+            return None
         df = df.rename(columns = columns_list)
 
         df['entity_id'] = entity.id[:15]

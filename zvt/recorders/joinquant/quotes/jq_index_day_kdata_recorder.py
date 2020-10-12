@@ -2,7 +2,7 @@
 import time
 
 import pandas as pd
-from jqdatasdk import auth, get_price,normalize_code,get_query_count,get_bars
+from jqdatasdk import auth, get_price, normalize_code, get_query_count, get_bars, logout
 
 from zvt import zvt_env
 from zvt.api import get_kdata_schema
@@ -14,6 +14,23 @@ from zvt.recorders.joinquant.common import to_jq_trading_level
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
 from zvt.domain import Index, IndexKdataCommon
+code_map_choice = {
+    '000001': 'SH', '000002': 'SH', '000003': 'SH',
+    '000010': 'SH', '000016': 'SH', '000017': 'SH',
+    '000300': 'SH', '000688': 'SH', '000903': 'SH',
+    '000905': 'SH', '399001': 'SZ', '399004': 'SZ',
+    '399005': 'SZ', '399006': 'SZ', '399008': 'SZ',
+    '399100': 'SZ', '399101': 'SZ', '399102': 'SZ',
+    '399106': 'SZ', '399107': 'SZ', '399108': 'SZ',
+    '399293': 'SZ', '399314': 'SZ', '399315': 'SZ',
+    '399316': 'SZ', '399344': 'SZ', '399372': 'SZ',
+    '399373': 'SZ', '399374': 'SZ', '399375': 'SZ',
+    '399376': 'SZ', '399377': 'SZ', '800000': 'EI',
+    '800001': 'EI', '801001': 'SWI', '801002': 'SWI',
+    '801003': 'SWI', '801005': 'SWI', '801300': 'SWI',
+    '899001': 'CSI', '899002': 'CSI', '910073': 'EI',
+    '910074': 'EI', '910075': 'EI', '910076': 'EI', 'CN2293': 'SZ',
+}
 
 
 class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
@@ -24,7 +41,7 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
     data_schema = IndexKdataCommon
     def __init__(self,
                  entity_type='index',
-                 exchanges=['cn'],
+                 exchanges=['sh','sz'],
                  entity_ids=None,
                  codes=None,
                  batch_size=10,
@@ -46,16 +63,20 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type=entity_type, level=level)
 
 
-        super().__init__('stock', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__('index', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
 
+    def on_finish(self):
+        super().on_finish()
+        logout()
+
     def record(self, entity, start, end, size, timestamps):
 
         now_date = to_time_str(now_pd_timestamp())
-        security = entity.id[-6:] + '.XSHG' if entity.name == '上证指数' else entity.id[-6:] + '.XSHE'
+        security = entity.id[-6:]+'.'+entity.exchange.replace('sh','XSHG').replace('sz','XSHE')
         try:
             if not self.end_timestamp:
                 df = get_bars(security,

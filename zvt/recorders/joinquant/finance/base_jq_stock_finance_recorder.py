@@ -4,9 +4,8 @@ from jqdatasdk import auth, query, indicator, get_fundamentals, logout, finance
 
 from zvt import zvt_env
 from zvt.api.quote import to_jq_report_period, get_recent_report_period
-from zvt.contract import IntervalLevel
+
 from zvt.contract.api import get_data, df_to_db
-from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import FinanceFactor
 
 from zvt.recorders.joinquant.common import company_type_flag, get_fc, \

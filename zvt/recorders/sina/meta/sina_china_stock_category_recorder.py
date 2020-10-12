@@ -114,5 +114,5 @@ __all__ = ['SinaChinaBlockRecorder', 'SinaChinaBlockStockRecorder']
 if __name__ == '__main__':
     # init_log('sina_china_stock_category.log')
 
-    recorder = SinaChinaBlockStockRecorder(codes=['new_cbzz'])
+    recorder = SinaChinaBlockStockRecorder()
     recorder.run()
