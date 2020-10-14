@@ -165,3 +165,5 @@ if __name__ == '__main__':
     # weixin_action = WechatInformer()
     # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',
     #                                       current_price=1000, change_pct='0.5%')
+# the __all__ is generated
+__all__ = ['Informer', 'EmailInformer', 'WechatInformer']

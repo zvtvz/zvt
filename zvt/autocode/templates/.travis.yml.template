@@ -1,0 +1,24 @@
+language: python
+cache: pip
+python:
+  - '3.6'
+install:
+  - git fetch --tags --depth=500
+  - pip install 'pytest>=3.6' --force-reinstall
+  - pip install pytest-cov codecov
+  - pip install -r ./requirements.txt
+script:
+  - pytest ./tests --cov-config=.coveragerc --cov-report term --cov=./${project} --ignore=tests/recorders/
+after_success:
+  - codecov
+deploy:
+  provider: pypi
+  user: ${user}
+  password:
+    secure: MvVCnUZUuTYxzs8R8kWTocOqZt2MGUX/W1hdKMxKJ9G9hFOYhzjEnbsF1Sc9yHB/0S1OY49068ScbN6iCuyKK2LZy/x3o7cKJgPnQt2LEjy6Yuu9MLxT6v8hJ0MTT3YCn0N8bNv4tOz7KkxxbZ8O/b5MgIKfdjBhVHEj92hhykYzyzlmG8mF+nxU/j0IGCAdxN9+IDioMIvCgnFqQhvkDwva4YbG6Uy+8YMVHFT3I+tSZRSmYxl/IwHJS+5tinI4TxX/ewrI5EznOe0HZvhF+eez+tGenS3pKF4hqF6t4RmKQX2kkdMuPFAvuveoMnPGiaSdoEMni1JPFnZL+3R4GVJPzk4F10v6AZPd10CARXqEwP23JCKAe0WvnbSBkV4iKpkvgxqPA59UwNQ90Jn4pDcTSao1WfRliAnBWCVj7S4x6xjEoNKPvOhXP3RPIYhgEFu4Ma4Cpihkof6VVtlg8VAJKH7j1vWmms3ShdddKXMeF2365sn5Owe671okYmMYMas/v47Y2Cz/0hwpVLuklNR5OYayXMXfUMIG2pH1pEFvg7y8v7ivy1EyCKGva+M/qEnoR1VGWNGSkypJHxG+w8dbtYwf3EYTA9fk/di3ygzepV7RrKJSDf8R+NwFrSfXeoEP07LonbtGN9iIz7Lp5PoB6rv99NHihlB47n1+PtM=
+  on:
+    tags: true
+notifications:
+  email:
+    recipients:
+      - ${email}

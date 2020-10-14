@@ -75,3 +75,5 @@ def get_order_securities(trader_name):
 
 if __name__ == '__main__':
     print(get_order_securities(trader_name='000338_ma_trader'))
+# the __all__ is generated
+__all__ = ['get_traders', 'get_trader_info', 'get_account_stats', 'get_position', 'get_orders', 'get_order_securities']

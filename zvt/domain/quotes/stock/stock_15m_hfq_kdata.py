@@ -15,3 +15,5 @@ class Stock15mHfqKdata(KdataBase, StockKdataCommon):
 register_schema(providers=['joinquant'], db_name='stock_15m_hfq_kdata', schema_base=KdataBase)
 
 __all__ = ['Stock15mHfqKdata']
+# the __all__ is generated
+__all__ = ['Stock15mHfqKdata']

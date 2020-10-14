@@ -158,4 +158,5 @@ class DragonAndTiger(TradingBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant'], db_name='trading', schema_base=TradingBase)
 
-__all__ = ['ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
+# the __all__ is generated
+__all__ = ['ManagerTrading', 'HolderTrading', 'BigDealTrading', 'MarginTrading', 'DragonAndTiger']

@@ -594,3 +594,5 @@ class SimAccountService(AccountService):
                                 f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise Exception("not enough position")
+# the __all__ is generated
+__all__ = ['AccountDayStatsSchema', 'PositionSchema', 'AccountService', 'SimAccountService']

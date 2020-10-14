@@ -39,3 +39,5 @@ def unzip(zip_file, dst_dir):
     the_zip_file.extractall(dst_dir)
     print("finish unzip {} to {}".format(zip_file, dst_dir))
     the_zip_file.close()
+# the __all__ is generated
+__all__ = ['zip_dir', 'unzip']

@@ -101,3 +101,5 @@ class Order(TraderBase, Mixin):
 register_schema(providers=['zvt'], db_name='trader_info', schema_base=TraderBase)
 
 __all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']
+# the __all__ is generated
+__all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']

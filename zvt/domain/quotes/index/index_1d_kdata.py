@@ -15,3 +15,5 @@ class Index1dKdata(KdataBase, IndexKdataCommon):
 register_schema(providers=['sina'], db_name='index_1d_kdata', schema_base=KdataBase)
 
 __all__ = ['Index1dKdata']
+# the __all__ is generated
+__all__ = ['Index1dKdata']

@@ -8,3 +8,5 @@ def to_string(cls):
 
     cls.__str__ = __str__
     return cls
+# the __all__ is generated
+__all__ = ['to_string']

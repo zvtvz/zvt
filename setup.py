@@ -33,7 +33,7 @@ except:
 setup(
     name='zvt',
     version='0.9.0',
-    description='unified,modular quantitative system for human beings ',
+    description='unified,modular quant framework for human beings ',
     long_description=long_description,
     url='https://github.com/zvtvz/zvt',
     author='foolcage',
@@ -50,28 +50,22 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'
     ],
-
     keywords='quant stock finance fintech big-data zvt technical-analysis trading-platform pandas fundamental-analysis',
-    packages=find_packages(exclude=['examples', 'contrib', 'docs', 'tests', 've', 'research']),  # Required
-
+    packages=find_packages(include=['zvt.*', 'zvt']),
+    python_requires='>=3.5, <4',
+    include_package_data=True,
     install_requires=requirements,
-    package_data={
-        'zvt.samples': ['*.zip', '*.json'],
-        'zvt.assets': ['*.css']
-    },
     project_urls={  # Optional
         'Bug Reports': 'https://github.com/zvtvz/zvt/issues',
         'Funding': 'https://www.foolcage.com/zvt',
         'Say Thanks!': 'https://saythanks.io/to/foolcage',
         'Source': 'https://github.com/zvtvz/zvt',
     },
-
-    include_package_data=True,
     long_description_content_type="text/markdown",
-
     entry_points={
         'console_scripts': [
             'zvt = zvt.main:main',
+            'zvt_plugin = zvt.plugin:main',
         ],
     },
 )
