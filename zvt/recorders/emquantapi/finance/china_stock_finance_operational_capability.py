@@ -14,7 +14,7 @@ financial_operational_capability_map = {
     'receivables_turnover': 'ARTURNRATIO',  # 应收账款周转率(含应收票据)
     'receivables_turnover_days': 'ARTURNDAYS',  # 应收账款周转天数(含应收票据)
     'operating_cycle': 'TURNDAYS',  # 营业周期
-    'accounts_payable_turnover_rate': 'ACCOUNTSTURNOVERRATIO',  # 应付账款周转率
+    # 'accounts_payable_turnover_rate': 'ACCOUNTSTURNOVERRATIO',  # 应付账款周转率
     'accounts_payable_turnover_days': 'APTURNDAYS',  # 应付账款周转天数(含应付票据)
 }
 

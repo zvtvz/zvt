@@ -11,17 +11,17 @@ financial_debtpayingability_map = {
     'equity_ratio': 'LIBILITYTOEQUITY',  # 产权比率
     'equity_to_interest_libility': 'EQUITYTOINTERESTLIBILITY',  # 归属母公司股东的权益与带息债务之比
     'equity_to_libility': 'EQUITYTOLIBILITY',  # 归属母公司股东的权益与负债合计之比
-    'cash_to_current_libility': 'CASHTOCL',  # 货币资金与流动负债之比
+    # 'cash_to_current_libility': 'CASHTOCL',  # 货币资金与流动负债之比
     'cfo_to_interest_libility': 'CFOTOINTERESTLIBILITY',  # 经营活动产生的现金流量净额与带息债务之比
     'cfo_to_libility': 'CFOTOLIBILITY',  # 经营活动产生的现金流量净额与负债合计之比
     'cfo_to_net_libility': 'CFOTONETLIBILITY',  # 经营活动产生的现金流量净额与净债务之比
     'cfo_to_cl': 'CFOTOSHORTLIBILITY',  # 经营活动产生的现金流量净额与流动负债之比
-    'current_ratio': 'CURRENTRATIO',  # 流动比率
-    'quick_ratio': 'QUICKRATIO',  # 速动比率
-    'ebitda_to_int_libility': 'EBITDATOINTLIBILITY',  # 息税折旧摊销前利润与带息债务之比
+    'current_ratio': 'CURRENTTATIO',  # 流动比率
+    'quick_ratio': 'QUICKTATIO',  # 速动比率
+    # 'ebitda_to_int_libility': 'EBITDATOINTLIBILITY',  # 息税折旧摊销前利润与带息债务之比
     'ebitda_to_libility': 'EBITDATOLIBILITY',  # 息税折旧摊销前利润与负债合计之比
-    'op_to_libility': 'OPTOLIBILITY',  # 营业利润与负债合计之比
-    'op_to_cl': 'OPTOCL',  # 营业利润与流动负债之比
+    # 'op_to_libility': 'OPTOLIBILITY',  # 营业利润与负债合计之比
+    # 'op_to_cl': 'OPTOCL',  # 营业利润与流动负债之比
     'tangible_asset_to_interest_libility': 'TANGIBLEASSETTOINTERESTLIBILITY',  # 有形资产与带息债务之比
     'tangible_asset_to_libility': 'TANGIBLEASSETTOLIBILITY',  # 有形资产与负债合计之比
     'tangible_asset_to_net_libility': 'TANGIBLEASSETTONETLIBILITY',  # 有形资产与净债务之比

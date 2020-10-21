@@ -8,7 +8,7 @@ balance_sheet_map = {
     "pub_date": "FIRSTNOTICEDATE",
     "report_date": "REPORTDATE",
     # 流动资产
-    #
+    #CASHTOCL
     # 货币资金
     "cash_and_cash_equivalents": "MONETARYFUND",
     # 应收票据

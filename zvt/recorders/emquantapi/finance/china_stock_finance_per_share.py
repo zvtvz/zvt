@@ -12,7 +12,7 @@ finance_per_share_map = {
     'bps': 'BPS',  # 每股净资产
     'total_operating_revenue_ps': 'GRPS',  # 每股营业总收入
     'operating_revenue_pee': 'ORPS',  # 每股营业收入
-    'operating_profit_ps': '',  # 每股营业利润
+    # 'operating_profit_ps': '',  # 每股营业利润
     'earnings_bf_interest_taxes_ps': 'EBITPS',  # 每股息税前利润
     'capital_reserve_ps': 'CAPITALRESERVEPS',  # 每股资本公积
     'surplus_reserve_fund_ps': 'SURPLUSRESERVEPS',  # 每股盈余公积

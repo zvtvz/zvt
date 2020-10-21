@@ -24,6 +24,9 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
     # provider_dbname -> engine
     db_engine_map = {
         "joinquant_stock_meta": mysql_engine,
+        "joinquant_block": mysql_engine,
+        "joinquant_block_stock": mysql_engine,
+        "joinquant_block_1d_kdata": mysql_engine,
         "joinquant_shares_change": mysql_engine,
         "joinquant_finance": mysql_engine,
         "joinquant_stock_factor": mysql_engine,

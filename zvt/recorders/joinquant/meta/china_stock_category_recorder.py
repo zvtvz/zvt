@@ -1,108 +1,190 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
-import requests
+import json
 
+import demjson
+import pandas as pd
+from jqdatasdk import auth, get_query_count, get_industries, get_industry_stocks, finance, query
+
+from zvt import zvt_env
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
-from zvt.utils.time_utils import now_pd_timestamp
-from zvt.utils.utils import json_callback_param
-from zvt.api.quote import china_stock_code_to_id
-from zvt.domain import BlockStock, BlockCategory, Block
+from zvt.recorders.joinquant.common import to_entity_id
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import now_pd_timestamp, to_time_str, TIME_FORMAT_DAY
+from zvt.domain import BlockStock, Block,Block1dKdata,BlockMoneyFlow
 
 
-class EastmoneyChinaBlockRecorder(Recorder):
-    provider = 'eastmoney'
+class JqChinaBlockRecorder(Recorder):
+    provider = 'joinquant'
     data_schema = Block
 
     # 用于抓取行业/概念/地域列表
-    category_map_url = {
-        BlockCategory.industry: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKHY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_F1A61014DE5E45B7A50068EA290BC918&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08766',
-        BlockCategory.concept: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKGN&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=300&lvl=&cb=jsonp_3071689CC1E6486A80027D69E8B33F26&token=4f1862fc3b5e77c150a2b985b12db0fd&_=08251',
-        # BlockCategory.area: 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C._BKDY&sty=DCRRBKCPAL&st=(ChangePercent)&sr=-1&p=1&ps=200&lvl=&cb=jsonp_A597D4867B3D4659A203AADE5B3B3AD5&token=4f1862fc3b5e77c150a2b985b12db0fd&_=02443'
+    category_map = {
+        "sw_l1": "申万一级行业",
+        "sw_l2": "申万二级行业",
+        "sw_l3": "申万三级行业",
+        "jq_l1": "聚宽一级行业",
+        "jq_l2": "聚宽二级行业",
+        "zjw": "证监会行业",
     }
 
+    def __init__(self, batch_size=10, force_update=True, sleeping_time=10) -> None:
+        super().__init__(batch_size, force_update, sleeping_time)
+
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        print(f"剩余{get_query_count()['spare'] / 10000}万")
+
     def run(self):
-        for category, url in self.category_map_url.items():
-            resp = requests.get(url)
-            results = json_callback_param(resp.text)
-            the_list = []
-            for result in results:
-                items = result.split(',')
-                code = items[1]
-                name = items[2]
-                entity_id = f'block_cn_{code}'
-                the_list.append({
-                    'id': entity_id,
-                    'entity_id': entity_id,
-                    'entity_type': 'block',
-                    'exchange': 'cn',
-                    'code': code,
-                    'name': name,
-                    'category': category.value
-                })
-            if the_list:
-                df = pd.DataFrame.from_records(the_list)
-                df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                         force_update=True)
-            self.logger.info(f"finish record sina blocks:{category.value}")
+        # get stock blocks from sina
+        for category, name_ch in self.category_map.items():
+            df = get_industries(name=category, date=None)
+            df['code'] = df.index
+            df['exchange'] = category.replace("_","")
+            df['list_date'] = df['start_date']
+            df['timestamp'] = df['list_date']
+            df['entity_type'] = 'block'
+            df['category'] = "industry"
+            df['id'] = df['entity_id'] = df.apply(lambda x: "block_" + x.exchange + "_" + x.code, axis=1)
+            df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
+                     force_update=True)
+            self.logger.info(f"完成聚宽数据行业数据保存:{name_ch}")
 
 
-class EastmoneyChinaBlockStockRecorder(TimeSeriesDataRecorder):
-    entity_provider = 'eastmoney'
+class JqChinaBlockStockRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
     entity_schema = Block
 
-    provider = 'eastmoney'
+    provider = 'joinquant'
     data_schema = BlockStock
 
-    # 用于抓取行业包含的股票
-    category_stocks_url = 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C.{}{}&sty=SFCOO&st=(Close)&sr=-1&p=1&ps=300&cb=jsonp_B66B5BAA1C1B47B5BB9778045845B947&token=7bc05d0d4c3c22ef9fca8c2a912d779c'
-
-    def __init__(self, exchanges=None, entity_ids=None, codes=None, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+    def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, batch_size=10,
+                 force_update=True, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
-        super().__init__('block', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
 
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        print(f"剩余{get_query_count()['spare'] / 10000}万")
+
     def record(self, entity, start, end, size, timestamps):
-        resp = requests.get(self.category_stocks_url.format(entity.code, '1'))
-        try:
-            results = json_callback_param(resp.text)
-            the_list = []
-            for result in results:
-                items = result.split(',')
-                stock_code = items[1]
-                stock_id = china_stock_code_to_id(stock_code)
-                block_id = entity.id
 
-                the_list.append({
-                    'id': '{}_{}'.format(block_id, stock_id),
-                    'entity_id': block_id,
-                    'entity_type': 'block',
-                    'exchange': entity.exchange,
-                    'code': entity.code,
-                    'name': entity.name,
-                    'timestamp': now_pd_timestamp(),
-                    'stock_id': stock_id,
-                    'stock_code': stock_code,
-                    'stock_name': items[2],
+        industry_stocks = get_industry_stocks(entity.code,date=now_pd_timestamp())
+        if len(industry_stocks)==0:
+            return None
+        df = pd.DataFrame({"stock":industry_stocks})
+        df["stock_id"] = df.stock.apply(lambda x:to_entity_id(x,"stock"))
+        df["stock_code"] = df.stock_id.str.split("_", expand=True)[2]
 
-                })
-            if the_list:
-                df = pd.DataFrame.from_records(the_list)
-                df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
+        df["code"] = entity.code
+        df["name"] = entity.name
+        df["exchange"] = entity.exchange
+        df["timestamp"] = now_pd_timestamp()
+        df["entity_id"] = entity.id
+        df["entity_type"] = "block"
+        df["id"] = df.apply(lambda x:x.entity_id+"_"+x.stock_id,axis=1)
+        if df.empty:
+            return None
+        df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
+                 force_update=True)
 
-            self.logger.info('finish recording block:{},{}'.format(entity.category, entity.name))
-
-        except Exception as e:
-            self.logger.error("error:,resp.text:", e, resp.text)
-        self.sleep()
+        self.logger.info('finish recording BlockStock:{},{}'.format(entity.category, entity.name))
 
 
-__all__ = ['EastmoneyChinaBlockRecorder', 'EastmoneyChinaBlockStockRecorder']
+class JqChinaBlockKdataRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
+    entity_schema = Block
+
+    provider = 'joinquant'
+    data_schema = Block1dKdata
+
+    def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, batch_size=10,
+                 force_update=True, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
+
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        print(f"剩余{get_query_count()['spare'] / 10000}万")
+
+    def record(self, entity, start, end, size, timestamps):
+        if "swl1" not in entity.id:
+            return None
+        start = to_time_str(start)
+        df = finance.run_query(
+            query(finance.SW1_DAILY_PRICE).filter(
+                finance.SW1_DAILY_PRICE.code==entity.code).filter(
+                finance.SW1_DAILY_PRICE.date>=start).limit(size))
+        if pd_is_not_null(df):
+            df['name'] = entity.name
+            df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
+
+            df['entity_id'] = entity.id
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['provider'] = 'joinquant'
+            df['level'] = '1d'
+            df['code'] = entity.code
+
+
+            def generate_kdata_id(se):
+                return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
+
+            df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
+
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+
+        return None
+
+class JqChinaBlockMoneyFlowRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
+    entity_schema = Block
+
+    provider = 'joinquant'
+    data_schema = BlockMoneyFlow
+
+    def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, batch_size=10,
+                 force_update=True, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
+
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        print(f"剩余{get_query_count()['spare'] / 10000}万")
+
+    def record(self, entity, start, end, size, timestamps):
+        if "swl1" not in entity.id:
+            return None
+        start = to_time_str(start)
+        df = finance.run_query(
+            query(finance.SW1_DAILY_PRICE).filter(
+                finance.SW1_DAILY_PRICE.code==entity.code).filter(
+                finance.SW1_DAILY_PRICE.date>=start).limit(size))
+        if pd_is_not_null(df):
+            df['name'] = entity.name
+            df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
+
+            df['entity_id'] = entity.id
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['provider'] = 'joinquant'
+            df['level'] = '1d'
+            df['code'] = entity.code
+
+
+            def generate_kdata_id(se):
+                return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
+
+            df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
+
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+
+        return None
+
+__all__ = ['JqChinaBlockRecorder', 'JqChinaBlockStockRecorder']
 
 if __name__ == '__main__':
-    # init_log('china_stock_category.log')
+    # init_log('sina_china_stock_category.log')
 
-    recorder = EastmoneyChinaBlockStockRecorder(codes=['BK0727'])
+    recorder = JqChinaBlockStockRecorder()
     recorder.run()

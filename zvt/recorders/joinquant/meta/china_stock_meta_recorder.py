@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from EmQuantAPI import *
-from jqdatasdk import auth, get_all_securities, logout, query, finance, normalize_code, get_query_count, get_concept, \
-    get_security_info
+from jqdatasdk import auth, get_all_securities, logout, query, finance, normalize_code, get_query_count, get_concept
 
 from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code, get_entities
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
@@ -13,7 +12,6 @@ from zvt.api.quote import china_stock_code_to_id, portfolio_relate_stock
 from zvt.domain import EtfStock, Stock, Etf, StockDetail, Fund, FundDetail, FundStock
 from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 from zvt.utils.time_utils import to_pd_timestamp
-from zvt.utils.utils import to_float, pct_to_float
 
 
 class BaseJqChinaMetaRecorder(Recorder):

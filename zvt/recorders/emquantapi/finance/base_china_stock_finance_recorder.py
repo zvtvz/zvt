@@ -2,7 +2,7 @@
 import pandas as pd
 from EmQuantAPI import *
 
-from zvt.api import get_recent_report_period
+from zvt.api import get_recent_report_period, to_report_period_type
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import StockDetail
@@ -74,10 +74,12 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
         # if self.finance_report_type in ['FinanceDerivative','FinancePerShare','FinanceGrowthAbility']:
         if df.empty:
             return None
-        if self.data_type > 4:
+        if not self.data_type < 4:
             columns_list.append('REPORTDATE')
+
         df.columns = columns_list
         df = df.sort_values("REPORTDATE", ascending=True)
+        # df = df.dropna(axis=0,subset=["DUPONTROE"])
         if pd_is_not_null(df):
             df.reset_index(drop=True, inplace=True)
             df.rename(columns={value:key for key,value in columns_map.items()}, inplace=True)
@@ -85,7 +87,7 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
             df['timestamp'] = pd.to_datetime(df.report_date)
             df['provider'] = 'emquantapi'
             df['code'] = entity.code
-            df['report_period'] = df['report_date'].apply(lambda x: get_recent_report_period(x))
+            df['report_period'] = df['report_date'].apply(lambda x: to_report_period_type(x))
             def generate_id(se):
                 return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 
