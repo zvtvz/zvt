@@ -21,12 +21,14 @@ def run():
         email_action = EmailInformer()
 
         try:
-            Stock.record_data(provider='eastmoney')
-            StockDetail.record_data(provider='eastmoney')
-            FinanceFactor.record_data(provider='eastmoney')
-            BalanceSheet.record_data(provider='eastmoney')
-            IncomeStatement.record_data(provider='eastmoney')
-            CashFlowStatement.record_data(provider='eastmoney')
+            # Stock.record_data(provider='eastmoney')
+            # StockDetail.record_data(provider='eastmoney')
+            # FinanceFactor.record_data(provider='eastmoney')
+            # BalanceSheet.record_data(provider='eastmoney')
+            # IncomeStatement.record_data(codes=['000001'],provider='eastmoney')
+
+            # CashFlowStatement.record_data(provider='eastmoney')
+            # DragonAndTiger.record_data(provider='eastmoney')
 
             email_action.send_message("5533061@qq.com", 'eastmoney runner1 finished', '')
             break

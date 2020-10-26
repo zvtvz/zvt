@@ -27,7 +27,7 @@ class EmailInformer(Informer):
 
     def send_message(self, to_user, title, body, **kwargs):
         if self.ssl:
-            smtp_client = smtplib.SMTP_SSL()
+            smtp_client = smtplib.SMTP_SSL(host=zvt_env['smtp_host'])
         else:
             smtp_client = smtplib.SMTP()
         smtp_client.connect(zvt_env['smtp_host'], zvt_env['smtp_port'])

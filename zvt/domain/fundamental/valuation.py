@@ -7,6 +7,28 @@ from zvt.contract.register import register_schema
 
 ValuationBase = declarative_base()
 
+class IndexValuation(ValuationBase, Mixin):
+    __tablename__ = 'index_valuation'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    # 总市值
+    market_cap = Column(Float)
+    # 流通市值
+    circulating_market_cap = Column(Float)
+    # 换手率
+    turnover_ratio = Column(Float)
+
+    pe= Column(Float)  # 静态pe
+    pe_ttm= Column(Float)  # 动态pe
+    pb= Column(Float)  # 市净率PB(最新年报)
+    pb_mrq= Column(Float)  # 市净率PB(MRQ)
+    ps_ttm= Column(Float)  # 市销率PS(TTM)
+    pcf= Column(Float)  # 市现率PCF(TTM)
+    # pcf_ttm= Column(Float)  # 市现率PCF(TTM)
+    div_yield= Column(Float)  # 股息率
+
+
 
 class StockValuation(ValuationBase, Mixin):
     __tablename__ = 'stock_valuation'
@@ -62,6 +84,6 @@ class EtfValuation(ValuationBase, Mixin):
     pcf1 = Column(Float)
 
 
-register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase)
+register_schema(providers=['joinquant','emquantapi'], db_name='valuation',schema_base=ValuationBase)
 
-__all__ = ['StockValuation', 'EtfValuation']
+__all__ = ['StockValuation','EtfValuation','IndexValuation']

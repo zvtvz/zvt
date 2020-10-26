@@ -52,7 +52,7 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
 __all__ = ['DividendFinancingRecorder']
 
 if __name__ == '__main__':
-    # init_log('dividend_financing.log')
+    # init_log('shares_change.log')
 
     recorder = DividendFinancingRecorder(codes=['000999'])
     recorder.run()

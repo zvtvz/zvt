@@ -7,7 +7,7 @@ from zvt.contract.api import get_db_session
 from zvt.utils.time_utils import to_pd_timestamp
 
 session = get_db_session(provider='eastmoney',
-                         db_name='dividend_financing')  # type: sqlalchemy.orm.Session
+                         db_name='shares_change')  # type: sqlalchemy.orm.Session
 
 
 # 增发详情

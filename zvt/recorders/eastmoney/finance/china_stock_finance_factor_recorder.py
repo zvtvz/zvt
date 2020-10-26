@@ -31,9 +31,9 @@ finance_factor_map = {
     # 扣非净利润(元)
     "deducted_net_profit": "Bucklenetprofit",
     # 营业总收入同比增长
-    "op_income_growth_yoy": "Totalincomeyoy",
+    "total_op_income_growth_yoy": "Totalincomeyoy",
     # 归属净利润同比增长
-    "net_profit_growth_yoy ": "Parentnetprofityoy",
+    "inc_net_profit_shareholders_yoy ": "Parentnetprofityoy",
     # 扣非净利润同比增长
     "deducted_net_profit_growth_yoy": "Bucklenetprofityoy",
     # 营业总收入滚动环比增长

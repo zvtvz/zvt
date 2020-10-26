@@ -88,6 +88,7 @@ class Mixin(object):
     def record_data(cls,
                     provider_index: int = 0,
                     provider: str = None,
+                    schema=None,
                     exchanges=None,
                     entity_ids=None,
                     codes=None,

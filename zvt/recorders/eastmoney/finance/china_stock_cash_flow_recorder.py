@@ -164,7 +164,7 @@ cash_flow_map = {
     # 支付再保险业务现金净额
     "fi_cash_to_reinsurance": "Netripay",
     # 银行业务及证券业务拆借资金净减少额
-    "fi_lending_decrease": "Ndlendfund",
+    # "fi_lending_decrease": "Ndlendfund",
     # 银行业务及证券业务卖出回购资金净减少额
     "fi_bank_broker_sell_repurchase_decrease": "Ndsellbuyback",
     # 支付保单红利的现金

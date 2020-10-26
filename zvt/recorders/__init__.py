@@ -3,3 +3,4 @@ from zvt.recorders.eastmoney import *
 from zvt.recorders.exchange import *
 from zvt.recorders.joinquant import *
 from zvt.recorders.sina import *
+from zvt.recorders.emquantapi import *

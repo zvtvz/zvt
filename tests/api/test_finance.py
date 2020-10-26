@@ -45,9 +45,9 @@ def test_000001_finance_factor():
     assert latest.total_op_income == 86660000000
     assert latest.net_profit == 20460000000
     assert latest.deducted_net_profit == 20350000000
-    assert latest.op_income_growth_yoy == 0.0856
-    assert latest.net_profit_growth_yoy == 0.068
-    assert latest.deducted_net_profit_growth_yoy == 0.0636
+    assert latest.total_op_income_growth_yoy == 0.0856
+    assert latest.inc_net_profit_shareholders_yoy == 0.068
+    assert latest.deducted_inc_net_profit_shareholders_yoy == 0.0636
     assert latest.op_income_growth_qoq == 0.0336
     assert latest.net_profit_growth_qoq == 0.0202
     assert latest.deducted_net_profit_growth_qoq == 0.0168
@@ -289,8 +289,8 @@ def test_000778_finance_factor():
     assert latest.gross_profit == 5491000000
     assert latest.net_profit == 1811000000
     assert latest.deducted_net_profit == 1897000000
-    assert latest.op_income_growth_yoy == -0.1024
-    assert latest.net_profit_growth_yoy == 1.2404
+    assert latest.total_op_income_growth_yoy == -0.1024
+    assert latest.inc_net_profit_shareholders_yoy == 1.2404
     assert latest.deducted_net_profit_growth_yoy == 1.4813
     assert latest.op_income_growth_qoq == 0.0408
     assert latest.net_profit_growth_qoq == 0.2143

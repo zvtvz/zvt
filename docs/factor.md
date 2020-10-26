@@ -81,7 +81,7 @@ class FinanceGrowthFactor(ScoreFactor):
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = [FinanceFactor.op_income_growth_yoy, FinanceFactor.net_profit_growth_yoy,
+                 columns: List = [FinanceFactor.total_op_income_growth_yoy, FinanceFactor.inc_net_profit_shareholders_yoy,
                                   FinanceFactor.rota,
                                   FinanceFactor.roe],
                  filters: List = None,

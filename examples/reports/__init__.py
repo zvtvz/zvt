@@ -20,8 +20,8 @@ def risky_company(the_date=to_pd_timestamp(now_time_str()), income_yoy=-0.1, pro
     codes = []
     start_timestamp = to_pd_timestamp(the_date) - datetime.timedelta(130)
     # 营收降，利润降,流动比率低，速动比率低
-    finance_filter = or_(FinanceFactor.op_income_growth_yoy < income_yoy,
-                         FinanceFactor.net_profit_growth_yoy <= profit_yoy,
+    finance_filter = or_(FinanceFactor.total_op_income_growth_yoy < income_yoy,
+                         FinanceFactor.inc_net_profit_shareholders_yoy <= profit_yoy,
                          FinanceFactor.current_ratio < 0.7,
                          FinanceFactor.quick_ratio < 0.5)
     df = FinanceFactor.query_data(entity_ids=entity_ids, start_timestamp=start_timestamp, filters=[finance_filter],
