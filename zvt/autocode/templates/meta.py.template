@@ -16,5 +16,5 @@ class ${entity_class}(EntityMixin, ${entity_class}MetaBase):
     end_date = Column(DateTime)
 
 
-register_schema(providers=${providers}, db_name='${entity_type}', schema_base=${entity_class}MetaBase)
+register_schema(providers=${providers}, db_name='${entity_type}_meta', schema_base=${entity_class}MetaBase)
 

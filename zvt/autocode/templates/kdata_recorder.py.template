@@ -6,7 +6,7 @@ from zvt import IntervalLevel
 from zvt.api import get_kdata_schema
 from zvt.contract.recorder import FixedCycleDataRecorder
 
-from zvt_macro.domain import ${entity_class}, ${entity_class}KdataCommon
+from ${project}.domain import ${entity_class}, ${entity_class}KdataCommon
 
 
 class ${Provider}${entity_class}KdataRecorder(FixedCycleDataRecorder):

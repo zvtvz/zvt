@@ -28,7 +28,7 @@ def all_tpls(project: str, entity_type: str):
         if file_location == 'kdata_common.py':
             file_location = f'{project}/domain/quotes/__init__.py'
         elif file_location == 'meta.py':
-            file_location = f'{project}/domain/meta.py'
+            file_location = f'{project}/domain/{entity_type}_meta.py'
         # recorder
         elif file_location == 'kdata_recorder.py':
             file_location = f'{project}/recorders/{entity_type}_kdata_recorder.py'

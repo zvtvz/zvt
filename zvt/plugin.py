@@ -21,5 +21,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # gen_plugin_project(dir_path='../../', entity_type='macro')
+    # gen_plugin_project(dir_path='../../', entity_type='future')
     main()
