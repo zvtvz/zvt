@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+
+from zvt.contract.recorder import Recorder
+from zvt_macro.domain import ${entity_class}
+
+class ${Provider}${entity_class}Recorder(Recorder):
+    data_schema = ${entity_class}
+    provider = '${provider}'
+
+    def run(self):
+        pass

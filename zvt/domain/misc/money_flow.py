@@ -80,4 +80,5 @@ class StockMoneyFlow(MoneyFlowBase, Mixin):
 
 register_schema(providers=['sina'], db_name='money_flow', schema_base=MoneyFlowBase)
 
+# the __all__ is generated
 __all__ = ['BlockMoneyFlow', 'StockMoneyFlow']

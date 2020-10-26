@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+from sqlalchemy import Column, Float
+
+from zvt.domain import KdataCommon
+
+
+# ${entity_type} common kdata
+class ${entity_class}KdataCommon(KdataCommon):
+    pass

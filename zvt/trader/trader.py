@@ -447,3 +447,5 @@ class Trader(object):
 
 class StockTrader(Trader):
     entity_schema = Stock
+# the __all__ is generated
+__all__ = ['Trader', 'StockTrader']

@@ -140,4 +140,5 @@ class StockDetail(StockMetaBase, BaseSecurity):
 register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina'], db_name='stock_meta',
                 schema_base=StockMetaBase)
 
-__all__ = ['Stock', 'Index', 'Block', 'Etf', 'IndexStock', 'BlockStock', 'EtfStock', 'StockDetail']
+# the __all__ is generated
+__all__ = ['BaseSecurity', 'BasePortfolio', 'Stock', 'Block', 'Index', 'Etf', 'BasePortfolioStock', 'BasePortfolioStockHistory', 'BlockStock', 'IndexStock', 'EtfStock', 'StockDetail']

@@ -15,3 +15,5 @@ class Block1monKdata(KdataBase, BlockKdataCommon):
 register_schema(providers=['eastmoney'], db_name='block_1mon_kdata', schema_base=KdataBase)
 
 __all__ = ['Block1monKdata']
+# the __all__ is generated
+__all__ = ['Block1monKdata']

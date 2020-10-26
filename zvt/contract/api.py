@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
-from typing import List, Union
 import platform
+from typing import List, Union
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -16,6 +17,8 @@ from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract import zvt_context
 from zvt.utils.pd_utils import pd_is_not_null, index_df
 from zvt.utils.time_utils import to_pd_timestamp
+
+logger = logging.getLogger(__name__)
 
 
 def get_db_name(data_schema: DeclarativeMeta) -> str:
@@ -389,25 +392,26 @@ def df_to_db(df: pd.DataFrame,
              data_schema: DeclarativeMeta,
              provider: str,
              force_update: bool = False,
-             sub_size: int = 5000) -> object:
+             sub_size: int = 5000,
+             drop_duplicates: bool = False) -> object:
     """
     FIXME:improve
     store the df to db
 
     :param df:
-    :type df:
     :param data_schema:
-    :type data_schema:
     :param provider:
-    :type provider:
     :param force_update:
-    :type force_update:
     :param sub_size:
+    :param drop_duplicates:
     :return:
-    :rtype:
     """
     if not pd_is_not_null(df):
         return
+
+    if drop_duplicates and df.duplicated(subset='id').any():
+        logger.warning(f'remove duplicated:{df[df.duplicated()]}')
+        df = df.drop_duplicates(subset='id', keep='last')
 
     db_engine = get_db_engine(provider, data_schema=data_schema)
 

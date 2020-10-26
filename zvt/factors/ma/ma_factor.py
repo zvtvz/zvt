@@ -4,9 +4,8 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.api import AdjustType
 from zvt.api.quote import get_ma_factor_schema
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract import IntervalLevel, EntityMixin, AdjustType
 from zvt.contract.api import get_entities
 from zvt.domain import Stock
 from zvt.factors import Accumulator

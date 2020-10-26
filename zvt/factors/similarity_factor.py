@@ -4,7 +4,7 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from zvt.api import AdjustType, get_kdata, get_kdata_schema
+from zvt.api import get_kdata, get_kdata_schema
 from zvt.contract import EntityMixin, IntervalLevel
 from zvt.domain import Stock
 from zvt.factors import TechnicalFactor, Transformer, Accumulator

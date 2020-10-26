@@ -21,3 +21,5 @@ class Stock1wkMaStateStats(Stock1wkMaStateStatsBase, Mixin):
 
 
 register_schema(providers=['zvt'], db_name='stock_1wk_ma_stats', schema_base=Stock1wkMaStateStatsBase)
+# the __all__ is generated
+__all__ = ['Stock1wkMaStateStats']

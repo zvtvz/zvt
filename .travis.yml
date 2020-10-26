@@ -1,14 +1,14 @@
 language: python
 cache: pip
 python:
-- '3.6'
+  - '3.6'
 install:
   - git fetch --tags --depth=500
   - pip install 'pytest>=3.6' --force-reinstall
   - pip install pytest-cov codecov
   - pip install -r ./requirements.txt
 script:
-- pytest  tests/ --cov-report term --cov=./zvt --ignore=tests/recorders/
+  - pytest ./tests --cov-config=.coveragerc --cov-report term --cov=./zvt --ignore=tests/recorders/
 after_success:
   - codecov
 deploy:
@@ -21,7 +21,4 @@ deploy:
 notifications:
   email:
     recipients:
-    - 5533061@qq.com
-env:
-  matrix:
-  - secure: G9oTTNGXdfP3QFJPZrSvp7zWV/DC3JJn3N8FZ+SgKuair0ThHHCG5bfBQkkgn8/HbF+AEMnEUKrQwBy1iXbOPaqBRBOG25sL9Gx6LjvUY9hnM+5zYQ/TsIthSXDNQFQhWH58tJP/1M12SkOvRcsjSurhD/As/cT8jiSgjBi0qtdtVFWBiiaVePhBch0MR9FiNnUKfOkkadMUr87H2OsklYNdiDWRPBZUjDMg9Im1UKT0BYAKCZHvg5Rgk8LC83YMf8HDLtzyNwrPVdwI4+p2i784gqk+rcWj8pePydP7abxcg9HhzJEpgwKibgbWWaV1ICML5bgcb8lgRI4eo3Qa8PUmOZG0KwwhBT8tIzxV6aNzWY61uV17PozWIwCAFTygQakQsVqpfrXrgU8h+gQYPFQ821Kf1MO9Ce6faFx0JRfCiNRTQ0jr1b8LESct1xZalWOuOJ1+w+k0OxpDCYfjVlsX13hwbVuZKBv8eKfYt+9iSjF/7sQnEA57jCUBqZBqAHCTySRGMRZBusumMDkvOxfa4exf3mVCD2uREkk0H8JlC511SpWpYlIFvhMZ52DEht0tH6lDHfI8z9ud4JLR3qRz6yH1ptZelN3nwT20/LV3k045gswC2UNNujwHxvlcaYcY0PWbCRQUxXkCkDL48PbsiKKD+26u+Y+uaYB20Vo=
+      - 5533061@qq.com

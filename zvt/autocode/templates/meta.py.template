@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+from sqlalchemy import Column, DateTime, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+
+from zvt.contract import EntityMixin
+from zvt.contract.register import register_schema
+
+${entity_class}MetaBase = declarative_base()
+
+
+class ${entity_class}(EntityMixin, ${entity_class}MetaBase):
+    __tablename__ = '${entity_type}'
+    # 上市日
+    list_date = Column(DateTime)
+    # 退市日
+    end_date = Column(DateTime)
+
+
+register_schema(providers=${providers}, db_name='${entity_type}', schema_base=${entity_class}MetaBase)
+

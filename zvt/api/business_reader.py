@@ -72,3 +72,5 @@ if __name__ == '__main__':
     drawer = Drawer(main_data=NormalData(reader.data_df.copy()[['trader_name', 'timestamp', 'all_value']],
                                          category_field='trader_name'))
     drawer.draw_line()
+# the __all__ is generated
+__all__ = ['AccountStatsReader', 'OrderReader']

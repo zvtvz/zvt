@@ -2,12 +2,11 @@
 import argparse
 
 import pandas as pd
-
 from jqdatapy.api import get_token, get_bars
+
 from zvt import init_log, zvt_env
-from zvt.api import get_kdata, AdjustType
-from zvt.api.quote import generate_kdata_id, get_kdata_schema
-from zvt.contract import IntervalLevel
+from zvt.api.quote import generate_kdata_id, get_kdata_schema, get_kdata
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata
@@ -130,6 +129,8 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                     return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_ISO8601))
 
             df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
+
+            df = df.drop_duplicates(subset='id', keep='last')
 
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 

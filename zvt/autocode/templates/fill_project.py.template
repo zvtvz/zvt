@@ -1,0 +1,9 @@
+# script to auto generate some files
+
+from zvt.contract import IntervalLevel
+from zvt.generator import gen_kdata_schema, gen_exports
+
+if __name__ == '__main__':
+    gen_kdata_schema(pkg='${project}', providers=${providers}, entity_type='${entity_type}',
+                 levels=[IntervalLevel.LEVEL_1DAY], adjust_types=[None])
+    gen_exports()

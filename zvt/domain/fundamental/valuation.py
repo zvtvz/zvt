@@ -64,4 +64,5 @@ class EtfValuation(ValuationBase, Mixin):
 
 register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase)
 
+# the __all__ is generated
 __all__ = ['StockValuation', 'EtfValuation']

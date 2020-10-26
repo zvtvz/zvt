@@ -963,4 +963,5 @@ class FinanceFactor(FinanceBase, Mixin):
 
 register_schema(providers=['eastmoney'], db_name='finance', schema_base=FinanceBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement']
+# the __all__ is generated
+__all__ = ['BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceFactor']

@@ -1,0 +1,4 @@
+include *.md
+include *.txt
+include LICENSE
+recursive-include ${project}/* *
