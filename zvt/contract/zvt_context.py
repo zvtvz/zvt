@@ -21,6 +21,7 @@ if "db_engine" in zvt_env and zvt_env['db_engine'] == "mysql":
     mysql_engine = create_engine(
         f"mysql://{zvt_env['mysql_username']}:{zvt_env['mysql_password']}@{zvt_env['mysql_server_address']}:"
         f"{zvt_env['mysql_server_port']}/{zvt_env['db_name']}?charset=utf8mb4", pool_recycle=3600, echo=False)
+
     # provider_dbname -> engine
     db_engine_map = {
         "joinquant_stock_meta": mysql_engine,
