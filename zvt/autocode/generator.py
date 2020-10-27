@@ -150,10 +150,7 @@ def gen_kdata_schema(pkg: str,
             cap_level = level.value.capitalize()
 
             # you should define {EntityType}KdataCommon in kdata_module at first
-            if level != IntervalLevel.LEVEL_TICK:
-                kdata_common = f'{cap_entity_type}KdataCommon'
-            else:
-                kdata_common = f'{cap_entity_type}TickCommon'
+            kdata_common = f'{cap_entity_type}KdataCommon'
 
             if adjust_type and (adjust_type != AdjustType.qfq):
                 class_name = f'{cap_entity_type}{cap_level}{adjust_type.value.capitalize()}Kdata'
@@ -241,5 +238,4 @@ def gen_plugin_project(entity_type, prefix: str = 'zvt', dir_path: str = '.', pr
 
 
 # the __all__ is generated
-__all__ = ['all_sub_modules', 'all_sub_all', 'fill_package_if_not_exist', 'fill_package', 'gen_exports',
-           'gen_kdata_schema', 'gen_plugin_project']
+__all__ = ['all_sub_modules', 'all_sub_all', 'fill_package_if_not_exist', 'fill_package', 'gen_exports', 'gen_kdata_schema', 'gen_plugin_project']

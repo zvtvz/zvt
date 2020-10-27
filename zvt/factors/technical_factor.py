@@ -3,8 +3,9 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from zvt.api.quote import get_kdata_schema, Stock
+from zvt.api.quote import get_kdata_schema
 from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.domain import Stock
 from zvt.factors.algorithm import MacdTransformer, consecutive_count
 from zvt.factors.factor import Factor, Transformer, Accumulator
 

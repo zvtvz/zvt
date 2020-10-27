@@ -22,16 +22,13 @@ def get_kdata_schema(entity_type: str,
         adjust_type = AdjustType(adjust_type)
 
     # kdata schema rule
-    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}Kdata
+    # 1)name:{entity_type.capitalize()}{IntervalLevel.value.upper()}Kdata
     if adjust_type and (adjust_type != AdjustType.qfq):
         schema_str = '{}{}{}Kdata'.format(entity_type.capitalize(), level.value.capitalize(),
                                           adjust_type.value.capitalize())
     else:
         schema_str = '{}{}Kdata'.format(entity_type.capitalize(), level.value.capitalize())
-    try:
-        return eval(schema_str)
-    except:
-        return get_schema_by_name(schema_str)
+    return get_schema_by_name(schema_str)
 
 
 def get_ma_state_stats_schema(entity_type: str,
@@ -261,4 +258,7 @@ if __name__ == '__main__':
     # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1DAY) == Coin1dKdata
     # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1MIN) == Coin1mKdata
 # the __all__ is generated
-__all__ = ['get_kdata_schema', 'get_ma_state_stats_schema', 'get_ma_factor_schema', 'to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'data_exist', 'get_exchange', 'china_stock_code_to_id', 'generate_kdata_id', 'to_jq_report_period', 'to_high_level_kdata', 'portfolio_relate_stock', 'get_etf_stocks', 'get_kdata']
+__all__ = ['get_kdata_schema', 'get_ma_state_stats_schema', 'get_ma_factor_schema', 'to_report_period_type',
+           'get_recent_report_date', 'get_recent_report_period', 'data_exist', 'get_exchange', 'china_stock_code_to_id',
+           'generate_kdata_id', 'to_jq_report_period', 'to_high_level_kdata', 'portfolio_relate_stock',
+           'get_etf_stocks', 'get_kdata']
