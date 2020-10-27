@@ -66,6 +66,7 @@ setup(
         'console_scripts': [
             'zvt = zvt.main:main',
             'zvt_plugin = zvt.plugin:main',
+            'zvt_export = zvt.plugin:export',
         ],
     },
 )

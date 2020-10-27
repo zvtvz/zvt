@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 
+from zvt.autocode import gen_exports
 from zvt.autocode.generator import gen_plugin_project
 
 
@@ -18,6 +19,14 @@ def main():
     providers = args.providers
     prefix = args.prefix
     gen_plugin_project(prefix=prefix, dir_path=dir_path, entity_type=entity, providers=providers)
+
+
+def export():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dir', help='export directory', default='.')
+    args = parser.parse_args()
+    dir_path = args.dir
+    gen_exports(dir_path=dir_path)
 
 
 if __name__ == '__main__':
