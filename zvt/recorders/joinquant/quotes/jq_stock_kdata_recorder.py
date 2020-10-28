@@ -4,7 +4,7 @@ import argparse
 import pandas as pd
 from jqdatapy.api import get_token, get_bars
 
-from zvt import init_log, zvt_env
+from zvt import init_log, zvt_config
 from zvt.api.quote import generate_kdata_id, get_kdata_schema, get_kdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
@@ -53,7 +53,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
         self.adjust_type = adjust_type
 
-        get_token(zvt_env['jq_username'], zvt_env['jq_password'], force=True)
+        get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)

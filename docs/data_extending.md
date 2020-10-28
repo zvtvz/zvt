@@ -190,7 +190,7 @@ from jqdatasdk import auth, logout, query, valuation, get_fundamentals_continuou
 from zvdata.api import df_to_db
 from zvdata.recorder import TimeSeriesDataRecorder
 from zvdata.utils.time_utils import now_pd_timestamp, now_time_str, to_time_str
-from zvt import zvt_env
+from zvt import zvt_config
 from zvt.domain import Stock, StockValuation, EtfStock
 from zvt.recorders.joinquant.common import to_jq_entity_id
 
@@ -210,7 +210,7 @@ class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+        auth(zvt_config['jq_username'], zvt_config['jq_password'])
 
     def on_finish(self):
         super().on_finish()

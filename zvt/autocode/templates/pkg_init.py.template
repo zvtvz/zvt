@@ -1,0 +1,12 @@
+# -*- coding: utf-8 -*-
+import functools
+
+from zvt import init_config
+
+${project}_config = {}
+
+int_${project}_config = functools.partial(init_config, pkg_name='${project}', current_config=${project}_config)
+
+int_${project}_config()
+
+__all__ = ['int_${project}_config']

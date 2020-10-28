@@ -76,7 +76,7 @@ def fill_package(dir_path: str):
         if os.path.isdir(dir_path):
             pkg_file = os.path.join(dir_path, '__init__.py')
             if not os.path.exists(pkg_file):
-                package_template = '# -*- coding: utf-8 -*-'
+                package_template = '# -*- coding: utf-8 -*-\n'
                 with open(pkg_file, 'w') as outfile:
                     outfile.write(package_template)
 
@@ -238,4 +238,5 @@ def gen_plugin_project(entity_type, prefix: str = 'zvt', dir_path: str = '.', pr
 
 
 # the __all__ is generated
-__all__ = ['all_sub_modules', 'all_sub_all', 'fill_package_if_not_exist', 'fill_package', 'gen_exports', 'gen_kdata_schema', 'gen_plugin_project']
+__all__ = ['all_sub_modules', 'all_sub_all', 'fill_package_if_not_exist', 'fill_package', 'gen_exports',
+           'gen_kdata_schema', 'gen_plugin_project']

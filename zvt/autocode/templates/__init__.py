@@ -40,6 +40,8 @@ def all_tpls(project: str, entity_type: str):
         # tests
         elif file_location == 'test_pass.py':
             file_location = f'tests/test_pass.py'
+        elif file_location == 'pkg_init.py':
+            file_location = f'{project}/__init__.py'
 
         tpls.append((file_location, string.Template(data)))
     return tpls

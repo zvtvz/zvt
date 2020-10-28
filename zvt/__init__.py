@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 import enum
+import importlib
 import json
 import logging
 import os
+import pkgutil
+import pprint
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
+import pkg_resources
 from pkg_resources import get_distribution, DistributionNotFound
 
 from zvt.settings import DATA_SAMPLE_ZIP_PATH, ZVT_TEST_HOME, ZVT_HOME, ZVT_TEST_DATA_PATH, ZVT_TEST_ZIP_DATA_PATH
@@ -17,6 +21,8 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
+
+logger = logging.getLogger(__name__)
 
 
 # common class
@@ -138,12 +144,12 @@ def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
 
     file_name = os.path.join(log_dir, file_name)
 
-    fh = RotatingFileHandler(file_name, maxBytes=524288000, backupCount=10)
+    file_log_handler = RotatingFileHandler(file_name, maxBytes=524288000, backupCount=10)
 
-    fh.setLevel(logging.INFO)
+    file_log_handler.setLevel(logging.INFO)
 
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
+    console_log_handler = logging.StreamHandler()
+    console_log_handler.setLevel(logging.INFO)
 
     # create formatter and add it to the handlers
     if simple_formatter:
@@ -152,12 +158,12 @@ def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
     else:
         formatter = logging.Formatter(
             "%(asctime)s  %(levelname)s  %(threadName)s  %(name)s:%(filename)s:%(lineno)s  %(funcName)s  %(message)s")
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
+    file_log_handler.setFormatter(formatter)
+    console_log_handler.setFormatter(formatter)
 
     # add the handlers to the logger
-    root_logger.addHandler(fh)
-    root_logger.addHandler(ch)
+    root_logger.addHandler(file_log_handler)
+    root_logger.addHandler(console_log_handler)
 
 
 pd.set_option('expand_frame_repr', False)
@@ -165,9 +171,14 @@ pd.set_option('mode.chained_assignment', 'raise')
 
 zvt_env = {}
 
+zvt_config = {}
 
-def init_env(zvt_home: str) -> None:
+_plugins = {}
+
+
+def init_env(zvt_home: str, **kwargs) -> dict:
     """
+    init env
 
     :param zvt_home: home path for zvt
     """
@@ -193,21 +204,68 @@ def init_env(zvt_home: str) -> None:
     if not os.path.exists(zvt_env['log_path']):
         os.makedirs(zvt_env['log_path'])
 
-    # create default config.json if not exist
-    config_path = os.path.join(zvt_home, 'config.json')
-    if not os.path.exists(config_path):
-        from shutil import copyfile
-        copyfile(os.path.abspath(os.path.join(os.path.dirname(__file__), 'samples', 'config.json')), config_path)
-
-    with open(config_path) as f:
-        config_json = json.load(f)
-        for k in config_json:
-            zvt_env[k] = config_json[k]
-
     init_log()
 
-    import pprint
     pprint.pprint(zvt_env)
+
+    # init config
+    init_config(current_config=zvt_config, **kwargs)
+    # init plugin
+    # init_plugins()
+
+    return zvt_env
+
+
+def init_config(pkg_name: str = None, current_config: dict = None, **kwargs) -> dict:
+    """
+    init config
+    """
+
+    # create default config.json if not exist
+    if pkg_name:
+        config_file = f'{pkg_name}_config.json'
+    else:
+        pkg_name = 'zvt'
+        config_file = 'config.json'
+
+    logger.info(f'init config for {pkg_name}, current_config:{current_config}')
+
+    config_path = os.path.join(zvt_env['zvt_home'], config_file)
+    if not os.path.exists(config_path):
+        from shutil import copyfile
+        try:
+            sample_config = pkg_resources.resource_filename(pkg_name, 'config.json')
+            if os.path.exists(sample_config):
+                copyfile(sample_config, config_path)
+        except Exception as e:
+            logger.warning(f'could not load config.json from package {pkg_name}')
+
+    if os.path.exists(config_path):
+        with open(config_path) as f:
+            config_json = json.load(f)
+            for k in config_json:
+                current_config[k] = config_json[k]
+
+    # set and save the config
+    for k in kwargs:
+        current_config[k] = kwargs[k]
+        with open(config_path, 'w+') as outfile:
+            json.dump(current_config, outfile)
+
+    pprint.pprint(current_config)
+    logger.info(f'current_config:{current_config}')
+
+    return current_config
+
+
+def init_plugins():
+    for finder, name, ispkg in pkgutil.iter_modules():
+        if name.startswith('zvt_'):
+            try:
+                _plugins[name] = importlib.import_module(name)
+            except Exception as e:
+                logger.warning(f'failed to load plugin {name}', e)
+    logger.info(f'loaded plugins:{_plugins}')
 
 
 if os.getenv('TESTING_ZVT'):
@@ -233,4 +291,4 @@ else:
 # import the recorders for register them to the domain
 import zvt.recorders as zvt_recorders
 
-__all__ = ['zvt_env', 'init_log', 'init_env', 'IntervalLevel', '__version__', 'AdjustType']
+__all__ = ['zvt_env', 'zvt_config', 'init_log', 'init_env', 'init_config', 'IntervalLevel', '__version__', 'AdjustType']
