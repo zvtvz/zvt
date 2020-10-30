@@ -178,11 +178,15 @@ class MacdTransformer(Transformer):
         self.indicators.append('dea')
         self.indicators.append('macd')
 
-    def transform(self, input_df) -> pd.DataFrame:
-        macd_df = input_df.groupby(level=0)['close'].apply(
-            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
-        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
-        return input_df
+    # def transform(self, input_df) -> pd.DataFrame:
+    #     macd_df = input_df.groupby(level=0)['close'].apply(
+    #         lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
+    #     input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
+    #     return input_df
+
+    def transform_one(self, one_df: pd.DataFrame) -> pd.DataFrame:
+        print(f'transform_one {one_df}')
+        return macd(one_df['close'], slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal)
 
 
 class RankScorer(Scorer):

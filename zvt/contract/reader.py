@@ -159,13 +159,10 @@ class DataReader(object):
         self.logger.info('load_data start')
         start_time = time.time()
 
-        self.data_df = self.data_schema.query_data(entity_ids=self.entity_ids,
-                                                   provider=self.provider, columns=self.columns,
-                                                   start_timestamp=self.start_timestamp,
+        self.data_df = self.data_schema.query_data(entity_ids=self.entity_ids, provider=self.provider,
+                                                   columns=self.columns, start_timestamp=self.start_timestamp,
                                                    end_timestamp=self.end_timestamp, filters=self.filters,
-                                                   order=self.order,
-                                                   limit=self.limit,
-                                                   level=self.level,
+                                                   order=self.order, limit=self.limit, level=self.level,
                                                    index=[self.category_field, self.time_field],
                                                    time_field=self.time_field)
 

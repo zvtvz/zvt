@@ -5,7 +5,6 @@ import time
 from typing import List, Union
 
 import pandas as pd
-
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_data, df_to_db
 from zvt.contract.normal_data import NormalData
@@ -28,17 +27,50 @@ class Transformer(Indicator):
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
-        transform input_df
+        the input_df is df with index(entity_id,timestamp):
+
+                                  col1    col2    col3    ...
+        entity_id    timestamp
+                                  1.2     0.5     0.3     ...
+                                  1.0     0.7     0.2     ...
+
+        the return result would change the columns and  keep the format
 
         :param input_df:
         :return:
         """
-        return input_df
+        g = input_df.groupby(level=0)
+        if len(g.groups) == 1:
+            entity_id = input_df.index[0][0]
+
+            one_df = input_df.reset_index(level=0, drop=True)
+            df = self.transform_one(one_df=one_df)
+            df['entity_id'] = entity_id
+
+            return df.set_index('entity_id', append=True).swaplevel(0, 1)
+        else:
+            return g.apply(lambda x: self.transform_one(x.reset_index(level=0, drop=True)))
+
+    def transform_one(self, one_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        the one_df is df with index(timestamp):
+
+                     col1    col2    col3    ...
+        timestamp
+                     1.2     0.5     0.3     ...
+                     1.0     0.7     0.2     ...
+
+        the return result would change the columns and  keep the format
+
+        :param one_df:
+        :return:
+        """
+        return one_df
 
 
 class Accumulator(Indicator):
 
-    def __init__(self, acc_window: int = 1) -> object:
+    def __init__(self, acc_window: int = 1) -> None:
         """
 
         :param acc_window: the window size of acc for computing,default is 1
@@ -142,6 +174,7 @@ class Factor(DataReader, DataListener):
         # factor_df->result_df
         self.result_df: pd.DataFrame = None
 
+        # the feature of persisting factor is not good yet,may change the latter
         if self.need_persist:
             if self.dry_run:
                 # 如果只是为了计算因子，只需要读取acc_window的factor_df
