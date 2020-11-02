@@ -1,24 +1,38 @@
 # -*- coding: utf-8 -*-
 import argparse
+import logging
 from typing import List, Union
 
 import pandas as pd
 
-from zvt.domain import Stock
-from zvt.api.quote import get_ma_state_stats_schema
 from zvt.contract import IntervalLevel, EntityMixin
-from zvt.contract.api import get_entities
+from zvt.contract.api import get_entities, get_schema_by_name
+from zvt.domain import Stock
 from zvt.factors.algorithm import MaTransformer
 from zvt.factors.factor import Accumulator, Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.pd_utils import pd_is_not_null
+
+logger = logging.getLogger(__name__)
+
+
+def get_ma_state_stats_schema(entity_type: str,
+                              level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
+    if type(level) == str:
+        level = IntervalLevel(level)
+
+    # ma state stats schema rule
+    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}MaStateStats
+    schema_str = '{}{}MaStateStats'.format(entity_type.capitalize(), level.value.capitalize())
+
+    return get_schema_by_name(schema_str)
 
 
 # 均线状态统计
 class MaAccumulator(Accumulator):
 
     def __init__(self, short_window, long_window) -> None:
-        super().__init__(acc_window = 1)
+        super().__init__(acc_window=1)
         self.short_window = short_window
         self.long_window = long_window
 
@@ -169,6 +183,31 @@ def show_slope(codes):
     fig.show()
 
 
+def cal_ma_states(start='000001', end='000002'):
+    logger.info(f'start cal day ma stats {start}:{end}')
+
+    entities = get_entities(provider='eastmoney', entity_type='stock', columns=[Stock.entity_id, Stock.code],
+                            filters=[Stock.code >= start, Stock.code < end])
+
+    codes = entities.index.to_list()
+
+    ma_1d_stats = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
+                                     end_timestamp=now_pd_timestamp(),
+                                     level=IntervalLevel.LEVEL_1DAY)
+
+    ma_1d_factor = MaFactor(codes=codes, start_timestamp='2005-01-01',
+                            end_timestamp=now_pd_timestamp(),
+                            level=IntervalLevel.LEVEL_1DAY)
+
+    logger.info(f'finish cal day ma stats {start}:{end}')
+
+    ma_1wk_stats = MaStateStatsFactor(codes=codes, start_timestamp='2005-01-01',
+                                      end_timestamp=now_pd_timestamp(),
+                                      level=IntervalLevel.LEVEL_1WEEK)
+
+    logger.info(f'finish cal week ma stats {start}:{end}')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d',
@@ -194,3 +233,5 @@ if __name__ == '__main__':
 
     for entity_id, df in factor.factor_df.groupby(level=0):
         print(df['current_pct'].max)
+# the __all__ is generated
+__all__ = ['get_ma_state_stats_schema', 'MaAccumulator', 'MaStateStatsFactor', 'show_slope', 'cal_ma_states']

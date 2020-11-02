@@ -5,9 +5,8 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.domain import Stock
-from zvt.factors import Accumulator
 from zvt.factors.algorithm import IntersectTransformer
-from zvt.factors.factor import Transformer
+from zvt.factors.factor import Transformer, Accumulator
 from zvt.factors.technical_factor import TechnicalFactor
 
 
@@ -45,3 +44,5 @@ if __name__ == '__main__':
                         kdata_overlap=4)
     print(factor.result_df[factor.result_df['score']])
     print(len(factor.result_df))
+# the __all__ is generated
+__all__ = ['SoloFactor']

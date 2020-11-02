@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.domain import BalanceSheet
-from zvt.factors import GoodCompanyFactor
+from zvt.factors.fundamental import GoodCompanyFactor
 from zvt.factors.target_selector import TargetSelector
 
 

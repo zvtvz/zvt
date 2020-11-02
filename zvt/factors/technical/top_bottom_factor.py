@@ -2,12 +2,12 @@
 from typing import List, Union
 
 import pandas as pd
-
+from zvt import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.reader import DataReader
 from zvt.domain import Stock, Stock1dKdata
 from zvt.drawer.drawer import Drawer
-from zvt.factors import Accumulator
+from zvt.factors.factor import Accumulator
 from zvt.factors.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.time_utils import now_pd_timestamp
@@ -62,3 +62,5 @@ if __name__ == '__main__':
 
     drawer = Drawer(main_df=data_reader1.data_df, factor_df=factor.factor_df[['top', 'bottom']])
     drawer.draw_kline()
+# the __all__ is generated
+__all__ = ['TopBottomTransformer', 'TopBottomFactor']

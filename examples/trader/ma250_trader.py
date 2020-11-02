@@ -9,8 +9,7 @@ from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities
 from zvt.domain import Stock
-from zvt.factors import TargetSelector
-from zvt.factors.ma.ma_factor import ImprovedMaFactor
+from zvt.factors import TargetSelector, ImprovedMaFactor
 from zvt.informer.informer import EmailInformer
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.trader import StockTrader

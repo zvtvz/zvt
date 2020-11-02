@@ -7,8 +7,7 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.domain import FinanceFactor, BalanceSheet, Stock
-from zvt.factors import Transformer, Accumulator, FilterFactor
-from zvt.factors.factor import Factor
+from zvt.factors.factor import Factor, Transformer, Accumulator, FilterFactor
 
 
 class FinanceBaseFactor(Factor):
@@ -132,3 +131,5 @@ if __name__ == '__main__':
                                     BalanceSheet.accounts_receivable <= 0.2 * BalanceSheet.total_current_assets],
                                 col_period_threshold=None, keep_all_timestamp=False)
     print(factor2.result_df)
+# the __all__ is generated
+__all__ = ['FinanceBaseFactor', 'GoodCompanyFactor']

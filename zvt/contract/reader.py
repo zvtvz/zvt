@@ -2,7 +2,7 @@
 import json
 import logging
 import time
-from typing import List, Union
+from typing import List, Union, Type
 
 import pandas as pd
 
@@ -46,8 +46,8 @@ class DataReader(object):
     logger = logging.getLogger(__name__)
 
     def __init__(self,
-                 data_schema: Mixin,
-                 entity_schema: EntityMixin,
+                 data_schema: Type[Mixin],
+                 entity_schema: Type[EntityMixin],
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,

@@ -5,12 +5,10 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 
-from zvt.api import get_kdata, AdjustType
+from zvt import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.domain import Stock
-from zvt.factors import TargetSelector, Accumulator
-from zvt.factors.ma.ma_factor import ImprovedMaFactor
-from zvt.factors.top_bottom_factor import TopBottomFactor
+from zvt.factors import TargetSelector, Accumulator, TopBottomFactor, ImprovedMaFactor
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
 

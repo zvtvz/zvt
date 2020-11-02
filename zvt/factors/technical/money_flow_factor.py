@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
-from zvt.utils.pd_utils import normal_index_df
 from zvt.domain import BlockMoneyFlow, Block, BlockCategory
-from zvt.factors import ScoreFactor, Union, Scorer
+from zvt.factors import ScoreFactor, Scorer
 from zvt.factors.algorithm import RankScorer
+from zvt.utils.pd_utils import normal_index_df
 
 
 #     # 净流入
@@ -49,3 +49,5 @@ if __name__ == '__main__':
     f1 = BlockMoneyFlowFactor(start_timestamp='2019-01-01')
 
     print(f1.result_df)
+# the __all__ is generated
+__all__ = ['BlockMoneyFlowFactor']

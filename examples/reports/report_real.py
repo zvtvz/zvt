@@ -12,7 +12,7 @@ from zvt.contract.api import get_entities
 from zvt import init_log
 from zvt.domain import Stock1dKdata, BlockStock, Block, StockValuation, Stock
 from zvt.factors import TargetSelector
-from zvt.factors.ma.ma_factor import VolumeUpMa250Factor
+from zvt.factors.technical import VolumeUpMa250Factor
 from zvt.informer.informer import EmailInformer
 
 logger = logging.getLogger(__name__)

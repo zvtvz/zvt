@@ -290,3 +290,5 @@ def consecutive_count(input_df, col, pattern=[-5, 1]):
             input_df.loc[index, 'count'] = count
 
         print(f'consecutive_count for {entity_id}')
+# the __all__ is generated
+__all__ = ['ma', 'ema', 'macd', 'MaTransformer', 'point_in_range', 'intersect_ranges', 'intersect', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'RankScorer', 'QuantileScorer', 'consecutive_count']

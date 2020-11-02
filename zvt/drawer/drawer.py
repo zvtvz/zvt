@@ -4,12 +4,11 @@ import os
 import pandas as pd
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-
 from zvt import zvt_env
 from zvt.contract.api import decode_entity_id
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader
-from zvt.domain import Stock1dMaStateStats, Stock
+from zvt.domain import Stock
 from zvt.domain.quotes.stock import Stock1dKdata
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_time_str, TIME_FORMAT_ISO8601
@@ -262,6 +261,8 @@ def to_annotations(annotation_df: pd.DataFrame):
 
 
 if __name__ == '__main__':
+    from zvt.factors.technical.domain import Stock1dMaStateStats
+
     data_reader1 = DataReader(codes=['002223'], data_schema=Stock1dKdata, entity_schema=Stock)
     data_reader2 = DataReader(codes=['002223'], data_schema=Stock1dMaStateStats, entity_schema=Stock,
                               columns=['ma5', 'ma10', 'current_count', 'current_pct'])

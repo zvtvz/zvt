@@ -4,11 +4,10 @@ from typing import Union, List
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import exists, and_
 
-from zvt.contract import IntervalLevel, AdjustType
+from zvt.contract import IntervalLevel, AdjustType, Mixin
 from zvt.contract.api import decode_entity_id, get_schema_by_name
-from zvt.domain import *
+from zvt.domain import ReportPeriod, EtfStock
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -29,28 +28,6 @@ def get_kdata_schema(entity_type: str,
     else:
         schema_str = '{}{}Kdata'.format(entity_type.capitalize(), level.value.capitalize())
     return get_schema_by_name(schema_str)
-
-
-def get_ma_state_stats_schema(entity_type: str,
-                              level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
-    if type(level) == str:
-        level = IntervalLevel(level)
-
-    # ma state stats schema rule
-    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}MaStateStats
-    schema_str = '{}{}MaStateStats'.format(entity_type.capitalize(), level.value.capitalize())
-
-    return eval(schema_str)
-
-
-def get_ma_factor_schema(entity_type: str,
-                         level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
-    if type(level) == str:
-        level = IntervalLevel(level)
-
-    schema_str = '{}{}MaFactor'.format(entity_type.capitalize(), level.value.capitalize())
-
-    return eval(schema_str)
 
 
 def to_report_period_type(report_date):
@@ -88,10 +65,6 @@ def get_recent_report_date(the_date=now_pd_timestamp(), step=0):
 
 def get_recent_report_period(the_date=now_pd_timestamp(), step=0):
     return to_report_period_type(get_recent_report_date(the_date, step=step))
-
-
-def data_exist(session, schema, id):
-    return session.query(exists().where(and_(schema.id == id))).scalar()
 
 
 def get_exchange(code):
@@ -258,7 +231,7 @@ if __name__ == '__main__':
     # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1DAY) == Coin1dKdata
     # assert get_kdata_schema(entity_type='coin', level=IntervalLevel.LEVEL_1MIN) == Coin1mKdata
 # the __all__ is generated
-__all__ = ['get_kdata_schema', 'get_ma_state_stats_schema', 'get_ma_factor_schema', 'to_report_period_type',
-           'get_recent_report_date', 'get_recent_report_period', 'data_exist', 'get_exchange', 'china_stock_code_to_id',
+__all__ = ['get_kdata_schema', 'to_report_period_type',
+           'get_recent_report_date', 'get_recent_report_period', 'get_exchange', 'china_stock_code_to_id',
            'generate_kdata_id', 'to_jq_report_period', 'to_high_level_kdata', 'portfolio_relate_stock',
            'get_etf_stocks', 'get_kdata']

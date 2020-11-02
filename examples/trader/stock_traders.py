@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
-from zvt.factors.ma.ma_factor import CrossMaFactor
+from zvt.factors import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import BullFactor
 

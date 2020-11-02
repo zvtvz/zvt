@@ -8,7 +8,7 @@ from zvt.contract.api import get_entities
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt import init_log
 from zvt.domain import Stock, StockTradeDay
-from zvt.factors.ma.ma_factor import CrossMaFactor
+from zvt.factors.technical import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
 

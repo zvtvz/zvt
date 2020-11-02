@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from zvt import init_log
 from zvt.contract.api import get_entities
 from zvt.domain import Stock, Stock1dKdata, StockValuation
-from zvt.factors.ma.ma_factor import ImprovedMaFactor
+from zvt.factors import ImprovedMaFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
 from zvt.domain import Block
-from zvt.factors.money_flow_factor import BlockMoneyFlowFactor
+from zvt.factors.technical import BlockMoneyFlowFactor
 from zvt.factors.target_selector import TargetSelector
 
 

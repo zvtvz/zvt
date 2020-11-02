@@ -65,11 +65,6 @@ from .quotes import *
 from .quotes import __all__ as _quotes_all
 __all__ += _quotes_all
 
-# import all from submodule factors
-from .factors import *
-from .factors import __all__ as _factors_all
-__all__ += _factors_all
-
 # import all from submodule meta
 from .meta import *
 from .meta import __all__ as _meta_all

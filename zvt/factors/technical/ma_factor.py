@@ -3,16 +3,24 @@ import argparse
 from typing import List, Union
 
 import pandas as pd
-
-from zvt.api.quote import get_ma_factor_schema
 from zvt.contract import IntervalLevel, EntityMixin, AdjustType
-from zvt.contract.api import get_entities
+from zvt.contract.api import get_entities, get_schema_by_name
 from zvt.domain import Stock
-from zvt.factors import Accumulator
 from zvt.factors.algorithm import MaTransformer, MaAndVolumeTransformer
+from zvt.factors.factor import Accumulator
 from zvt.factors.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.time_utils import now_pd_timestamp
+
+
+def get_ma_factor_schema(entity_type: str,
+                         level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
+    if type(level) == str:
+        level = IntervalLevel(level)
+
+    schema_str = '{}{}MaFactor'.format(entity_type.capitalize(), level.value.capitalize())
+
+    return get_schema_by_name(schema_str)
 
 
 class MaFactor(TechnicalFactor):
@@ -166,3 +174,5 @@ if __name__ == '__main__':
                               end_timestamp=now_pd_timestamp(), need_persist=False,
                               level=level)
     print(factor.result_df)
+# the __all__ is generated
+__all__ = ['get_ma_factor_schema', 'MaFactor', 'CrossMaFactor', 'VolumeUpMa250Factor', 'ImprovedMaFactor']

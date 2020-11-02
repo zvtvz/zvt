@@ -5,9 +5,8 @@ import numpy as np
 
 from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
-from zvt.factors import TargetSelector
+from zvt.factors import TargetSelector, CrossMaFactor
 from zvt.factors import TechnicalFactor
-from zvt.factors.ma.ma_factor import CrossMaFactor
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
 

@@ -10,9 +10,7 @@ from examples.reports import risky_company
 from zvt import init_log
 from zvt.contract.api import get_entities, get_entity_code
 from zvt.domain import Stock1dKdata, Stock
-from zvt.factors import TargetSelector
-from zvt.factors.ma.ma_factor import ImprovedMaFactor
-from zvt.factors.ma.ma_stats import MaStateStatsFactor
+from zvt.factors import TargetSelector, ImprovedMaFactor
 from zvt.informer.informer import EmailInformer
 
 logger = logging.getLogger(__name__)

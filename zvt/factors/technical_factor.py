@@ -21,7 +21,7 @@ class TechnicalFactor(Factor):
                  the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low'],
+                 columns: List = None,
                  filters: List = None,
                  order: object = None,
                  limit: int = None,
@@ -37,6 +37,8 @@ class TechnicalFactor(Factor):
                  need_persist: bool = False,
                  dry_run: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
+        if columns is None:
+            columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low']
         self.adjust_type = adjust_type
         self.data_schema = get_kdata_schema(entity_schema.__name__, level=level, adjust_type=adjust_type)
 
@@ -127,3 +129,5 @@ if __name__ == '__main__':
 
     print(factor.factor_df.loc[('stock_sz_000338',)])
     print(factor.factor_df.loc[('stock_sz_000778',)])
+# the __all__ is generated
+__all__ = ['TechnicalFactor', 'BullFactor', 'KeepBullFactor', 'LiveOrDeadFactor', 'GoldCrossFactor']

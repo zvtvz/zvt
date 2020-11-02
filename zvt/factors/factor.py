@@ -349,3 +349,5 @@ class StateFactor(Factor):
 
     def get_long_state(self):
         pass
+# the __all__ is generated
+__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor']

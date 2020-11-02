@@ -241,3 +241,5 @@ class TargetSelector(object):
 
             drawer.draw_table(width=width, height=height, title=title,
                               keep_ui_state=keep_ui_state)
+# the __all__ is generated
+__all__ = ['TargetType', 'TargetSelector']
