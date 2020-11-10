@@ -3,7 +3,7 @@ from zvt.contract import IntervalLevel
 from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.factors.technical_factor import BullFactor
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 
 
 class TechnicalSelector(TargetSelector):

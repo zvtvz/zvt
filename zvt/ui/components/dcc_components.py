@@ -2,8 +2,8 @@
 
 import dash_core_components as dcc
 
-from zvt.api.business_reader import OrderReader, AccountStatsReader
 from zvt.api.quote import decode_entity_id, get_kdata_schema
+from zvt.api.trader_info_api import OrderReader, AccountStatsReader
 from zvt.contract.reader import DataReader
 from zvt.contract.zvt_context import entity_schema_map
 from zvt.drawer.drawer import Drawer
@@ -52,7 +52,7 @@ def get_trading_signals_figure(order_reader: OrderReader,
     print(df.tail())
 
     drawer = Drawer(main_df=kdata_reader.data_df, annotation_df=df)
-    return drawer.draw_kline()
+    return drawer.draw_kline(show=False)
 
 
 def get_account_stats_figure(account_stats_reader: AccountStatsReader):

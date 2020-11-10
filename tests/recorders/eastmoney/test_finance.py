@@ -3,7 +3,7 @@ from ...context import init_test_context
 
 init_test_context()
 
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 
 from zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder import ChinaStockFinanceFactorRecorder
 from zvt.recorders.eastmoney.finance.china_stock_cash_flow_recorder import ChinaStockCashFlowRecorder

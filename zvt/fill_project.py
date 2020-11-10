@@ -1,5 +1,5 @@
 # script to auto generate some files
-from zvt import IntervalLevel
+from zvt.contract import IntervalLevel
 from zvt.autocode.generator import gen_exports, gen_kdata_schema
 from zvt.contract import AdjustType
 
@@ -32,4 +32,4 @@ if __name__ == '__main__':
     # gen_exports('trader')
     # gen_exports('autocode')
     gen_exports('factors')
-    gen_kdata_schemas()
+    # gen_kdata_schemas()

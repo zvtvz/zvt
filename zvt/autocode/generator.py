@@ -2,7 +2,7 @@
 import os
 from typing import List
 
-from zvt import IntervalLevel, AdjustType
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.autocode.templates import all_tpls
 from zvt.utils import now_pd_timestamp
 from zvt.utils.file_utils import list_all_files

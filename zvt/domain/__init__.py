@@ -47,7 +47,6 @@ class CompanyType(enum.Enum):
     yinhang = 'yinhang'
     quanshang = 'quanshang'
 
-
 # the __all__ is generated
 __all__ = ['BlockCategory', 'ReportPeriod', 'InstitutionalInvestor', 'CompanyType']
 

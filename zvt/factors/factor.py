@@ -2,9 +2,10 @@
 import enum
 import logging
 import time
-from typing import List, Union
+from typing import List, Union, Optional, Type
 
 import pandas as pd
+
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_data, df_to_db
 from zvt.contract.normal_data import NormalData
@@ -27,7 +28,7 @@ class Transformer(Indicator):
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
-        the input_df is df with index(entity_id,timestamp):
+        input_df format:
 
                                   col1    col2    col3    ...
         entity_id    timestamp
@@ -43,17 +44,17 @@ class Transformer(Indicator):
         if len(g.groups) == 1:
             entity_id = input_df.index[0][0]
 
-            one_df = input_df.reset_index(level=0, drop=True)
-            df = self.transform_one(one_df=one_df)
+            df = input_df.reset_index(level=0, drop=True)
+            df = self.transform_one(entity_id=entity_id, df=df)
             df['entity_id'] = entity_id
 
             return df.set_index('entity_id', append=True).swaplevel(0, 1)
         else:
-            return g.apply(lambda x: self.transform_one(x.reset_index(level=0, drop=True)))
+            return g.apply(lambda x: self.transform_one(x.index[0][0], x.reset_index(level=0, drop=True)))
 
-    def transform_one(self, one_df: pd.DataFrame) -> pd.DataFrame:
+    def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
         """
-        the one_df is df with index(timestamp):
+        df format:
 
                      col1    col2    col3    ...
         timestamp
@@ -62,10 +63,10 @@ class Transformer(Indicator):
 
         the return result would change the columns and  keep the format
 
-        :param one_df:
+        :param df:
         :return:
         """
-        return one_df
+        return df
 
 
 class Accumulator(Indicator):
@@ -109,8 +110,8 @@ class Factor(DataReader, DataListener):
     factor_schema = None
 
     def __init__(self,
-                 data_schema: Mixin,
-                 entity_schema: EntityMixin = Stock,
+                 data_schema: Type[Mixin],
+                 entity_schema: Type[EntityMixin] = Stock,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,
@@ -250,25 +251,17 @@ class Factor(DataReader, DataListener):
         self.logger.info('<<<<<<')
 
     def factor_drawer(self) -> Drawer:
-        drawer = Drawer(NormalData(df=self.factor_df))
+        drawer = Drawer(self.factor_df)
         return drawer
 
-    def result_drawer(self) -> Drawer:
-        return Drawer(NormalData(df=self.result_df))
+    def get_main_data(self) -> Optional[NormalData]:
+        return self.data_df
 
-    def draw_factor(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                    width=None, height=None,
-                    title=None, keep_ui_state=True, **kwargs):
-        return self.factor_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
-                                         render=render, file_name=file_name,
-                                         width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
+    def get_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+        return [self.factor_df]
 
-    def draw_result(self, chart='line', plotly_layout=None, annotation_df=None, render='html', file_name=None,
-                    width=None, height=None,
-                    title=None, keep_ui_state=True, **kwargs):
-        return self.result_drawer().draw(chart=chart, plotly_layout=plotly_layout, annotation_df=annotation_df,
-                                         render=render, file_name=file_name,
-                                         width=width, height=height, title=title, keep_ui_state=keep_ui_state, **kwargs)
+    def get_sub_df(self) -> Optional[pd.DataFrame]:
+        return self.result_df
 
     def fill_gap(self):
         # 该操作较慢，只适合做基本面的运算
@@ -349,5 +342,7 @@ class StateFactor(Factor):
 
     def get_long_state(self):
         pass
+
+
 # the __all__ is generated
 __all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor']

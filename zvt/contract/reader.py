@@ -2,12 +2,13 @@
 import json
 import logging
 import time
-from typing import List, Union, Type
+from typing import List, Union, Type, Optional
 
 import pandas as pd
 
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_entities
+from zvt.drawer.drawer import Drawable
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
@@ -42,7 +43,7 @@ class DataListener(object):
         pass
 
 
-class DataReader(object):
+class DataReader(Drawable):
     logger = logging.getLogger(__name__)
 
     def __init__(self,
@@ -64,6 +65,7 @@ class DataReader(object):
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
                  computing_window: int = None) -> None:
+        super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.data_schema = data_schema
@@ -268,6 +270,9 @@ class DataReader(object):
     def empty(self):
         return not pd_is_not_null(self.data_df)
 
+    def get_main_df(self) -> Optional[pd.DataFrame]:
+        return self.data_df
+
 
 __all__ = ['DataListener', 'DataReader']
 
@@ -278,4 +283,4 @@ if __name__ == '__main__':
                              start_timestamp='2017-01-01',
                              end_timestamp='2019-06-10')
 
-    print(data_reader.data_df)
+    data_reader.draw(show=True)

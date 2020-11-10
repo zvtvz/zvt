@@ -3,7 +3,7 @@ from ...context import init_test_context
 
 init_test_context()
 
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 
 from zvt.recorders.eastmoney.holder.top_ten_holder_recorder import TopTenHolderRecorder
 from zvt.recorders.eastmoney.holder.top_ten_tradable_holder_recorder import TopTenTradableHolderRecorder

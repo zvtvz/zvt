@@ -7,7 +7,7 @@ xlrd == 1.1.0
 demjson == 2.2.4
 marshmallow-sqlalchemy == 0.23.1
 marshmallow == 3.2.2
-plotly==4.7.1
-dash==1.1.1
+plotly>=4.7.1
+dash>=1.1.1
 simplejson==3.16.0
 jqdatapy==0.1.2

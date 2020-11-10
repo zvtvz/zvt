@@ -6,7 +6,7 @@ from typing import List, Union
 
 import pandas as pd
 
-from zvt.api.business_reader import AccountStatsReader
+from zvt.api.trader_info_api import AccountStatsReader
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
 from zvt.contract.normal_data import NormalData

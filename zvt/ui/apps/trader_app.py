@@ -6,10 +6,10 @@ import dash_html_components as html
 from dash import dash
 from dash.dependencies import Input, Output, State
 
-from zvt.api.business import get_trader_info, get_order_securities
-from zvt.api.business_reader import AccountStatsReader, OrderReader
+from zvt.api.trader_info_api import get_trader_info, get_order_securities
+from zvt.api.trader_info_api import AccountStatsReader, OrderReader
 from zvt.domain import TraderInfo
-from zvt.drawer.dcc_components import get_account_stats_figure, get_trading_signals_figure
+from zvt.ui.components.dcc_components import get_account_stats_figure, get_trading_signals_figure
 from zvt.ui import zvt_app
 from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
 
@@ -141,7 +141,7 @@ def update_trader_details(interval, trader_index):
                 get_order_securities(trader_name=trader_names[trader_index])], \
                traders[trader_index].start_timestamp, \
                traders[trader_index].end_timestamp
-    raise dash.exceptions.PreventUpdate()
+    raise dash.PreventUpdate()
 
 
 @zvt_app.callback(
@@ -156,4 +156,4 @@ def update_target_signals(entity_id, start_date, end_date, trader_index):
             id=f'{entity_id}-signals',
             figure=get_trading_signals_figure(order_reader=order_readers[trader_index], entity_id=entity_id,
                                               start_timestamp=start_date, end_timestamp=end_date))
-    raise dash.exceptions.PreventUpdate()
+    raise dash.PreventUpdate()

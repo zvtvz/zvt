@@ -31,6 +31,11 @@ from .factor import *
 from .factor import __all__ as _factor_all
 __all__ += _factor_all
 
+# import all from submodule pattern
+from .pattern import *
+from .pattern import __all__ as _pattern_all
+__all__ += _pattern_all
+
 # import all from submodule technical
 from .technical import *
 from .technical import __all__ as _technical_all

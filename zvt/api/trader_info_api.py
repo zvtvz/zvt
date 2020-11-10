@@ -4,10 +4,31 @@ from typing import List, Union
 import pandas as pd
 
 from zvt.contract import IntervalLevel
+from zvt.contract.api import get_data, get_db_session
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader
-from zvt.domain import AccountStats, Order
+from zvt.domain import AccountStats, Order, trader_info
 from zvt.drawer.drawer import Drawer
+
+
+def get_trader_info(trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,
+                    filters=None, session=None, order=None, limit=None) -> List[trader_info.TraderInfo]:
+    if trader_name:
+        if filters:
+            filters = filters + [trader_info.TraderInfo.trader_name == trader_name]
+        else:
+            filters = [trader_info.TraderInfo.trader_name == trader_name]
+
+    return get_data(data_schema=trader_info.TraderInfo, entity_id=None, codes=None, level=None, provider='zvt',
+                    columns=None, return_type=return_type, start_timestamp=start_timestamp,
+                    end_timestamp=end_timestamp, filters=filters, session=session, order=order, limit=limit)
+
+
+def get_order_securities(trader_name):
+    items = get_db_session(provider='zvt', data_schema=Order).query(Order.entity_id).filter(
+        Order.trader_name == trader_name).group_by(Order.entity_id).all()
+
+    return [item[0] for item in items]
 
 
 class AccountStatsReader(DataReader):

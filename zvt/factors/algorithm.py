@@ -6,15 +6,12 @@ from zvt.factors.factor import Scorer, Transformer
 from zvt.utils.pd_utils import normal_index_df
 
 
-def ma(s, window=5):
+def ma(s: pd.Series, window: int = 5):
     """
 
     :param s:
-    :type s:pd.Series
     :param window:
-    :type window:
     :return:
-    :rtype:
     """
     return s.rolling(window=window, min_periods=window).mean()
 
@@ -49,6 +46,96 @@ def macd(s, slow=26, fast=12, n=9, return_type='df', normal=False):
         return pd.DataFrame({'diff': diff, 'dea': dea, 'macd': m})
 
 
+def point_in_range(point: float, range: tuple):
+    """
+
+    :param point: one point
+    :param range: (start,end)
+    :return:
+    """
+    return range[0] <= point <= range[1]
+
+
+def intersect_ranges(range_list):
+    result = intersect(range_list[0], range_list[1])
+    for range_i in range_list[2:]:
+        result = intersect(result, range_i)
+    return result
+
+
+def intersect(range_a, range_b):
+    """
+    range_a and range_b with format (start,end) in y axis
+
+    :param range_a:
+    :param range_b:
+    :return:
+    """
+    if not range_a or not range_b:
+        return None
+    # 包含
+    if point_in_range(range_a[0], range_b) and point_in_range(range_a[1], range_b):
+        return range_a
+    if point_in_range(range_b[0], range_a) and point_in_range(range_b[1], range_a):
+        return range_b
+
+    if point_in_range(range_a[0], range_b):
+        return range_a[0], range_b[1]
+
+    if point_in_range(range_b[0], range_a):
+        return range_b[0], range_a[1]
+    return None
+
+
+class RankScorer(Scorer):
+    def __init__(self, ascending=True) -> None:
+        self.ascending = ascending
+
+    def score(self, input_df) -> pd.DataFrame:
+        result_df = input_df.groupby(level=1).rank(ascending=self.ascending, pct=True)
+        return result_df
+
+
+def consecutive_count(input_df, col, pattern=[-5, 1]):
+    for entity_id, df in input_df.groupby(level=0):
+        count = 0
+
+        negative = 0
+
+        current_state = None
+        for index, item in df[col].iteritems():
+            if item:
+                state = 'up'
+            else:
+                state = 'down'
+
+            # 计算维持状态（'up','down'）的 次数
+            if current_state == state:
+                if count > 0:
+                    count = count + 1
+                else:
+                    count = count - 1
+                    negative = count
+            else:
+                current_state = state
+
+                if current_state == 'up':
+                    count = 1
+                else:
+                    count = -1
+                    negative = count
+
+            if (count >= pattern[1]) and (negative <= pattern[0]):
+                input_df.loc[index, 'score'] = True
+            else:
+                input_df.loc[index, 'score'] = True
+
+            # 设置目前状态
+            input_df.loc[index, 'count'] = count
+
+        print(f'consecutive_count for {entity_id}')
+
+
 class MaTransformer(Transformer):
     def __init__(self, windows=[5, 10], cal_change_pct=False) -> None:
         super().__init__()
@@ -68,34 +155,6 @@ class MaTransformer(Transformer):
             input_df[col] = ma_df
 
         return input_df
-
-
-def point_in_range(point, range):
-    return range[0] <= point <= range[1]
-
-
-def intersect_ranges(range_list):
-    result = intersect(range_list[0], range_list[1])
-    for range_i in range_list[2:]:
-        result = intersect(result, range_i)
-    return result
-
-
-def intersect(range_a, range_b):
-    if not range_a or not range_b:
-        return None
-    # 包含
-    if point_in_range(range_a[0], range_b) and point_in_range(range_a[1], range_b):
-        return range_a
-    if point_in_range(range_b[0], range_a) and point_in_range(range_b[1], range_a):
-        return range_b
-
-    if point_in_range(range_a[0], range_b):
-        return range_a[0], range_b[1]
-
-    if point_in_range(range_b[0], range_a):
-        return range_b[0], range_a[1]
-    return None
 
 
 class IntersectTransformer(Transformer):
@@ -184,18 +243,9 @@ class MacdTransformer(Transformer):
     #     input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
     #     return input_df
 
-    def transform_one(self, one_df: pd.DataFrame) -> pd.DataFrame:
-        print(f'transform_one {one_df}')
-        return macd(one_df['close'], slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal)
-
-
-class RankScorer(Scorer):
-    def __init__(self, ascending=True) -> None:
-        self.ascending = ascending
-
-    def score(self, input_df) -> pd.DataFrame:
-        result_df = input_df.groupby(level=1).rank(ascending=self.ascending, pct=True)
-        return result_df
+    def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
+        print(f'transform_one {entity_id} {df}')
+        return macd(df['close'], slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal)
 
 
 class QuantileScorer(Scorer):
@@ -252,43 +302,6 @@ class QuantileScorer(Scorer):
         return result_df
 
 
-def consecutive_count(input_df, col, pattern=[-5, 1]):
-    for entity_id, df in input_df.groupby(level=0):
-        count = 0
-
-        negative = 0
-
-        current_state = None
-        for index, item in df[col].iteritems():
-            if item:
-                state = 'up'
-            else:
-                state = 'down'
-
-            # 计算维持状态（'up','down'）的 次数
-            if current_state == state:
-                if count > 0:
-                    count = count + 1
-                else:
-                    count = count - 1
-                    negative = count
-            else:
-                current_state = state
-
-                if current_state == 'up':
-                    count = 1
-                else:
-                    count = -1
-                    negative = count
-
-            if (count >= pattern[1]) and (negative <= pattern[0]):
-                input_df.loc[index, 'score'] = True
-            else:
-                input_df.loc[index, 'score'] = True
-
-            # 设置目前状态
-            input_df.loc[index, 'count'] = count
-
-        print(f'consecutive_count for {entity_id}')
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'macd', 'MaTransformer', 'point_in_range', 'intersect_ranges', 'intersect', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'RankScorer', 'QuantileScorer', 'consecutive_count']
+__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'consecutive_count',
+           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

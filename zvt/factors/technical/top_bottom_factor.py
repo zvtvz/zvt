@@ -2,7 +2,8 @@
 from typing import List, Union
 
 import pandas as pd
-from zvt import AdjustType
+
+from zvt.contract import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.reader import DataReader
 from zvt.domain import Stock, Stock1dKdata
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     data_reader1 = DataReader(codes=['601318'], data_schema=Stock1dKdata, entity_schema=Stock)
 
-    drawer = Drawer(main_df=data_reader1.data_df, factor_df=factor.factor_df[['top', 'bottom']])
+    drawer = Drawer(main_df=data_reader1.data_df, factor_df_list=[factor.factor_df[['top', 'bottom']]])
     drawer.draw_kline()
 # the __all__ is generated
 __all__ = ['TopBottomTransformer', 'TopBottomFactor']

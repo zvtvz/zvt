@@ -5,7 +5,7 @@ init_test_context()
 
 from zvt.recorders.eastmoney.meta.china_stock_meta_recorder import EastmoneyChinaStockDetailRecorder
 
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 
 
 def test_meta_recorder():

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.domain import RightsIssueDetail, DividendFinancing
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt.utils.utils import to_float

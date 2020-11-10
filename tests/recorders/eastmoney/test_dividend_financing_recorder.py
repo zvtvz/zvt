@@ -4,7 +4,7 @@ from ...context import init_test_context
 
 init_test_context()
 
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 
 
 def test_dividend_detail():

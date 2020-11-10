@@ -70,7 +70,7 @@ class KeepBullFactor(BullFactor):
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low'],
+                 columns=None,
                  filters: List = None, order: object = None, limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,

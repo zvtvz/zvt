@@ -5,7 +5,7 @@ init_test_context()
 
 from zvt.contract import IntervalLevel
 
-from zvt.settings import SAMPLE_STOCK_CODES
+from zvt.consts import SAMPLE_STOCK_CODES
 from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JqChinaStockKdataRecorder
 
 
