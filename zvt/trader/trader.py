@@ -2,7 +2,7 @@
 import json
 import logging
 import time
-from typing import List, Union
+from typing import List, Union, Type
 
 import pandas as pd
 
@@ -17,11 +17,9 @@ from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, is_same_date
 
-logger = logging.getLogger(__name__)
-
 
 class Trader(object):
-    entity_schema: EntityMixin = None
+    entity_schema: Type[EntityMixin] = None
 
     def __init__(self,
                  entity_ids: List[str] = None,
@@ -47,6 +45,7 @@ class Trader(object):
 
         self.trading_signal_listeners: List[TradingListener] = []
 
+        #  Usually for selecting the targets in whole market with factors
         self.selectors: List[TargetSelector] = []
 
         self.entity_ids = entity_ids
@@ -69,7 +68,7 @@ class Trader(object):
                                                                   end_date=self.end_timestamp)
 
         if real_time:
-            logger.info(
+            self.logger.info(
                 'real_time mode, end_timestamp should be future,you could set it big enough for running forever')
             assert self.end_timestamp >= now_pd_timestamp()
 
@@ -162,12 +161,12 @@ class Trader(object):
             self.trading_signal_listeners.remove(listener)
 
     def set_long_targets_by_level(self, level: IntervalLevel, targets: List[str]) -> None:
-        logger.debug(
+        self.logger.debug(
             f'level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{targets}')
         self.level_map_long_targets[level] = targets
 
     def set_short_targets_by_level(self, level: IntervalLevel, targets: List[str]) -> None:
-        logger.debug(
+        self.logger.debug(
             f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{targets}')
         self.level_map_short_targets[level] = targets
 
@@ -447,5 +446,7 @@ class Trader(object):
 
 class StockTrader(Trader):
     entity_schema = Stock
+
+
 # the __all__ is generated
 __all__ = ['Trader', 'StockTrader']

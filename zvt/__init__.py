@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import enum
 import importlib
 import json
 import logging
@@ -23,6 +22,7 @@ finally:
     del get_distribution, DistributionNotFound
 
 logger = logging.getLogger(__name__)
+
 
 def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
     if not log_dir:
@@ -175,6 +175,7 @@ if os.getenv('TESTING_ZVT'):
 
     if not same:
         from shutil import copyfile
+        from zvt.contract import *
         from zvt.utils.zip_utils import unzip
 
         copyfile(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_ZIP_DATA_PATH)
