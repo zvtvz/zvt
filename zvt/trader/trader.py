@@ -11,7 +11,7 @@ from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_db_session
 from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock, TraderInfo, AccountStats, Position
-from zvt.drawer.drawer import Drawer
+from zvt.contract.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.account import SimAccountService

@@ -3,8 +3,8 @@ from typing import List, Union
 
 import pandas as pd
 
+from zvt.contract.factor import ScoreFactor, Scorer
 from zvt.domain import BlockMoneyFlow, Block, BlockCategory
-from zvt.factors import ScoreFactor, Scorer
 from zvt.factors.algorithm import RankScorer
 from zvt.utils.pd_utils import normal_index_df
 

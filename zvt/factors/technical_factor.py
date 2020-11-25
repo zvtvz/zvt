@@ -1,18 +1,18 @@
-from typing import List, Union
+from typing import List, Union, Type
 
 import numpy as np
 import pandas as pd
 
 from zvt.api.quote import get_kdata_schema
 from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.contract.factor import Factor, Transformer, Accumulator, FactorMeta
 from zvt.domain import Stock
 from zvt.factors.algorithm import MacdTransformer, consecutive_count
-from zvt.factors.factor import Factor, Transformer, Accumulator
 
 
-class TechnicalFactor(Factor):
+class TechnicalFactor(Factor, metaclass=FactorMeta):
     def __init__(self,
-                 entity_schema: EntityMixin = Stock,
+                 entity_schema: Type[EntityMixin] = Stock,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,

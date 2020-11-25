@@ -1,173 +1,174 @@
 /*Fonts ––––––––––––––––––––––––––––––––––––––––––––––––––*/
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
-body{
-  margin: 0px;
-  padding: 0px;
-  background-color: #F3F4F9;
-  font-family: 'Roboto';
-  color: #203cb3;
+body {
+    margin: 0px;
+    padding: 0px;
+    background-color: #F3F4F9;
+    font-family: 'Roboto';
+    color: #203cb3;
 }
 
 .zvt-banner {
-  background: rgb(2,21,70);
-  color: white;
-  padding: 12px;
-  padding-left: 48px;
+    color: #7f7f7f;
+    font-weight: 600;
+    font-size: 20px;
+    background: #fafbfc;
+    padding: 12px;
+    padding-left: 24px;
+    border-bottom: 2px solid lightgray;
 }
 
-.div-logo{
-  display: inline-block;
-  float: right;
+.zvt-nav {
+    color: #7f7f7f;
+    background: #fafbfc;
+    padding: 12px;
+    padding-left: 36px;
 }
 
-.logo{
-  height: 35px;
-  padding: 6px;
-  margin-top: 3px;
+.div-logo {
+    display: inline-block;
+    float: right;
 }
 
-.h2-title, .h2-title-mobile{
-  font-family: 'Roboto';
-  display: inline-block;
-  letter-spacing: 3.8px;
-  font-weight: 800;
-  font-size: 20px;
+.logo {
+    height: 35px;
+    padding: 6px;
+    margin-top: 3px;
 }
 
-.h2-title-mobile{
-  display: none;
+.h2-title, .h2-title-mobile {
+    font-family: 'Roboto';
+    display: inline-block;
+    letter-spacing: 3.8px;
+    font-weight: 800;
+    font-size: 20px;
 }
 
-h5, h6{
-  font-family: 'Roboto';
-  font-weight: 600;
-  font-size: 16px;
+.h2-title-mobile {
+    display: none;
 }
 
-h5{
-  padding-left: 42px;
+h5, h6 {
+    font-family: 'Roboto';
+    font-weight: 600;
+    font-size: 16px;
+}
+
+h5 {
+    padding-left: 42px;
 }
 
 .alert {
-  padding: 20px;
-  background-color: #f44336; 
-  color: white;
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
 }
 
-.bg-white{
-  background-color: white;
-  padding: 24px 32px;
-  height: 500px;
+.bg-white {
+    background-color: white;
+    padding: 24px 32px;
+    height: 600px;
 }
 
-.app-body{
-  margin-left: 4%;
+
+.card {
+    padding: 24px 12px 24px 12px;
+    margin-left: 4%;
 }
 
-.card{
-  padding:48px 24px 48px 24px;
-  margin-left: 4%;
+.card-left {
+    padding: 24px 12px 24px 12px;
+    margin-left: 0px;
 }
 
-.card-left{
-  padding:48px 24px 48px 24px;
-  margin-left: 0px;
+.padding-top-bot {
+    padding-top: 12px;
+    padding-bottom: 18px;
 }
 
-.padding-top-bot{
-  padding-top: 12px;
-  padding-bottom: 18px;
-}
-
-.upload{
-  width: 100%;
-  line-height: 60px;
-  border-width: 1px;
-  border-style: dashed;
-  border-radius: 5px;
-  text-align: center;
-}
-
-.upload p, .upload a {
-  display: inline;
-}
-
-.Select-control{
-  border: 1px solid #203cb3;
-}
-
-@media only screen and (max-width: 320px){
-  .Select-menu-outer, .Select-value{
-    font-size: 10.5px;
-  }
-  .upload{
-    padding: 5px;
-  }
-}
-
-/* mobile */
-@media only screen and (max-width: 768px) {
-  .upload{
+.upload {
+    width: 100%;
     line-height: 60px;
     border-width: 1px;
     border-style: dashed;
     border-radius: 5px;
     text-align: center;
-    font-size: small;
-  }
+}
 
-  .columns{
-    width: 100%;
-  }
+.upload p, .upload a {
+    display: inline;
+}
 
-  .card, .card-left{
-    padding: 24px;  
-    margin: 0px;
-  } 
+.Select-control {
+    border: 1px solid #203cb3;
+}
 
-  .bg-white{
-    height: auto;
-  }
-  
-  .zvt-banner{
-    padding-left: 24px;
-  }
+@media only screen and (max-width: 320px) {
+    .Select-menu-outer, .Select-value {
+        font-size: 10.5px;
+    }
 
-  .logo{
-    height: 28px;
-    padding-left:0px;
-    padding-bottom:0px;
-  }
+    .upload {
+        padding: 5px;
+    }
+}
 
-  .div-logo{
-    float: left;
-    display: block;
-    width: 100%;
-  }
+/* mobile */
+@media only screen and (max-width: 768px) {
+    .upload {
+        line-height: 60px;
+        border-width: 1px;
+        border-style: dashed;
+        border-radius: 5px;
+        text-align: center;
+        font-size: small;
+    }
 
-  .h2-title{
-    display:none;
-  }
+    .columns {
+        width: 100%;
+    }
 
-  .h2-title-mobile{
-    display:block;
-    float:left;
-  }
+    .card, .card-left {
+        padding: 12px;
+        margin: 0px;
+    }
 
-  .app-body{
-    margin-left: 0px;
-  }
+    .bg-white {
+        height: auto;
+    }
 
-  .four.columns                   { width: 100%; }
-  .eight.columns                  { width: 100%; }
+    .logo {
+        height: 28px;
+        padding-left: 0px;
+        padding-bottom: 0px;
+    }
 
-  .columns{
-    text-align: center;
-  }
+    .div-logo {
+        float: left;
+        display: block;
+        width: 100%;
+    }
 
-  .user-control{
-    padding-top: 24px;
-    padding-bottom: 24px;
-  }
+    .h2-title {
+        display: none;
+    }
+
+    .h2-title-mobile {
+        display: block;
+        float: left;
+    }
+
+    .app-body {
+        margin-left: 0px;
+    }
+
+    .columns {
+        text-align: center;
+    }
+
+    .user-control {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
 }

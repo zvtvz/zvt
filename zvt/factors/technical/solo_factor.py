@@ -6,7 +6,7 @@ import pandas as pd
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.domain import Stock
 from zvt.factors.algorithm import IntersectTransformer
-from zvt.factors.factor import Transformer, Accumulator
+from zvt.contract.factor import Transformer, Accumulator
 from zvt.factors.technical_factor import TechnicalFactor
 
 

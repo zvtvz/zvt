@@ -9,7 +9,7 @@ from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_entities, get_schema_by_name
 from zvt.domain import Stock
 from zvt.factors.algorithm import MaTransformer
-from zvt.factors.factor import Accumulator, Transformer
+from zvt.contract.factor import Accumulator, Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.pd_utils import pd_is_not_null
 

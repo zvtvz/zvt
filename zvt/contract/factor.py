@@ -10,8 +10,7 @@ from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_data, df_to_db
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader, DataListener
-from zvt.domain import Stock
-from zvt.drawer.drawer import Drawer
+from zvt.contract.zvt_context import factor_cls_registry
 from zvt.utils.pd_utils import pd_is_not_null
 
 
@@ -103,6 +102,18 @@ class FactorType(enum.Enum):
     state = 'state'
 
 
+def register_class(target_class):
+    if target_class.__name__ not in ('Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor', 'TechnicalFactor'):
+        factor_cls_registry[target_class.__name__] = target_class
+
+
+class FactorMeta(type):
+    def __new__(meta, name, bases, class_dict):
+        cls = type.__new__(meta, name, bases, class_dict)
+        register_class(cls)
+        return cls
+
+
 class Factor(DataReader, DataListener):
     factor_type: FactorType = None
 
@@ -111,7 +122,7 @@ class Factor(DataReader, DataListener):
 
     def __init__(self,
                  data_schema: Type[Mixin],
-                 entity_schema: Type[EntityMixin] = Stock,
+                 entity_schema: Type[EntityMixin] = None,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,
@@ -124,7 +135,7 @@ class Factor(DataReader, DataListener):
                  filters: List = None,
                  order: object = None,
                  limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 level: Union[str, IntervalLevel] = None,
                  category_field: str = 'entity_id',
                  time_field: str = 'timestamp',
                  computing_window: int = None,
@@ -250,17 +261,13 @@ class Factor(DataReader, DataListener):
         self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
         self.logger.info('<<<<<<')
 
-    def factor_drawer(self) -> Drawer:
-        drawer = Drawer(self.factor_df)
-        return drawer
-
-    def get_main_data(self) -> Optional[NormalData]:
+    def drawer_main_df(self) -> Optional[NormalData]:
         return self.data_df
 
-    def get_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+    def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
         return [self.factor_df]
 
-    def get_sub_df(self) -> Optional[pd.DataFrame]:
+    def drawer_sub_df(self) -> Optional[pd.DataFrame]:
         return self.result_df
 
     def fill_gap(self):
@@ -307,7 +314,7 @@ class FilterFactor(Factor):
 class ScoreFactor(Factor):
     factor_type = FactorType.score
 
-    def __init__(self, data_schema: Mixin, entity_schema: EntityMixin = Stock, provider: str = None,
+    def __init__(self, data_schema: Mixin, entity_schema: EntityMixin = None, provider: str = None,
                  entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
                  codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
@@ -345,4 +352,5 @@ class StateFactor(Factor):
 
 
 # the __all__ is generated
-__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor']
+__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor',
+           'StateFactor']

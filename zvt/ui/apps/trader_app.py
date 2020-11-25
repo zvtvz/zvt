@@ -6,11 +6,11 @@ import dash_html_components as html
 from dash import dash
 from dash.dependencies import Input, Output, State
 
-from zvt.api.trader_info_api import get_trader_info, get_order_securities
 from zvt.api.trader_info_api import AccountStatsReader, OrderReader
+from zvt.api.trader_info_api import get_trader_info, get_order_securities
 from zvt.domain import TraderInfo
-from zvt.ui.components.dcc_components import get_account_stats_figure, get_trading_signals_figure
 from zvt.ui import zvt_app
+from zvt.ui.components.dcc_components import get_account_stats_figure, get_trading_signals_figure
 from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
 
 account_readers = []
@@ -41,86 +41,72 @@ def load_traders():
 load_traders()
 
 
-def serve_layout():
+def trader_layout():
     layout = html.Div(
-        children=[
+        [
             dcc.Interval(
                 id='interval-component',
                 interval=60 * 60 * 1000,  # in milliseconds
                 n_intervals=0
             ),
-            # Top banner
+
+            # controls
             html.Div(
-                className="zvt-banner row",
+                className="three columns card",
                 children=[
-                    html.H2(className="h2-title", children="ZVT"),
-                    html.H2(className="h2-title-mobile", children="ZVT"),
-                ],
-            ),
-            # trader body
-            html.Div(
-                className="row app-body",
-                children=[
-                    # controls
                     html.Div(
-                        className="four columns card",
+                        className="bg-white user-control",
                         children=[
                             html.Div(
-                                className="bg-white user-control",
+                                className="padding-top-bot",
                                 children=[
-                                    html.Div(
-                                        className="padding-top-bot",
-                                        children=[
-                                            html.H6("select trader:"),
-                                            dcc.Dropdown(id='trader-selector',
-                                                         placeholder='select the trader',
-                                                         options=[{'label': item, 'value': i} for i, item in
-                                                                  enumerate(trader_names)]
-                                                         ),
-                                        ],
-                                    ),
-                                    html.Div(
-                                        className="padding-top-bot",
-                                        children=[
-                                            html.H6("select trading target:"),
-                                            dcc.Dropdown(id='target-selector',
-                                                         placeholder='select the target'
-                                                         ),
-                                        ],
-                                    ),
-
-                                    html.Div(
-                                        className="padding-top-bot",
-                                        children=[
-                                            # time range filter
-                                            dcc.DatePickerRange(
-                                                id='date-picker-range',
-                                                start_date='2009-01-01',
-                                                end_date=now_pd_timestamp(),
-                                                display_format=TIME_FORMAT_DAY
-                                            )
-                                        ],
-                                    ),
+                                    html.H6("select trader:"),
+                                    dcc.Dropdown(id='trader-selector',
+                                                 placeholder='select the trader',
+                                                 options=[{'label': item, 'value': i} for i, item in
+                                                          enumerate(trader_names)]
+                                                 ),
                                 ],
-                            )
-                        ],
-                    ),
-
-                    # Graph
-                    html.Div(
-                        className="eight columns card-left",
-                        children=[
-                            html.Div(
-                                id='trader-details',
-                                className="bg-white",
                             ),
                             html.Div(
-                                id='target-signals',
-                                className="bg-white",
-                            )
-                        ],
+                                className="padding-top-bot",
+                                children=[
+                                    html.H6("select trading target:"),
+                                    dcc.Dropdown(id='target-selector',
+                                                 placeholder='select the target'
+                                                 ),
+                                ],
+                            ),
+
+                            html.Div(
+                                className="padding-top-bot",
+                                children=[
+                                    # time range filter
+                                    dcc.DatePickerRange(
+                                        id='date-picker-range',
+                                        start_date='2009-01-01',
+                                        end_date=now_pd_timestamp(),
+                                        display_format=TIME_FORMAT_DAY
+                                    )
+                                ],
+                            ),
+                        ])
+                ]),
+            # Graph
+            html.Div(
+                className="nine columns card-left",
+                children=[
+                    html.Div(
+                        id='trader-details',
+                        className="bg-white",
+                    ),
+                    html.Div(
+                        id='target-signals',
+                        className="bg-white",
                     )
-                ])])
+                ])
+        ]
+    )
 
     load_traders()
 

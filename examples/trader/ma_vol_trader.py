@@ -7,8 +7,9 @@ import pandas as pd
 
 from zvt import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract.factor import Accumulator
 from zvt.domain import Stock
-from zvt.factors import TargetSelector, Accumulator, TopBottomFactor, ImprovedMaFactor
+from zvt.factors import TargetSelector, TopBottomFactor, ImprovedMaFactor
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
 

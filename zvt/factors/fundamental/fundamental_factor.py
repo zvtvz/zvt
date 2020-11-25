@@ -7,7 +7,7 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.domain import FinanceFactor, BalanceSheet, Stock
-from zvt.factors.factor import Factor, Transformer, Accumulator, FilterFactor
+from zvt.contract.factor import Factor, Transformer, Accumulator, FilterFactor
 
 
 class FinanceBaseFactor(Factor):

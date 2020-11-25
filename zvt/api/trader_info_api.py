@@ -8,7 +8,7 @@ from zvt.contract.api import get_data, get_db_session
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader
 from zvt.domain import AccountStats, Order, trader_info
-from zvt.drawer.drawer import Drawer
+from zvt.contract.drawer import Drawer
 
 
 def get_trader_info(trader_name=None, return_type='df', start_timestamp=None, end_timestamp=None,

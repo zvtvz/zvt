@@ -26,11 +26,6 @@ from .target_selector import *
 from .target_selector import __all__ as _target_selector_all
 __all__ += _target_selector_all
 
-# import all from submodule factor
-from .factor import *
-from .factor import __all__ as _factor_all
-__all__ += _factor_all
-
 # import all from submodule pattern
 from .pattern import *
 from .pattern import __all__ as _pattern_all

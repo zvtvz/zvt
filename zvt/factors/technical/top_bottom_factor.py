@@ -7,9 +7,9 @@ from zvt.contract import AdjustType
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.reader import DataReader
 from zvt.domain import Stock, Stock1dKdata
-from zvt.drawer.drawer import Drawer
-from zvt.factors.factor import Accumulator
-from zvt.factors.factor import Transformer
+from zvt.contract.drawer import Drawer
+from zvt.contract.factor import Accumulator
+from zvt.contract.factor import Transformer
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.time_utils import now_pd_timestamp
 

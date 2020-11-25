@@ -32,3 +32,6 @@ dbname_map_schemas = {}
 
 # entity_type -> schema
 entity_map_schemas = {}
+
+# factor class registry
+factor_cls_registry = {}

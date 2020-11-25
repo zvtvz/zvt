@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from zvt.factors.factor import Scorer, Transformer
+from zvt.contract.factor import Scorer, Transformer
 from zvt.utils.pd_utils import normal_index_df
 
 
@@ -303,5 +303,4 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'consecutive_count',
-           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
+__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'consecutive_count', 'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

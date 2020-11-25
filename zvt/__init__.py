@@ -184,8 +184,9 @@ if os.getenv('TESTING_ZVT'):
 else:
     init_env(zvt_home=ZVT_HOME)
 
-# import the recorders for register them to the domain
+# register to meta
 import zvt.contract as zvt_contract
 import zvt.recorders as zvt_recorders
+import zvt.factors as zvt_factors
 
 __all__ = ['zvt_env', 'zvt_config', 'init_log', 'init_env', 'init_config', '__version__', 'AdjustType']
