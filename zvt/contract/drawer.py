@@ -237,8 +237,8 @@ class StackedDrawer(Draw):
                                           x0=rect.x0, y0=rect.y0, x1=rect.x1, y1=rect.y1,
                                           line=dict(
                                               color="RoyalBlue",
-                                              width=2),
-                                          fillcolor="LightSkyBlue",
+                                              width=1),
+                                          # fillcolor="LightSkyBlue",
                                           yref=y)
 
             # annotations
@@ -334,16 +334,17 @@ class Drawer(Draw):
             # 构造主图指标
             if self.factor_data_list:
                 for factor_data in self.factor_data_list:
-                    factor_df = factor_data.entity_map_df.get(entity_id)
-                    factor_df = factor_df.select_dtypes(np.number)
-                    if pd_is_not_null(factor_df):
-                        for col in factor_df.columns:
-                            trace_name = '{}_{}'.format(code, col)
-                            ydata = factor_df[col].values.tolist()
+                    if not factor_data.empty():
+                        factor_df = factor_data.entity_map_df.get(entity_id)
+                        factor_df = factor_df.select_dtypes(np.number)
+                        if pd_is_not_null(factor_df):
+                            for col in factor_df.columns:
+                                trace_name = '{}_{}'.format(code, col)
+                                ydata = factor_df[col].values.tolist()
 
-                            line = go.Scatter(x=factor_df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis,
-                                              **kwargs)
-                            traces.append(line)
+                                line = go.Scatter(x=factor_df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis,
+                                                  **kwargs)
+                                traces.append(line)
 
             # 构造幅图
             if self.has_sub_plot():
@@ -378,8 +379,9 @@ class Drawer(Draw):
                 fig.add_shape(type="rect",
                               x0=rect.x0, y0=rect.y0, x1=rect.x1, y1=rect.y1,
                               line=dict(color="RoyalBlue",
-                                        width=2),
-                              fillcolor="LightSkyBlue")
+                                        width=1),
+                              # fillcolor="LightSkyBlue"
+                              )
             fig.update_shapes(dict(xref='x', yref=yaxis))
 
     def _draw(self,

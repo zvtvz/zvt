@@ -393,12 +393,16 @@ class ZenFactor(TechnicalFactor):
 
         # 处理中枢
         rects: List[Rect] = []
+
+        # list of (timestamp,value)
         duans = []
         for index, item in duan_df.iterrows():
+            duans.append((index[1], item.value))
             if len(duans) == 4:
                 x1 = duans[0][0]
                 x2 = duans[3][0]
                 if duans[0][1] < duans[1][1]:
+                    # 向下段
                     range = intersect((duans[0][1], duans[1][1]), (duans[2][1], duans[3][1]))
                     if range:
                         y1, y2 = range
@@ -406,6 +410,7 @@ class ZenFactor(TechnicalFactor):
                         duans = duans[1:]
                         continue
                 else:
+                    # 向上段
                     range = intersect((duans[1][1], duans[0][1]), (duans[3][1], duans[2][1]))
                     if range:
                         y1, y2 = range
@@ -414,15 +419,11 @@ class ZenFactor(TechnicalFactor):
                         continue
 
                 rects.append(Rect(x0=x1, x1=x2, y0=y1, y1=y2))
-                duans = []
-            else:
-                duans.append((index[1], item.value))
+                duans = duans[-1:]
 
         self.fenxing_value_df = flag_df
         self.duan_value_df = duan_df
         self.zhongshu_rects = rects
-
-    #         drawer = Drawer(main_df=df, factor_df_list=[flag_df[['value']], duan_df], annotation_df=flag_df, rects=rects)
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
         return [self.fenxing_value_df[['value']], self.duan_value_df]
@@ -436,78 +437,8 @@ class ZenFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    zen = ZenFactor(entity_ids=['stock_sz_000338'])
+    zen = ZenFactor(entity_ids=['stock_sz_000338'], level='1wk')
     zen.draw(show=True)
-    # from zvt.drawer.drawer import Drawer, Rect, Rect, Rect, Rect, Rect, Rect
-    # from zvt.drawer.drawer import Rect
-    #
-    # df = get_kdata(entity_ids=['stock_sz_000338'], columns=['entity_id', 'timestamp', 'high', 'low', 'open', 'close'],
-    #                index=['entity_id', 'timestamp'], end_timestamp='2015-01-01')
-    # one_df = df[['high', 'low']]
-    # t = ZenTransformer()
-    # one_df = t.transform_one('stock_sz_000338', one_df)
-    #
-    # print(one_df)
-    #
-    # #     annotation_df format:
-    # #                                     value    flag    color
-    # #     entity_id    timestamp
-    #
-    # # 处理分型
-    # bi_ding = one_df[one_df.bi_ding][['timestamp', 'high']]
-    # bi_di = one_df[one_df.bi_di][['timestamp', 'low']]
-    #
-    # df1 = bi_ding.rename(columns={"high": "value"})
-    # df1['flag'] = '顶分型'
-    #
-    # df2 = bi_di.rename(columns={"low": "value"})
-    # df2['flag'] = '底分型'
-    #
-    # flag_df: pd.DataFrame = pd.concat([df1, df2])
-    # flag_df = flag_df.sort_values(by=['timestamp'])
-    # flag_df['entity_id'] = 'stock_sz_000338'
-    # flag_df = flag_df.set_index(['entity_id', 'timestamp'])
-    #
-    # # 处理段
-    # up = one_df[one_df.duan_di][['timestamp', 'low']]
-    # down = one_df[one_df.duan_ding][['timestamp', 'high']]
-    # df1 = up.rename(columns={"low": "value"})
-    # df2 = down.rename(columns={"high": "value"})
-    #
-    # duan_df: pd.DataFrame = pd.concat([df1, df2])
-    # duan_df = duan_df.sort_values(by=['timestamp'])
-    # duan_df['entity_id'] = 'stock_sz_000338'
-    # duan_df = duan_df.set_index(['entity_id', 'timestamp'])
-    #
-    # # 处理中枢
-    # rects: List[Rect] = []
-    # duans = []
-    # for index, item in duan_df.iterrows():
-    #     if len(duans) == 4:
-    #         x1 = duans[0][0]
-    #         x2 = duans[3][0]
-    #         if duans[0][1] < duans[1][1]:
-    #             range = intersect((duans[0][1], duans[1][1]), (duans[2][1], duans[3][1]))
-    #             if range:
-    #                 y1, y2 = range
-    #             else:
-    #                 duans = duans[1:]
-    #                 continue
-    #         else:
-    #             range = intersect((duans[1][1], duans[0][1]), (duans[3][1], duans[2][1]))
-    #             if range:
-    #                 y1, y2 = range
-    #             else:
-    #                 duans = duans[1:]
-    #                 continue
-    #
-    #         rects.append(Rect(x0=x1, x1=x2, y0=y1, y1=y2))
-    #         duans = []
-    #     else:
-    #         duans.append((index[1], item.value))
-    #
-    # drawer = Drawer(main_df=df, factor_df_list=[flag_df[['value']], duan_df], annotation_df=flag_df, rects=rects)
-    # fig = drawer.draw_kline(show=True)
 
 # the __all__ is generated
 __all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'a_include_b', 'is_including', 'get_direction', 'is_up',

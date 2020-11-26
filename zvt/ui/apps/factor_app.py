@@ -102,9 +102,9 @@ def update_code_selector(entity_type):
      Input('code-selector', 'value'),
      Input('levels-selector', 'value')])
 def update_factor_details(factor, entity_type, code, levels):
-    if factor and entity_type and code:
-        if type(levels) is list:
-            levels.sort(reverse=True)
+    if factor and entity_type and code and levels:
+        if type(levels) is list and len(levels) >= 2:
+            levels.sort()
             drawers = []
             for level in levels:
                 drawers.append(zvt_context.factor_cls_registry[factor](
@@ -116,9 +116,13 @@ def update_factor_details(factor, entity_type, code, levels):
                 id=f'{factor}-{entity_type}-{code}',
                 figure=stacked.draw_kline(show=False, height=900))
         else:
+            if type(levels) is list:
+                level = levels[0]
+            else:
+                level = levels
             return dcc.Graph(
                 id=f'{factor}-{entity_type}-{code}',
                 figure=zvt_context.factor_cls_registry[factor](entity_schema=zvt_context.entity_schema_map[entity_type],
-                                                               level=levels,
+                                                               level=level,
                                                                codes=[code]).draw(show=False, height=600))
     raise dash.PreventUpdate()
