@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Type
 
+import numpy as np
 import pandas as pd
 
 from zvt.contract import EntityMixin
@@ -226,6 +227,11 @@ class ZenTransformer(Transformer):
         df['duan_di'] = False
         # 段的顶
         df['duan_ding'] = False
+        # 记录段顶/底的值，为duan_di时取low,为duan_ding时取high,其他为None,绘图时取有值的连线即为 段
+        df['duan_value'] = np.NAN
+
+        # 记录在确定中枢的最后一个段的终点x1，值为Rect(x0,y0,x1,y1)
+        df['zhongshu'] = None
 
         fenxing_list: List[Fenxing] = []
 
@@ -249,6 +255,10 @@ class ZenTransformer(Transformer):
 
         pre_kdata = df.iloc[start_index - 1]
         pre_index = start_index - 1
+
+        # list of (timestamp,value)
+        duans = []
+
         for index, kdata in df.iloc[start_index:].iterrows():
             # print(f'timestamp: {kdata.timestamp}')
             # 临时方向
@@ -298,6 +308,13 @@ class ZenTransformer(Transformer):
                 if pd_is_not_null(can_fenxing):
                     if opposite_count >= 4 or (index - can_fenxing_index >= 8):
                         df.loc[can_fenxing_index, fenxing_col] = True
+
+                        # 记录笔的值
+                        if fenxing_col == 'bi_ding':
+                            df.loc[can_fenxing_index, 'bi_value'] = df.loc[can_fenxing_index, 'high']
+                        else:
+                            df.loc[can_fenxing_index, 'bi_value'] = df.loc[can_fenxing_index, 'low']
+
                         opposite_count = 0
                         direction = direction.opposite()
                         can_fenxing = None
@@ -320,10 +337,44 @@ class ZenTransformer(Transformer):
                                     df.loc[fenxing_list[0].index:fenxing_list[-1].index,
                                     'duan_state'] = current_duan_state
 
+                                    duan_index = fenxing_list[0].index
                                     if current_duan_state == 'up':
-                                        df.loc[fenxing_list[0].index, 'duan_di'] = True
+                                        df.loc[duan_index, 'duan_di'] = True
+                                        duan_value = df.loc[duan_index, 'low']
                                     else:
-                                        df.loc[fenxing_list[0].index, 'duan_ding'] = True
+                                        duan_index = fenxing_list[0].index
+                                        df.loc[duan_index, 'duan_ding'] = True
+                                        duan_value = df.loc[duan_index, 'high']
+                                    # 记录段的值
+                                    df.loc[duan_index, 'duan_value'] = duan_value
+                                    # 记录用于计算中枢的段
+                                    duans.append((df.loc[duan_index, 'timestamp'], duan_value))
+
+                                    # 计算中枢
+                                    if len(duans) == 4:
+                                        x1 = duans[0][0]
+                                        x2 = duans[3][0]
+                                        if duans[0][1] < duans[1][1]:
+                                            # 向下段
+                                            range = intersect((duans[0][1], duans[1][1]), (duans[2][1], duans[3][1]))
+                                            if range:
+                                                y1, y2 = range
+                                                # 记录中枢
+                                                df.loc[duan_index, 'zhongshu'] = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
+                                                duans = duans[-1:]
+                                            else:
+                                                duans = duans[1:]
+                                        else:
+                                            # 向上段
+                                            range = intersect((duans[1][1], duans[0][1]), (duans[3][1], duans[2][1]))
+                                            if range:
+                                                y1, y2 = range
+                                                # 记录中枢
+                                                df.loc[duan_index, 'zhongshu'] = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
+                                                duans = duans[-1:]
+                                            else:
+                                                duans = duans[1:]
+
                                     # 只留最后一个
                                     fenxing_list = fenxing_list[-1:]
                                 else:
@@ -334,12 +385,12 @@ class ZenTransformer(Transformer):
             pre_kdata = kdata
             pre_index = index
 
+        df = df.set_index('timestamp')
         return df
 
 
 class ZenFactor(TechnicalFactor):
-
-    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: Type[EntityMixin] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
@@ -348,92 +399,19 @@ class ZenFactor(TechnicalFactor):
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
                  transformer: Transformer = ZenTransformer(), accumulator: Accumulator = None,
                  need_persist: bool = False, dry_run: bool = False, adjust_type: Union[AdjustType, str] = None) -> None:
-        self.fenxing_value_df = None
-        self.duan_value_df = None
-        self.zhongshu_rects = None
-
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
                          accumulator, need_persist, dry_run, adjust_type)
 
-    def do_compute(self):
-        super().do_compute()
-        one_df = self.factor_df
-
-        #     annotation_df format:
-        #                                     value    flag    color
-        #     entity_id    timestamp
-
-        # 处理分型
-        bi_ding = one_df[one_df.bi_ding][['timestamp', 'high']]
-        bi_di = one_df[one_df.bi_di][['timestamp', 'low']]
-
-        df1 = bi_ding.rename(columns={"high": "value"})
-        df1['flag'] = '顶分型'
-
-        df2 = bi_di.rename(columns={"low": "value"})
-        df2['flag'] = '底分型'
-
-        flag_df: pd.DataFrame = pd.concat([df1, df2])
-        flag_df = flag_df.sort_values(by=['timestamp'])
-        flag_df['entity_id'] = self.entity_ids[0]
-        flag_df = flag_df.set_index(['entity_id', 'timestamp'])
-
-        # 处理段
-        up = one_df[one_df.duan_di][['timestamp', 'low']]
-        down = one_df[one_df.duan_ding][['timestamp', 'high']]
-        df1 = up.rename(columns={"low": "value"})
-        df2 = down.rename(columns={"high": "value"})
-
-        duan_df: pd.DataFrame = pd.concat([df1, df2])
-        duan_df = duan_df.sort_values(by=['timestamp'])
-        duan_df['entity_id'] = self.entity_ids[0]
-        duan_df = duan_df.set_index(['entity_id', 'timestamp'])
-
-        # 处理中枢
-        rects: List[Rect] = []
-
-        # list of (timestamp,value)
-        duans = []
-        for index, item in duan_df.iterrows():
-            duans.append((index[1], item.value))
-            if len(duans) == 4:
-                x1 = duans[0][0]
-                x2 = duans[3][0]
-                if duans[0][1] < duans[1][1]:
-                    # 向下段
-                    range = intersect((duans[0][1], duans[1][1]), (duans[2][1], duans[3][1]))
-                    if range:
-                        y1, y2 = range
-                    else:
-                        duans = duans[1:]
-                        continue
-                else:
-                    # 向上段
-                    range = intersect((duans[1][1], duans[0][1]), (duans[3][1], duans[2][1]))
-                    if range:
-                        y1, y2 = range
-                    else:
-                        duans = duans[1:]
-                        continue
-
-                rects.append(Rect(x0=x1, x1=x2, y0=y1, y1=y2))
-                duans = duans[-1:]
-
-        self.fenxing_value_df = flag_df
-        self.duan_value_df = duan_df
-        self.zhongshu_rects = rects
-
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
-        return [self.fenxing_value_df[['value']], self.duan_value_df]
-
-    def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
-        # return self.fenxing_value_df
-        return None
+        bi_value = self.factor_df[['bi_value']].dropna()
+        duan_value = self.factor_df[['duan_value']].dropna()
+        return [bi_value, duan_value]
 
     def drawer_rects(self) -> List[Rect]:
-        return self.zhongshu_rects
+        df = self.factor_df[['zhongshu']].dropna()
+        return df['zhongshu'].tolist()
 
 
 if __name__ == '__main__':

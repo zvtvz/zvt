@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 class Rect(object):
 
     def __init__(self, x0, y0, x1, y1) -> None:
-        # left-top
+        # left-bottom
         self.x0 = x0
-        self.x1 = x1
-        # right-bottom
         self.y0 = y0
+        # right-top
+        self.x1 = x1
         self.y1 = y1
 
 
