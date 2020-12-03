@@ -249,7 +249,7 @@ class DataReader(Drawable):
 
         if dfs:
             self.data_df = pd.concat(dfs, sort=False)
-            self.data_df.sort_index(level=[0, 1])
+            self.data_df.sort_index(level=[0, 1],inplace=True)
 
             if changed:
                 for listener in self.data_listeners:

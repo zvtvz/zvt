@@ -124,5 +124,6 @@ def update_factor_details(factor, entity_type, code, levels):
                 id=f'{factor}-{entity_type}-{code}',
                 figure=zvt_context.factor_cls_registry[factor](entity_schema=zvt_context.entity_schema_map[entity_type],
                                                                level=level,
-                                                               codes=[code]).draw(show=False, height=600))
+                                                               codes=[code],
+                                                               need_persist=False).draw(show=False, height=600))
     raise dash.PreventUpdate()

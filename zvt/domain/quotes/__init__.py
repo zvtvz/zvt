@@ -12,7 +12,6 @@ class KdataCommon(Mixin):
     # level = Column(Enum(IntervalLevel, values_callable=enum_value))
     level = Column(String(length=32))
 
-    # 如果是股票，代表前复权数据
     # 开盘价
     open = Column(Float)
     # 收盘价

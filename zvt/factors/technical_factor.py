@@ -35,7 +35,7 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
                  transformer: Transformer = MacdTransformer(),
                  accumulator: Accumulator = None,
                  need_persist: bool = False,
-                 dry_run: bool = False,
+                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
         if columns is None:
             columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low']
@@ -45,10 +45,16 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
         if transformer:
             self.indicator_cols = transformer.indicators
 
+        if not factor_name:
+            if type(level) == str:
+                factor_name = f'{type(self).__name__.lower()}_{level}'
+            else:
+                factor_name = f'{type(self).__name__.lower()}_{level.value}'
+
         super().__init__(self.data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run)
+                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
 
     def __json__(self):
         result = super().__json__()
@@ -66,7 +72,7 @@ class BullFactor(TechnicalFactor):
 
 
 class KeepBullFactor(BullFactor):
-    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: Type[EntityMixin] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
@@ -76,12 +82,13 @@ class KeepBullFactor(BullFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = MacdTransformer(),
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
+                 factor_name: str = None, clear_state: bool = False,
                  adjust_type: Union[AdjustType, str] = None, keep_window=20) -> None:
         self.keep_window = keep_window
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, adjust_type)
+                         accumulator, need_persist, dry_run, factor_name, clear_state, adjust_type)
 
     def do_compute(self):
         super().do_compute()

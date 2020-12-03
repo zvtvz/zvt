@@ -20,7 +20,7 @@ class SoloFactor(TechnicalFactor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
+                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,factor_name: str = None, clear_state: bool = False,
                  kdata_overlap=3) -> None:
         self.kdata_overlap = kdata_overlap
         transformer: Transformer = IntersectTransformer(kdata_overlap=self.kdata_overlap)
@@ -28,7 +28,7 @@ class SoloFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run)
+                         accumulator, need_persist, dry_run,factor_name, clear_state)
 
     def do_compute(self):
         super().do_compute()

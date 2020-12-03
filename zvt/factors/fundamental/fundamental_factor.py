@@ -6,8 +6,8 @@ from typing import List, Union
 import pandas as pd
 
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
-from zvt.domain import FinanceFactor, BalanceSheet, Stock
 from zvt.contract.factor import Factor, Transformer, Accumulator, FilterFactor
+from zvt.domain import FinanceFactor, BalanceSheet, Stock
 
 
 class FinanceBaseFactor(Factor):
@@ -20,14 +20,15 @@ class FinanceBaseFactor(Factor):
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False) -> None:
+                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
+                 factor_name: str = None, clear_state: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run)
+                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
 
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
@@ -57,6 +58,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = True,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
+                 factor_name: str = None, clear_state: bool = False,
                  # 3 years
                  window='1095d',
                  count=8,
@@ -75,7 +77,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run)
+                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
 
     def do_compute(self):
         def filter_df(df):

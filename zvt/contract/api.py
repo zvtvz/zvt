@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from zvt import zvt_env
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract import zvt_context
+from zvt.contract.schema import Mixin
 from zvt.utils.pd_utils import pd_is_not_null, index_df
 from zvt.utils.time_utils import to_pd_timestamp
 
@@ -245,6 +246,19 @@ def common_filter(query: Query,
         query = query.limit(limit)
 
     return query
+
+
+def del_data(data_schema: Mixin, filters: List = None, provider=None):
+    if not provider:
+        provider = data_schema.providers[0]
+
+    session = get_db_session(provider=provider, data_schema=data_schema)
+    query = session.query(data_schema)
+    if filters:
+        for f in filters:
+            query = query.filter(f)
+    query.delete()
+    session.commit()
 
 
 def get_data(data_schema,

@@ -8,15 +8,16 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 from zvt.contract.api import decode_entity_id
+from zvt.contract.data_type import Bean
 from zvt.contract.normal_data import NormalData
 from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)
 
 
-class Rect(object):
+class Rect(Bean):
 
-    def __init__(self, x0, y0, x1, y1) -> None:
+    def __init__(self, x0=None, y0=None, x1=None, y1=None) -> None:
         # left-bottom
         self.x0 = x0
         self.y0 = y0
@@ -133,8 +134,8 @@ class Drawable(object):
                         main_data=self.drawer_main_data(),
                         factor_df_list=self.drawer_factor_df_list(),
                         factor_data_list=self.drawer_factor_data_list(),
-                        sub_df=self.drawer_sub_df(),
-                        sub_data=self.drawer_sub_data(),
+                        sub_df_list=self.drawer_sub_df_list(),
+                        sub_data_list=self.drawer_sub_data_list(),
                         annotation_df=self.drawer_annotation_df(),
                         rects=self.drawer_rects())
         return drawer
@@ -157,10 +158,10 @@ class Drawable(object):
     def drawer_factor_data_list(self) -> Optional[List[NormalData]]:
         return None
 
-    def drawer_sub_df(self) -> Optional[pd.DataFrame]:
+    def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
         return None
 
-    def drawer_sub_data(self) -> Optional[NormalData]:
+    def drawer_sub_data_list(self) -> Optional[List[NormalData]]:
         return None
 
     def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
@@ -257,20 +258,20 @@ class Drawer(Draw):
     def __init__(self,
                  main_df: pd.DataFrame = None,
                  factor_df_list: List[pd.DataFrame] = None,
-                 sub_df: pd.DataFrame = None,
+                 sub_df_list: pd.DataFrame = None,
                  main_data: NormalData = None,
                  factor_data_list: List[NormalData] = None,
-                 sub_data: NormalData = None,
+                 sub_data_list: NormalData = None,
                  rects: List[Rect] = None,
                  annotation_df: pd.DataFrame = None) -> None:
         """
 
         :param main_df: df for main chart
         :param factor_df_list: list of factor df on main chart
-        :param sub_df: df for sub chart under main chart
+        :param sub_df_list: df for sub chart under main chart
         :param main_data: NormalData wrap main_df,use either
         :param factor_data_list: list of NormalData wrap factor_df,use either
-        :param sub_data: NormalData wrap sub_df,use either
+        :param sub_data_list: NormalData wrap sub_df,use either
         :param annotation_df:
         """
 
@@ -289,9 +290,13 @@ class Drawer(Draw):
         self.factor_data_list: List[NormalData] = factor_data_list
 
         # 副图数据
-        if sub_data is None:
-            sub_data = NormalData(sub_df)
-        self.sub_data: NormalData = sub_data
+        if not sub_data_list and sub_df_list:
+            sub_data_list = []
+            for df in sub_df_list:
+                sub_data_list.append(NormalData(df))
+        # 每一个df可能有多个column, 代表多个指标，对于连续型的，可以放在一个df里面
+        # 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
+        self.sub_data_list: List[NormalData] = sub_data_list
 
         # 主图的标记数据
         self.annotation_df = annotation_df
@@ -300,7 +305,7 @@ class Drawer(Draw):
         self.rects = rects
 
     def has_sub_plot(self):
-        return self.sub_data is not None and not self.sub_data.empty()
+        return self.sub_data_list is not None and not self.sub_data_list[0].empty()
 
     def make_traces(self,
                     main_chart='kline',
@@ -348,28 +353,29 @@ class Drawer(Draw):
 
             # 构造幅图
             if self.has_sub_plot():
-                sub_df = self.sub_data.entity_map_df.get(entity_id)
-                if pd_is_not_null(sub_df):
-                    sub_df = sub_df.select_dtypes(np.number)
-                    for col in sub_df.columns:
-                        trace_name = '{}_{}'.format(code, col)
-                        ydata = sub_df[col].values.tolist()
+                for sub_data in self.sub_data_list:
+                    sub_df = sub_data.entity_map_df.get(entity_id)
+                    if pd_is_not_null(sub_df):
+                        sub_df = sub_df.select_dtypes(np.number)
+                        for col in sub_df.columns:
+                            trace_name = '{}_{}'.format(code, col)
+                            ydata = sub_df[col].values.tolist()
 
-                        def color(i):
-                            if i > 0:
-                                return 'red'
+                            def color(i):
+                                if i > 0:
+                                    return 'red'
+                                else:
+                                    return 'green'
+
+                            colors = [color(i) for i in ydata]
+
+                            if sub_chart == 'line':
+                                sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
+                                                       marker=dict(color=colors))
                             else:
-                                return 'green'
-
-                        colors = [color(i) for i in ydata]
-
-                        if sub_chart == 'line':
-                            sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
+                                sub_trace = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
                                                    marker=dict(color=colors))
-                        else:
-                            sub_trace = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
-                                               marker=dict(color=colors))
-                        sub_traces.append(sub_trace)
+                            sub_traces.append(sub_trace)
 
         return traces, sub_traces
 
@@ -412,9 +418,8 @@ class Drawer(Draw):
         fig.update_layout(self.default_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state))
 
         if sub_traces:
-            fig.layout['yaxis2'] = dict(autorange=True,
-                                        fixedrange=False,
-                                        zeroline=False)
+            fig.update_layout(xaxis_rangeslider_visible=False)
+            fig.update_layout(xaxis2_rangeslider_visible=True, xaxis2_rangeslider_thickness=0.1)
         # 绘制标志
         fig.layout['annotations'] = annotations(self.annotation_df, yref=yaxis)
 

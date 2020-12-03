@@ -7,10 +7,11 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract.api import get_entities, get_schema_by_name
+from zvt.contract.factor import Accumulator, Transformer
 from zvt.domain import Stock
 from zvt.factors.algorithm import MaTransformer
-from zvt.contract.factor import Accumulator, Transformer
 from zvt.factors.technical_factor import TechnicalFactor
+from zvt.utils import now_pd_timestamp
 from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ class MaAccumulator(Accumulator):
         self.current_col = 'current_count'
         self.total_col = 'total_count'
 
-    def acc(self, input_df, acc_df) -> pd.DataFrame:
+    def acc(self, input_df, acc_df, states) -> (pd.DataFrame, dict):
         short_ma_col = 'ma{}'.format(self.short_window)
         long_ma_col = 'ma{}'.format(self.long_window)
 
@@ -136,7 +137,7 @@ class MaAccumulator(Accumulator):
         else:
             acc_df = input_df
 
-        return acc_df
+        return acc_df, None
 
 
 class MaStateStatsFactor(TechnicalFactor):
@@ -164,7 +165,7 @@ class MaStateStatsFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run)
+                         accumulator, need_persist, dry_run,factor_name, clear_state)
 
 
 def show_slope(codes):
@@ -184,6 +185,7 @@ def show_slope(codes):
 
 
 def cal_ma_states(start='000001', end='000002'):
+    from zvt.factors.technical import MaFactor
     logger.info(f'start cal day ma stats {start}:{end}')
 
     entities = get_entities(provider='eastmoney', entity_type='stock', columns=[Stock.entity_id, Stock.code],
