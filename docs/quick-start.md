@@ -177,7 +177,7 @@ INFO  MainThread  2019-12-15 18:03:35,510  ChinaStockFinanceFactorRecorder:recor
 * 不传入codes则是全市场抓取
 * 所有的schema对应的数据更新，方法是一致的
 
-定时任务的方式更新可参考[runners](https://github.com/zvtvz/zvt/blob/master/zvt/recorders/eastmoney/finance0_runner.py)
+定时任务的方式更新可参考[runners](https://github.com/zvtvz/zvt/blob/master/examples/recorders)
 
 ## 3. 🚀开发
 

@@ -27,7 +27,7 @@ zvt对量化数据进行了简洁统一的抽象：数据就是 **投资标的**
 
 * **代码(code)**
 
-投资标的编码，A股中的000338,601318,数字货币交易对BTC/USDT,EOS/USDT等
+投资标的编码，A股中的000338,601318,数字货币交易中的BTC/USDT,EOS/USDT等
 
 所以，zvt里面投资标的的唯一编码(entity_id)为:{entity_type}\_{exchange}\_{code}
 
