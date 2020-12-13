@@ -1,7 +1,7 @@
 # script to auto generate some files
-from zvt.contract import IntervalLevel
-from zvt.autocode.generator import gen_exports, gen_kdata_schema
+from zvt.autocode.generator import gen_kdata_schema, gen_exports
 from zvt.contract import AdjustType
+from zvt.contract import IntervalLevel
 
 
 def gen_kdata_schemas():
@@ -19,8 +19,8 @@ def gen_kdata_schemas():
     gen_kdata_schema(pkg='zvt', providers=['sina'], entity_type='etf',
                      levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True)
     # 指数行情
-    gen_kdata_schema(pkg='zvt', providers=['sina'], entity_type='index',
-                     levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True)
+    gen_kdata_schema(pkg='zvt', providers=['joinquant', 'sina'], entity_type='index',
+                     levels=[IntervalLevel.LEVEL_1DAY, IntervalLevel.LEVEL_1WEEK], entity_in_submodule=True)
 
 
 if __name__ == '__main__':

@@ -38,8 +38,9 @@ def record_kdata():
 
         try:
             # 日线前复权和后复权数据
-            Stock1dKdata.record_data(provider='joinquant', sleeping_time=1)
-            Stock1dHfqKdata.record_data(provider='joinquant', sleeping_time=1)
+            Stock1dKdata.record_data(provider='joinquant', sleeping_time=0)
+            Stock1dHfqKdata.record_data(provider='joinquant', sleeping_time=0)
+            StockMoneyFlow.record_data(provider='joinquant', sleeping_time=0)
             email_action.send_message("5533061@qq.com", 'joinquant record kdata finished', '')
             break
         except Exception as e:

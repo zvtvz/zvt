@@ -11,3 +11,8 @@ __all__ = []
 from .index_1d_kdata import *
 from .index_1d_kdata import __all__ as _index_1d_kdata_all
 __all__ += _index_1d_kdata_all
+
+# import all from submodule index_1wk_kdata
+from .index_1wk_kdata import *
+from .index_1wk_kdata import __all__ as _index_1wk_kdata_all
+__all__ += _index_1wk_kdata_all

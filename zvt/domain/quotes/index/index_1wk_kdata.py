@@ -8,11 +8,11 @@ from zvt.domain.quotes import IndexKdataCommon
 KdataBase = declarative_base()
 
 
-class Index1dKdata(KdataBase, IndexKdataCommon):
-    __tablename__ = 'index_1d_kdata'
+class Index1wkKdata(KdataBase, IndexKdataCommon):
+    __tablename__ = 'index_1wk_kdata'
 
 
-register_schema(providers=['joinquant', 'sina'], db_name='index_1d_kdata', schema_base=KdataBase)
+register_schema(providers=['joinquant', 'sina'], db_name='index_1wk_kdata', schema_base=KdataBase)
 
 # the __all__ is generated
-__all__ = ['Index1dKdata']
+__all__ = ['Index1wkKdata']

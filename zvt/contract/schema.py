@@ -101,7 +101,8 @@ class Mixin(object):
                     end_timestamp=None,
                     close_hour=None,
                     close_minute=None,
-                    one_day_trading_minutes=None):
+                    one_day_trading_minutes=None,
+                    **kwargs):
         if cls.provider_map_recorder:
             print(f'{cls.__name__} registered recorders:{cls.provider_map_recorder}')
 
@@ -143,6 +144,10 @@ class Mixin(object):
                     level = IntervalLevel.LEVEL_1DAY
 
                 kw['level'] = level
+
+                # add other custom args
+                for k in kwargs:
+                    kw[k] = kwargs[k]
 
                 r = recorder_class(**kw)
                 r.run()

@@ -78,7 +78,36 @@ class StockMoneyFlow(MoneyFlowBase, Mixin):
     net_small_inflow_rate = Column(Float)
 
 
-register_schema(providers=['sina'], db_name='money_flow', schema_base=MoneyFlowBase)
+class IndexMoneyFlow(MoneyFlowBase, Mixin):
+    __tablename__ = 'index_money_flow'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    # 净流入
+    net_inflows = Column(Float)
+    # 净流入率
+    net_inflow_rate = Column(Float)
+
+    # 主力=超大单+大单
+    net_main_inflows = Column(Float)
+    net_main_inflow_rate = Column(Float)
+    # 超大单
+    net_huge_inflows = Column(Float)
+    net_huge_inflow_rate = Column(Float)
+    # 大单
+    net_big_inflows = Column(Float)
+    net_big_inflow_rate = Column(Float)
+
+    # 中单
+    net_medium_inflows = Column(Float)
+    net_medium_inflow_rate = Column(Float)
+    # 小单
+    net_small_inflows = Column(Float)
+    net_small_inflow_rate = Column(Float)
+
+
+register_schema(providers=['sina', 'joinquant'], db_name='money_flow', schema_base=MoneyFlowBase)
 
 # the __all__ is generated
-__all__ = ['BlockMoneyFlow', 'StockMoneyFlow']
+__all__ = ['BlockMoneyFlow', 'StockMoneyFlow', 'IndexMoneyFlow']
