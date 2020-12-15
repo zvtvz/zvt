@@ -69,6 +69,14 @@ CHINA_STOCK_MAIN_INDEX = [{'id': 'index_sh_000001',
                            'exchange': 'sz',
                            'entity_type': 'index',
                            'category': 'main'},
+                          {'id': 'index_sh_000688',
+                           'entity_id': 'index_sh_000688',
+                           'code': '000688',
+                           'name': '科创50',
+                           'timestamp': '2019-01-01',
+                           'exchange': 'sh',
+                           'entity_type': 'index',
+                           'category': 'main'},
                           # # 聚宽编码
                           # # 市场通编码	市场通名称
                           # # 310001	沪股通

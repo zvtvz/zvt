@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-
 from jqdatapy import get_token, get_money_flow
+
 from zvt import zvt_config
 from zvt.api import generate_kdata_id
 from zvt.contract import IntervalLevel
@@ -24,7 +24,8 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
                  force_update=True, sleeping_time=0, default_size=2000, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
-                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60, compute_index_money_flow=False) -> None:
+        self.compute_index_money_flow = compute_index_money_flow
         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
@@ -35,7 +36,8 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     def on_finish(self):
         # 根据 个股资金流 计算 大盘资金流
-        JoinquantIndexMoneyFlowRecorder().run()
+        if self.compute_index_money_flow:
+            JoinquantIndexMoneyFlowRecorder().run()
 
     def record(self, entity, start, end, size, timestamps):
         if not self.end_timestamp:
@@ -101,4 +103,6 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    JoinquantStockMoneyFlowRecorder(start_timestamp='2020-12-01').run()
+    JoinquantStockMoneyFlowRecorder(codes=['300999', '688981']).run()
+# the __all__ is generated
+__all__ = ['JoinquantStockMoneyFlowRecorder']

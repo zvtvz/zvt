@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-
 from jqdatapy.api import get_mtss
+
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, MarginTrading
@@ -44,7 +44,7 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['MarginTradingRecorder']
-
 if __name__ == '__main__':
     MarginTradingRecorder(codes=['000004']).run()
+# the __all__ is generated
+__all__ = ['MarginTradingRecorder']

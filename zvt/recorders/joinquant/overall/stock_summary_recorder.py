@@ -73,7 +73,7 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['StockSummaryRecorder']
-
 if __name__ == '__main__':
     StockSummaryRecorder(batch_size=30).run()
+# the __all__ is generated
+__all__ = ['StockSummaryRecorder']

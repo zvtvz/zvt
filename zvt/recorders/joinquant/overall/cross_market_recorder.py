@@ -1,4 +1,5 @@
 from jqdatapy.api import run_query
+
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index, CrossMarketSummary
 from zvt.utils.time_utils import to_time_str
@@ -61,7 +62,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['CrossMarketSummaryRecorder']
-
 if __name__ == '__main__':
     CrossMarketSummaryRecorder(batch_size=30).run()
+# the __all__ is generated
+__all__ = ['CrossMarketSummaryRecorder']

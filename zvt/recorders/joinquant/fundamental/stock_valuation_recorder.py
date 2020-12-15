@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+from jqdatapy.api import get_fundamentals
 from pandas._libs.tslibs.timedeltas import Timedelta
 
-from jqdatapy.api import get_fundamentals
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, StockValuation, Etf
@@ -58,8 +58,6 @@ class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['JqChinaStockValuationRecorder']
-
 if __name__ == '__main__':
     # 上证50
     df = Etf.get_stocks(code='510050')
@@ -68,3 +66,5 @@ if __name__ == '__main__':
     print(len(stocks))
 
     JqChinaStockValuationRecorder(entity_ids=['stock_sh_600000'], force_update=True).run()
+# the __all__ is generated
+__all__ = ['JqChinaStockValuationRecorder']

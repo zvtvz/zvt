@@ -100,8 +100,6 @@ class JqChinaIndexKdataRecorder(FixedCycleDataRecorder):
         return None
 
 
-__all__ = ['JqChinaIndexKdataRecorder']
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
@@ -116,3 +114,5 @@ if __name__ == '__main__':
     JqChinaIndexKdataRecorder(level=level, sleeping_time=0, codes=codes, real_time=False).run()
 
     print(get_kdata(entity_id='index_sz_000001', limit=10))
+# the __all__ is generated
+__all__ = ['JqChinaIndexKdataRecorder']

@@ -51,3 +51,5 @@ def jq_to_report_period(jq_report_type):
     if jq_report_type == '年度':
         return ReportPeriod.year.value
     assert False
+# the __all__ is generated
+__all__ = ['to_jq_trading_level', 'to_jq_entity_id', 'to_entity_id', 'jq_to_report_period']

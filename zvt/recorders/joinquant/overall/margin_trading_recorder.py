@@ -1,4 +1,5 @@
 from jqdatapy.api import run_query
+
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index, MarginTradingSummary
 from zvt.utils.time_utils import to_time_str
@@ -25,7 +26,7 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
                  fix_duplicate_way='add') -> None:
         # 上海A股,深圳市场
         codes = ['000001', '399106']
-        super().__init__('index', ['sh','sz'], None, codes, batch_size,
+        super().__init__('index', ['sh', 'sz'], None, codes, batch_size,
                          force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
@@ -61,7 +62,7 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['MarginTradingSummaryRecorder']
-
 if __name__ == '__main__':
     MarginTradingSummaryRecorder(batch_size=30).run()
+# the __all__ is generated
+__all__ = ['MarginTradingSummaryRecorder']

@@ -19,8 +19,8 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
                  force_update=True, sleeping_time=0, default_size=2000, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
-        # 上证指数，深证成指，创业板指
-        support_codes = ['000001', '399001', '399006']
+        # 上证指数，深证成指，创业板指，科创板
+        support_codes = ['000001', '399001', '399006', '000688']
         if not codes:
             codes = support_codes
         else:
@@ -43,6 +43,10 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
         elif entity.code == '399006':
             all_df = StockMoneyFlow.query_data(provider=self.provider, start_timestamp=start,
                                                filters=[StockMoneyFlow.code.like('300%')])
+        # 科创板
+        elif entity.code == '000688':
+            all_df = StockMoneyFlow.query_data(provider=self.provider, start_timestamp=start,
+                                               filters=[StockMoneyFlow.code.like('688%')])
 
         if pd_is_not_null(all_df):
             g = all_df.groupby('timestamp')
@@ -73,3 +77,5 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
 
 if __name__ == '__main__':
     JoinquantIndexMoneyFlowRecorder(start_timestamp='2020-12-01').run()
+# the __all__ is generated
+__all__ = ['JoinquantIndexMoneyFlowRecorder']

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
+from zvt.api.quote import get_etf_stocks
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
+from zvt.domain import StockValuation, Etf, EtfValuation
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_pd_timestamp
-from zvt.api.quote import get_etf_stocks
-from zvt.domain import StockValuation, Etf, EtfValuation
 
 
 class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
@@ -112,8 +112,8 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['JqChinaEtfValuationRecorder']
-
 if __name__ == '__main__':
     # 上证50
     JqChinaEtfValuationRecorder(codes=['512290']).run()
+# the __all__ is generated
+__all__ = ['JqChinaEtfValuationRecorder']

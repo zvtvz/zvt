@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-
 from jqdatapy.api import get_all_securities, run_query
+
 from zvt.api.quote import china_stock_code_to_id, portfolio_relate_stock
 from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
@@ -111,8 +111,8 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
         return None
 
 
-__all__ = ['JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder']
-
 if __name__ == '__main__':
     # JqChinaEtfRecorder().run()
     JqChinaStockEtfPortfolioRecorder(codes=['510050']).run()
+# the __all__ is generated
+__all__ = ['BaseJqChinaMetaRecorder', 'JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder']

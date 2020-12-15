@@ -48,12 +48,23 @@ class Mixin(object):
 
     @classmethod
     def register_provider(cls, provider):
-        # dont't make providers as class field,it should be created for the sub class as need
+        # don't make providers as class field,it should be created for the sub class as need
         if not hasattr(cls, 'providers'):
             cls.providers = []
 
         if provider not in cls.providers:
             cls.providers.append(provider)
+
+    @classmethod
+    def test_data_correctness(cls, provider, data_samples):
+        for data in data_samples:
+            item = cls.query_data(provider=provider, ids=[data['id']], return_type='dict')
+            print(item)
+            for k in data:
+                if k == 'timestamp':
+                    assert is_same_time(item[0][k], data[k])
+                else:
+                    assert item[0][k] == data[k]
 
     @classmethod
     def query_data(cls,

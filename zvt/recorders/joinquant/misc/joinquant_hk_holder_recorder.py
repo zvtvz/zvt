@@ -1,6 +1,6 @@
 import pandas as pd
-
 from jqdatapy.api import run_query
+
 from zvt.contract.api import df_to_db, get_data
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Index
@@ -81,7 +81,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
                 df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
 
-__all__ = ['JoinquantHkHolderRecorder']
-
 if __name__ == '__main__':
     JoinquantHkHolderRecorder(sleeping_time=10).run()
+# the __all__ is generated
+__all__ = ['JoinquantHkHolderRecorder']

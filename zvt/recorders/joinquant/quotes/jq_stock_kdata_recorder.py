@@ -137,8 +137,6 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         return None
 
 
-__all__ = ['JqChinaStockKdataRecorder']
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
@@ -155,3 +153,5 @@ if __name__ == '__main__':
 
     print(get_kdata(entity_id='stock_sz_000001', limit=10, order=Stock1dHfqKdata.timestamp.desc(),
                     adjust_type=AdjustType.hfq))
+# the __all__ is generated
+__all__ = ['JqChinaStockKdataRecorder']
