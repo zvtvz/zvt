@@ -75,6 +75,9 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
                 df[col] = pd.to_numeric(df[col], errors='coerce')
             df = df.dropna()
 
+            if not pd_is_not_null(df):
+                return None
+
             df[inflows_cols] = df[inflows_cols].apply(lambda x: x * 10000)
 
             inflow_rate_cols = ['net_main_inflow_rate', 'net_huge_inflow_rate', 'net_big_inflow_rate',
@@ -82,7 +85,8 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
             for col in inflow_rate_cols:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
             df = df.dropna()
-
+            if not pd_is_not_null(df):
+                return None
 
             df[inflow_rate_cols] = df[inflow_rate_cols].apply(lambda x: x / 100)
 
@@ -111,6 +115,6 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    JoinquantStockMoneyFlowRecorder(codes=['000333']).run()
+    JoinquantStockMoneyFlowRecorder(codes=['000578']).run()
 # the __all__ is generated
 __all__ = ['JoinquantStockMoneyFlowRecorder']
