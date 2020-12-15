@@ -69,14 +69,22 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
                                }, inplace=True)
 
             # 转换到标准float
-            df[['net_main_inflows', 'net_huge_inflows', 'net_big_inflows', 'net_medium_inflows', 'net_small_inflows']] = \
-                df[['net_main_inflows', 'net_huge_inflows', 'net_big_inflows', 'net_medium_inflows',
-                    'net_small_inflows']].apply(lambda x: x * 10000)
+            inflows_cols = ['net_main_inflows', 'net_huge_inflows', 'net_big_inflows', 'net_medium_inflows',
+                            'net_small_inflows']
+            for col in inflows_cols:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+            df = df.dropna()
 
-            df[['net_main_inflow_rate', 'net_huge_inflow_rate', 'net_big_inflow_rate', 'net_medium_inflow_rate',
-                'net_small_inflow_rate']] = \
-                df[['net_main_inflow_rate', 'net_huge_inflow_rate', 'net_big_inflow_rate', 'net_medium_inflow_rate',
-                    'net_small_inflow_rate']].apply(lambda x: x / 100)
+            df[inflows_cols] = df[inflows_cols].apply(lambda x: x * 10000)
+
+            inflow_rate_cols = ['net_main_inflow_rate', 'net_huge_inflow_rate', 'net_big_inflow_rate',
+                                'net_medium_inflow_rate', 'net_small_inflow_rate']
+            for col in inflow_rate_cols:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+            df = df.dropna()
+
+
+            df[inflow_rate_cols] = df[inflow_rate_cols].apply(lambda x: x / 100)
 
             # 计算总流入
             df['net_inflows'] = df['net_huge_inflows'] + df['net_big_inflows'] + df['net_medium_inflows'] + df[
@@ -103,6 +111,6 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    JoinquantStockMoneyFlowRecorder(codes=['300999', '688981']).run()
+    JoinquantStockMoneyFlowRecorder(codes=['000333']).run()
 # the __all__ is generated
 __all__ = ['JoinquantStockMoneyFlowRecorder']

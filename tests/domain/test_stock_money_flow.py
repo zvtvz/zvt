@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from zvt.domain import StockMoneyFlow
+from zvt.domain import StockMoneyFlow, Stock
 
 
 def test_stock_money_flow():
     provider = 'joinquant'
+    # Stock.record_data(provider=provider)
     StockMoneyFlow.record_data(codes=['300999', '688981'], provider=provider, start_timestamp='2020-12-14',
                                compute_index_money_flow=False)
 
