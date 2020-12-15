@@ -11,9 +11,9 @@ class BlockSelector(TargetSelector):
 
     def __init__(self, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
                  start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
-                 level=IntervalLevel.LEVEL_1DAY, provider='sina', block_selector=None) -> None:
+                 level=IntervalLevel.LEVEL_1DAY, provider='sina') -> None:
         super().__init__(entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         long_threshold, short_threshold, level, provider, block_selector)
+                         long_threshold, short_threshold, level, provider)
 
     def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):

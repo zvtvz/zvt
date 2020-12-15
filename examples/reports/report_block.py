@@ -5,8 +5,8 @@ from typing import List
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.contract import IntervalLevel
 from zvt import init_log
+from zvt.contract import IntervalLevel
 from zvt.domain import Block, BlockMoneyFlow, BlockCategory
 from zvt.factors import TargetSelector
 from zvt.factors.technical import BlockMoneyFlowFactor
@@ -21,9 +21,9 @@ class IndustryBlockSelector(TargetSelector):
 
     def __init__(self, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
                  start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
-                 level=IntervalLevel.LEVEL_1DAY, provider='sina', block_selector=None) -> None:
+                 level=IntervalLevel.LEVEL_1DAY, provider='sina') -> None:
         super().__init__(entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         long_threshold, short_threshold, level, provider, block_selector)
+                         long_threshold, short_threshold, level, provider)
 
     def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):
@@ -36,9 +36,9 @@ class ConceptBlockSelector(TargetSelector):
 
     def __init__(self, entity_ids=None, entity_schema=Block, exchanges=None, codes=None, the_timestamp=None,
                  start_timestamp=None, end_timestamp=None, long_threshold=0.8, short_threshold=0.2,
-                 level=IntervalLevel.LEVEL_1DAY, provider='sina', block_selector=None) -> None:
+                 level=IntervalLevel.LEVEL_1DAY, provider='sina') -> None:
         super().__init__(entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                         long_threshold, short_threshold, level, provider, block_selector)
+                         long_threshold, short_threshold, level, provider)
 
     def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
                      level):

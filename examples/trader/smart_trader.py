@@ -5,13 +5,13 @@ import numpy as np
 
 from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
+from zvt.factors import MacdFactor
 from zvt.factors import TargetSelector, CrossMaFactor
-from zvt.factors import TechnicalFactor
 from zvt.trader.trader import StockTrader
 from zvt.utils.pd_utils import pd_is_not_null
 
 
-class GoldBullFactor(TechnicalFactor):
+class GoldBullFactor(MacdFactor):
     keep_window = 10
 
     def do_compute(self):

@@ -156,7 +156,7 @@ class FactorType(enum.Enum):
 
 
 def register_class(target_class):
-    if target_class.__name__ not in ('Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor', 'TechnicalFactor'):
+    if target_class.__name__ not in ('Factor', 'FilterFactor', 'ScoreFactor', 'StateFactor'):
         factor_cls_registry[target_class.__name__] = target_class
 
 
@@ -363,10 +363,14 @@ class Factor(DataReader, DataListener):
         return self.data_df
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
-        return [self.factor_df]
+        if (self.transformer is not None or self.accumulator is not None) and pd_is_not_null(self.factor_df):
+            return [self.factor_df]
+        return None
 
     def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
-        return [self.result_df]
+        if (self.transformer is not None or self.accumulator is not None) and pd_is_not_null(self.result_df):
+            return [self.result_df]
+        return None
 
     def fill_gap(self):
         # 该操作较慢，只适合做基本面的运算

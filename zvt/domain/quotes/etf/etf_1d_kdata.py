@@ -12,7 +12,7 @@ class Etf1dKdata(KdataBase, EtfKdataCommon):
     __tablename__ = 'etf_1d_kdata'
 
 
-register_schema(providers=['sina'], db_name='etf_1d_kdata', schema_base=KdataBase)
+register_schema(providers=['sina'], db_name='etf_1d_kdata', schema_base=KdataBase, entity_type='etf')
 
 # the __all__ is generated
 __all__ = ['Etf1dKdata']

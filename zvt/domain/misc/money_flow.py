@@ -107,7 +107,7 @@ class IndexMoneyFlow(MoneyFlowBase, Mixin):
     net_small_inflow_rate = Column(Float)
 
 
-register_schema(providers=['sina', 'joinquant'], db_name='money_flow', schema_base=MoneyFlowBase)
+register_schema(providers=['sina', 'joinquant'], db_name='money_flow', schema_base=MoneyFlowBase, entity_type='stock')
 
 # the __all__ is generated
 __all__ = ['BlockMoneyFlow', 'StockMoneyFlow', 'IndexMoneyFlow']

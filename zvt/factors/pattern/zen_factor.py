@@ -552,7 +552,7 @@ class ZenFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    zen = ZenFactor(entity_ids=['stock_sz_000338', 'stock_sz_000001'], level='1d', need_persist=True, clear_state=True)
+    zen = ZenFactor(entity_ids=['stock_sz_000338', 'stock_sz_000001'], level='1d', need_persist=False, clear_state=True)
 
     print(zen.factor_df)
 

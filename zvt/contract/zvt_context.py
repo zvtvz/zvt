@@ -9,7 +9,7 @@ entity_types = []
 # all registered schemas
 schemas = []
 
-# entity_type -> schema
+# entity_type -> entity schema
 entity_schema_map = {}
 
 # global sessions
@@ -30,7 +30,7 @@ dbname_map_base = {}
 # db_name -> [declarative_meta1,declarative_meta2...]
 dbname_map_schemas = {}
 
-# entity_type -> schema
+# entity_type -> related schemas
 entity_map_schemas = {}
 
 # factor class registry

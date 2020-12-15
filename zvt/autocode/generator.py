@@ -176,7 +176,7 @@ class {class_name}(KdataBase, {kdata_common}):
     __tablename__ = '{table_name}'
 
 
-register_schema(providers={providers}, db_name='{table_name}', schema_base=KdataBase)
+register_schema(providers={providers}, db_name='{table_name}', schema_base=KdataBase, entity_type='{entity_type}')
 
 '''
             # generate the schema

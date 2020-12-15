@@ -32,8 +32,6 @@ def register_entity(entity_type: str = None):
             if entity_type_ not in zvt_context.entity_types:
                 zvt_context.entity_types.append(entity_type_)
             zvt_context.entity_schema_map[entity_type_] = cls
-
-            add_to_map_list(the_map=zvt_context.entity_map_schemas, key=entity_type, value=cls)
         return cls
 
     return register
@@ -42,7 +40,7 @@ def register_entity(entity_type: str = None):
 def register_schema(providers: List[str],
                     db_name: str,
                     schema_base: DeclarativeMeta,
-                    entity_type: str = 'stock'):
+                    entity_type: str = None):
     """
     function for register schema,please declare them before register
 
@@ -69,7 +67,8 @@ def register_schema(providers: List[str],
             if zvt_context.dbname_map_schemas.get(db_name):
                 schemas = zvt_context.dbname_map_schemas[db_name]
             zvt_context.schemas.append(cls)
-            add_to_map_list(the_map=zvt_context.entity_map_schemas, key=entity_type, value=cls)
+            if entity_type:
+                add_to_map_list(the_map=zvt_context.entity_map_schemas, key=entity_type, value=cls)
             schemas.append(cls)
 
     zvt_context.dbname_map_schemas[db_name] = schemas

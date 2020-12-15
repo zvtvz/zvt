@@ -156,7 +156,7 @@ class DragonAndTiger(TradingBase, Mixin):
     net_out_dep5_rate = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'joinquant'], db_name='trading', schema_base=TradingBase)
+register_schema(providers=['eastmoney', 'joinquant'], db_name='trading', schema_base=TradingBase, entity_type='stock')
 
 # the __all__ is generated
 __all__ = ['ManagerTrading', 'HolderTrading', 'BigDealTrading', 'MarginTrading', 'DragonAndTiger']

@@ -12,7 +12,7 @@ class Block1wkKdata(KdataBase, BlockKdataCommon):
     __tablename__ = 'block_1wk_kdata'
 
 
-register_schema(providers=['eastmoney'], db_name='block_1wk_kdata', schema_base=KdataBase)
+register_schema(providers=['eastmoney'], db_name='block_1wk_kdata', schema_base=KdataBase, entity_type='block')
 
 # the __all__ is generated
 __all__ = ['Block1wkKdata']

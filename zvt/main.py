@@ -48,8 +48,8 @@ zvt_app.layout = serve_layout
 
 def main():
     init_plugins()
-    # zvt_app.run_server(debug=True)
-    zvt_app.run_server()
+    zvt_app.run_server(debug=True)
+    # zvt_app.run_server()
 
 
 if __name__ == '__main__':

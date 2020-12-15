@@ -961,7 +961,7 @@ class FinanceFactor(FinanceBase, Mixin):
     broker_self_operated_fixed_income_securities_net_capital_ratio = Column(Float)
 
 
-register_schema(providers=['eastmoney'], db_name='finance', schema_base=FinanceBase)
+register_schema(providers=['eastmoney'], db_name='finance', schema_base=FinanceBase, entity_type='stock')
 
 # the __all__ is generated
 __all__ = ['BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceFactor']

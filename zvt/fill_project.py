@@ -31,5 +31,5 @@ if __name__ == '__main__':
     # gen_exports('utils')
     # gen_exports('trader')
     # gen_exports('autocode')
-    gen_exports('factors')
-    # gen_kdata_schemas()
+    # gen_exports('factors')
+    gen_kdata_schemas()

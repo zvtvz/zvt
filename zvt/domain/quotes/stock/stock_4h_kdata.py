@@ -12,7 +12,7 @@ class Stock4hKdata(KdataBase, StockKdataCommon):
     __tablename__ = 'stock_4h_kdata'
 
 
-register_schema(providers=['joinquant'], db_name='stock_4h_kdata', schema_base=KdataBase)
+register_schema(providers=['joinquant'], db_name='stock_4h_kdata', schema_base=KdataBase, entity_type='stock')
 
 # the __all__ is generated
 __all__ = ['Stock4hKdata']
