@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import dash_core_components as dcc
+import dash_daq as daq
 import dash_html_components as html
 from dash import dash
 from dash.dependencies import Input, Output, State
@@ -74,7 +75,20 @@ def factor_layout():
                             # select data
                             html.Div(
                                 children=[
-                                    html.H6("select data to show in sub graph:"),
+                                    html.Div(
+                                        [
+                                            html.H6("related/all data to show in sub graph",
+                                                    style={"display": "inline-block"}),
+                                            daq.BooleanSwitch(
+                                                id='data-switch',
+                                                on=True,
+                                                style={"display": "inline-block",
+                                                       "float": "right",
+                                                       "vertical-align": "middle",
+                                                       "padding": "8px"}
+                                            ),
+                                        ],
+                                    ),
                                     dcc.Dropdown(id='data-selector', placeholder='schema')
                                 ],
                                 style={"padding-top": "12px"}
@@ -106,11 +120,14 @@ def factor_layout():
 @zvt_app.callback(
     [Output('data-selector', 'options'),
      Output('code-selector', 'options')],
-    [Input('entity-type-selector', 'value')])
-def update_code_selector(entity_type):
+    [Input('entity-type-selector', 'value'), Input('data-switch', 'on')])
+def update_code_selector(entity_type, related):
     if entity_type is not None:
-        return [{'label': schema.__name__, 'value': schema.__name__} for schema in
-                zvt_context.entity_map_schemas.get(entity_type)], \
+        if related:
+            schemas = zvt_context.entity_map_schemas.get(entity_type)
+        else:
+            schemas = zvt_context.schemas
+        return [{'label': schema.__name__, 'value': schema.__name__} for schema in schemas], \
                [{'label': code, 'value': code} for code in
                 get_entities(entity_type=entity_type, columns=['code']).index]
     raise dash.PreventUpdate()
