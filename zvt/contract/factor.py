@@ -99,9 +99,10 @@ class Accumulator(Indicator):
             else:
                 acc_one_df = None
             ret_df, state = self.acc_one(entity_id=entity_id, df=df, acc_df=acc_one_df, state=states.get(entity_id))
-            ret_df['entity_id'] = entity_id
-
-            return ret_df.set_index('entity_id', append=True).swaplevel(0, 1), {entity_id: state}
+            if pd_is_not_null(ret_df):
+                ret_df['entity_id'] = entity_id
+                return ret_df.set_index('entity_id', append=True).swaplevel(0, 1), {entity_id: state}
+            return None, {entity_id: state}
         else:
             new_states = {}
 
@@ -109,7 +110,11 @@ class Accumulator(Indicator):
                 entity_id = x.index[0][0]
                 if pd_is_not_null(acc_df):
                     acc_g = acc_df.groupby(level=0)
-                    acc_one_df = acc_g.get_group(entity_id).reset_index(level=0, drop=True)
+                    acc_one_df = None
+                    if entity_id in acc_g.groups:
+                        acc_one_df = acc_g.get_group(entity_id)
+                        if pd_is_not_null(acc_one_df):
+                            acc_one_df = acc_one_df.reset_index(level=0, drop=True)
                 else:
                     acc_one_df = None
 

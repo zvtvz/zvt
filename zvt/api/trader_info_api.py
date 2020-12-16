@@ -94,4 +94,4 @@ if __name__ == '__main__':
                                          category_field='trader_name'))
     drawer.draw_line()
 # the __all__ is generated
-__all__ = ['AccountStatsReader', 'OrderReader']
+__all__ = ['get_trader_info', 'get_order_securities', 'AccountStatsReader', 'OrderReader']

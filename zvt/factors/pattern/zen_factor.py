@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 from enum import Enum
 from typing import List
 from typing import Union, Optional, Type
@@ -20,6 +21,8 @@ from zvt.factors.algorithm import intersect
 from zvt.utils import pd_is_not_null
 from zvt.utils import to_time_str
 from zvt.utils.time_utils import TIME_FORMAT_ISO8601
+
+logger = logging.getLogger(__name__)
 
 
 class Direction(Enum):
@@ -106,7 +109,12 @@ def is_down(kdata, pre_kdata):
 
 
 def handle_first_fenxing(one_df, step=11):
-    print(f"gen first fenxing by step {step}")
+    if step >= len(one_df):
+        logger.info(f"coult not get fenxing by step {step}, len {len(one_df)}")
+        return None, None, None
+
+    logger.info(f"try to get first fenxing by step {step}")
+
     df = one_df.iloc[:step]
     ding_kdata = df[df['high'].max() == df['high']]
     ding_index = ding_kdata.index[-1]
@@ -288,9 +296,11 @@ class ZenAccumulator(Accumulator):
         super().__init__(acc_window)
 
     def acc_one(self, entity_id, df: pd.DataFrame, acc_df: pd.DataFrame, state: dict) -> (pd.DataFrame, dict):
+        self.logger.info(f'acc_one:{entity_id}')
         if pd_is_not_null(acc_df):
             df = df[df.index > acc_df.index[-1]]
             if pd_is_not_null(df):
+                self.logger.info(f'compute from {df.iloc[0]["timestamp"]}')
                 # 遍历的开始位置
                 start_index = len(acc_df)
 
@@ -300,6 +310,7 @@ class ZenAccumulator(Accumulator):
 
                 acc_df = acc_df.reset_index(drop=True)
             else:
+                self.logger.info('no need to compute')
                 return acc_df, state
         else:
             acc_df = df
@@ -340,6 +351,9 @@ class ZenAccumulator(Accumulator):
             # start_index 为遍历开始的位置
             # direction为一个确定分型后的方向，即顶分型后为:down，底分型后为:up
             fenxing, start_index, direction = handle_first_fenxing(acc_df, step=11)
+            if not fenxing:
+                return None, None
+
             zen_state.fenxing_list.append(fenxing)
             zen_state.direction = direction
 
