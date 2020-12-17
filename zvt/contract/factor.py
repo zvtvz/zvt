@@ -347,7 +347,7 @@ class Factor(DataReader, DataListener):
         if self.keep_all_timestamp:
             self.fill_gap()
 
-        if self.need_persist:
+        if self.need_persist and pd_is_not_null(self.factor_df):
             self.persist_factor()
 
     def compute(self):
@@ -414,20 +414,33 @@ class Factor(DataReader, DataListener):
         pass
 
     def persist_factor(self):
-        df_to_db(df=self.factor_df, data_schema=self.factor_schema, provider='zvt', force_update=False)
+        df = self.factor_df.copy()
         if self.states:
             session = get_db_session(provider='zvt', data_schema=FactorState)
-            for entity_id, state in self.states:
-                domain_id = f'{self.factor_name}_{entity_id}'
-                factor_state: FactorState = session.query(FactorState).get(domain_id)
-                state_str = json.dumps(state)
-                if factor_state:
-                    factor_state.state = state_str
-                else:
-                    factor_state = FactorState(id=domain_id, entity_id=entity_id, factor_name=self.factor_name,
-                                               state=json.dumps(state))
-                    session.add(factor_state)
-            session.commit()
+            g = df.groupby(level=0)
+
+            for entity_id in self.states:
+                state = self.states[entity_id]
+                try:
+                    if state:
+                        domain_id = f'{self.factor_name}_{entity_id}'
+                        factor_state: FactorState = session.query(FactorState).get(domain_id)
+                        state_str = json.dumps(state)
+                        if factor_state:
+                            factor_state.state = state_str
+                        else:
+                            factor_state = FactorState(id=domain_id, entity_id=entity_id,
+                                                       factor_name=self.factor_name,
+                                                       state=state_str)
+                        session.add(factor_state)
+                        session.commit()
+                    if entity_id in g.groups:
+                        df_to_db(df=df.loc[(entity_id,)], data_schema=self.factor_schema, provider='zvt',
+                                 force_update=False)
+                except Exception as e:
+                    self.logger.error(f'{self.factor_name} {entity_id} save state error', e)
+        else:
+            df_to_db(df=df, data_schema=self.factor_schema, provider='zvt', force_update=False)
 
 
 class FilterFactor(Factor):
