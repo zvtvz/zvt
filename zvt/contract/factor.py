@@ -319,9 +319,15 @@ class Factor(DataReader, DataListener):
 
         self.register_data_listener(self)
 
-    def clear_state_data(self):
-        del_data(FactorState, filters=[FactorState.factor_name == self.factor_name], provider='zvt')
-        del_data(self.factor_schema, provider='zvt')
+    def clear_state_data(self, entity_id=None):
+        if entity_id:
+            del_data(FactorState,
+                     filters=[FactorState.factor_name == self.factor_name, FactorState.entity_id == entity_id],
+                     provider='zvt')
+            del_data(self.factor_schema, filters=[self.factor_schema.entity_id == entity_id], provider='zvt')
+        else:
+            del_data(FactorState, filters=[FactorState.factor_name == self.factor_name], provider='zvt')
+            del_data(self.factor_schema, provider='zvt')
 
     def decode_state(self, state):
         return state
@@ -438,7 +444,10 @@ class Factor(DataReader, DataListener):
                         df_to_db(df=df.loc[(entity_id,)], data_schema=self.factor_schema, provider='zvt',
                                  force_update=False)
                 except Exception as e:
-                    self.logger.error(f'{self.factor_name} {entity_id} save state error', e)
+                    self.logger.error(f'{self.factor_name} {entity_id} save state error')
+                    self.logger.exception(e)
+                    # clear them if error happen
+                    self.clear_state_data(entity_id)
         else:
             df_to_db(df=df, data_schema=self.factor_schema, provider='zvt', force_update=False)
 
