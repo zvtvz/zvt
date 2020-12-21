@@ -2,7 +2,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvt.contract.register import register_schema
-from zvt.factors.pattern.domain.common import ZenFactorCommon
+from zvt.factors.zen.domain.common import ZenFactorCommon
 
 Stock1dZenFactorBase = declarative_base()
 

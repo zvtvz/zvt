@@ -16,7 +16,7 @@ from zvt.contract.drawer import Rect
 from zvt.contract.factor import Accumulator, FactorState
 from zvt.contract.factor import Transformer
 from zvt.domain import Stock
-from zvt.factors import TechnicalFactor
+from zvt.factors.technical_factor import TechnicalFactor
 from zvt.factors.algorithm import intersect
 from zvt.utils import pd_is_not_null
 from zvt.utils import to_time_str
@@ -523,37 +523,14 @@ class ZenFactor(TechnicalFactor):
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
                          accumulator, need_persist, dry_run, factor_name, clear_state, adjust_type)
+    def factor_col_map_object_hook(self) -> dict:
+        return {
+            'zhongshu': decode_rect,
+            'bi_zhongshu': decode_rect
+        }
 
-    def on_data_loaded(self, data: pd.DataFrame):
-        if pd_is_not_null(self.factor_df):
-            self.factor_df['zhongshu'] = self.factor_df['zhongshu'].apply(
-                lambda x: json.loads(x, object_hook=decode_rect))
-        return super().on_data_loaded(data)
-
-    def decode_state(self, state):
-        return ZenState(state)
-
-    def persist_factor(self):
-
-        if self.states:
-            session = get_db_session(provider='zvt', data_schema=FactorState)
-            for entity_id in self.states:
-                state = self.states[entity_id]
-                if state:
-                    domain_id = f'{self.factor_name}_{entity_id}'
-                    factor_state: FactorState = session.query(FactorState).get(domain_id)
-                    state_str = json.dumps(state, cls=FactorStateEncoder)
-                    if factor_state:
-                        factor_state.state = state_str
-                    else:
-                        factor_state = FactorState(id=domain_id, entity_id=entity_id, factor_name=self.factor_name,
-                                                   state=state_str)
-                        session.add(factor_state)
-            session.commit()
-        df = self.factor_df.copy()
-        df['zhongshu'] = df['zhongshu'].apply(lambda x: json.dumps(x, cls=FactorStateEncoder))
-
-        df_to_db(df=df, data_schema=self.factor_schema, provider='zvt', force_update=False)
+    def factor_encoder(self):
+        return FactorStateEncoder
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
         bi_value = self.factor_df[['bi_value']].dropna()
@@ -566,7 +543,7 @@ class ZenFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    zen = ZenFactor(entity_ids=['stock_sz_000338', 'stock_sz_000001'], level='1d', need_persist=False, clear_state=True)
+    zen = ZenFactor(entity_ids=['stock_sz_000338', 'stock_sz_000001'], level='1d', need_persist=True, clear_state=False)
 
     print(zen.factor_df)
 
@@ -577,4 +554,7 @@ if __name__ == '__main__':
     zen.draw(show=True)
 
 # the __all__ is generated
-__all__ = ['get_ma_zen_factor_schema', 'ZenState', 'ZenAccumulator', 'ZenFactor']
+__all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including',
+           'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including',
+           'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_ma_zen_factor_schema', 'ZenState',
+           'ZenAccumulator', 'ZenFactor']

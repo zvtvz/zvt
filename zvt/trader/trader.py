@@ -7,11 +7,11 @@ from typing import List, Union, Type
 import pandas as pd
 
 from zvt.api.trader_info_api import AccountStatsReader
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract import IntervalLevel, EntityMixin, AdjustType
 from zvt.contract.api import get_db_session
+from zvt.contract.drawer import Drawer
 from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock, TraderInfo, AccountStats, Position
-from zvt.contract.drawer import Drawer
 from zvt.factors.target_selector import TargetSelector
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.account import SimAccountService
@@ -33,7 +33,8 @@ class Trader(object):
                  real_time: bool = False,
                  kdata_use_begin_time: bool = False,
                  draw_result: bool = True,
-                 rich_mode: bool = True) -> None:
+                 rich_mode: bool = True,
+                 adjust_type: AdjustType = None) -> None:
         assert self.entity_schema is not None
 
         self.logger = logging.getLogger(__name__)
@@ -75,18 +76,21 @@ class Trader(object):
         self.kdata_use_begin_time = kdata_use_begin_time
         self.draw_result = draw_result
         self.rich_mode = rich_mode
+        self.adjust_type = adjust_type
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
                                                  trader_name=self.trader_name,
                                                  timestamp=self.start_timestamp,
                                                  provider=self.provider,
                                                  level=self.level,
-                                                 rich_mode=rich_mode)
+                                                 rich_mode=rich_mode,
+                                                 adjust_type=self.adjust_type)
 
         self.register_trading_signal_listener(self.account_service)
 
         self.init_selectors(entity_ids=entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
-                            codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp)
+                            codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp,
+                            adjust_type=self.adjust_type)
 
         if self.selectors:
             self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
@@ -145,9 +149,11 @@ class Trader(object):
         self.session.add(sim_account)
         self.session.commit()
 
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         """
-        overwrite it to init selectors if you want to use selector/factor computing model or just write strategy in on_time
+        overwrite it to init selectors if you want to use selector/factor computing model
+        :param adjust_type:
 
         """
         pass
@@ -446,6 +452,14 @@ class Trader(object):
 
 class StockTrader(Trader):
     entity_schema = Stock
+
+    def __init__(self, entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 provider: str = None, level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 trader_name: str = None, real_time: bool = False, kdata_use_begin_time: bool = False,
+                 draw_result: bool = True, rich_mode: bool = True, adjust_type: AdjustType = AdjustType.hfq) -> None:
+        super().__init__(entity_ids, exchanges, codes, start_timestamp, end_timestamp, provider, level, trader_name,
+                         real_time, kdata_use_begin_time, draw_result, rich_mode, adjust_type)
 
 
 # the __all__ is generated

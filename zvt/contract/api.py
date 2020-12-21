@@ -2,7 +2,7 @@
 import logging
 import os
 import platform
-from typing import List, Union
+from typing import List, Union, Type
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -248,7 +248,7 @@ def common_filter(query: Query,
     return query
 
 
-def del_data(data_schema: Mixin, filters: List = None, provider=None):
+def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
     if not provider:
         provider = data_schema.providers[0]
 

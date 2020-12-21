@@ -9,7 +9,7 @@ from zvt.api import get_kdata
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities
 from zvt.domain import Stock
-from zvt.factors import TargetSelector, ImprovedMaFactor
+from zvt.factors import TargetSelector, VolumeUpMaFactor
 from zvt.informer.informer import EmailInformer
 from zvt.trader import TradingSignal, TradingSignalType
 from zvt.trader.trader import StockTrader
@@ -28,12 +28,13 @@ def entity_ids_to_msg(entity_ids):
 
 
 class MaVolTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         ma_vol_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                          provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
         # 放量突破年线
-        ma_vol_factor = ImprovedMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
+        ma_vol_factor = VolumeUpMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                          codes=codes, start_timestamp=start_timestamp - datetime.timedelta(365),
                                          end_timestamp=end_timestamp,
                                          provider='joinquant', level=IntervalLevel.LEVEL_1DAY)

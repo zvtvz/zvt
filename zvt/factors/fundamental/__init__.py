@@ -6,7 +6,7 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule fundamental_factor
-from .fundamental_factor import *
-from .fundamental_factor import __all__ as _fundamental_factor_all
-__all__ += _fundamental_factor_all
+# import all from submodule finance_factor
+from .finance_factor import *
+from .finance_factor import __all__ as _finance_factor_all
+__all__ += _finance_factor_all

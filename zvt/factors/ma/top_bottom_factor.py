@@ -63,6 +63,6 @@ if __name__ == '__main__':
     data_reader1 = DataReader(codes=['601318'], data_schema=Stock1dKdata, entity_schema=Stock)
 
     drawer = Drawer(main_df=data_reader1.data_df, factor_df_list=[factor.factor_df[['top', 'bottom']]])
-    drawer.draw_kline()
+    drawer.draw_kline(show=True)
 # the __all__ is generated
 __all__ = ['TopBottomTransformer', 'TopBottomFactor']

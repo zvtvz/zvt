@@ -142,19 +142,17 @@ class MaTransformer(Transformer):
         self.windows = windows
         self.cal_change_pct = cal_change_pct
 
-    def transform(self, input_df) -> pd.DataFrame:
+    def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
         if self.cal_change_pct:
-            input_df['change_pct'] = input_df['close'].pct_change()
+            df['change_pct'] = df['close'].pct_change()
 
         for window in self.windows:
             col = 'ma{}'.format(window)
             self.indicators.append(col)
 
-            ma_df = input_df['close'].groupby(level=0).rolling(window=window, min_periods=window).mean()
-            ma_df = ma_df.reset_index(level=0, drop=True)
-            input_df[col] = ma_df
+            df[col] = df['close'].rolling(window=window, min_periods=window).mean()
 
-        return input_df
+        return df
 
 
 class IntersectTransformer(Transformer):

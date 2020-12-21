@@ -5,9 +5,9 @@ import math
 from typing import List
 
 from zvt.api import get_kdata
-from zvt.api.trader_info_api import get_trader_info
 from zvt.api.quote import decode_entity_id, get_kdata_schema
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.api.trader_info_api import get_trader_info
+from zvt.contract import IntervalLevel, EntityMixin, AdjustType
 from zvt.contract.api import get_db_session
 from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
@@ -105,13 +105,15 @@ class SimAccountService(AccountService):
                  buy_cost=0.001,
                  sell_cost=0.001,
                  slippage=0.001,
-                 rich_mode=True):
+                 rich_mode=True,
+                 adjust_type: AdjustType = None):
         self.entity_schema = entity_schema
         self.base_capital = base_capital
         self.buy_cost = buy_cost
         self.sell_cost = sell_cost
         self.slippage = slippage
         self.rich_mode = rich_mode
+        self.adjust_type = adjust_type
         self.trader_name = trader_name
 
         self.session = get_db_session('zvt', data_schema=TraderInfo)
@@ -205,7 +207,7 @@ class SimAccountService(AccountService):
             try:
                 kdata = get_kdata(provider=self.provider, entity_id=entity_id, level=trading_level,
                                   start_timestamp=happen_timestamp, end_timestamp=happen_timestamp,
-                                  limit=1)
+                                  limit=1, adjust_type=self.adjust_type)
             except Exception as e:
                 self.logger.error(e)
                 raise WrongKdataError("could not get kdata")
@@ -239,11 +241,11 @@ class SimAccountService(AccountService):
         self.account.all_value = 0
         for position in self.account.positions:
             entity_type, _, _ = decode_entity_id(position.entity_id)
-            data_schema = get_kdata_schema(entity_type, level=IntervalLevel.LEVEL_1DAY)
+            data_schema = get_kdata_schema(entity_type, level=IntervalLevel.LEVEL_1DAY, adjust_type=self.adjust_type)
 
             kdata = get_kdata(provider=self.provider, level=IntervalLevel.LEVEL_1DAY, entity_id=position.entity_id,
                               order=data_schema.timestamp.desc(),
-                              end_timestamp=timestamp, limit=1)
+                              end_timestamp=timestamp, limit=1, adjust_type=self.adjust_type)
 
             closing_price = kdata['close'][0]
 
@@ -594,5 +596,7 @@ class SimAccountService(AccountService):
                                 f'{entity_id} available_long:{current_position.available_long} order_pct:{order_pct} order_amount:{order_amount}')
                     else:
                         raise Exception("not enough position")
+
+
 # the __all__ is generated
 __all__ = ['AccountDayStatsSchema', 'PositionSchema', 'AccountService', 'SimAccountService']

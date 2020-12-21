@@ -50,7 +50,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'
     ],
-    keywords='quant stock finance fintech big-data zvt technical-analysis trading-platform pandas fundamental-analysis',
+    keywords='quant stock finance fintech big-data zvt ma-analysis trading-platform pandas fundamental-analysis',
     packages=find_packages(include=['${project}.*', '${project}']),
     python_requires='>=3.5, <4',
     include_package_data=True,

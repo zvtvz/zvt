@@ -8,7 +8,8 @@ from zvt.trader.trader import StockTrader
 
 class VolMacdTrader(StockTrader):
 
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         # 周线策略
         week_bull_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                             codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
@@ -21,7 +22,7 @@ class VolMacdTrader(StockTrader):
         # 日线策略
         day_bull_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                            codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                           provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
+                                           provider='joinquant', level=IntervalLevel.LEVEL_1DAY, long_threshold=0.7)
         day_bull_factor = BullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                      codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                      provider='joinquant', level=IntervalLevel.LEVEL_1DAY)

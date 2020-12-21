@@ -41,3 +41,5 @@ class ZenFactorCommon(Mixin):
 
     # 记录在确定中枢的最后一个段的终点x1，值为Rect(x0,y0,x1,y1)
     zhongshu = Column(String(length=512))
+# the __all__ is generated
+__all__ = ['ZenFactorCommon']

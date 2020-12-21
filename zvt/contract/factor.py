@@ -87,6 +87,7 @@ class Accumulator(Indicator):
 
         :param input_df: new input
         :param acc_df: previous result
+        :param states: current states of the entity
         :return: new result and states
         """
         g = input_df.groupby(level=0)
@@ -142,8 +143,11 @@ class Accumulator(Indicator):
 
         the new result and state
 
-        :param df:
-        :return:
+        :param df: current input df
+        :param entity_id: current computing entity_id
+        :param acc_df: current result of the entity_id
+        :param state: current state of the entity_id
+        :return: new result and state of the entity_id
         """
         return acc_df, state
 
@@ -152,14 +156,18 @@ class Scorer(object):
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def score(self, input_df: pd.DataFrame) -> object:
+    def score(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        :param input_df: current input df
+        :return: df with normal score
+        """
         return input_df
 
 
 class FactorType(enum.Enum):
     filter = 'filter'
     score = 'score'
-    state = 'state'
 
 
 def register_class(target_class):
@@ -195,6 +203,9 @@ class Factor(DataReader, DataListener):
 
     # define the schema for persist,its columns should be same as indicators in transformer or accumulator
     factor_schema: Type[Mixin] = None
+
+    transformer: Transformer = None
+    accumulator: Accumulator = None
 
     def __init__(self,
                  data_schema: Type[Mixin],
@@ -253,8 +264,16 @@ class Factor(DataReader, DataListener):
         self.keep_all_timestamp = keep_all_timestamp
         self.fill_method = fill_method
         self.effective_number = effective_number
-        self.transformer = transformer
-        self.accumulator = accumulator
+
+        if transformer:
+            self.transformer = transformer
+        else:
+            self.transformer = self.__class__.transformer
+
+        if accumulator:
+            self.accumulator = accumulator
+        else:
+            self.accumulator = self.__class__.accumulator
 
         self.need_persist = need_persist
         self.dry_run = dry_run
@@ -277,25 +296,7 @@ class Factor(DataReader, DataListener):
         if self.clear_state:
             self.clear_state_data()
         elif self.need_persist:
-            # read state
-            states: List[FactorState] = FactorState.query_data(filters=[FactorState.factor_name == self.factor_name],
-                                                               return_type='domain')
-            if states:
-                for state in states:
-                    self.states[state.entity_id] = self.decode_state(json.loads(state.state))
-
-            if self.dry_run:
-                # 如果只是为了计算因子，只需要读取acc_window的factor_df
-                if self.accumulator is not None:
-                    self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema,
-                                                         window=accumulator.acc_window)
-            else:
-                self.factor_df = get_data(provider='zvt',
-                                          data_schema=self.factor_schema,
-                                          start_timestamp=self.start_timestamp,
-                                          entity_ids=self.entity_ids,
-                                          end_timestamp=self.end_timestamp,
-                                          index=[self.category_field, self.time_field])
+            self.load_factor()
 
             # 根据已经计算的factor_df和computing_window来保留data_df
             # 因为读取data_df的目的是为了计算factor_df,选股和回测只依赖factor_df
@@ -319,6 +320,44 @@ class Factor(DataReader, DataListener):
 
         self.register_data_listener(self)
 
+    def load_factor(self):
+        # read state
+        states: List[FactorState] = FactorState.query_data(filters=[FactorState.factor_name == self.factor_name],
+                                                           return_type='domain')
+        if states:
+            for state in states:
+                self.states[state.entity_id] = self.decode_state(state.state)
+
+        if self.dry_run:
+            # 如果只是为了计算因子，只需要读取acc_window的factor_df
+            if self.accumulator is not None:
+                self.factor_df = self.load_window_df(provider='zvt', data_schema=self.factor_schema,
+                                                     window=self.accumulator.acc_window)
+        else:
+            self.factor_df = get_data(provider='zvt',
+                                      data_schema=self.factor_schema,
+                                      start_timestamp=self.start_timestamp,
+                                      entity_ids=self.entity_ids,
+                                      end_timestamp=self.end_timestamp,
+                                      index=[self.category_field, self.time_field])
+
+        col_map_object_hook = self.factor_col_map_object_hook()
+        if pd_is_not_null(self.factor_df) and col_map_object_hook:
+            for col in col_map_object_hook:
+                if col in self.factor_df.columns:
+                    self.factor_df[col] = self.factor_df[col].apply(
+                        lambda x: json.loads(x, object_hook=col_map_object_hook.get(col)))
+
+    def factor_col_map_object_hook(self) -> dict:
+        """
+
+        :return:{col:object_hook}
+        """
+        return {}
+
+    def factor_state_object_hook(self):
+        return None
+
     def clear_state_data(self, entity_id=None):
         if entity_id:
             del_data(FactorState,
@@ -329,8 +368,14 @@ class Factor(DataReader, DataListener):
             del_data(FactorState, filters=[FactorState.factor_name == self.factor_name], provider='zvt')
             del_data(self.factor_schema, provider='zvt')
 
-    def decode_state(self, state):
-        return state
+    def decode_state(self, state: str):
+        return json.loads(state, object_hook=self.factor_state_object_hook())
+
+    def encode_state(self, state: object):
+        return json.dumps(state, cls=self.factor_encoder())
+
+    def factor_encoder(self):
+        return None
 
     def pre_compute(self):
         if not pd_is_not_null(self.pipe_df):
@@ -359,19 +404,19 @@ class Factor(DataReader, DataListener):
     def compute(self):
         self.pre_compute()
 
-        self.logger.info('>>>>>>')
+        self.logger.info(f'[[[ ~~~~~~~~factor:{self.factor_name} ~~~~~~~~]]]')
         self.logger.info('do_compute start')
         start_time = time.time()
         self.do_compute()
         cost_time = time.time() - start_time
-        self.logger.info('do_compute finished,cost_time:{}'.format(cost_time))
+        self.logger.info('do_compute finished,cost_time:{}s'.format(cost_time))
 
         self.logger.info('after_compute start')
         start_time = time.time()
         self.after_compute()
         cost_time = time.time() - start_time
-        self.logger.info('after_compute finished,cost_time:{}'.format(cost_time))
-        self.logger.info('<<<<<<')
+        self.logger.info('after_compute finished,cost_time:{}s'.format(cost_time))
+        self.logger.info(f'[[[ ^^^^^^^^factor:{self.factor_name} ^^^^^^^^]]]')
 
     def drawer_main_df(self) -> Optional[pd.DataFrame]:
         return self.data_df
@@ -390,10 +435,10 @@ class Factor(DataReader, DataListener):
         # 该操作较慢，只适合做基本面的运算
         idx = pd.date_range(self.start_timestamp, self.end_timestamp)
         new_index = pd.MultiIndex.from_product([self.result_df.index.levels[0], idx],
-                                               names=['entity_id', self.time_field])
+                                               names=[self.category_field, self.time_field])
         self.result_df = self.result_df.loc[~self.result_df.index.duplicated(keep='first')]
         self.result_df = self.result_df.reindex(new_index)
-        self.result_df = self.result_df.fillna(method=self.fill_method, limit=self.effective_number)
+        self.result_df = self.result_df.groupby(level=0).fillna(method=self.fill_method, limit=self.effective_number)
 
     def on_data_loaded(self, data: pd.DataFrame):
         self.compute()
@@ -421,6 +466,12 @@ class Factor(DataReader, DataListener):
 
     def persist_factor(self):
         df = self.factor_df.copy()
+        # encode json columns
+        if pd_is_not_null(df) and self.factor_col_map_object_hook():
+            for col in self.factor_col_map_object_hook():
+                if col in df.columns:
+                    df[col] = df[col].apply(lambda x: json.dumps(x, cls=self.factor_encoder()))
+
         if self.states:
             session = get_db_session(provider='zvt', data_schema=FactorState)
             g = df.groupby(level=0)
@@ -431,7 +482,7 @@ class Factor(DataReader, DataListener):
                     if state:
                         domain_id = f'{self.factor_name}_{entity_id}'
                         factor_state: FactorState = session.query(FactorState).get(domain_id)
-                        state_str = json.dumps(state)
+                        state_str = self.encode_state(state)
                         if factor_state:
                             factor_state.state = state_str
                         else:
@@ -458,45 +509,14 @@ class FilterFactor(Factor):
 
 class ScoreFactor(Factor):
     factor_type = FactorType.score
-
-    def __init__(self, data_schema: Mixin, entity_schema: EntityMixin = None, provider: str = None,
-                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
-                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 factor_name: str = None, clear_state: bool = False,
-                 scorer: Scorer = None) -> None:
-        self.scorer = scorer
-        super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
-                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
-                         category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
+    scorer: Scorer = None
 
     def do_compute(self):
         super().do_compute()
-
         if pd_is_not_null(self.factor_df) and self.scorer:
             self.result_df = self.scorer.score(self.factor_df)
 
 
-class StateFactor(Factor):
-    factor_type = FactorType.state
-    states = []
-
-    def get_state(self, timestamp, entity_id):
-        pass
-
-    def get_short_state(self):
-        pass
-
-    def get_long_state(self):
-        pass
-
-
 # the __all__ is generated
 __all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor',
-           'StateFactor']
+           'FactorMeta']

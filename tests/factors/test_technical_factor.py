@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
 from zvt.factors.algorithm import MaTransformer, MacdTransformer
-from zvt.factors.technical.ma_factor import CrossMaFactor
+from zvt.factors.ma.ma_factor import CrossMaFactor
 from ..context import init_test_context
 
 init_test_context()
@@ -16,7 +16,8 @@ def test_ma():
                              level=IntervalLevel.LEVEL_1DAY,
                              provider='joinquant',
                              computing_window=30,
-                             transformer=MaTransformer(windows=[5, 10, 30]))
+                             transformer=MaTransformer(windows=[5, 10, 30]),
+                             adjust_type='qfq')
 
     print(factor.factor_df.tail())
 
@@ -46,7 +47,8 @@ def test_macd():
                              level=IntervalLevel.LEVEL_1DAY,
                              provider='joinquant',
                              computing_window=None,
-                             transformer=MacdTransformer())
+                             transformer=MacdTransformer(),
+                             adjust_type='qfq')
 
     print(factor.factor_df.tail())
 
@@ -75,7 +77,8 @@ def test_cross_ma():
                            end_timestamp='2019-06-10',
                            level=IntervalLevel.LEVEL_1DAY,
                            provider='joinquant',
-                           windows=[5, 10])
+                           windows=[5, 10],
+                           adjust_type='qfq')
     print(factor.factor_df.tail())
     print(factor.result_df.tail())
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import operator
 from itertools import accumulate
-from typing import List, Union
+from typing import List, Union, Type
 
 import pandas as pd
 
@@ -11,17 +11,34 @@ from zvt.domain import FinanceFactor, BalanceSheet, Stock
 
 
 class FinanceBaseFactor(Factor):
-
-    def __init__(self, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, provider: str = None,
-                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
-                 codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 factor_name: str = None, clear_state: bool = False) -> None:
+    def __init__(self,
+                 data_schema: Type[Mixin] = FinanceFactor,
+                 entity_schema: Type[EntityMixin] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 the_timestamp: Union[str, pd.Timestamp] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 dry_run: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
@@ -32,8 +49,8 @@ class FinanceBaseFactor(Factor):
 
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
-
-    def __init__(self, data_schema: Mixin = FinanceFactor, entity_schema: EntityMixin = Stock, provider: str = None,
+    def __init__(self, data_schema: Type[Mixin] = FinanceFactor, entity_schema: EntityMixin = Stock,
+                 provider: str = None,
                  entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
                  codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
@@ -63,14 +80,14 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
                  window='1095d',
                  count=8,
                  col_period_threshold={'roe': 0.02}) -> None:
-
         self.window = window
         self.count = count
 
         # 对于根据年度计算才有意义的指标，比如roe,我们会对不同季度的值区别处理,传入的参数为季度值
         self.col_period_threshold = col_period_threshold
         if self.col_period_threshold:
-            assert 'report_period' in columns or (data_schema.report_period in columns)
+            if 'report_period' not in columns and (data_schema.report_period not in columns):
+                columns.append(data_schema.report_period)
 
         self.logger.info(f'using data_schema:{data_schema.__name__}')
 

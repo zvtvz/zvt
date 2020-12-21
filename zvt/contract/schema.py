@@ -39,7 +39,7 @@ class Mixin(object):
         :param provider:
         :param recorder_cls:
         """
-        # dont't make provider_map_recorder as class field,it should be created for the sub class as need
+        # don't make provider_map_recorder as class field,it should be created for the sub class as need
         if not hasattr(cls, 'provider_map_recorder'):
             cls.provider_map_recorder = {}
 

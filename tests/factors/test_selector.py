@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
-from zvt.factors.technical.ma_factor import CrossMaFactor
 from zvt.factors.target_selector import TargetSelector
-from zvt.factors.technical_factor import BullFactor
+from zvt.factors.ma.ma_factor import CrossMaFactor
+from zvt.factors import BullFactor
 from ..context import init_test_context
 
 init_test_context()
@@ -13,7 +13,7 @@ class TechnicalSelector(TargetSelector):
                      end_timestamp, level):
         bull_factor = BullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                  codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
-                                 end_timestamp=end_timestamp, provider='joinquant', level=level)
+                                 end_timestamp=end_timestamp, provider='joinquant', level=level, adjust_type='qfq')
 
         self.filter_factors = [bull_factor]
 
@@ -35,7 +35,8 @@ def test_cross_ma_selector():
                                          computing_window=10,
                                          windows=[5, 10],
                                          need_persist=False,
-                                         level=IntervalLevel.LEVEL_1DAY))
+                                         level=IntervalLevel.LEVEL_1DAY,
+                                         adjust_type='qfq'))
     my_selector.run()
     print(my_selector.open_long_df)
     print(my_selector.open_short_df)

@@ -160,6 +160,13 @@ class DataReader(Drawable):
     def load_data(self):
         self.logger.info('load_data start')
         start_time = time.time()
+        params = dict(entity_ids=self.entity_ids, provider=self.provider,
+                      columns=self.columns, start_timestamp=self.start_timestamp,
+                      end_timestamp=self.end_timestamp, filters=self.filters,
+                      order=self.order, limit=self.limit, level=self.level,
+                      index=[self.category_field, self.time_field],
+                      time_field=self.time_field)
+        self.logger.info(f'query_data params:{params}')
 
         self.data_df = self.data_schema.query_data(entity_ids=self.entity_ids, provider=self.provider,
                                                    columns=self.columns, start_timestamp=self.start_timestamp,
@@ -249,7 +256,7 @@ class DataReader(Drawable):
 
         if dfs:
             self.data_df = pd.concat(dfs, sort=False)
-            self.data_df.sort_index(level=[0, 1],inplace=True)
+            self.data_df.sort_index(level=[0, 1], inplace=True)
 
             if changed:
                 for listener in self.data_listeners:

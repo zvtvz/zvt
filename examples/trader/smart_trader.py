@@ -31,7 +31,8 @@ class GoldBullFactor(MacdFactor):
 
 
 class VolMacdTrader(StockTrader):
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp):
+    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
+                       adjust_type=None):
         # 周线策略
         week_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,

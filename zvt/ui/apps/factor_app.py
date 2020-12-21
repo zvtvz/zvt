@@ -37,13 +37,13 @@ def factor_layout():
                                 ],
                             ),
 
-                            # select code
+                            # select entity
                             html.Div(
                                 className="padding-top-bot",
                                 children=[
-                                    html.H6("select code:"),
-                                    dcc.Dropdown(id='code-selector',
-                                                 placeholder='select code')
+                                    html.H6("select entity:"),
+                                    dcc.Dropdown(id='entity-selector',
+                                                 placeholder='select entity')
                                 ],
                             ),
                             # select levels
@@ -119,17 +119,18 @@ def factor_layout():
 
 @zvt_app.callback(
     [Output('data-selector', 'options'),
-     Output('code-selector', 'options')],
+     Output('entity-selector', 'options')],
     [Input('entity-type-selector', 'value'), Input('data-switch', 'on')])
-def update_code_selector(entity_type, related):
+def update_entity_selector(entity_type, related):
     if entity_type is not None:
         if related:
             schemas = zvt_context.entity_map_schemas.get(entity_type)
         else:
             schemas = zvt_context.schemas
+
+        df = get_entities(entity_type=entity_type, columns=['entity_id', 'code', 'name'], index='entity_id')
         return [{'label': schema.__name__, 'value': schema.__name__} for schema in schemas], \
-               [{'label': code, 'value': code} for code in
-                get_entities(entity_type=entity_type, columns=['code']).index]
+               [{'label': f'{entity_id}({entity["name"]})', 'value': entity_id} for entity_id, entity in df.iterrows()]
     raise dash.PreventUpdate()
 
 
@@ -149,30 +150,30 @@ def update_column_selector(schema_name):
     Output('factor-details', 'children'),
     [Input('factor-selector', 'value'),
      Input('entity-type-selector', 'value'),
-     Input('code-selector', 'value'),
+     Input('entity-selector', 'value'),
      Input('levels-selector', 'value'),
      Input('schema-column-selector', 'value')],
     state=[State('data-selector', 'value')])
-def update_factor_details(factor, entity_type, code, levels, columns, schema_name):
-    if factor and entity_type and code and levels:
+def update_factor_details(factor, entity_type, entity, levels, columns, schema_name):
+    if factor and entity_type and entity and levels:
         sub_df = None
         if columns:
             if type(columns) == str:
                 columns = [columns]
             columns = columns + ['entity_id', 'timestamp']
             schema: Mixin = get_schema_by_name(name=schema_name)
-            sub_df = schema.query_data(code=code, columns=columns)
+            sub_df = schema.query_data(entity_id=entity, columns=columns)
         if type(levels) is list and len(levels) >= 2:
             levels.sort()
             drawers = []
             for level in levels:
                 drawers.append(zvt_context.factor_cls_registry[factor](
                     entity_schema=zvt_context.entity_schema_map[entity_type],
-                    level=level, codes=[code]).drawer())
+                    level=level, entity_ids=[entity]).drawer())
             stacked = StackedDrawer(*drawers)
 
             return dcc.Graph(
-                id=f'{factor}-{entity_type}-{code}',
+                id=f'{factor}-{entity_type}-{entity}',
                 figure=stacked.draw_kline(show=False, height=900))
         else:
             if type(levels) is list:
@@ -181,12 +182,12 @@ def update_factor_details(factor, entity_type, code, levels, columns, schema_nam
                 level = levels
             drawer = zvt_context.factor_cls_registry[factor](entity_schema=zvt_context.entity_schema_map[entity_type],
                                                              level=level,
-                                                             codes=[code],
+                                                             entity_ids=[entity],
                                                              need_persist=False).drawer()
             if pd_is_not_null(sub_df):
                 drawer.add_sub_df(sub_df)
 
             return dcc.Graph(
-                id=f'{factor}-{entity_type}-{code}',
+                id=f'{factor}-{entity_type}-{entity}',
                 figure=drawer.draw_kline(show=False, height=800))
     raise dash.PreventUpdate()

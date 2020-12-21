@@ -25,9 +25,10 @@ def get_performance(entity_ids, start_timestamp=None, end_timestamp=None, adjust
         adjust_type = AdjustType.hfq
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
 
-    return get_top_entities(data_schema=data_schema, column='close', start_timestamp=start_timestamp,
-                            end_timestamp=end_timestamp, pct=1, method='change', return_type='positive',
-                            filters=[data_schema.entity_id.in_(entity_ids)])
+    result, _ = get_top_entities(data_schema=data_schema, column='close', start_timestamp=start_timestamp,
+                                 end_timestamp=end_timestamp, pct=1, method='change', return_type='positive',
+                                 filters=[data_schema.entity_id.in_(entity_ids)])
+    return result
 
 
 def get_top_volume_entities(entity_type='stock', start_timestamp=None, end_timestamp=None, pct=0.1,

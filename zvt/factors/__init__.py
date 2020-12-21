@@ -11,6 +11,21 @@ from .algorithm import *
 from .algorithm import __all__ as _algorithm_all
 __all__ += _algorithm_all
 
+# import all from submodule ma
+from .ma import *
+from .ma import __all__ as _ma_all
+__all__ += _ma_all
+
+# import all from submodule macd
+from .macd import *
+from .macd import __all__ as _macd_all
+__all__ += _macd_all
+
+# import all from submodule zen
+from .zen import *
+from .zen import __all__ as _zen_all
+__all__ += _zen_all
+
 # import all from submodule technical_factor
 from .technical_factor import *
 from .technical_factor import __all__ as _technical_factor_all
@@ -25,13 +40,3 @@ __all__ += _fundamental_all
 from .target_selector import *
 from .target_selector import __all__ as _target_selector_all
 __all__ += _target_selector_all
-
-# import all from submodule pattern
-from .pattern import *
-from .pattern import __all__ as _pattern_all
-__all__ += _pattern_all
-
-# import all from submodule technical
-from .technical import *
-from .technical import __all__ as _technical_all
-__all__ += _technical_all
