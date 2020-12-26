@@ -235,11 +235,11 @@ class MacdTransformer(Transformer):
         self.indicators.append('dea')
         self.indicators.append('macd')
 
-    # def transform(self, input_df) -> pd.DataFrame:
-    #     macd_df = input_df.groupby(level=0)['close'].apply(
-    #         lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
-    #     input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
-    #     return input_df
+    def transform(self, input_df) -> pd.DataFrame:
+        macd_df = input_df.groupby(level=0)['close'].apply(
+            lambda x: macd(x, slow=self.slow, fast=self.fast, n=self.n, return_type='df', normal=self.normal))
+        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
+        return input_df
 
     def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
         print(f'transform_one {entity_id} {df}')
@@ -301,4 +301,5 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'consecutive_count', 'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
+__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'consecutive_count',
+           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

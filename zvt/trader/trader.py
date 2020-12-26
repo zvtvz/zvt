@@ -76,6 +76,9 @@ class Trader(object):
         self.kdata_use_begin_time = kdata_use_begin_time
         self.draw_result = draw_result
         self.rich_mode = rich_mode
+
+        if type(adjust_type) is str:
+            adjust_type = AdjustType(adjust_type)
         self.adjust_type = adjust_type
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
@@ -145,7 +148,8 @@ class Trader(object):
                                  provider=self.provider,
                                  level=self.level.value,
                                  real_time=self.real_time,
-                                 kdata_use_begin_time=self.kdata_use_begin_time)
+                                 kdata_use_begin_time=self.kdata_use_begin_time,
+                                 kdata_adjust_type=self.adjust_type.value)
         self.session.add(sim_account)
         self.session.commit()
 

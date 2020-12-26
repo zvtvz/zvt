@@ -25,6 +25,7 @@ class TraderInfo(TraderBase, Mixin):
     level = Column(String(length=32))
     real_time = Column(Boolean)
     kdata_use_begin_time = Column(Boolean)
+    kdata_adjust_type = Column(String(length=32))
 
 
 # account stats of every day

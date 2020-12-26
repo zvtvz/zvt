@@ -141,5 +141,6 @@ def update_target_signals(entity_id, start_date, end_date, trader_index):
         return dcc.Graph(
             id=f'{entity_id}-signals',
             figure=get_trading_signals_figure(order_reader=order_readers[trader_index], entity_id=entity_id,
-                                              start_timestamp=start_date, end_timestamp=end_date))
+                                              start_timestamp=start_date, end_timestamp=end_date,
+                                              adjust_type=traders[trader_index].kdata_adjust_type))
     raise dash.PreventUpdate()

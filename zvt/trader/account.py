@@ -182,7 +182,7 @@ class SimAccountService(AccountService):
         if is_same_date(timestamp, self.start_timestamp):
             return
         self.account = self.load_account()
-        self.logger.info('on_trading_open:{},current_account:{}'.format(timestamp, self.account))
+        self.logger.info('on_trading_open:{},current_account:{}'.format(timestamp, self.account.__dict__))
 
     def on_trading_error(self, timestamp, error):
         pass
@@ -464,11 +464,9 @@ class SimAccountService(AccountService):
                     # 买的数量
                     order_amount = order_money // cost
 
-                    if order_amount < 100:
-                        if self.rich_mode:
-                            self.input_money()
-                        else:
-                            raise NotEnoughMoneyError()
+                    if order_amount < 1:
+                        self.logger.error(f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
+                        return
 
                     self.update_position(current_position, order_amount, current_price, order_type,
                                          current_timestamp)
@@ -487,11 +485,9 @@ class SimAccountService(AccountService):
 
                     order_amount = order_money // cost
 
-                    if order_amount < 100:
-                        if self.rich_mode:
-                            self.input_money()
-                        else:
-                            raise NotEnoughMoneyError()
+                    if order_amount < 1:
+                        self.logger.error(f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
+                        return
                     self.update_position(current_position, order_amount, current_price, order_type,
                                          current_timestamp)
                 else:
@@ -538,9 +534,10 @@ class SimAccountService(AccountService):
                     # 买的数量
                     order_amount = want_pay // cost
 
-                    if order_amount < 100:
+                    if order_amount < 1:
                         if self.rich_mode:
                             self.input_money()
+                            order_amount = (self.account.cash * order_pct) // cost
                         else:
                             raise NotEnoughMoneyError()
                     self.update_position(current_position, order_amount, current_price, order_type,
@@ -555,9 +552,10 @@ class SimAccountService(AccountService):
 
                     order_amount = want_pay // cost
 
-                    if order_amount < 100:
+                    if order_amount < 1:
                         if self.rich_mode:
                             self.input_money()
+                            order_amount = (self.account.cash * order_pct) // cost
                         else:
                             raise NotEnoughMoneyError()
 

@@ -27,10 +27,11 @@ def order_type_flag(order_type):
 def get_trading_signals_figure(order_reader: OrderReader,
                                entity_id: str,
                                start_timestamp=None,
-                               end_timestamp=None):
+                               end_timestamp=None,
+                               adjust_type=None):
     entity_type, _, _ = decode_entity_id(entity_id)
 
-    data_schema = get_kdata_schema(entity_type=entity_type, level=order_reader.level)
+    data_schema = get_kdata_schema(entity_type=entity_type, level=order_reader.level, adjust_type=adjust_type)
     if not start_timestamp:
         start_timestamp = order_reader.start_timestamp
     if not end_timestamp:
