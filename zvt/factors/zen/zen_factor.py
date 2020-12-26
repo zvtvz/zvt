@@ -10,15 +10,15 @@ import pandas as pd
 
 from zvt.contract import EntityMixin
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.contract.api import get_schema_by_name, df_to_db, get_db_session
+from zvt.contract.api import get_schema_by_name
 from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
-from zvt.contract.factor import Accumulator, FactorState
+from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
 from zvt.domain import Stock
-from zvt.factors.technical_factor import TechnicalFactor
 from zvt.factors.algorithm import intersect
-from zvt.utils import pd_is_not_null
+from zvt.factors.technical_factor import TechnicalFactor
+from zvt.utils import pd_is_not_null, to_string
 from zvt.utils import to_time_str
 from zvt.utils.time_utils import TIME_FORMAT_ISO8601
 
@@ -117,10 +117,10 @@ def handle_first_fenxing(one_df, step=11):
 
     df = one_df.iloc[:step]
     ding_kdata = df[df['high'].max() == df['high']]
-    ding_index = ding_kdata.index[-1]
+    ding_index = int(ding_kdata.index[-1])
 
     di_kdata = df[df['low'].min() == df['low']]
-    di_index = di_kdata.index[-1]
+    di_index = int(di_kdata.index[-1])
 
     # 确定第一个分型
     if abs(ding_index - di_index) >= 4:
@@ -138,9 +138,13 @@ def handle_first_fenxing(one_df, step=11):
             one_df.loc[ding_index, 'bi_ding'] = True
             start_index = di_index
             direction = Direction.down
-        return Fenxing(state=fenxing, index=fenxing_index, kdata=one_df.loc[fenxing_index]), start_index, direction
+        return Fenxing(state=fenxing, index=fenxing_index,
+                       kdata={
+                           'low': float(one_df.loc[fenxing_index]['low']),
+                           'high': float(one_df.loc[fenxing_index]['high'])
+                       }), start_index, direction
     else:
-        print("need add step")
+        logger.info("need add step")
         return handle_first_fenxing(one_df, step=step + 1)
 
 
@@ -219,18 +223,19 @@ def decode_fenxing(dct):
     return Fenxing(state=dct['state'], kdata=dct['kdata'], index=dct['index'])
 
 
-def get_ma_zen_factor_schema(entity_type: str,
-                             level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
+def get_zen_factor_schema(entity_type: str,
+                          level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
     if type(level) == str:
         level = IntervalLevel(level)
 
-    # ma state stats schema rule
+    # zen factor schema rule
     # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}ZenFactor
     schema_str = '{}{}ZenFactor'.format(entity_type.capitalize(), level.value.capitalize())
 
     return get_schema_by_name(schema_str)
 
 
+@to_string
 class ZenState(Bean):
     def __init__(self, state: dict = None) -> None:
         super().__init__()
@@ -259,6 +264,46 @@ class ZenState(Bean):
 
         # list of (timestamp,value)
         self.duans = state.get('duans', [])
+
+
+def handle_zhongshu(points: list, acc_df, end_index, zhongshu_col='zhongshu', zhongshu_change_col='zhongshu_change'):
+    zhongshu = None
+    zhongshu_change = None
+
+    if len(points) == 4:
+        x1 = points[0][0]
+        x2 = points[3][0]
+
+        if points[0][1] < points[1][1]:
+            # 向下段
+            range = intersect((points[0][1], points[1][1]),
+                              (points[2][1], points[3][1]))
+            if range:
+                y1, y2 = range
+                # 记录中枢
+                zhongshu = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
+                zhongshu_change = abs(y1 - y2) / y1
+                acc_df.loc[end_index, zhongshu_col] = zhongshu
+                acc_df.loc[end_index, zhongshu_change_col] = zhongshu_change
+                points = points[-1:]
+            else:
+                points = points[1:]
+        else:
+            # 向上段
+            range = intersect((points[1][1], points[0][1]),
+                              (points[3][1], points[2][1]))
+            if range:
+                y1, y2 = range
+                # 记录中枢
+                zhongshu = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
+                zhongshu_change = abs(y1 - y2) / y1
+
+                acc_df.loc[end_index, zhongshu_col] = zhongshu
+                acc_df.loc[end_index, zhongshu_change_col] = zhongshu_change
+                points = points[-1:]
+            else:
+                points = points[1:]
+    return points, zhongshu, zhongshu_change
 
 
 class ZenAccumulator(Accumulator):
@@ -399,17 +444,17 @@ class ZenAccumulator(Accumulator):
                         if tmp_direction == Direction.up:
                             # 取小的
                             if pre_kdata['low'] <= zen_state.can_fenxing['low']:
-                                zen_state.can_fenxing = pre_kdata
+                                zen_state.can_fenxing = pre_kdata[['low', 'high']]
                                 zen_state.can_fenxing_index = pre_index
 
                         # 候选顶分型
                         else:
                             # 取大的
                             if pre_kdata['high'] >= zen_state.can_fenxing['high']:
-                                zen_state.can_fenxing = pre_kdata
+                                zen_state.can_fenxing = pre_kdata[['low', 'high']]
                                 zen_state.can_fenxing_index = pre_index
                     else:
-                        zen_state.can_fenxing = pre_kdata
+                        zen_state.can_fenxing = pre_kdata[['low', 'high']]
                         zen_state.can_fenxing_index = pre_index
 
                 # 分型确立
@@ -434,7 +479,10 @@ class ZenAccumulator(Accumulator):
                         if zen_state.fenxing_list != None:
                             zen_state.fenxing_list.append(
                                 Fenxing(state=fenxing_col,
-                                        kdata=acc_df.loc[zen_state.can_fenxing_index, ['open', 'close', 'high', 'low']],
+                                        kdata={
+                                            'low': float(acc_df.loc[zen_state.can_fenxing_index]['low']),
+                                            'high': float(acc_df.loc[zen_state.can_fenxing_index]['high'])
+                                        },
                                         index=zen_state.can_fenxing_index))
 
                             if len(zen_state.fenxing_list) == 4:
@@ -465,31 +513,10 @@ class ZenAccumulator(Accumulator):
                                     zen_state.duans.append((acc_df.loc[duan_index, 'timestamp'], duan_value))
 
                                     # 计算中枢
-                                    if len(zen_state.duans) == 4:
-                                        x1 = zen_state.duans[0][0]
-                                        x2 = zen_state.duans[3][0]
-                                        if zen_state.duans[0][1] < zen_state.duans[1][1]:
-                                            # 向下段
-                                            range = intersect((zen_state.duans[0][1], zen_state.duans[1][1]),
-                                                              (zen_state.duans[2][1], zen_state.duans[3][1]))
-                                            if range:
-                                                y1, y2 = range
-                                                # 记录中枢
-                                                acc_df.loc[duan_index, 'zhongshu'] = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
-                                                zen_state.duans = zen_state.duans[-1:]
-                                            else:
-                                                zen_state.duans = zen_state.duans[1:]
-                                        else:
-                                            # 向上段
-                                            range = intersect((zen_state.duans[1][1], zen_state.duans[0][1]),
-                                                              (zen_state.duans[3][1], zen_state.duans[2][1]))
-                                            if range:
-                                                y1, y2 = range
-                                                # 记录中枢
-                                                acc_df.loc[duan_index, 'zhongshu'] = Rect(x0=x1, x1=x2, y0=y1, y1=y2)
-                                                zen_state.duans = zen_state.duans[-1:]
-                                            else:
-                                                zen_state.duans = zen_state.duans[1:]
+                                    zen_state.duans, _, _ = handle_zhongshu(points=zen_state.duans, acc_df=acc_df,
+                                                                            end_index=duan_index,
+                                                                            zhongshu_col='zhongshu',
+                                                                            zhongshu_change_col='zhongshu_change')
 
                                     # 只留最后一个
                                     zen_state.fenxing_list = zen_state.fenxing_list[-1:]
@@ -517,16 +544,17 @@ class ZenFactor(TechnicalFactor):
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
                  transformer: Transformer = None, accumulator: Accumulator = ZenAccumulator(),
                  need_persist: bool = False, dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
+                 not_load_data: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
-        self.factor_schema = get_ma_zen_factor_schema(entity_type=entity_schema.__name__, level=level)
+        self.factor_schema = get_zen_factor_schema(entity_type=entity_schema.__name__, level=level)
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, adjust_type)
+                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
+
     def factor_col_map_object_hook(self) -> dict:
         return {
-            'zhongshu': decode_rect,
-            'bi_zhongshu': decode_rect
+            'zhongshu': decode_rect
         }
 
     def factor_encoder(self):
@@ -556,5 +584,5 @@ if __name__ == '__main__':
 # the __all__ is generated
 __all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including',
            'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including',
-           'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_ma_zen_factor_schema', 'ZenState',
+           'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_zen_factor_schema', 'ZenState',
            'ZenAccumulator', 'ZenFactor']

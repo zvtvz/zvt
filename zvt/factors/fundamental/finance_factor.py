@@ -38,14 +38,16 @@ class FinanceBaseFactor(Factor):
                  need_persist: bool = False,
                  dry_run: bool = False,
                  factor_name: str = None,
-                 clear_state: bool = False) -> None:
+                 clear_state: bool = False,
+                 not_load_data: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
 
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
+                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state,
+                         not_load_data)
 
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
@@ -75,7 +77,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = True,
                  fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 factor_name: str = None, clear_state: bool = False,
+                 factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
                  # 3 years
                  window='1095d',
                  count=8,
@@ -94,9 +96,10 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window, keep_all_timestamp, fill_method,
-                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state)
+                         effective_number, transformer, accumulator, need_persist, dry_run, factor_name, clear_state,
+                         not_load_data)
 
-    def do_compute(self):
+    def compute_factor(self):
         def filter_df(df):
             se = pd.Series(index=df.index)
             for index, row in df.iterrows():
@@ -134,6 +137,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
 
         self.logger.info('factor:{},factor_df:\n{}'.format(self.factor_name, self.factor_df))
 
+    def compute_result(self):
         self.result_df = self.factor_df.apply(lambda x: x >= self.count)
 
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))

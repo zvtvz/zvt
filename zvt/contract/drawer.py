@@ -137,6 +137,7 @@ class Drawable(object):
                         factor_data_list=self.drawer_factor_data_list(),
                         sub_df_list=self.drawer_sub_df_list(),
                         sub_data_list=self.drawer_sub_data_list(),
+                        sub_col_chart=self.drawer_sub_col_chart(),
                         annotation_df=self.drawer_annotation_df(),
                         rects=self.drawer_rects())
         return drawer
@@ -170,6 +171,10 @@ class Drawable(object):
 
     def drawer_rects(self) -> Optional[List[Rect]]:
         return None
+
+    def drawer_sub_col_chart(self) -> Optional[dict]:
+        return None
+
 
 class StackedDrawer(Draw):
     def __init__(self, *drawers) -> None:
@@ -262,6 +267,7 @@ class Drawer(Draw):
                  main_data: NormalData = None,
                  factor_data_list: List[NormalData] = None,
                  sub_data_list: NormalData = None,
+                 sub_col_chart: Optional[dict] = None,
                  rects: List[Rect] = None,
                  annotation_df: pd.DataFrame = None) -> None:
         """
@@ -298,6 +304,9 @@ class Drawer(Draw):
         # 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
         self.sub_data_list: List[NormalData] = sub_data_list
 
+        # 幅图col对应的图形，line or bar
+        self.sub_col_chart = sub_col_chart
+
         # 主图的标记数据
         self.annotation_df = annotation_df
 
@@ -319,7 +328,6 @@ class Drawer(Draw):
         if not self.sub_data_list:
             self.sub_data_list = []
         self.sub_data_list.append(data)
-
 
     def has_sub_plot(self):
         return self.sub_data_list is not None and not self.sub_data_list[0].empty()
@@ -386,7 +394,13 @@ class Drawer(Draw):
 
                             colors = [color(i) for i in ydata]
 
-                            if sub_chart == 'line':
+                            the_sub_chart = None
+                            if self.sub_col_chart is not None:
+                                the_sub_chart = self.sub_col_chart.get(col)
+                            if not the_sub_chart:
+                                the_sub_chart = sub_chart
+
+                            if the_sub_chart == 'line':
                                 sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
                                                        marker=dict(color=colors))
                             else:

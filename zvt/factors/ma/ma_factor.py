@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
-from typing import List, Union, Type
+from typing import List, Union, Type, Optional
 
 import pandas as pd
 
@@ -33,7 +33,7 @@ class MaFactor(TechnicalFactor):
                  category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
                  need_persist: bool = False,
-                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
+                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
                  adjust_type: Union[AdjustType, str] = None, windows=None) -> None:
         if need_persist:
             self.factor_schema = get_ma_factor_schema(entity_type=entity_schema.__name__, level=level)
@@ -46,12 +46,15 @@ class MaFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         None, need_persist, dry_run, factor_name, clear_state, adjust_type)
+                         None, need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
+
+    def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+        return [self.factor_df[self.transformer.indicators]]
 
 
 class CrossMaFactor(MaFactor):
-    def do_compute(self):
-        super().do_compute()
+    def compute_result(self):
+        super().compute_result()
         cols = [f'ma{window}' for window in self.windows]
         s = self.factor_df[cols[0]] > self.factor_df[cols[1]]
         current_col = cols[1]
@@ -73,7 +76,7 @@ class VolumeUpMaFactor(TechnicalFactor):
                  category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
                  accumulator: Accumulator = None, need_persist: bool = False,
-                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
+                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
                  adjust_type: Union[AdjustType, str] = None, windows=None, vol_windows=None) -> None:
         if not windows:
             windows = [250]
@@ -91,10 +94,10 @@ class VolumeUpMaFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, adjust_type)
+                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
 
-    def do_compute(self):
-        super().do_compute()
+    def compute_result(self):
+        super().compute_result()
 
         # 价格刚上均线
         cols = [f'ma{window}' for window in self.windows]

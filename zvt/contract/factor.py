@@ -235,7 +235,8 @@ class Factor(DataReader, DataListener):
                  need_persist: bool = False,
                  dry_run: bool = False,
                  factor_name: str = None,
-                 clear_state: bool = False) -> None:
+                 clear_state: bool = False,
+                 not_load_data: bool = False) -> None:
         """
 
         :param computing_window: the window size for computing factor
@@ -247,6 +248,8 @@ class Factor(DataReader, DataListener):
         :param need_persist: whether persist factor
         :param dry_run: True for just computing factor, False for backtesting
         """
+
+        self.not_load_data = not_load_data
 
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
@@ -320,6 +323,16 @@ class Factor(DataReader, DataListener):
 
         self.register_data_listener(self)
 
+        # the compute logic is not triggered from load data
+        # for the case:1)load factor from db 2)compute the result
+        if self.not_load_data:
+            self.compute()
+
+    def load_data(self):
+        if self.not_load_data:
+            return
+        super().load_data()
+
     def load_factor(self):
         # read state
         states: List[FactorState] = FactorState.query_data(filters=[FactorState.factor_name == self.factor_name],
@@ -378,11 +391,22 @@ class Factor(DataReader, DataListener):
         return None
 
     def pre_compute(self):
-        if not pd_is_not_null(self.pipe_df):
+        if not self.not_load_data and not pd_is_not_null(self.pipe_df):
             self.pipe_df = self.data_df
 
     def do_compute(self):
-        # 无状态的转换运算
+        self.logger.info('compute factor start')
+        self.compute_factor()
+        self.logger.info('compute factor finish')
+
+        self.logger.info('compute result start')
+        self.compute_result()
+        self.logger.info('compute result finish')
+
+    def compute_factor(self):
+        if self.not_load_data:
+            return
+            # 无状态的转换运算
         if pd_is_not_null(self.data_df) and self.transformer:
             self.pipe_df = self.transformer.transform(self.data_df)
         else:
@@ -394,7 +418,12 @@ class Factor(DataReader, DataListener):
         else:
             self.factor_df = self.pipe_df
 
+    def compute_result(self):
+        pass
+
     def after_compute(self):
+        if self.not_load_data:
+            return
         if self.keep_all_timestamp:
             self.fill_gap()
 
@@ -511,8 +540,8 @@ class ScoreFactor(Factor):
     factor_type = FactorType.score
     scorer: Scorer = None
 
-    def do_compute(self):
-        super().do_compute()
+    def compute_result(self):
+        super().compute_result()
         if pd_is_not_null(self.factor_df) and self.scorer:
             self.result_df = self.scorer.score(self.factor_df)
 

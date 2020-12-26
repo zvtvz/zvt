@@ -57,6 +57,9 @@ def point_in_range(point: float, range: tuple):
 
 
 def intersect_ranges(range_list):
+    if len(range_list) == 1:
+        return range_list[0]
+
     result = intersect(range_list[0], range_list[1])
     for range_i in range_list[2:]:
         result = intersect(result, range_i)

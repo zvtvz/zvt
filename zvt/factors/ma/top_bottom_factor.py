@@ -42,7 +42,7 @@ class TopBottomFactor(TechnicalFactor):
                  time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
                  fill_method: str = 'ffill', effective_number: int = None,
                  accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 factor_name: str = None, clear_state: bool = False,
+                 factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
                  adjust_type: Union[AdjustType, str] = None, window=30) -> None:
         self.adjust_type = adjust_type
 
@@ -51,7 +51,7 @@ class TopBottomFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, adjust_type)
+                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
 
 
 if __name__ == '__main__':

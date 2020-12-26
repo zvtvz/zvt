@@ -31,14 +31,18 @@ def get_performance(entity_ids, start_timestamp=None, end_timestamp=None, adjust
     return result
 
 
-def get_top_volume_entities(entity_type='stock', start_timestamp=None, end_timestamp=None, pct=0.1,
-                            return_type='both', adjust_type: Union[AdjustType, str] = None, method='avg'):
+def get_top_volume_entities(entity_type='stock', entity_ids=None, start_timestamp=None, end_timestamp=None, pct=0.1,
+                            return_type='positive', adjust_type: Union[AdjustType, str] = None, method='avg'):
     if not adjust_type and entity_type == 'stock':
         adjust_type = AdjustType.hfq
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
 
+    filters = None
+    if entity_ids:
+        filters = [data_schema.entity_id.in_(entity_ids)]
+
     result, _ = get_top_entities(data_schema=data_schema, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                 column='turnover', pct=pct, method=method, return_type=return_type)
+                                 column='turnover', pct=pct, method=method, return_type=return_type, filters=filters)
     return result
 
 

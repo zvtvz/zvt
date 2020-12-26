@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
+from zvt.utils import to_string
 
 TraderBase = declarative_base()
 
@@ -29,6 +30,7 @@ class TraderInfo(TraderBase, Mixin):
 
 
 # account stats of every day
+@to_string
 class AccountStats(TraderBase, Mixin):
     __tablename__ = 'account_stats'
 
@@ -101,6 +103,5 @@ class Order(TraderBase, Mixin):
 
 register_schema(providers=['zvt'], db_name='trader_info', schema_base=TraderBase)
 
-__all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']
 # the __all__ is generated
 __all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']

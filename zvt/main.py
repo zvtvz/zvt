@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 
 from zvt import init_plugins
 from zvt.ui import zvt_app
-from zvt.ui.apps import factor_app, trader_app
+from zvt.ui.apps import factor_app
 
 
 def serve_layout():
@@ -39,8 +39,6 @@ def serve_layout():
 def tab_content(active_tab):
     if 'tab-factor' == active_tab:
         return factor_app.factor_layout()
-    elif 'tab-trader' == active_tab:
-        return trader_app.trader_layout()
 
 
 zvt_app.layout = serve_layout

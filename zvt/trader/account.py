@@ -166,7 +166,7 @@ class SimAccountService(AccountService):
         positions: List[Position] = []
         for position_domain in latest_record.positions:
             position_dict = position_schema.dump(position_domain)
-            self.logger.info('current position:{}'.format(position_dict))
+            self.logger.debug('current position:{}'.format(position_dict))
             del position_dict['id']
             del position_dict['account_stats']
             position = Position()
@@ -235,7 +235,7 @@ class SimAccountService(AccountService):
                                                                                                  happen_timestamp))
 
     def on_trading_close(self, timestamp):
-        self.logger.info('on_trading_close:{}'.format(timestamp))
+        self.logger.debug('on_trading_close:{}'.format(timestamp))
 
         self.account.value = 0
         self.account.all_value = 0
@@ -273,7 +273,7 @@ class SimAccountService(AccountService):
         self.account.closing = True
         self.account.timestamp = to_pd_timestamp(timestamp)
 
-        self.logger.info('on_trading_close:{},latest_account:{}'.format(timestamp, self.account))
+        self.logger.debug('on_trading_close:{},latest_account:{}'.format(timestamp, self.account))
         self.persist_account(timestamp)
 
     def persist_account(self, timestamp):
@@ -465,7 +465,8 @@ class SimAccountService(AccountService):
                     order_amount = order_money // cost
 
                     if order_amount < 1:
-                        self.logger.error(f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
+                        self.logger.error(
+                            f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
                         return
 
                     self.update_position(current_position, order_amount, current_price, order_type,
@@ -486,7 +487,8 @@ class SimAccountService(AccountService):
                     order_amount = order_money // cost
 
                     if order_amount < 1:
-                        self.logger.error(f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
+                        self.logger.error(
+                            f'invalid order_money:{order_money}, cost:{cost}, order_amount:{order_amount}')
                         return
                     self.update_position(current_position, order_amount, current_price, order_type,
                                          current_timestamp)
