@@ -8,6 +8,44 @@ from zvt.contract.register import register_schema
 FinanceBase = declarative_base()
 
 
+class StockPerformanceForecast(FinanceBase,Mixin):
+    """业绩预告"""
+    __tablename__ = 'stock_performance_forecast'
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+    pub_date = Column(DateTime)
+
+    preview_type = Column(String(length=32))   #预告类型
+    profit_min = Column(Float)   # 预告净利润（下限）
+    profit_max = Column(Float)   # 预告净利润（上限）
+    profit_last = Column(Float)   # 去年同期净利润（上限）
+    profit_ratio_min = Column(Float)   # 预告净利润变动幅度(下限)单位：%
+    profit_ratio_max = Column(Float)   # 预告净利润变动幅度(上限)单位：%
+    content = Column(String(length=2048))   # 预告内容
+
+# 审计意见
+class AuditOpinions(FinanceBase, Mixin):
+
+    __tablename__ = 'audit_opinions'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+    pub_date = Column(DateTime)
+
+    audit_unit = Column(String(length=60))   # 审计单位
+    audit_unit_pay = Column(Float)   # 审计单位薪酬
+    audit_year = Column(Float)   # 审计年限(境内）
+    # non_standard_opinion_description = Column(String(length=3000))  # 非标意见说明
+    audit_opinion_category = Column(String(length=32))  # 审计意见类别
+    CPA = Column(String(length=32))  # 签字注册会计师
+
+
 # 资产负债表
 class BalanceSheet(FinanceBase, Mixin):
 
@@ -806,7 +844,7 @@ class FinanceDerivative(FinanceBase, Mixin):
 
 class FinancePerShare(FinanceBase, Mixin):
     """
-    财务指标 每股
+    财务指标-每股
     """
 
     @classmethod
@@ -897,6 +935,34 @@ class FinanceProfitAbility(FinanceBase, Mixin):
     net_roa = Column(Float)  # 总资产净利率ROA
     roa = Column(Float)  # 总资产报酬率ROA
     roic = Column(Float)  # 投入资本回报率ROIC
+
+
+class FinanceCapitalStructure(FinanceBase, Mixin):
+    """
+    财务指标--资本结构
+    """
+    @classmethod
+    def important_cols(cls):
+        return []
+
+    __tablename__ = 'finace_capital_structure'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    report_period = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    debt_asset_ratio = Column(Float)  # 资产负债率
+    em = Column(Float)  # 权益乘数
+    ca_to_asset = Column(Float)  # 流动资产/总资产
+    nc_to_asset = Column(Float)  # 非流动资产/总资产
+    tangible_assets_to_asset = Column(Float)  # 有形资产/总资产
+    equity_to_total_capital = Column(Float)  # 归属母公司股东的权益/全部投入资本
+    interest_liblity_to_total_capital = Column(Float)  # 带息负债/全部投入资本
+    cl_to_libility = Column(Float)  # 流动负债/负债合计
+    cnl_to_libility = Column(Float)  # 非流动负债/负债合计
+    interest_liblity_to_libility = Column(Float)  # 有息负债率
 
 
 class FinanceDuPont(FinanceBase, Mixin):
@@ -1096,8 +1162,9 @@ class FinanceGrowthAbility(FinanceBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant', 'emquantapi'], db_name='finance', schema_base=FinanceBase)
 
-__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement', 'FinanceDerivative',
+__all__ = ['FinanceFactor', 'BalanceSheet', 'IncomeStatement', 'CashFlowStatement',
+           'FinanceDerivative','AuditOpinions',
            'FinancePerShare', 'FinanceBalanceSheetStructureAnalysis', 'FinanceIncomeStatementStructureAnalysis',
            'FinanceSinglEquarterDerivative','FinanceDuPont',
            'FinanceGrowthAbility', 'FinanceProfitAbility', 'FinanceOperationalCapability', 'FinanceDebtpayingAbility',
-           'FinanceReceivingAbility']
+           'FinanceReceivingAbility','FinanceCapitalStructure','StockPerformanceForecast']

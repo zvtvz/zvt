@@ -34,6 +34,38 @@ class ManagerTrading(TradingBase, Mixin):
     relationship_with_manager = Column(String(length=32))
 
 
+class EquityPledge(TradingBase, Mixin):
+    """
+    股权质押
+    """
+    __tablename__ = 'equity_pledge'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    pub_date = Column(DateTime)
+
+    # 出质人 将资产质押出去的人成为出质人
+    pledgor = Column(String(length=100))
+    # 质权人
+    pledgee = Column(String(length=100))
+    # 质押事项
+    pledge_item = Column(String(length=500))
+    # 质押股份性质	varchar(120)
+    pledge_nature = Column(String(length=120))
+    # 质押数量
+    pledge_number =  Column(Float)
+    # 占总股本比例 %
+    pledge_total_ratio =  Column(Float)
+    # 质押起始日
+    start_date =  Column(DateTime)
+    # 质押终止日
+    end_date = Column(DateTime)
+    # 质押解除日
+    unpledged_date = Column(DateTime)
+    # 是否质押式回购交易	char(1)
+    is_buy_back = Column(String(length=1))
+
+
 class HolderTrading(TradingBase, Mixin):
     __tablename__ = 'holder_trading'
 
@@ -57,7 +89,7 @@ class HolderTrading(TradingBase, Mixin):
     code = Column(String(length=32))
 
     # 股东名称
-    holder_name = Column(String(length=32))
+    holder_name = Column(String(length=150))
     # 变动数量
     volume = Column(Float)
     # 变动比例
@@ -76,13 +108,13 @@ class HolderTrading(TradingBase, Mixin):
     # 变动后_持股总数
     holder_share_af = Column(Float)
     # 交易均价
-    price = Column(Float)
+    price = Column(String(length=32))
     # 变动起始日期
     holder_start_date = Column(DateTime)
     # 变动截止日期
     holder_end_date = Column(DateTime)
     # 变动原因 说明
-    holder_remark = Column(String(length=300))
+    holder_remark = Column(String(length=2000))
     # 变动前_持股总数(万股)
     holder_share_bf = Column(Float)
 
@@ -185,4 +217,4 @@ class DragonAndTiger(TradingBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='trading', schema_base=TradingBase)
 
-__all__ = ['ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
+__all__ = ['EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']

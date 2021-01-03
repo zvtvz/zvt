@@ -115,7 +115,7 @@ class JqChinaBlockKdataRecorder(TimeSeriesDataRecorder):
         df = finance.run_query(
             query(finance.SW1_DAILY_PRICE).filter(
                 finance.SW1_DAILY_PRICE.code==entity.code).filter(
-                finance.SW1_DAILY_PRICE.date>=start).limit(size))
+                finance.SW1_DAILY_PRICE.date>start).limit(size))
         if pd_is_not_null(df):
             df['name'] = entity.name
             df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)

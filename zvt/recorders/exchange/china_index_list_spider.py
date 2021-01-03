@@ -25,7 +25,7 @@ class ChinaIndexListSpider(Recorder):
         self.fetch_csi_index()
 
         # 深证
-        self.fetch_szse_index()
+        # self.fetch_szse_index()
 
         # 国证
         # FIXME:已不可用

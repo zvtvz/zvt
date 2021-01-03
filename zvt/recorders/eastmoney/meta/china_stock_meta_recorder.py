@@ -23,7 +23,7 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
         super().__init__(batch_size, force_update, sleeping_time)
 
         # get list at first
-        EastmoneyChinaStockListRecorder().run()
+        # EastmoneyChinaStockListRecorder().run()
 
         self.codes = codes
         if not self.force_update:

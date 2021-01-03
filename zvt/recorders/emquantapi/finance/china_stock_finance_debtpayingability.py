@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 financial_debtpayingability_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'debt_asset_ratio': 'LIBILITYTOASSET',  # 资产负债率
     'conservative_quick_ratio': 'CONSERVQUICKRATIO',  # 保守速动比率
     'equity_ratio': 'LIBILITYTOEQUITY',  # 产权比率

@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 finance_per_share_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'eps_diluted_end': 'EPSDILUTEDEND',  # 每股收益(期末摊薄)
     'eps': 'EPSBASIC',  # 基本每股收益
     'diluted_eps': 'EPSDILUTED',  # 稀释每股收益

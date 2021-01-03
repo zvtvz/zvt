@@ -78,13 +78,24 @@ class EtfKdataCommon(KdataCommon):
     # ETF 净值增长率
     change_pct = Column(Float)
 
-
 class StockKdataCommon(KdataCommon):
     # 涨跌幅
     change_pct = Column(Float)
     # 换手率
     turnover_rate = Column(Float)
 
+class BondKdata(Mixin):
+    """
+    十年期国债债券日利率
+    """
+    entity_id = Column(String(length=32))
+    exchange = Column(String(length=32))
+    provider = Column(String(length=32))
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    data_value = Column(Float)  # 数值
 
 class StockFactorCommon(Mixin):
     provider = Column(String(length=32))
@@ -445,6 +456,7 @@ class StockTechnicalFactorCommon(StockFactorCommon):
 
 
 from zvt.domain.quotes.block import *
+from zvt.domain.quotes.bond import *
 from zvt.domain.quotes.stock import *
 from zvt.domain.quotes.etf import *
 from zvt.domain.quotes.fund import *

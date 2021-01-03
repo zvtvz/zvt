@@ -25,10 +25,10 @@ class ChinaIndexListSpider(Recorder):
         super().__init__(batch_size, force_update, sleeping_time)
 
     # 调用登录函数（激活后使用，不需要用户名密码）
-    loginResult = c.start("ForceLogin=1", '', mainCallback)
-    if (loginResult.ErrorCode != 0):
-        print("login in fail")
-        exit()
+    # loginResult = c.start("ForceLogin=1", '', mainCallback)
+    # if (loginResult.ErrorCode != 0):
+    #     print("login in fail")
+    #     exit()
 
     def on_finish(self):
         logout()

@@ -6,7 +6,6 @@ from zvt.utils.utils import add_func_to_value, first_item_to_float
 cash_flow_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
-    "report_date": "REPORTDATE",
     # 经营活动产生的现金流量
     #
     # 销售商品、提供劳务收到的现金

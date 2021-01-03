@@ -5,7 +5,7 @@ import io
 import demjson
 import pandas as pd
 import requests
-from jqdatasdk import get_query_count, auth, logout, get_all_securities
+from jqdatasdk import get_query_count, auth, logout, get_all_securities, get_index_stocks
 
 from zvt import zvt_env
 from zvt.contract.api import df_to_db
@@ -30,14 +30,16 @@ class ChinaIndexListSpider(Recorder):
     def run(self):
         # 上证、中证
         self.all_index = get_all_securities(['index'])
-        self.fetch_csi_index()
+        # 抓取上证、中证指数成分股
+        self.fetch_csi_index_component()
+        self.logger.info('指数成分股抓取完成...')
+
+        # self.fetch_csi_index()
 
         # 深证
-        self.fetch_szse_index()
+        # self.fetch_szse_index()
 
-        # 国证
-        # FIXME:已不可用
-        # self.fetch_cni_index()
+
 
     def fetch_csi_index(self) -> None:
         """
@@ -45,6 +47,7 @@ class ChinaIndexListSpider(Recorder):
         """
         url = 'http://www.csindex.com.cn/zh-CN/indices/index' \
               '?page={}&page_size={}&data_type=json&class_1=1&class_2=2&class_7=7&class_10=10'
+
 
         index_list = []
         page = 1
@@ -75,39 +78,27 @@ class ChinaIndexListSpider(Recorder):
         self.logger.info('上证、中证指数列表抓取完成...')
 
         # 抓取上证、中证指数成分股
-        self.fetch_csi_index_component(df)
+        self.fetch_csi_index_component()
         self.logger.info('上证、中证指数成分股抓取完成...')
 
-    def fetch_csi_index_component(self, df: pd.DataFrame):
+    def fetch_csi_index_component(self):
         """
         抓取上证、中证指数成分股
         """
-        query_url = 'http://www.csindex.com.cn/uploads/file/autofile/cons/{}cons.xls'
+        for _, index in self.all_index.iterrows():
+            response_df = pd.DataFrame()
+            index_code = index.name.split(".")[0]
 
-        for _, index in df.iterrows():
-            index_code = index['code']
-
-            url = query_url.format(index_code)
-
-            try:
-                response = requests.get(url)
-                response.raise_for_status()
-            except requests.HTTPError as error:
-                self.logger.error(f'{index["name"]} - {index_code} 成分股抓取错误 ({error})')
-                continue
-
-            response_df = pd.read_excel(io.BytesIO(response.content))
-
-            response_df = response_df[['成分券代码Constituent Code', '成分券名称Constituent Name']].rename(
-                columns={'成分券代码Constituent Code': 'stock_code',
-                         '成分券名称Constituent Name': 'stock_name'})
-
+            stocks = get_index_stocks(index.name)
+            response_df['stock_code'] = stocks
+            response_df['stock_code'] = response_df['stock_code'].apply(lambda x:x.split(".")[0])
             index_id = f'index_cn_{index_code}'
             response_df['entity_id'] = index_id
+
             response_df['entity_type'] = 'index'
             response_df['exchange'] = 'cn'
             response_df['code'] = index_code
-            response_df['name'] = index['name']
+            response_df['name'] = index.display_name
             response_df['timestamp'] = now_pd_timestamp()
 
             response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))

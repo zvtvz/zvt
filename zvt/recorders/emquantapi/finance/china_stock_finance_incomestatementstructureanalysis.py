@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 finance_incomestatementstructureanalysis_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'financial_expense_rate': 'QFINAEXPENSETOGR',  # 财务费用与营业总收入之比
     'operating_profit_to_total_profit': 'QOPERATEINCOMETOEBT',  # 经营活动净收益与利润总额之比
     'net_profit_to_total_operate_revenue': 'QNITOGR',  # 净利润与营业总收入之比

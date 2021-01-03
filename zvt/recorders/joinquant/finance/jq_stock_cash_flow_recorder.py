@@ -24,7 +24,7 @@ cash_flow_map = {
     "total_op_cash_outflows": "subtotal_operate_cash_outflow",
 
     # 经营活动产生的现金流量净额
-    "net_op_cash_flows": "net_operate_cash_flow2",
+    "net_op_cash_flows": "net_operate_cash_flow",
 
     # 投资活动产生的现金流量
 

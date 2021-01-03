@@ -3,7 +3,7 @@ import pandas as pd
 from jqdatasdk import auth, query, indicator, get_fundamentals, logout, finance
 
 from zvt import zvt_env
-from zvt.api.quote import to_jq_report_period, get_recent_report_period
+from zvt.api.quote import to_jq_report_period, to_report_period_type
 
 from zvt.contract.api import get_data, df_to_db
 from zvt.domain import FinanceFactor
@@ -72,7 +72,7 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
                 "corpType": company_type_flag(security_item),
                 # 0 means get all types
                 "reportDateType": 0,
-                "endDate": '',
+                "endDate": to_time_str(timestamps[0]),
                 "latestCount": size
             }
         else:
@@ -82,7 +82,7 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
                 "corpType": company_type_flag(security_item),
                 # 0 means get all types
                 "reportDateType": 0,
-                "endDate": to_time_str(timestamps[10]),
+                "endDate": to_time_str(timestamps[0]),
                 "latestCount": 10
             }
 
@@ -94,11 +94,13 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
 
     def generate_path_fields(self, security_item):
         comp_type = company_type_flag(security_item)
-
+        if self.finance_report_type == "FIN_FORCAST":
+            return 'finance.STK_{}'.format(self.finance_report_type)
         if comp_type in {"1", "2", "3"}:
             return 'finance.FINANCE_{}'.format(self.finance_report_type)
-        elif comp_type == "4":
+        elif comp_type in {"4"}:
             return 'finance.STK_{}'.format(self.finance_report_type)
+
 
     def record(self, entity, start, end, size, timestamps):
         # different with the default timestamps handling
@@ -113,6 +115,10 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
         if df.empty:
             return None
         # 财报时间  公告时间
+        if 'end_date' in df.columns and "report_date" not in df.columns:
+            df.rename(columns= {
+                'end_date':"report_date",
+            },inplace=True)
         df.set_index(['report_date','pub_date'], drop=True, inplace=True)
         map_data = {value[0]: key for key, value in self.get_data_map().items()}
         df.drop([i for i in df.columns if i not in map_data.keys()], axis=1, inplace=True)
@@ -120,9 +126,11 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
         df.reset_index(drop=False, inplace=True)
 
         df['report_date'] = pd.to_datetime(df['report_date'])
-        df['report_period'] = df['report_date'].apply(lambda x: get_recent_report_period(x))
-        df['timestamp'] = df['report_date']
+        df['report_period'] = df['report_date'].apply(lambda x: to_report_period_type(x))
+        # df['report_period'] = df['report_date'].apply(lambda x: get_recent_report_date(x))
         df['pub_date'] = pd.to_datetime(df['pub_date'])
+
+        df['timestamp'] = df['report_date']
 
         df['entity_id'] = entity.id
         df['provider'] = 'joinquant'
@@ -132,6 +140,7 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
             return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 
         df['id'] = df[['entity_id', 'timestamp']].apply(generate_finance_id, axis=1)
+        df = df.drop_duplicates(subset=['id'],keep='last')
         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         return None
 

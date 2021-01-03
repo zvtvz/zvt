@@ -6,8 +6,7 @@ from zvt.utils.utils import add_func_to_value, first_item_to_float
 income_statement_qtr_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
-    # 报告时间
-    "report_date": "REPORTDATE",
+
     # 营业总收入(元)
     "total_op_income": "TOTALOPERATEREVE_S",
     # 营业收入

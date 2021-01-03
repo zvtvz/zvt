@@ -5,7 +5,7 @@ from EmQuantAPI import *
 from zvt.api import get_recent_report_period, to_report_period_type
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
-from zvt.domain import StockDetail
+from zvt.domain import StockDetail,Stock
 from zvt.recorders.emquantapi.common import mainCallback, to_em_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp
@@ -16,7 +16,7 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
     data_type = 1
 
     entity_provider = 'joinquant'
-    entity_schema = StockDetail
+    entity_schema = Stock
     provider = 'emquantapi'
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
@@ -52,36 +52,34 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
         df = pd.DataFrame()
         columns_map = {key:value[0] for key,value in self.get_data_map().items()}
         columns_list =list(columns_map.values())
-
+        if self.finance_report_type == 'AuditOpinions':
+            #审计意见数据只有年报有
+            reportdate_list = [i for i in reportdate_list if '12-31' in i]
         for reportdate in reportdate_list:
             # 获取数据
             # 三大财务报表 使用ctr方法读取表名
             if self.data_type < 4:
-                data = c.ctr(self.finance_report_type, columns_list,
+                em_data = c.ctr(self.finance_report_type, columns_list,
                              "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
-                if data.Data == {}:
+                if em_data.Data == {}:
                     continue
-                data = pd.DataFrame(data.Data['0']).T
+                data = pd.DataFrame(em_data.Data['0']).T
+                data.columns = em_data.Indicators
+                data['report_date'] = reportdate
                 df = df.append(data)
             # 否则用 css方法读取单个指标
             else:
-                if 'REPORTDATE' in columns_list:
-                    columns_list.remove('REPORTDATE')
-                data = c.css(em_code, columns_list,"ReportDate="+reportdate)
-                data = pd.DataFrame(data.Data[em_code]).T
-                data[len(columns_list)+1] = reportdate
-                df = df.append(data)
-        # if self.finance_report_type in ['FinanceDerivative','FinancePerShare','FinanceGrowthAbility']:
+                em_data = c.css(em_code, columns_list,"ispandas=1,ReportDate="+reportdate)
+                if type(em_data) == pd.DataFrame:
+                    em_data['report_date'] = reportdate
+                    if 'FIRSTNOTICEDATE' not in columns_list:
+                        em_data['pub_date'] = end
+                    df = df.append(em_data)
         if df.empty:
             return None
-        if not self.data_type < 4:
-            columns_list.append('REPORTDATE')
-
-        df.columns = columns_list
-        df = df.sort_values("REPORTDATE", ascending=True)
-        # df = df.dropna(axis=0,subset=["DUPONTROE"])
+        df.rename(columns = {value:key for key,value in columns_map.items()},inplace=True)
+        df = df.sort_values("report_date", ascending=True)
         if pd_is_not_null(df):
-            df.reset_index(drop=True, inplace=True)
             df.rename(columns={value:key for key,value in columns_map.items()}, inplace=True)
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df.report_date)

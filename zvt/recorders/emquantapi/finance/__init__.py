@@ -15,5 +15,7 @@ from zvt.recorders.emquantapi.finance.china_stock_finance_profitability import *
 from zvt.recorders.emquantapi.finance.china_stock_finance_receivingability import *
 from zvt.recorders.emquantapi.finance.china_stock_finance_singlequarterderivative_recorder import *
 from zvt.recorders.emquantapi.finance.china_stock_income_statement_recorder import *
+from zvt.recorders.emquantapi.finance.china_stock_finace_capital_structure import *
+from zvt.recorders.emquantapi.finance.china_stock_audit_opinions_recorder import *
 
 

@@ -58,8 +58,8 @@ class BaseChinaStockFinanceQtrRecorder(TimeSeriesDataRecorder):
                          "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
             if data.Data == {}:
                 continue
-            data = pd.DataFrame(data.Data['0']).T
-            df = df.append(data)
+            data_df = pd.DataFrame(data.Data['0']).T
+            df = df.append(data_df)
         df.columns = columns_list
         df = df.sort_values("REPORTDATE", ascending=True)
         if pd_is_not_null(df):

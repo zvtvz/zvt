@@ -5,7 +5,6 @@ from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 finance_singlequarterderivative_map = {
     # 更新时间
-    "report_date": "REPORTDATE",
     'fi_investment_income': 'INVESTINCOME',  # 价值变动净收益
     'fi_gross_margin': 'GROSSMARGIN',  # 毛利
     'deducted_net_profit': 'DEDUCTEDINCOME',  # 扣除非经常性损益后的净利润
