@@ -28,10 +28,14 @@ def to_jq_entity_id(security_item):
 
 
 def to_entity_id(jq_code: str, entity_type):
-    code, exchange = jq_code.split('.')
-    if exchange == 'XSHG':
-        exchange = 'sh'
-    elif exchange == 'XSHE':
+    try:
+        code, exchange = jq_code.split('.')
+        if exchange == 'XSHG':
+            exchange = 'sh'
+        elif exchange == 'XSHE':
+            exchange = 'sz'
+    except:
+        code = jq_code
         exchange = 'sz'
 
     return f'{entity_type}_{exchange}_{code}'
@@ -51,5 +55,7 @@ def jq_to_report_period(jq_report_type):
     if jq_report_type == '年度':
         return ReportPeriod.year.value
     assert False
+
+
 # the __all__ is generated
 __all__ = ['to_jq_trading_level', 'to_jq_entity_id', 'to_entity_id', 'jq_to_report_period']
