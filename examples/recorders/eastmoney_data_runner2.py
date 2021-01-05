@@ -21,9 +21,9 @@ def run():
         email_action = EmailInformer()
 
         try:
-            DividendFinancing.record_data(provider='eastmoney')
-            HolderTrading.record_data(provider='eastmoney')
-            ManagerTrading.record_data(provider='eastmoney')
+            # DividendFinancing.record_data(provider='eastmoney')
+            # HolderTrading.record_data(provider='eastmoney')
+            # ManagerTrading.record_data(provider='eastmoney')
             TopTenHolder.record_data(provider='eastmoney')
             TopTenTradableHolder.record_data(provider='eastmoney')
 

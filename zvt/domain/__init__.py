@@ -32,12 +32,20 @@ class ReportPeriod(enum.Enum):
 
 
 class InstitutionalInvestor(enum.Enum):
+    # 基金
     fund = 'fund'
+    # 社保
     social_security = 'social_security'
+    # 保险
     insurance = 'insurance'
+    # 外资
     qfii = 'qfii'
+    # 信托
     trust = 'trust'
+    # 券商
     broker = 'broker'
+    # 公司
+    other = 'other'
 
 
 # 用于区分不同的财务指标

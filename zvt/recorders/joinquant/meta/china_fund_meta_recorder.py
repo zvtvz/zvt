@@ -76,13 +76,13 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
                          close_minute)
 
     def init_entities(self):
-        # 只抓股票型，混合型的持仓
+        # 只抓股票型，混合型并且没退市的持仓,
         self.entities = Fund.query_data(
             entity_ids=self.entity_ids,
             codes=self.codes,
             return_type='domain',
             provider=self.entity_provider,
-            filters=[Fund.underlying_asset_type.in_(('股票型', '混合型'))])
+            filters=[Fund.underlying_asset_type.in_(('股票型', '混合型')), Fund.end_date.is_(None)])
 
     def record(self, entity, start, end, size, timestamps):
         # 忽略退市的
@@ -137,6 +137,7 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
+    # JqChinaFundRecorder().run()
     JqChinaFundStockRecorder(codes=['000053']).run()
 # the __all__ is generated
 __all__ = ['JqChinaFundRecorder', 'JqChinaFundStockRecorder']
