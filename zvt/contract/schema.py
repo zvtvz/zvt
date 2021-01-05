@@ -312,11 +312,14 @@ class Portfolio(EntityMixin):
     def get_stocks(cls,
                    code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
         """
+        the publishing policy of portfolio positions is different for different types,
+        overwrite this function for get the holding stocks in specific date
 
         :param code: portfolio(etf/block/index...) code
         :param codes: portfolio(etf/block/index...) codes
-        :param timestamp:
-        :param provider:
+        :param ids: portfolio(etf/block/index...) ids
+        :param timestamp: the date of the holding stocks
+        :param provider: the data provider
         :return:
         """
         from zvt.contract.api import get_schema_by_name
@@ -325,10 +328,19 @@ class Portfolio(EntityMixin):
         return portfolio_stock.query_data(provider=provider, code=code, codes=codes, timestamp=timestamp, ids=ids)
 
 
-# 组合(Etf,Index,Block)和个股(Stock)的关系 应该继承自该类
+# 组合(Fund,Etf,Index,Block等)和个股(Stock)的关系 应该继承自该类
 # 该基础类可以这样理解:
 # entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
-class PortfolioStock(EntityMixin):
+class PortfolioStock(Mixin):
+    # portfolio标的类型
+    entity_type = Column(String(length=64))
+    # portfolio所属交易所
+    exchange = Column(String(length=32))
+    # portfolio编码
+    code = Column(String(length=64))
+    # portfolio名字
+    name = Column(String(length=128))
+
     stock_id = Column(String)
     stock_code = Column(String(length=64))
     stock_name = Column(String(length=128))

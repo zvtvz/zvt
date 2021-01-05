@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from zvt.contract import EntityMixin
 from zvt.contract.register import register_schema, register_entity
-from zvt.contract.schema import Portfolio, PortfolioStock, PortfolioStockHistory
+from zvt.contract import Portfolio, PortfolioStock, PortfolioStockHistory
 from zvt.utils.time_utils import now_pd_timestamp
 
 StockMetaBase = declarative_base()

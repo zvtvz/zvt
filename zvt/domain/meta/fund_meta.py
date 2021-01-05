@@ -2,15 +2,16 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.contract import EntityMixin, PortfolioStockHistory
+from zvt.contract import Portfolio, PortfolioStockHistory
 from zvt.contract.register import register_entity, register_schema
+from zvt.utils import now_pd_timestamp
 
 FundMetaBase = declarative_base()
 
 
 # 个股
 @register_entity(entity_type='fund')
-class Fund(FundMetaBase, EntityMixin):
+class Fund(FundMetaBase, Portfolio):
     __tablename__ = 'fund'
     # 基金管理人
     advisor = Column(String(length=100))
@@ -42,9 +43,16 @@ class Fund(FundMetaBase, EntityMixin):
     # 投资标的类型
     underlying_asset_type = Column(String(length=32))
 
+    @classmethod
+    def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
+        from zvt.api.quote import get_fund_stocks
+        return get_fund_stocks(code=code, codes=codes, ids=ids, timestamp=timestamp, provider=provider)
+
 
 class FundStock(FundMetaBase, PortfolioStockHistory):
     __tablename__ = 'fund_stock'
 
 
 register_schema(providers=['joinquant'], db_name='fund_meta', schema_base=FundMetaBase)
+# the __all__ is generated
+__all__ = ['Fund', 'FundStock']

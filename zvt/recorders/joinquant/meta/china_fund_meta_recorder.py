@@ -2,15 +2,17 @@
 import pandas as pd
 from jqdatapy.api import run_query
 
+from zvt.api import portfolio_relate_stock, china_stock_code_to_id
 from zvt.contract.api import df_to_db
-from zvt.contract.recorder import Recorder
-from zvt.domain.meta.fund import Fund
-from zvt.recorders.joinquant.common import to_entity_id
+from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
+from zvt.domain.meta.fund_meta import Fund, FundStock
+from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, next_date, now_pd_timestamp, is_same_date
 
 
 class JqChinaFundRecorder(Recorder):
+    provider = 'joinquant'
     data_schema = Fund
 
     def run(self):
@@ -59,7 +61,68 @@ class JqChinaFundRecorder(Recorder):
                     break
 
 
+class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
+    entity_schema = Fund
+
+    provider = 'joinquant'
+    data_schema = FundStock
+
+    def __init__(self, entity_ids=None, codes=None, batch_size=10,
+                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
+        super().__init__('fund', ['sh', 'sz'], entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
+
+    def record(self, entity, start, end, size, timestamps):
+        # 忽略退市的
+        if entity.end_date:
+            return None
+        redundant_times = 1
+        while redundant_times > 0:
+            df = run_query(table='finance.FUND_PORTFOLIO_STOCK',
+                           conditions=f'pub_date#>=#{to_time_str(start)}&code#=#{entity.code}',
+                           parse_dates=None)
+            df = df.dropna()
+            if pd_is_not_null(df):
+                # data format
+                #          id    code period_start  period_end    pub_date  report_type_id report_type  rank  symbol  name      shares    market_cap  proportion
+                # 0   8640569  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     1  601318  中国平安  19869239.0  1.361043e+09        7.09
+                # 1   8640570  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     2  600519  贵州茅台    921670.0  6.728191e+08        3.50
+                # 2   8640571  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     3  600036  招商银行  18918815.0  5.806184e+08        3.02
+                # 3   8640572  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     4  601166  兴业银行  22862332.0  3.646542e+08        1.90
+                df['timestamp'] = pd.to_datetime(df['pub_date'])
+
+                df.rename(columns={'symbol': 'stock_code', 'name': 'stock_name'}, inplace=True)
+                df['proportion'] = df['proportion'] * 0.01
+
+                df = portfolio_relate_stock(df, entity)
+
+                df['stock_id'] = df['stock_code'].apply(lambda x: china_stock_code_to_id(x))
+                df['id'] = df[['entity_id', 'stock_id', 'pub_date', 'id']].apply(lambda x: '_'.join(x.astype(str)),
+                                                                                 axis=1)
+                df['report_date'] = pd.to_datetime(df['period_end'])
+                df['report_period'] = df['report_type'].apply(lambda x: jq_to_report_period(x))
+
+                df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+
+                # self.logger.info(df.tail())
+                self.logger.info(
+                    f"persist fund {entity.code}({entity.name}) portfolio success {df.iloc[-1]['pub_date']}")
+                latest = df['timestamp'].max()
+
+                # 取到了最近两年的数据，再请求一次,确保取完最新的数据
+                if latest.year >= now_pd_timestamp().year - 1:
+                    redundant_times = redundant_times - 1
+                start = latest
+            else:
+                return None
+
+        return None
+
+
 if __name__ == '__main__':
-    JqChinaFundRecorder().run()
+    JqChinaFundStockRecorder(codes=['000001']).run()
 # the __all__ is generated
-__all__ = ['JqChinaFundRecorder']
+__all__ = ['JqChinaFundRecorder', 'JqChinaFundStockRecorder']

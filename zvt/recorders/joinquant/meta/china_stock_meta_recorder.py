@@ -84,7 +84,8 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         df = run_query(table='finance.FUND_PORTFOLIO_STOCK',
-                       conditions=f'pub_date#>=#{to_time_str(start)}&code#=#{entity.code}')
+                       conditions=f'pub_date#>=#{to_time_str(start)}&code#=#{entity.code}',
+                       parse_dates=None)
         if pd_is_not_null(df):
             #          id    code period_start  period_end    pub_date  report_type_id report_type  rank  symbol  name      shares    market_cap  proportion
             # 0   8640569  159919   2018-07-01  2018-09-30  2018-10-26          403003        第三季度     1  601318  中国平安  19869239.0  1.361043e+09        7.09

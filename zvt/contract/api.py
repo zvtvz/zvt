@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from zvt import zvt_env
 from zvt.contract import IntervalLevel, EntityMixin
 from zvt.contract import zvt_context
-from zvt.contract.schema import Mixin
+from zvt.contract import Mixin
 from zvt.utils.pd_utils import pd_is_not_null, index_df
 from zvt.utils.time_utils import to_pd_timestamp
 

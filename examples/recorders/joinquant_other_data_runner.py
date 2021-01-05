@@ -25,30 +25,27 @@ def record_margin_trading():
         msg = f'joinquant record margin trading:{e}'
         logger.exception(msg)
 
-        email_action.send_message("5533061@qq.com", 'joinquant record week kdata error', msg)
+        email_action.send_message("5533061@qq.com", 'joinquant record margin trading error', msg)
         time.sleep(60)
 
 
 # 周6抓取
 @sched.scheduled_job('cron', hour=2, minute=00, day_of_week=5)
-def record_kdata():
+def record_valuation():
     while True:
         email_action = EmailInformer()
 
         try:
-            # 周线前复权和后复权数据
-            Stock1wkKdata.record_data(provider='joinquant', sleeping_time=1)
-            Stock1wkHfqKdata.record_data(provider='joinquant', sleeping_time=1)
             # 个股估值数据
             StockValuation.record_data(provider='joinquant', sleeping_time=1)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record week kdata finished', '')
+            email_action.send_message("5533061@qq.com", 'joinquant record valuation finished', '')
             break
         except Exception as e:
             msg = f'joinquant record kdata:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record week kdata error', msg)
+            email_action.send_message("5533061@qq.com", 'joinquant record valuation error', msg)
             time.sleep(60)
 
 
@@ -73,7 +70,7 @@ def record_others():
 
 
 if __name__ == '__main__':
-    init_log('joinquant_data_runner2.log')
+    init_log('joinquant_other_data_runner.log')
 
     record_margin_trading()
 
