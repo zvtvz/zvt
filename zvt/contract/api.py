@@ -14,8 +14,8 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from zvt import zvt_env
 from zvt.contract import IntervalLevel, EntityMixin
-from zvt.contract import zvt_context
 from zvt.contract import Mixin
+from zvt.contract import zvt_context
 from zvt.utils.pd_utils import pd_is_not_null, index_df
 from zvt.utils.time_utils import to_pd_timestamp
 
@@ -421,7 +421,7 @@ def df_to_db(df: pd.DataFrame,
     :return:
     """
     if not pd_is_not_null(df):
-        return
+        return 0
 
     if drop_duplicates and df.duplicated(subset='id').any():
         logger.warning(f'remove duplicated:{df[df.duplicated()]}')
@@ -434,7 +434,7 @@ def df_to_db(df: pd.DataFrame,
 
     if not cols:
         print('wrong cols')
-        return
+        return 0
 
     df = df[cols]
 
@@ -449,6 +449,8 @@ def df_to_db(df: pd.DataFrame,
             step_size = step_size + 1
     else:
         step_size = 1
+
+    saved = 0
 
     for step in range(step_size):
         df_current = df.iloc[sub_size * step:sub_size * (step + 1)]
@@ -469,7 +471,11 @@ def df_to_db(df: pd.DataFrame,
             if pd_is_not_null(current):
                 df_current = df_current[~df_current['id'].isin(current['id'])]
 
-        df_current.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
+        if pd_is_not_null(df_current):
+            saved = saved + len(df_current)
+            df_current.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists='append')
+
+    return saved
 
 
 def get_entities(

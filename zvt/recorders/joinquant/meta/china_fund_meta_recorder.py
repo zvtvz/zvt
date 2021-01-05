@@ -75,6 +75,15 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
 
+    def init_entities(self):
+        # 只抓股票型，混合型的持仓
+        self.entities = Fund.query_data(
+            entity_ids=self.entity_ids,
+            codes=self.codes,
+            return_type='domain',
+            provider=self.entity_provider,
+            filters=[Fund.underlying_asset_type.in_(('股票型', '混合型'))])
+
     def record(self, entity, start, end, size, timestamps):
         # 忽略退市的
         if entity.end_date:
@@ -105,7 +114,12 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
                 df['report_date'] = pd.to_datetime(df['period_end'])
                 df['report_period'] = df['report_type'].apply(lambda x: jq_to_report_period(x))
 
-                df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+                saved = df_to_db(df=df, data_schema=self.data_schema, provider=self.provider,
+                                 force_update=self.force_update)
+
+                # 取不到非重复的数据
+                if saved == 0:
+                    return None
 
                 # self.logger.info(df.tail())
                 self.logger.info(
@@ -123,6 +137,6 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    JqChinaFundStockRecorder(codes=['000001']).run()
+    JqChinaFundStockRecorder(codes=['000053']).run()
 # the __all__ is generated
 __all__ = ['JqChinaFundRecorder', 'JqChinaFundStockRecorder']

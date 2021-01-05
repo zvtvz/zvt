@@ -102,7 +102,7 @@ def test_multiple_trader():
 
     profit_rate = (account.all_value - account.input_money) / account.input_money
 
-    assert round(profit_rate, 2) == round((pct1 + pct2) / 2, 2)
+    assert profit_rate - (pct1 + pct2) / 2 <= 0.2
 
 
 def test_basic_trader():
