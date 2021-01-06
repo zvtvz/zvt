@@ -172,7 +172,7 @@ def get_portfolio_stocks(portfolio_entity=Fund, code=None, codes=None, ids=None,
     portfolio_stock = f'{portfolio_entity.__name__}Stock'
     data_schema: PortfolioStockHistory = get_schema_by_name(portfolio_stock)
     latests: List[PortfolioStockHistory] = data_schema.query_data(provider=provider, code=code, end_timestamp=timestamp,
-                                                                  order=EtfStock.timestamp.desc(), limit=1,
+                                                                  order=data_schema.timestamp.desc(), limit=1,
                                                                   return_type='domain')
     if latests:
         latest_record = latests[0]
@@ -190,7 +190,7 @@ def get_portfolio_stocks(portfolio_entity=Fund, code=None, codes=None, ids=None,
 
                 pre_df = data_schema.query_data(provider=provider, code=code, codes=codes, ids=ids,
                                                 end_timestamp=timestamp,
-                                                filters=[EtfStock.report_date == to_pd_timestamp(report_date)])
+                                                filters=[data_schema.report_date == to_pd_timestamp(report_date)])
                 df = df.append(pre_df)
 
                 # 半年报和年报
