@@ -4,9 +4,11 @@ from typing import Union
 
 import pandas as pd
 
-from zvt.api import get_kdata_schema
+from zvt.api import get_kdata_schema, get_recent_report_date
 from zvt.contract import Mixin, AdjustType
 from zvt.contract.api import decode_entity_id
+from zvt.domain import FundStock
+from zvt.utils import now_pd_timestamp
 
 
 def get_top_performance_entities(entity_type='stock', start_timestamp=None, end_timestamp=None, pct=0.1,
@@ -17,6 +19,21 @@ def get_top_performance_entities(entity_type='stock', start_timestamp=None, end_
 
     return get_top_entities(data_schema=data_schema, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                             column='close', pct=pct, method='change', return_type=return_type)
+
+
+def get_top_fund_holding_stocks(timestamp=None, pct=0.3):
+    if not timestamp:
+        timestamp = now_pd_timestamp()
+    # 季报一般在report_date后1个月内公布，年报2个月内，年报4个月内
+    # 所以取时间点的最近的两个公布点，保证取到数据
+    # 所以，这是个滞后的数据，只是为了看个大概，毕竟模糊的正确better than 精确的错误
+    report_date = get_recent_report_date(timestamp, 1)
+    df = FundStock.query_data(filters=[FundStock.report_date >= report_date, FundStock.timestamp <= timestamp])
+    g = df.groupby('stock_id')
+    market = g['market_cap'].sum().sort_values(ascending=False)
+    s = market.iloc[:int(len(market) * pct)]
+
+    return s.to_frame()
 
 
 def get_performance(entity_ids, start_timestamp=None, end_timestamp=None, adjust_type: Union[AdjustType, str] = None):

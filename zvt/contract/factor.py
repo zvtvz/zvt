@@ -336,6 +336,7 @@ class Factor(DataReader, DataListener):
     def load_factor(self):
         # read state
         states: List[FactorState] = FactorState.query_data(filters=[FactorState.factor_name == self.factor_name],
+                                                           entity_ids=self.entity_ids,
                                                            return_type='domain')
         if states:
             for state in states:

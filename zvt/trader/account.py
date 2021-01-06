@@ -182,7 +182,6 @@ class SimAccountService(AccountService):
         if is_same_date(timestamp, self.start_timestamp):
             return
         self.account = self.load_account()
-        self.logger.info('on_trading_open:{},current_account:{}'.format(timestamp, self.account.__dict__))
 
     def on_trading_error(self, timestamp, error):
         pass
@@ -235,7 +234,13 @@ class SimAccountService(AccountService):
                                                                                                  happen_timestamp))
 
     def on_trading_close(self, timestamp):
-        self.logger.debug('on_trading_close:{}'.format(timestamp))
+        self.logger.info('on_trading_close:{}'.format(timestamp))
+        # remove the empty position
+        self.account.positions = [position for position in self.account.positions if
+                                  position.long_amount > 0 or position.short_amount > 0]
+
+        # clear the data which need recomputing
+        the_id = '{}_{}'.format(self.trader_name, to_time_str(timestamp, TIME_FORMAT_ISO8601))
 
         self.account.value = 0
         self.account.all_value = 0
@@ -262,41 +267,25 @@ class SimAccountService(AccountService):
                     self.account.value += position.value
             else:
                 self.logger.warning(
-                    'could not refresh close value for position:{},timestamp:{}'.format(position['entity_id'],
+                    'could not refresh close value for position:{},timestamp:{}'.format(position.entity_id,
                                                                                         timestamp))
 
-        # remove the empty position
-        self.account.positions = [position for position in self.account.positions if
-                                  position.long_amount > 0 or position.short_amount > 0]
-
-        self.account.all_value = self.account.value + self.account.cash
-        self.account.closing = True
-        self.account.timestamp = to_pd_timestamp(timestamp)
-
-        self.logger.debug('on_trading_close:{},latest_account:{}'.format(timestamp, self.account))
-        self.persist_account(timestamp)
-
-    def persist_account(self, timestamp):
-        """
-        save the account to db,we do this after closing time every day
-
-        :param timestamp:
-        :type timestamp:
-        """
-        the_id = '{}_{}'.format(self.trader_name, to_time_str(timestamp, TIME_FORMAT_ISO8601))
-
-        for position in self.account.positions:
             position.id = '{}_{}_{}'.format(self.trader_name, position.entity_id,
                                             to_time_str(timestamp, TIME_FORMAT_ISO8601))
             position.timestamp = to_pd_timestamp(timestamp)
             position.account_stats_id = the_id
 
         self.account.id = the_id
-
-        self.logger.info('persist_account:{}'.format(account_stats_schema.dump(self.account)))
+        self.account.all_value = self.account.value + self.account.cash
+        self.account.closing = True
+        self.account.timestamp = to_pd_timestamp(timestamp)
+        self.account.change_pct = (self.account.all_value - self.account.input_money) / self.account.input_money
 
         self.session.add(self.account)
         self.session.commit()
+        account_info = f'on_trading_close,holding size:{len(self.account.positions)} change_pct:{self.account.change_pct} input_money:{self.account.input_money} ' \
+                       f'cash:{self.account.cash} value:{self.account.value} all_value:{self.account.all_value}'
+        self.logger.info(account_info)
 
     def get_current_position(self, entity_id) -> Position:
         """

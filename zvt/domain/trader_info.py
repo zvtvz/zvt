@@ -47,6 +47,9 @@ class AccountStats(TraderBase, Mixin):
     # 市值+cash
     all_value = Column(Float)
 
+    # 盈亏比例
+    change_pct = Column(Float)
+
     # 收盘计算
     closing = Column(Boolean)
 
