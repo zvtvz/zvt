@@ -351,7 +351,7 @@ class ZenAccumulator(Accumulator):
 
                 acc_df = pd.concat([acc_df, df])
 
-                zen_state = state
+                zen_state = ZenState(state)
 
                 acc_df = acc_df.reset_index(drop=True)
             else:
@@ -439,7 +439,7 @@ class ZenAccumulator(Accumulator):
                     acc_df.loc[pre_index, 'fenxing_power'] = fenxing_power(acc_df.loc[pre_index - 1], pre_kdata, kdata,
                                                                            fenxing=tmp_fenxing_col)
 
-                    if pd_is_not_null(zen_state.can_fenxing):
+                    if zen_state.can_fenxing is not None:
                         # 候选底分型
                         if tmp_direction == Direction.up:
                             # 取小的
@@ -458,7 +458,7 @@ class ZenAccumulator(Accumulator):
                         zen_state.can_fenxing_index = pre_index
 
                 # 分型确立
-                if pd_is_not_null(zen_state.can_fenxing):
+                if zen_state.can_fenxing is not None:
                     if zen_state.opposite_count >= 4 or (index - zen_state.can_fenxing_index >= 8):
                         acc_df.loc[zen_state.can_fenxing_index, fenxing_col] = True
 

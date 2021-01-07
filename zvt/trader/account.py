@@ -265,6 +265,13 @@ class SimAccountService(AccountService):
                     position.value = 2 * (position.short_amount * position.average_short_price)
                     position.value -= position.short_amount * closing_price
                     self.account.value += position.value
+
+                # refresh profit
+                position.profit = (closing_price - position.average_long_price) \
+                                  * position.long_amount
+                position.profit_rate = position.profit / (
+                        position.average_long_price * position.long_amount)
+
             else:
                 self.logger.warning(
                     'could not refresh close value for position:{},timestamp:{}'.format(position.entity_id,
@@ -279,11 +286,11 @@ class SimAccountService(AccountService):
         self.account.all_value = self.account.value + self.account.cash
         self.account.closing = True
         self.account.timestamp = to_pd_timestamp(timestamp)
-        self.account.change_pct = (self.account.all_value - self.account.input_money) / self.account.input_money
+        self.account.profit = (self.account.all_value - self.account.input_money) / self.account.input_money
 
         self.session.add(self.account)
         self.session.commit()
-        account_info = f'on_trading_close,holding size:{len(self.account.positions)} change_pct:{self.account.change_pct} input_money:{self.account.input_money} ' \
+        account_info = f'on_trading_close,holding size:{len(self.account.positions)} profit:{self.account.profit} input_money:{self.account.input_money} ' \
                        f'cash:{self.account.cash} value:{self.account.value} all_value:{self.account.all_value}'
         self.logger.info(account_info)
 
@@ -327,6 +334,8 @@ class SimAccountService(AccountService):
 
             # 计算平均价
             long_amount = current_position.long_amount + order_amount
+            if long_amount == 0:
+                current_position.average_long_price = 0
             current_position.average_long_price = (current_position.average_long_price * current_position.long_amount
                                                    + current_price * order_amount) / long_amount
 
@@ -356,6 +365,7 @@ class SimAccountService(AccountService):
 
         elif order_type == ORDER_TYPE_CLOSE_LONG:
             self.account.cash += (order_amount * current_price * (1 - self.slippage - self.sell_cost))
+            # FIXME:如果没卖完，重新计算计算平均价
 
             current_position.available_long -= order_amount
             current_position.long_amount -= order_amount
@@ -528,7 +538,7 @@ class SimAccountService(AccountService):
                     if order_amount < 1:
                         if self.rich_mode:
                             self.input_money()
-                            order_amount = (self.account.cash * order_pct) // cost
+                            order_amount = max((self.account.cash * order_pct) // cost, 1)
                         else:
                             raise NotEnoughMoneyError()
                     self.update_position(current_position, order_amount, current_price, order_type,
@@ -546,7 +556,7 @@ class SimAccountService(AccountService):
                     if order_amount < 1:
                         if self.rich_mode:
                             self.input_money()
-                            order_amount = (self.account.cash * order_pct) // cost
+                            order_amount = max((self.account.cash * order_pct) // cost, 1)
                         else:
                             raise NotEnoughMoneyError()
 

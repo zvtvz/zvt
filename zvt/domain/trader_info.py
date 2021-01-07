@@ -47,8 +47,10 @@ class AccountStats(TraderBase, Mixin):
     # 市值+cash
     all_value = Column(Float)
 
+    # 盈亏
+    profit = Column(Float)
     # 盈亏比例
-    change_pct = Column(Float)
+    profit_rate = Column(Float)
 
     # 收盘计算
     closing = Column(Boolean)
@@ -78,7 +80,10 @@ class Position(TraderBase, Mixin):
     # 平均做空价格
     average_short_price = Column(Float)
 
+    # 盈亏
     profit = Column(Float)
+    # 盈亏比例
+    profit_rate = Column(Float)
     # 市值 或者 占用的保证金(方便起见，总是100%)
     value = Column(Float)
     # 交易类型(0代表T+0,1代表T+1)

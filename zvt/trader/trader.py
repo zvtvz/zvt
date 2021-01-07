@@ -34,7 +34,8 @@ class Trader(object):
                  kdata_use_begin_time: bool = False,
                  draw_result: bool = True,
                  rich_mode: bool = False,
-                 adjust_type: AdjustType = None) -> None:
+                 adjust_type: AdjustType = None,
+                 profit_threshold=(3, -0.3)) -> None:
         assert self.entity_schema is not None
 
         self.logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ class Trader(object):
         if type(adjust_type) is str:
             adjust_type = AdjustType(adjust_type)
         self.adjust_type = adjust_type
+        self.profit_threshold = profit_threshold
 
         self.account_service = SimAccountService(entity_schema=self.entity_schema,
                                                  trader_name=self.trader_name,
@@ -250,6 +252,25 @@ class Trader(object):
     def short_position_control(self):
         return 1.0
 
+    def on_profit_control(self):
+        if self.profit_threshold and self.get_current_positions():
+            positive = self.profit_threshold[0]
+            negative = self.profit_threshold[1]
+            close_long_entity_ids = []
+            for position in self.get_current_positions():
+                if position.available_long > 1:
+                    # 止盈
+                    if position.profit_rate >= positive:
+                        close_long_entity_ids.append(position.entity_id)
+                        self.logger.info(f'close profit {position.profit_rate} for {position.entity_id}')
+                    # 止损
+                    if position.profit_rate <= negative:
+                        close_long_entity_ids.append(position.entity_id)
+                        self.logger.info(f'cut lost {position.profit_rate} for {position.entity_id}')
+
+            return close_long_entity_ids, None
+        return None, None
+
     def buy(self, due_timestamp, happen_timestamp, entity_ids, ignore_in_position=True):
         if ignore_in_position:
             account = self.get_current_account()
@@ -335,8 +356,6 @@ class Trader(object):
         :param short_targets: the short targets from the selector
         :return: the filtered short targets
         """
-        if len(short_targets) > 10:
-            return short_targets[0:10]
         return short_targets
 
     def in_trading_date(self, timestamp):
@@ -462,6 +481,14 @@ class Trader(object):
                         if level == self.level:
                             long_selected = self.select_long_targets_from_levels(timestamp)
                             short_selected = self.select_short_targets_from_levels(timestamp)
+
+                            # 处理 止赢 止损
+                            passive_short, _ = self.on_profit_control()
+                            if passive_short:
+                                if not short_selected:
+                                    short_selected = passive_short
+                                else:
+                                    short_selected = list(set(short_selected) | set(passive_short))
 
                             self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
 
