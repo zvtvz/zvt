@@ -18,8 +18,7 @@ def serve_layout():
             dbc.CardHeader(
                 dbc.Tabs(
                     [
-                        dbc.Tab(label="factor", tab_id="tab-factor", label_style={}, tab_style={"width": "100px"}),
-                        dbc.Tab(label="trader", tab_id="tab-trader", label_style={}, tab_style={"width": "100px"}),
+                        dbc.Tab(label="factor", tab_id="tab-factor", label_style={}, tab_style={"width": "100px"})
                     ],
                     id="card-tabs",
                     card=True,

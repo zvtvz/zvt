@@ -10,7 +10,6 @@ from plotly.subplots import make_subplots
 from zvt.contract.api import decode_entity_id
 from zvt.contract.data_type import Bean
 from zvt.contract.normal_data import NormalData
-from zvt.domain import Stock1dHfqKdata, FinanceFactor
 from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)
@@ -182,8 +181,8 @@ class StackedDrawer(Draw):
         assert len(drawers) > 1
         self.drawers: List[Drawer] = drawers
 
-    def make_y_layout(self, index, total):
-        part = 1 / total
+    def make_y_layout(self, index, total, start_index=1, domain_range=(0, 1)):
+        part = (domain_range[1] - domain_range[0]) / total
 
         if index == 1:
             yaxis = 'yaxis'
@@ -198,7 +197,8 @@ class StackedDrawer(Draw):
                               zeroline=False,
                               linecolor="#BCCCDC",
                               showgrid=False,
-                              domain=[part * (index - 1), part * index])
+                              domain=[domain_range[0] + part * (index - start_index),
+                                      domain_range[0] + part * (index - start_index + 1)])
 
     def _draw(self,
               main_chart='kline',
@@ -213,21 +213,28 @@ class StackedDrawer(Draw):
         stacked_fig = go.Figure()
 
         total = len(self.drawers)
-        for index, drawer in enumerate(self.drawers, start=1):
+        start = 1
+        domain_range = (0, 1)
+        for drawer in self.drawers:
+            if drawer.has_sub_plot():
+                domain_range = (0.2, 1)
+                start = 2
+                break
+        for index, drawer in enumerate(self.drawers, start=start):
             traces, sub_traces = drawer.make_traces(main_chart=main_chart, sub_chart=sub_chart, mode=mode, **kwargs)
-            # make y layouts
-            if sub_traces:
-                total = total + 1
-            yaxis, y, layout = self.make_y_layout(index=index, total=total)
 
-            # update sub_traces with yaxis
-            # sub traces is at the bottom
-            if index == 1 and sub_traces:
+            # fix sub traces as the bottom
+            if sub_traces:
+                yaxis, y, layout = self.make_y_layout(index=1, total=1, domain_range=(0, 0.2))
+                # update sub_traces with yaxis
                 for trace in sub_traces:
                     trace.yaxis = y
                 stacked_fig.add_traces(sub_traces)
                 stacked_fig.layout[yaxis] = layout
-                continue
+
+            # make y layouts
+            yaxis, y, layout = self.make_y_layout(index=index, total=total, start_index=start,
+                                                  domain_range=domain_range)
 
             stacked_fig.layout[yaxis] = layout
 
@@ -527,15 +534,15 @@ def annotations(annotation_df: pd.DataFrame, yref='y'):
 
 
 if __name__ == '__main__':
-    # from zvt.factors.pattern import ZenFactor
-    #
-    # data_reader1 = ZenFactor(codes=['000338'], level='1d')
-    # data_reader2 = ZenFactor(codes=['000338'], level='1wk')
-    # print(data_reader2.data_df)
-    #
-    # stacked = StackedDrawer(data_reader1.drawer(), data_reader2.drawer()).draw_kline()
-    df = Stock1dHfqKdata.query_data(code='000338', start_timestamp='2015-01-01')
-    sub_df = FinanceFactor.query_data(code='000338', start_timestamp='2015-01-01',
-                                      columns=[FinanceFactor.roe, FinanceFactor.entity_id, FinanceFactor.timestamp])
+    from zvt.factors.zen import ZenFactor
 
-    Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
+    data_reader1 = ZenFactor(codes=['000338'], level='1d')
+    data_reader2 = ZenFactor(codes=['000338'], level='1wk')
+    print(data_reader2.data_df)
+
+    stacked = StackedDrawer(data_reader1.drawer(), data_reader2.drawer()).draw_kline(show=True)
+    # df = Stock1dHfqKdata.query_data(code='000338', start_timestamp='2015-01-01')
+    # sub_df = FinanceFactor.query_data(code='000338', start_timestamp='2015-01-01',
+    #                                   columns=[FinanceFactor.roe, FinanceFactor.entity_id, FinanceFactor.timestamp])
+    #
+    # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)

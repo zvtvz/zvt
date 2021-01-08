@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import enum
 import itertools
 from typing import Union
 
@@ -11,14 +12,25 @@ from zvt.domain import FundStock
 from zvt.utils import now_pd_timestamp
 
 
+class WindowMethod(enum.Enum):
+    change = 'change'
+    avg = 'avg'
+    sum = 'sum'
+
+
+class TopType(enum.Enum):
+    positive = 'positive'
+    negative = 'negative'
+
+
 def get_top_performance_entities(entity_type='stock', start_timestamp=None, end_timestamp=None, pct=0.1,
-                                 return_type='both', adjust_type: Union[AdjustType, str] = None):
+                                 return_type=None, adjust_type: Union[AdjustType, str] = None):
     if not adjust_type and entity_type == 'stock':
         adjust_type = AdjustType.hfq
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
 
     return get_top_entities(data_schema=data_schema, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                            column='close', pct=pct, method='change', return_type=return_type)
+                            column='close', pct=pct, method=WindowMethod.change, return_type=return_type)
 
 
 def get_top_fund_holding_stocks(timestamp=None, pct=0.3):
@@ -43,13 +55,14 @@ def get_performance(entity_ids, start_timestamp=None, end_timestamp=None, adjust
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
 
     result, _ = get_top_entities(data_schema=data_schema, column='close', start_timestamp=start_timestamp,
-                                 end_timestamp=end_timestamp, pct=1, method='change', return_type='positive',
-                                 filters=[data_schema.entity_id.in_(entity_ids)])
+                                 end_timestamp=end_timestamp, pct=1, method=WindowMethod.change,
+                                 return_type=TopType.positive, filters=[data_schema.entity_id.in_(entity_ids)])
     return result
 
 
 def get_top_volume_entities(entity_type='stock', entity_ids=None, start_timestamp=None, end_timestamp=None, pct=0.1,
-                            return_type='positive', adjust_type: Union[AdjustType, str] = None, method='avg'):
+                            return_type=TopType.positive, adjust_type: Union[AdjustType, str] = None,
+                            method=WindowMethod.avg):
     if not adjust_type and entity_type == 'stock':
         adjust_type = AdjustType.hfq
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
@@ -63,27 +76,47 @@ def get_top_volume_entities(entity_type='stock', entity_ids=None, start_timestam
     return result
 
 
-def get_top_entities(data_schema: Mixin, column, start_timestamp=None, end_timestamp=None, pct=0.1, method='change',
-                     return_type='both', filters=None):
+def get_top_entities(data_schema: Mixin, column: str, start_timestamp=None, end_timestamp=None, pct=0.1,
+                     method: WindowMethod = WindowMethod.change,
+                     return_type: TopType = None, filters=None):
+    """
+    get top entities in specific domain between time range
+
+    :param data_schema: schema in domain
+    :param column: schema column
+    :param start_timestamp:
+    :param end_timestamp:
+    :param pct: range (0,1]
+    :param method:
+    :param return_type:
+    :param filters:
+    :return:
+    """
+    if type(method) == str:
+        method = WindowMethod(method)
+
+    if type(return_type) == str:
+        return_type = TopType(return_type)
+
     all_df = data_schema.query_data(start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     columns=['entity_id', column], filters=filters)
     g = all_df.groupby('entity_id')
     tops = {}
     for entity_id, df in g:
-        if method == 'change':
+        if method == WindowMethod.change:
             start = df[column].iloc[0]
             end = df[column].iloc[-1]
             change = (end - start) / start
             tops[entity_id] = change
-        elif method == 'avg':
+        elif method == WindowMethod.avg:
             tops[entity_id] = df[column].mean()
-        elif method == 'sum':
+        elif method == WindowMethod.sum:
             tops[entity_id] = df[column].sum()
 
     positive_df = None
     negative_df = None
     top_index = int(len(tops) * pct)
-    if return_type == 'positive' or return_type == 'both':
+    if return_type is None or return_type == TopType.positive:
         # from big to small
         positive_tops = {k: v for k, v in sorted(tops.items(), key=lambda item: item[1], reverse=True)}
         positive_tops = dict(itertools.islice(positive_tops.items(), top_index))
@@ -92,7 +125,7 @@ def get_top_entities(data_schema: Mixin, column, start_timestamp=None, end_times
         col = 'score'
         positive_df.columns = [col]
         positive_df.sort_values(by=col, ascending=False)
-    if return_type == 'negative' or return_type == 'both':
+    if return_type is None or return_type == TopType.negative:
         # from small to big
         negative_tops = {k: v for k, v in sorted(tops.items(), key=lambda item: item[1])}
         negative_tops = dict(itertools.islice(negative_tops.items(), top_index))
