@@ -34,6 +34,32 @@ class ManagerTrading(TradingBase, Mixin):
     relationship_with_manager = Column(String(length=32))
 
 
+
+class LockedShares(TradingBase, Mixin):
+    """
+    限售解禁
+    """
+    __tablename__ = 'locked_shares'
+    """
+    day: 解禁日期
+    code: 股票代码
+    num: 解禁股数
+    rate1: 解禁股数/总股本
+    rate2: 解禁股数/总流通股本
+    """
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    end_date = Column(DateTime)
+
+    # 解禁股数
+    locked_num = Column(Float)
+    # 解禁股数/总股本
+    locked_rate1 = Column(Float)
+    # 解禁股数/总流通股本
+    locked_rate2 = Column(Float)
+
+
+
 class EquityPledge(TradingBase, Mixin):
     """
     股权质押
@@ -217,4 +243,4 @@ class DragonAndTiger(TradingBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='trading', schema_base=TradingBase)
 
-__all__ = ['EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
+__all__ = ['LockedShares','EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']

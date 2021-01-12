@@ -46,7 +46,7 @@ class EmDividendDetailRecorder(TimeSeriesDataRecorder):
         if not end:
             end = to_time_str(now_pd_timestamp())
         start = to_time_str(start)
-        reportdate_list = list({to_time_str(i)[:4] + '-12-31' for i in pd.date_range(start, end)})+list({to_time_str(i)[:4] + '-06-30' for i in pd.date_range(start, end)})
+        reportdate_list = sorted(list({to_time_str(i)[:4] + '-12-31' for i in pd.date_range(start, end)}))
         em_code = to_em_entity_id(entity)
         df = pd.DataFrame()
 
@@ -83,7 +83,7 @@ class EmDividendDetailRecorder(TimeSeriesDataRecorder):
             df.rename(columns=self.data_schema.get_data_map(self), inplace=True)
             df['dividend'] = df['dividend'].apply(lambda x: str(x).split('（')[0])
             df['entity_id'] = entity.id
-            df['timestamp'] = pd.to_datetime(df.report_date)
+            df['timestamp'] = pd.to_datetime(df.dividend_date)
             df['provider'] = 'emquantapi'
             df['code'] = entity.code
 

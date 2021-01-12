@@ -59,7 +59,7 @@ class HolderTradingRecorder(TimeSeriesDataRecorder):
             lambda x: c.css(em_code, "TOTALSHARE", "EndDate=" + x + ",ispandas=1").TOTALSHARE[0])
         # 变动比例（千分位） h = (df['变动_流通股数量(万股)'] / (df['变动后_持股总数(万股)'] / (df['变动后_占总股本比例(%)'] / 100)))
         df['CHANGENUM'] = df['CHANGENUM'] * 10000
-        df['BDHCGZS'] = df['BDHCGZS'] * 10000
+        df['BDHCGZS'] = df['BDHCGZS'] * 10000  # 变动后_持股总数
         df['change_pct'] = abs(df['CHANGENUM'] / df['TOTALSHARE']).astype(float) * 1000
         df['change_pct'] = df['change_pct'].round(5)
         if pd_is_not_null(df):

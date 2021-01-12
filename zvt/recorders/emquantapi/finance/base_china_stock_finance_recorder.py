@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from EmQuantAPI import *
+from zvt.recorders.joinquant.common import JoinquantTimestampsDataRecorder, call_joinquant_api, get_from_path_fields, \
+    get_fc
 
 from zvt.api import get_recent_report_period, to_report_period_type
 from zvt.contract.api import df_to_db
@@ -8,15 +10,19 @@ from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import StockDetail,Stock
 from zvt.recorders.emquantapi.common import mainCallback, to_em_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp
+from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp, to_pd_timestamp
 
 
-class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
+class EmBaseChinaStockFinanceRecorder(JoinquantTimestampsDataRecorder):
     finance_report_type = None
     data_type = 1
 
+    timestamps_fetching_url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetCompanyReportDateList'
+    timestamp_list_path_fields = ['CompanyReportDateList']
+    timestamp_path_fields = ['ReportDate']
+
     entity_provider = 'joinquant'
-    entity_schema = Stock
+    entity_schema = StockDetail
     provider = 'emquantapi'
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
@@ -40,22 +46,43 @@ class EmBaseChinaStockFinanceRecorder(TimeSeriesDataRecorder):
             print("login in fail")
             exit()
 
+    def init_timestamps(self, entity):
+        param = {
+            "color": "w",
+            "fc": get_fc(entity),
+            "DataType": 1
+        }
+
+        if self.finance_report_type == 'INCOME_STATEMENT' or self.finance_report_type == 'CASHFLOW_STATEMENT':
+            param['ReportType'] = 1
+
+        timestamp_json_list = call_joinquant_api(url=self.timestamps_fetching_url,
+                                                 path_fields=self.timestamp_list_path_fields,
+                                                 param=param)
+
+        if self.timestamp_path_fields:
+            timestamps = [get_from_path_fields(data, self.timestamp_path_fields) for data in timestamp_json_list]
+
+        return [to_pd_timestamp(t) for t in timestamps]
+
+    def generate_request_param(self, security_item, start, end, size, timestamps):
+        return [to_time_str(i) for i in (timestamps)]
+
+
     def record(self, entity, start, end, size, timestamps):
+        param = self.generate_request_param(entity, start, end, size, timestamps)
+
         if not end:
             end = to_time_str(now_pd_timestamp())
         start = to_time_str(start)
-        reportdate_list = list({to_time_str(i)[:4] + '-03-31' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-06-30' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-09-30' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-12-31' for i in pd.date_range(start, end)})
         em_code = to_em_entity_id(entity)
         df = pd.DataFrame()
         columns_map = {key:value[0] for key,value in self.get_data_map().items()}
         columns_list =list(columns_map.values())
         if self.finance_report_type == 'AuditOpinions':
             #审计意见数据只有年报有
-            reportdate_list = [i for i in reportdate_list if '12-31' in i]
-        for reportdate in reportdate_list:
+            reportdate_list = [i for i in param if '12-31' in i]
+        for reportdate in param:
             # 获取数据
             # 三大财务报表 使用ctr方法读取表名
             if self.data_type < 4:

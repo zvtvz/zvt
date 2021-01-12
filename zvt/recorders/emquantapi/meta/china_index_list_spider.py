@@ -35,11 +35,15 @@ class ChinaIndexListSpider(Recorder):
 
     def run(self):
         def is_sh(x):
-            if ".SH" in x:
+            if ".SH" in x or ".CSI" in x:
                 return x
 
         def is_sz(x):
             if ".SZ" in x:
+                return x
+
+        def is_csi(x):
+            if ".CSI" in x:
                 return x
 
         self.colums_map = {
@@ -54,19 +58,20 @@ class ChinaIndexListSpider(Recorder):
         self.now_date = to_time_str(now_pd_timestamp())
         # self.index_all=c.sector("905001001",self.now_date)
         # 905002 上证指数
-        data1 = c.sector("905002", self.now_date)
+        # data1 = c.sector("905002", self.now_date)
         # 905006 深证指数
-        data2 = c.sector("905006", self.now_date)
+        # data2 = c.sector("905006", self.now_date)
         # 905009 中证指数
         data3 = c.sector("905009", self.now_date)
         # 905001 市场指数
-        data4 = c.sector("905001", self.now_date)
-        self.index_all = data1.Data + data2.Data + data3.Data + data4.Data
+        # data4 = c.sector("905001", self.now_date)
+        # self.index_all = data1.Data + data2.Data + data3.Data + data4.Data
+        self.index_all = data3.Data
         # 上证、中证
         self.fetch_csi_index(list(filter(is_sh, self.index_all)))
 
         # 深证z
-        self.fetch_szse_index(list(filter(is_sz, self.index_all)))
+        # self.fetch_szse_index(list(filter(is_sz, self.index_all)))
 
         # 国证
         # FIXME:已不可用
@@ -78,7 +83,7 @@ class ChinaIndexListSpider(Recorder):
         """
         df = pd.DataFrame()
         for em_code in set(sh_data):
-            if len(em_code)>9:
+            if len(em_code)>10:
                 continue
             data = c.css(em_code, [i for i in self.colums_map.keys()], "TradeDate=" + self.now_date + ",ispandas=1")
             try:
@@ -106,15 +111,6 @@ class ChinaIndexListSpider(Recorder):
         # self.fetch_csi_index_component(df)
         # self.logger.info('上证、中证指数成分股抓取完成...')
 
-    def fetch_csi_index_component(self, df: pd.DataFrame):
-        """
-        抓取上证、中证指数成分股
-        """
-
-        # df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider, force_update=True)
-        # self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')
-        #
-        # self.sleep()
 
     def fetch_szse_index(self, sz_data) -> None:
         """
@@ -139,6 +135,7 @@ class ChinaIndexListSpider(Recorder):
         # 抓取深证指数成分股
         # self.fetch_szse_index_component(df)
         # self.logger.info('深证指数成分股抓取完成...')
+
 
     def fetch_szse_index_component(self, df: pd.DataFrame):
         """
