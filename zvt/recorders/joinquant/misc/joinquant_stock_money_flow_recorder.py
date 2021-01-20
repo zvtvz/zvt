@@ -21,12 +21,12 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
     provider = 'joinquant'
     data_schema = StockMoneyFlow
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False, batch_size=10,
                  force_update=True, sleeping_time=0, default_size=2000, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False, one_day_trading_minutes=24 * 60, compute_index_money_flow=False) -> None:
         self.compute_index_money_flow = compute_index_money_flow
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
         get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)

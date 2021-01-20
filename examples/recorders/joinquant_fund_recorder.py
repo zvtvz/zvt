@@ -43,7 +43,7 @@ def record_valuation():
         email_action = EmailInformer()
 
         try:
-            StockValuation.record_data(provider='joinquant', sleeping_time=0)
+            StockValuation.record_data(provider='joinquant', sleeping_time=0, day_data=True)
 
             email_action.send_message("5533061@qq.com", 'joinquant record valuation finished', '')
             break

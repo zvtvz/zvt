@@ -33,7 +33,7 @@ def get_top_performance_entities(entity_type='stock', start_timestamp=None, end_
                             column='close', pct=pct, method=WindowMethod.change, return_type=return_type)
 
 
-def get_top_fund_holding_stocks(timestamp=None, pct=0.3, method=None):
+def get_top_fund_holding_stocks(timestamp=None, pct=0.3, by=None):
     if not timestamp:
         timestamp = now_pd_timestamp()
     # 季报一般在report_date后1个月内公布，年报2个月内，年报4个月内
@@ -45,16 +45,16 @@ def get_top_fund_holding_stocks(timestamp=None, pct=0.3, method=None):
     fund_cap_df = fund_cap_df.groupby('stock_id')['market_cap'].sum().sort_values(ascending=False)
 
     # 直接根据持有市值返回
-    if not method:
+    if not by:
         s = fund_cap_df.iloc[:int(len(fund_cap_df) * pct)]
 
         return s.to_frame()
 
     # 按流通盘比例
-    if method == 'trading':
+    if by == 'trading':
         columns = ['entity_id', 'circulating_market_cap']
     # 按市值比例
-    elif method == 'all':
+    elif by == 'all':
         columns = ['entity_id', 'market_cap']
 
     entity_ids = fund_cap_df.index.tolist()
@@ -63,9 +63,9 @@ def get_top_fund_holding_stocks(timestamp=None, pct=0.3, method=None):
                                        filters=[StockValuation.timestamp >= start_timestamp,
                                                 StockValuation.timestamp <= timestamp],
                                        columns=columns)
-    if method == 'trading':
+    if by == 'trading':
         cap_df = cap_df.rename(columns={'circulating_market_cap': 'cap'})
-    elif method == 'all':
+    elif by == 'all':
         cap_df = cap_df.rename(columns={'market_cap': 'cap'})
 
     cap_df = cap_df.groupby('entity_id').mean()

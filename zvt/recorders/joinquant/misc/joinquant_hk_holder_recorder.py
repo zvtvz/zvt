@@ -23,7 +23,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
     provider = 'joinquant'
     data_schema = HkHolder
 
-    def __init__(self,
+    def __init__(self, day_data=False,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  start_timestamp=None, end_timestamp=None) -> None:
         # 聚宽编码
@@ -34,7 +34,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
         # 310004	港股通（深）
         codes = ['310001', '310002']
 
-        super().__init__('index', ['cn'], None, codes, 10, force_update, sleeping_time,
+        super().__init__('index', ['cn'], None, codes, day_data, 10, force_update, sleeping_time,
                          default_size, real_time, 'ignore', start_timestamp, end_timestamp, 0, 0)
 
     def init_timestamps(self, entity):

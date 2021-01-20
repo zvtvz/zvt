@@ -29,6 +29,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                  exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
+                 day_data=False,
                  batch_size=10,
                  force_update=True,
                  sleeping_time=0,
@@ -48,7 +49,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type='stock', level=level, adjust_type=adjust_type)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__('stock', exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__('stock', exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
         self.adjust_type = adjust_type
@@ -149,7 +150,7 @@ if __name__ == '__main__':
 
     init_log('jq_china_stock_{}_kdata.log'.format(args.level))
     JqChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes, real_time=False,
-                              adjust_type=AdjustType.hfq).run()
+                              adjust_type=AdjustType.hfq,day_data=True).run()
 
     print(get_kdata(entity_id='stock_sz_000001', limit=10, order=Stock1dHfqKdata.timestamp.desc(),
                     adjust_type=AdjustType.hfq))

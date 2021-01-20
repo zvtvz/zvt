@@ -10,8 +10,9 @@ from sqlalchemy.orm import Session
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
 from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
+from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
-    evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp
+    evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp, now_time_str
 from zvt.utils.utils import fill_domain_from_dict
 
 
@@ -82,25 +83,19 @@ class RecorderForEntities(Recorder):
                  exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
+                 day_data=False,
                  batch_size=10,
                  force_update=False,
                  sleeping_time=10) -> None:
         """
-
         :param entity_type:
-        :type entity_type:
         :param exchanges:
-        :type exchanges:
         :param entity_ids: set entity_ids or (entity_type,exchanges,codes)
-        :type entity_ids:
         :param codes:
-        :type codes:
+        :param day_data: one record per day,set to True if you want skip recording it when data of today exist
         :param batch_size:
-        :type batch_size:
         :param force_update:
-        :type force_update:
         :param sleeping_time:
-        :type sleeping_time:
         """
         super().__init__(batch_size=batch_size, force_update=force_update, sleeping_time=sleeping_time)
 
@@ -111,6 +106,7 @@ class RecorderForEntities(Recorder):
         self.entity_type = entity_type
         self.exchanges = exchanges
         self.codes = codes
+        self.day_data = day_data
 
         # set entity_ids or (entity_type,exchanges,codes)
         self.entity_ids = entity_ids
@@ -129,6 +125,15 @@ class RecorderForEntities(Recorder):
         else:
             self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
 
+        filters = None
+        if self.day_data:
+            df = self.data_schema.query_data(start_timestamp=now_time_str(), columns=['entity_id', 'timestamp'],
+                                             provider=self.provider)
+            if pd_is_not_null(df):
+                entity_ids = df['entity_id'].tolist()
+                self.logger.info(f'ignore entity_ids:{entity_ids}')
+                filters = [self.entity_schema.entity_id.notin_(entity_ids)]
+
         # init the entity list
         self.entities = get_entities(session=self.entity_session,
                                      entity_schema=self.entity_schema,
@@ -137,7 +142,8 @@ class RecorderForEntities(Recorder):
                                      entity_ids=self.entity_ids,
                                      codes=self.codes,
                                      return_type='domain',
-                                     provider=self.entity_provider)
+                                     provider=self.entity_provider,
+                                     filters=filters)
 
 
 class TimeSeriesDataRecorder(RecorderForEntities):
@@ -146,6 +152,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
                  exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
+                 day_data=False,
                  batch_size=10,
                  force_update=False,
                  sleeping_time=5,
@@ -168,7 +175,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
         self.start_timestamp = to_pd_timestamp(start_timestamp)
         self.end_timestamp = to_pd_timestamp(end_timestamp)
 
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time)
+        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time)
 
     def get_latest_saved_record(self, entity):
         order = eval('self.data_schema.{}.desc()'.format(self.get_evaluated_time_field()))
@@ -487,6 +494,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
                  exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
+                 day_data=False,
                  batch_size=10,
                  force_update=True,
                  sleeping_time=10,
@@ -501,7 +509,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
                  level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False,
                  one_day_trading_minutes=24 * 60) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
                          close_minute)
 
@@ -567,6 +575,7 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
                  exchanges=['sh', 'sz'],
                  entity_ids=None,
                  codes=None,
+                 day_data=False,
                  batch_size=10,
                  force_update=False,
                  sleeping_time=5,
@@ -577,7 +586,7 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
                  end_timestamp=None,
                  close_hour=0,
                  close_minute=0) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
                          close_hour=close_hour, close_minute=close_minute)
         self.security_timestamps_map = {}
