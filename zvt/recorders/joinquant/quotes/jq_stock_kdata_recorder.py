@@ -9,7 +9,7 @@ from zvt.api.quote import generate_kdata_id, get_kdata_schema, get_kdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata
+from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata, Stock1wkHfqKdata
 from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
@@ -139,20 +139,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--level', help='trading level', default='1d', choices=[item.value for item in IntervalLevel])
-    parser.add_argument('--codes', help='codes', default=['000001'], nargs='+')
+    Stock1wkHfqKdata.record_data(codes=['300999'])
 
-    args = parser.parse_args()
-
-    level = IntervalLevel(args.level)
-    codes = args.codes
-
-    init_log('jq_china_stock_{}_kdata.log'.format(args.level))
-    JqChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes, real_time=False,
-                              adjust_type=AdjustType.hfq,day_data=True).run()
-
-    print(get_kdata(entity_id='stock_sz_000001', limit=10, order=Stock1dHfqKdata.timestamp.desc(),
-                    adjust_type=AdjustType.hfq))
 # the __all__ is generated
 __all__ = ['JqChinaStockKdataRecorder']

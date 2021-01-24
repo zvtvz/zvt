@@ -520,7 +520,8 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def get_latest_saved_record(self, entity):
         order = eval('self.data_schema.{}.desc()'.format(self.get_evaluated_time_field()))
 
-        # 对于k线这种数据，最后一个记录有可能是没完成的，所以取两个，总是删掉最后一个数据，更新之
+        # 对于k线这种数据，最后一个记录有可能是没完成的，所以取两个
+        # 同一周期内只保留最新的一个数据
         records = get_data(entity_id=entity.id,
                            provider=self.provider,
                            data_schema=self.data_schema,
@@ -533,9 +534,8 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
             # delete unfinished kdata
             if len(records) == 2:
                 if is_in_same_interval(t1=records[0].timestamp, t2=records[1].timestamp, level=self.level):
-                    self.session.delete(records[0])
+                    self.session.delete(records[1])
                     self.session.flush()
-                    return records[1]
             return records[0]
         return None
 

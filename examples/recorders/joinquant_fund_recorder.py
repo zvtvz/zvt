@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-# 周4抓取
-@sched.scheduled_job('cron', hour=19, minute=00, day_of_week=3)
+# 周6抓取
+@sched.scheduled_job('cron', hour=10, minute=00, day_of_week=5)
 def record_fund():
     while True:
         email_action = EmailInformer()
 
         try:
             # 基金和基金持仓数据
-            Fund.record_data(provider='joinquant', sleeping_time=1)
-            FundStock.record_data(provider='joinquant', sleeping_time=1)
+            # Fund.record_data(provider='joinquant', sleeping_time=1)
+            # FundStock.record_data(provider='joinquant', sleeping_time=1)
             # 股票周线后复权数据
             Stock1wkHfqKdata.record_data(provider='joinquant', sleeping_time=0)
 
@@ -36,8 +36,8 @@ def record_fund():
             time.sleep(60)
 
 
-# 周2抓取
-@sched.scheduled_job('cron', hour=19, minute=00, day_of_week=1)
+# 周6抓取
+@sched.scheduled_job('cron', hour=13, minute=00, day_of_week=6)
 def record_valuation():
     while True:
         email_action = EmailInformer()
@@ -58,9 +58,9 @@ def record_valuation():
 if __name__ == '__main__':
     init_log('joinquant_fund_runner.log')
 
-    record_valuation()
-
     record_fund()
+
+    # record_valuation()
 
     sched.start()
 
