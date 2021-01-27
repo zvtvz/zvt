@@ -234,8 +234,11 @@ class EntityMixin(Mixin):
         """
 
         for current_date in cls.get_trading_dates(start_date=start_date, end_date=end_date):
-            if level >= IntervalLevel.LEVEL_1DAY:
+            if level == IntervalLevel.LEVEL_1DAY:
                 yield current_date
+            elif level == IntervalLevel.LEVEL_1WEEK:
+                if current_date.weekday() == 4:
+                    yield current_date
             else:
                 start_end_list = cls.get_trading_intervals()
 

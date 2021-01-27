@@ -16,10 +16,7 @@ class TraderInfo(TraderBase, Mixin):
     # 机器人名字
     trader_name = Column(String(length=128))
 
-    entity_ids = Column(String(length=1024))
     entity_type = Column(String(length=128))
-    exchanges = Column(String(length=128))
-    codes = Column(String(length=128))
     start_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
     provider = Column(String(length=32))

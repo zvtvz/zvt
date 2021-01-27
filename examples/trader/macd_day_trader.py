@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 
@@ -7,16 +7,18 @@ from zvt.contract import IntervalLevel
 from zvt.factors import TargetSelector, GoldCrossFactor
 from zvt.trader import TradingSignal
 from zvt.trader.trader import StockTrader
-
-
 # 依赖数据
 # data_schema: Stock1dHfqKdata
 # provider: joinquant
+from zvt.utils import next_date
+
+
 class MacdDayTrader(StockTrader):
 
     def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
                        adjust_type=None):
         # 日线策略
+        start_timestamp = next_date(start_timestamp, -50)
         day_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                       provider='joinquant', level=IntervalLevel.LEVEL_1DAY, long_threshold=0.7)
@@ -68,10 +70,10 @@ class MacdDayTrader(StockTrader):
         # 空头仓位管理
         return super().short_position_control()
 
-    def on_targets_selected(self, timestamp, level, selector: TargetSelector, long_targets: List[str],
-                            short_targets: List[str]) -> List[str]:
+    def on_targets_filtered(self, timestamp, level, selector: TargetSelector, long_targets: List[str],
+                            short_targets: List[str]) -> Tuple[List[str], List[str]]:
         # 过滤某级别选出的 标的
-        return super().on_targets_selected(timestamp, level, selector, long_targets, short_targets)
+        return super().on_targets_filtered(timestamp, level, selector, long_targets, short_targets)
 
 
 if __name__ == '__main__':
