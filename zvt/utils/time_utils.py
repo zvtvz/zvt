@@ -24,7 +24,7 @@ TIME_FORMAT_MINUTE2 = "YYYY-MM-DD HH:mm:ss"
 
 
 # ms(int) or second(float) or str
-def to_pd_timestamp(the_time):
+def to_pd_timestamp(the_time) -> pd.Timestamp:
     if the_time is None:
         return None
     if type(the_time) == int:
@@ -167,7 +167,29 @@ def is_in_same_interval(t1: pd.Timestamp, t2: pd.Timestamp, level: IntervalLevel
     return level.floor_timestamp(t1) == level.floor_timestamp(t2)
 
 
+def split_time_interval(start, end, method=None, interval=30, freq='D'):
+    start = to_pd_timestamp(start)
+    end = to_pd_timestamp(end)
+    if not method:
+        while start < end:
+            interval_end = min(next_date(start, interval), end)
+            yield pd.date_range(start=start, end=interval_end, freq=freq)
+            start = next_date(interval_end, 1)
+
+    if method == 'month':
+        while start <= end:
+            import calendar
+            _, day = calendar.monthrange(start.year, start.month)
+
+            interval_end = min(to_pd_timestamp(f'{start.year}-{start.month}-{day}'), end)
+            yield pd.date_range(start=start, end=interval_end, freq=freq)
+            start = next_date(interval_end, 1)
+
+
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))
 # the __all__ is generated
-__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'to_time_str', 'now_time_str', 'next_date', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval']
+__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'to_time_str', 'now_time_str',
+           'next_date', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters',
+           'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp',
+           'is_in_same_interval']

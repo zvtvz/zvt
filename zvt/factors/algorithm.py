@@ -128,10 +128,11 @@ def consecutive_count(input_df, col, pattern=[-5, 1]):
                     count = -1
                     negative = count
 
-            if (count >= pattern[1]) and (negative <= pattern[0]):
-                input_df.loc[index, 'score'] = True
-            else:
-                input_df.loc[index, 'score'] = True
+            if pattern:
+                if (count >= pattern[1]) and (negative <= pattern[0]):
+                    input_df.loc[index, 'score'] = True
+                else:
+                    input_df.loc[index, 'score'] = False
 
             # 设置目前状态
             input_df.loc[index, 'count'] = count

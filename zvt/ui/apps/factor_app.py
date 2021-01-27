@@ -51,8 +51,7 @@ def load_traders():
     for trader in traders:
         account_readers.append(AccountStatsReader(trader_names=[trader.trader_name], level=trader.level))
         order_readers.append(
-            OrderReader(trader_names=[trader.trader_name], level=trader.level, start_timestamp=trader.start_timestamp,
-                        end_timestamp=trader.end_timestamp))
+            OrderReader(trader_names=[trader.trader_name], level=trader.level, start_timestamp=trader.start_timestamp))
 
     trader_names = [item.trader_name for item in traders]
 

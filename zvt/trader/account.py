@@ -6,7 +6,7 @@ from typing import List
 
 from zvt.api import get_kdata
 from zvt.api.quote import decode_entity_id, get_kdata_schema
-from zvt.api.trader_info_api import get_trader_info
+from zvt.api.trader_info_api import get_trader_info, clear_trader
 from zvt.contract import IntervalLevel, EntityMixin, AdjustType
 from zvt.contract.api import get_db_session
 from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
@@ -51,6 +51,9 @@ class AccountService(TradingListener):
 
         :param entity_id:
         """
+        pass
+
+    def get_current_account(self):
         pass
 
     def order(self, entity_id, current_price, current_timestamp, order_amount=0, order_pct=1.0, order_price=0,
@@ -106,7 +109,10 @@ class SimAccountService(AccountService):
                  sell_cost=0.001,
                  slippage=0.001,
                  rich_mode=True,
-                 adjust_type: AdjustType = None):
+                 adjust_type: AdjustType = None,
+                 keep_history=False,
+                 real_time=False,
+                 kdata_use_begin_time=False):
         self.entity_schema = entity_schema
         self.base_capital = base_capital
         self.buy_cost = buy_cost
@@ -120,24 +126,55 @@ class SimAccountService(AccountService):
         self.provider = provider
         self.level = level
         self.start_timestamp = timestamp
+        self.keep_history = keep_history
+        self.real_time = real_time
+        self.kdata_use_begin_time = kdata_use_begin_time
 
-        self.account: AccountStats = self.init_account()
+        self.account = None
+        self.account = self.init_account()
+
+        account_info = f'init_account,holding size:{len(self.account.positions)} profit:{self.account.profit} input_money:{self.account.input_money} ' \
+                       f'cash:{self.account.cash} value:{self.account.value} all_value:{self.account.all_value}'
+        self.logger.info(account_info)
 
     def input_money(self, money=1000000):
         self.account.input_money += money
         self.account.cash += money
 
-    def init_account(self) -> AccountStats:
+    def clear_account(self):
         trader_info = get_trader_info(session=self.session, trader_name=self.trader_name, return_type='domain',
                                       limit=1)
 
         if trader_info:
             self.logger.warning("trader:{} has run before,old result would be deleted".format(self.trader_name))
-            self.session.query(TraderInfo).filter(TraderInfo.trader_name == self.trader_name).delete()
-            self.session.query(AccountStats).filter(AccountStats.trader_name == self.trader_name).delete()
-            self.session.query(Position).filter(Position.trader_name == self.trader_name).delete()
-            self.session.query(Order).filter(Order.trader_name == self.trader_name).delete()
-            self.session.commit()
+            clear_trader(session=self.session, trader_name=self.trader_name)
+
+    def init_account(self) -> AccountStats:
+        # 清除历史数据
+        if not self.keep_history:
+            self.clear_account()
+
+        # 读取之前保存的账户
+        if self.keep_history:
+            self.account = self.load_account()
+            if self.account:
+                return self.account
+
+        # init trader info
+        entity_type = self.entity_schema.__name__.lower()
+        sim_account = TraderInfo(id=self.trader_name,
+                                 entity_id=f'trader_zvt_{self.trader_name}',
+                                 timestamp=self.start_timestamp,
+                                 trader_name=self.trader_name,
+                                 entity_type=entity_type,
+                                 start_timestamp=self.start_timestamp,
+                                 provider=self.provider,
+                                 level=self.level.value,
+                                 real_time=self.real_time,
+                                 kdata_use_begin_time=self.kdata_use_begin_time,
+                                 kdata_adjust_type=self.adjust_type.value)
+        self.session.add(sim_account)
+        self.session.commit()
 
         return AccountStats(entity_id=f'trader_zvt_{self.trader_name}',
                             timestamp=self.start_timestamp,
@@ -146,8 +183,7 @@ class SimAccountService(AccountService):
                             input_money=self.base_capital,
                             all_value=self.base_capital,
                             value=0,
-                            closing=False
-                            )
+                            closing=False)
 
     def load_account(self) -> AccountStats:
         records = AccountStats.query_data(filters=[AccountStats.trader_name == self.trader_name],
@@ -307,6 +343,9 @@ class SimAccountService(AccountService):
             if position.entity_id == entity_id:
                 return position
         return None
+
+    def get_current_account(self):
+        return self.account
 
     def update_position(self, current_position, order_amount, current_price, order_type, timestamp):
         """
