@@ -124,6 +124,7 @@ class Draw(object):
                         type="date"
                     ),
                     legend_orientation="h",
+                    hoverlabel={"namelength": -1},
                     **layout_params)
 
 
