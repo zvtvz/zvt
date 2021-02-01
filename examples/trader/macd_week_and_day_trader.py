@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import List
+from typing import List, Tuple
 
 from zvt.contract import IntervalLevel
 from zvt.factors import TargetSelector, GoldCrossFactor
@@ -37,7 +37,7 @@ class MultipleLevelTrader(StockTrader):
         self.selectors.append(day_selector)
         self.selectors.append(week_selector)
 
-    def on_targets_selected_from_levels(self, timestamp) -> List[str]:
+    def on_targets_selected_from_levels(self, timestamp) -> Tuple[List[str], List[str]]:
         # 过滤多级别做 多/空 的标的
         return super().on_targets_selected_from_levels(timestamp)
 

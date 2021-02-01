@@ -4,12 +4,12 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from zvt.factors.algorithm import MacdTransformer, consecutive_count
+from zvt.factors.algorithm import MacdTransformer
 from zvt.factors.technical_factor import TechnicalFactor
 
 
 class MacdFactor(TechnicalFactor):
-    transformer = MacdTransformer()
+    transformer = MacdTransformer(count_live_dead=True)
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
         return None
@@ -26,9 +26,7 @@ class MacdFactor(TechnicalFactor):
 class BullFactor(MacdFactor):
     def compute_result(self):
         super().compute_result()
-        # 黄白线在0轴上
-        s = (self.factor_df['diff'] > 0) & (self.factor_df['dea'] > 0)
-        self.result_df = s.to_frame(name='score')
+        self.result_df = self.factor_df['bull'].to_frame(name='score')
 
 
 class KeepBullFactor(BullFactor):
@@ -49,26 +47,25 @@ class LiveOrDeadFactor(MacdFactor):
 
     def compute_result(self):
         super().compute_result()
-        # 白线在黄线之上
-        s = self.factor_df['diff'] > self.factor_df['dea']
-        # live=True 白线>黄线
-        # live=False 白线<黄线
-        self.factor_df['live'] = s.to_frame()
-        consecutive_count(self.factor_df, 'live', pattern=self.pattern)
-        self.result_df = self.factor_df[['score']]
+        self.factor_df['pre'] = self.factor_df['live_count'].shift()
+        s = (self.factor_df['pre'] <= self.pattern[0]) & (self.factor_df['live_count'] >= self.pattern[1])
+        self.result_df = s.to_frame(name='score')
 
 
 class GoldCrossFactor(MacdFactor):
     def compute_result(self):
         super().compute_result()
-        # 白线在黄线之上
-        s = self.factor_df['diff'] > self.factor_df['dea']
-        # live=True 白线>黄线
-        # live=False 白线<黄线
-        self.factor_df['live'] = s.to_frame()
         s = self.factor_df['live'] == 1
         self.result_df = s.to_frame(name='score')
 
 
 # the __all__ is generated
 __all__ = ['MacdFactor', 'BullFactor', 'KeepBullFactor', 'LiveOrDeadFactor', 'GoldCrossFactor']
+
+if __name__ == '__main__':
+    from zvt.contract import IntervalLevel
+
+    f1 = LiveOrDeadFactor(level=IntervalLevel.LEVEL_1WEEK, start_timestamp='2018-01-01')
+
+    df = f1.factor_df
+    print(df[(df['score'] > 0) & (df['timestamp'] == '2021-01-04')])

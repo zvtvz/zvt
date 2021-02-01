@@ -139,7 +139,7 @@ class Trader(object):
         self.level_map_long_targets[level] = long_targets
 
         self.logger.debug(
-            f'level:{level},old short targets:{short_targets.level_map_short_targets.get(level)},new short targets:{short_targets}')
+            f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{short_targets}')
         self.level_map_short_targets[level] = short_targets
 
     def get_long_targets_by_level(self, level: IntervalLevel) -> List[str]:
