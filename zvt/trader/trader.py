@@ -167,18 +167,18 @@ class Trader(object):
             # long must in all
             if long_targets:
                 long_targets = set(long_targets)
-                if not long_selected:
+                if long_selected is None:
                     long_selected = long_targets
                 else:
                     long_selected = long_selected & long_targets
             else:
-                long_selected = None
+                long_selected = set()
 
             short_targets = self.level_map_short_targets.get(level)
             # short any
             if short_targets:
                 short_targets = set(short_targets)
-                if not short_selected:
+                if short_selected is None:
                     short_selected = short_targets
                 else:
                     short_selected = short_selected | short_targets
@@ -303,8 +303,12 @@ class Trader(object):
         :param short_targets: the short targets from the selector
         :return: filtered long targets, filtered short targets
         """
+        self.logger.info(f'on_targets_filtered {level} long:{long_targets}')
+
         if len(long_targets) > 10:
             long_targets = long_targets[0:10]
+        self.logger.info(f'on_targets_filtered {level} filtered long:{long_targets}')
+
         return long_targets, short_targets
 
     def in_trading_date(self, timestamp):
@@ -413,10 +417,12 @@ class Trader(object):
                                 long_targets = selector.get_open_long_targets(timestamp=timestamp)
                                 short_targets = selector.get_open_short_targets(timestamp=timestamp)
 
-                                long_targets, short_targets = self.on_targets_filtered(timestamp=timestamp, level=level,
-                                                                                       selector=selector,
-                                                                                       long_targets=long_targets,
-                                                                                       short_targets=short_targets)
+                                if long_targets or short_targets:
+                                    long_targets, short_targets = self.on_targets_filtered(timestamp=timestamp,
+                                                                                           level=level,
+                                                                                           selector=selector,
+                                                                                           long_targets=long_targets,
+                                                                                           short_targets=short_targets)
 
                                 if long_targets:
                                     all_long_targets += long_targets
@@ -448,8 +454,9 @@ class Trader(object):
                             self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
                             self.logger.debug('timestamp:{},short_selected:{}'.format(due_timestamp, short_selected))
 
-                            self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp,
-                                                   long_selected=long_selected, short_selected=short_selected)
+                            if long_selected or short_selected:
+                                self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp,
+                                                       long_selected=long_selected, short_selected=short_selected)
 
             if self.trading_signals:
                 self.on_trading_signals(self.trading_signals)

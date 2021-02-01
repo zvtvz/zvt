@@ -3,7 +3,7 @@ SQLAlchemy == 1.2.14
 pandas == 1.1.4
 arrow == 0.11.0
 tzlocal == 1.5.1
-xlrd == 1.1.0
+xlrd == 1.2.0
 demjson == 2.2.4
 marshmallow-sqlalchemy == 0.23.1
 marshmallow == 3.2.2

@@ -21,8 +21,8 @@ def record_fund():
 
         try:
             # 基金和基金持仓数据
-            # Fund.record_data(provider='joinquant', sleeping_time=1)
-            # FundStock.record_data(provider='joinquant', sleeping_time=1)
+            Fund.record_data(provider='joinquant', sleeping_time=1)
+            FundStock.record_data(provider='joinquant', sleeping_time=1)
             # 股票周线后复权数据
             Stock1wkHfqKdata.record_data(provider='joinquant', sleeping_time=0)
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     record_fund()
 
-    # record_valuation()
+    record_valuation()
 
     sched.start()
 
