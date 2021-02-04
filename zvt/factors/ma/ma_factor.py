@@ -107,10 +107,11 @@ class VolumeUpMaFactor(TechnicalFactor):
             filter_se = filter_se & (self.factor_df['close'] > self.factor_df[col])
 
         # 放量
-        vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
-        filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
-        for col in vol_cols[1:]:
-            filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[col])
+        if self.self.vol_windows:
+            vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
+            filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
+            for col in vol_cols[1:]:
+                filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[col])
 
         # 成交额大于1亿️
         filter_se = filter_se & (self.factor_df['turnover'] > 100000000)
