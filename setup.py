@@ -48,7 +48,7 @@ setup(
         'Topic :: Office/Business :: Financial :: Investment',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8'
     ],
     keywords='quant stock finance fintech big-data zvt technical-analysis trading-platform pandas fundamental-analysis',
