@@ -32,7 +32,7 @@ except:
 
 setup(
     name='zvt',
-    version='0.9.0',
+    version='0.9.1',
     description='unified,modular quant framework for human beings ',
     long_description=long_description,
     url='https://github.com/zvtvz/zvt',
@@ -49,6 +49,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.8'
     ],
     keywords='quant stock finance fintech big-data zvt technical-analysis trading-platform pandas fundamental-analysis',
     packages=find_packages(include=['zvt.*', 'zvt']),

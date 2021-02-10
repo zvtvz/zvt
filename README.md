@@ -21,41 +21,47 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 ## 详细文档
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
->详细文档有部分已经落后代码，其实认真看完README并结合代码理解下面的几句话，基本上不需要什么文档了
+>详细文档有部分已落后代码不少，其实认真看完README并结合代码理解下面的几句话，基本上不需要什么文档了
 
 * ### entity抽象了 *交易标的* 不变的东西
 * ### 数据就是entity和entity发生的event，数据即api,数据即策略
 * ### 数据是可插入的，发信号到哪是可插入的
 
-整个架构如图:
+### 架构图:
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/arch.png'/></p>
 
-扩展应用例子:
+### 扩展应用例子
 
 [数字货币插件](https://github.com/zvtvz/zvt-ccxt)
 
 [定时选股推送](https://github.com/zvtvz/zvt/issues/48)
 
-策略例子:
+> 目前主干代码提供的标的类型为A股，其他标的可以通过plugin的方式来实现
 
-[多级别例子](https://github.com/zvtvz/zvt/blob/master/examples/trader/multiple_level_trader.py)
+### 策略例子
 
-[定制策略流程，仓位管理](https://github.com/zvtvz/zvt/blob/master/examples/trader/ma_vol_trader.py)
+[日线策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/macd_day_trader.py.py)
 
-市场全景图，后面可能会基于此扩展相关的数据:
-<p align="center"><img src='https://github.com/zvtvz/automoney/blob/master/imgs/market.png'/></p>
+[多级别策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/macd_week_and_day_trader.py)
 
-zvt旨在帮你更好的理解市场，理清交易思路，验证想法，实盘交易接口可以通过插件的方式来连接交易信号，并不是zvt核心的东西。
+[分段持续策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/keep_run_trader.py.py)
 
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/show-trader.gif'/></p>
+> 可通过自定义策略中的回调函数来控制策略运行的逻辑
 
-策略展示目前只做最重要的事:
-* 策略的净值曲线
-* 策略交易标的的买卖信号
+### 运行界面
 
->这里是[入口脚本](https://github.com/zvtvz/zvt/blob/master/zvt/main.py)，可直接源码运行;或者pip安装后直接在命令行下输入zvt
+这里是[入口脚本](https://github.com/zvtvz/zvt/blob/master/zvt/main.py)，可直接源码运行;或者pip安装后直接在命令行下输入zvt，然后打开[http://127.0.0.1:8050/](http://127.0.0.1:8050/)即可
 
->然后打开[http://127.0.0.1:8050/](http://127.0.0.1:8050/)即可
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-factor.png'/></p>
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-trader.png'/></p>
+
+> 系统的核心概念是可视化的，界面的名称与其一一对应，因此也是统一可扩展的。
+
+> 你可以在你喜欢的ide里编写和运行策略，然后运行界面查看其相关的标的，因子，信号和净值展示。
+
+### 交易接口
+
+> zvt旨在帮你更好的理解市场，理清交易思路，验证想法，实盘交易接口可以通过插件的方式来连接交易信号，并不是zvt核心的东西。
 
 ##  1. 🔖5分钟用起来
 
@@ -172,9 +178,10 @@ In [1]: from zvt import *
 * wechat_app_secrect
 
 ### 2.2 下载历史数据（可选）
-链接: https://pan.baidu.com/s/16BZOkEY2PBTkixJgzls66w 提取码: gfxc
+链接: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ 提取码: yb6c
 
-里面包含joinquant的日/周线前/后复权数据，eastmoney的财务，分红，大股东，高管持仓等数据。
+
+里面包含joinquant的日/周线后复权数据，个股估值，基金及其持仓数据，eastmoney的财务等数据。
 
 把下载的数据解压到正式环境的data_path（所有db文件放到该目录下，没有层级结构）
 
