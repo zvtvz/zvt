@@ -50,7 +50,9 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 
 ### 运行界面
 
-这里是[入口脚本](https://github.com/zvtvz/zvt/blob/master/zvt/main.py)，可直接源码运行;或者pip安装后直接在命令行下输入zvt，然后打开[http://127.0.0.1:8050/](http://127.0.0.1:8050/)即可
+这里是[入口脚本](https://github.com/zvtvz/zvt/blob/master/zvt/main.py)，可直接源码运行;或者pip安装后直接在命令行下输入zvt，然后打开[http://127.0.0.1:8050/](http://127.0.0.1:8050/)即可。
+
+> 这里展示的例子依赖后面的下载历史数据，数据更新请参考后面文档
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-factor.png'/></p>
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-trader.png'/></p>
@@ -178,8 +180,9 @@ In [1]: from zvt import *
 * wechat_app_secrect
 
 ### 2.2 下载历史数据（可选）
-链接: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ 提取码: yb6c
+百度网盘: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ 提取码: yb6c
 
+google drive: https://drive.google.com/drive/folders/17Bxijq-PHJYrLDpyvFAm5P6QyhKL-ahn?usp=sharing
 
 里面包含joinquant的日/周线后复权数据，个股估值，基金及其持仓数据，eastmoney的财务等数据。
 
@@ -200,7 +203,7 @@ https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4
 
 > 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
 
-> 添加其他数据提供商，请参考[数据扩展教程](https://zvtvz.github.io/zvt/#/data_extending)
+> 添加其他数据提供商, 请参考[数据扩展教程](https://zvtvz.github.io/zvt/#/data_extending)
 
 ## 3. 数据
 下面介绍如何用一种**统一**的方式来回答三个问题：**有什么数据？如何更新数据？如何查询数据？**
@@ -244,6 +247,8 @@ In [5]: CashFlowStatement.record_data(codes=['000338'])
 ```
 
 其他数据依样画葫芦即可。
+
+> 标准流程就是: Schema.record_data(provoder='your provoder',codes='the codes')
 
 注意可选参数provider，其代表数据提供商，一个schema可以有多个provider,这是系统稳定的基石。
 
