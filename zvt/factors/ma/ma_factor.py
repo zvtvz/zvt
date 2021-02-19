@@ -107,7 +107,7 @@ class VolumeUpMaFactor(TechnicalFactor):
             filter_se = filter_se & (self.factor_df['close'] > self.factor_df[col])
 
         # 放量
-        if self.self.vol_windows:
+        if self.vol_windows:
             vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
             filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
             for col in vol_cols[1:]:
