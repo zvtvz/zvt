@@ -48,6 +48,10 @@ def now_pd_timestamp() -> pd.Timestamp:
     return pd.Timestamp.now()
 
 
+def today() -> pd.Timestamp:
+    return pd.Timestamp.today()
+
+
 def to_time_str(the_time, fmt=TIME_FORMAT_DAY):
     try:
         return arrow.get(to_pd_timestamp(the_time)).format(fmt)

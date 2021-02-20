@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=19, minute=10, day_of_week='mon-fri')
+@sched.scheduled_job('cron', hour=19, minute=30, day_of_week='mon-fri')
 def report_vol_up_120():
     while True:
         error_count = 0
@@ -69,12 +69,11 @@ def report_vol_up_120():
                 # add them to eastmoney
                 try:
                     try:
-                        eastmoneypy.del_group('high')
+                        eastmoneypy.create_group('tech')
                     except:
                         pass
-                    eastmoneypy.create_group('high')
                     for stock in stocks:
-                        eastmoneypy.add_to_group(stock.code, group_name='high')
+                        eastmoneypy.add_to_group(stock.code, group_name='tech')
                 except Exception as e:
                     email_action.send_message("5533061@qq.com", f'report_vol_up_120 error',
                                               'report_vol_up_120 error:{}'.format(e))

@@ -519,9 +519,10 @@ def get_entities(
                     filters=filters, session=session, order=order, limit=limit, index=index)
 
 
-def get_entity_ids(entity_type='stock', entity_schema: EntityMixin = None, exchanges=None, codes=None, provider=None):
+def get_entity_ids(entity_type='stock', entity_schema: EntityMixin = None, exchanges=None, codes=None, provider=None,
+                   filters=None):
     df = get_entities(entity_type=entity_type, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
-                      provider=provider)
+                      provider=provider, filters=filters)
     if pd_is_not_null(df):
         return df['entity_id'].to_list()
     return None
