@@ -6,7 +6,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 income_statement_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
-    "report_date": "REPORTDATE",
+
     # 营业总收入
     "total_op_income": "TOTALOPERATEREVE",
     # 营业收入

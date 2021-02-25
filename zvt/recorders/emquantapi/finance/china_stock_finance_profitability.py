@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 financial_profitability_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'gross_income_ratio': 'GPMARGIN',  # 销售毛利率
     'net_profit_ratio': 'NPMARGIN',  # 销售净利率
     'roe_diluted': 'ROEDILUTED',  # 净资产收益率ROE(摊薄)

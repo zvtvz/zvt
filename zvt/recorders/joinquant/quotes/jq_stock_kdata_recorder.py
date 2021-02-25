@@ -8,10 +8,10 @@ from zvt import init_log, zvt_env
 from zvt.api import get_kdata, AdjustType
 from zvt.api.quote import generate_kdata_id, get_kdata_schema
 from zvt.contract import IntervalLevel
-from zvt.contract.api import df_to_db
+from zvt.contract.api import df_to_db, get_data
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
-from zvt.domain import Stock, StockKdataCommon
+from zvt.domain import Stock, StockKdataCommon, StockStatus,Stock1dHfqKdata,StockNames
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
@@ -77,15 +77,26 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                 self.session.add_all(kdatas)
                 self.session.commit()
 
-    def on_finish(self):
-        super().on_finish()
-        logout()
+    # def record(self, entity, start, end, size, timestamps):
+    #     fq_ref_date = to_time_str(now_pd_timestamp())
+    #     def get_name(data,name_change):
+    #         name_data = name_change[name_change.change_date <= data.timestamp]
+    #         data['name'] = name_data['new_name'].iloc[-1]
+    #         return data
+    #     current_df = get_kdata(entity_id=entity.id, provider=self.provider, start_timestamp=entity.timestamp,
+    #                            end_timestamp=fq_ref_date, level=self.level,
+    #                            adjust_type=self.adjust_type)
+    #     name_change = get_data(data_schema=StockNames, entity_id=entity.id,provider='joinquant')
+    #     df = current_df.apply(get_name,axis=1,args=(name_change,))
+    #     if pd_is_not_null(df):
+    #         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+    #     return None
+
 
     def record(self, entity, start, end, size, timestamps):
-        fq_ref_date = None
         if self.adjust_type == AdjustType.hfq:
             fq_ref_date = '2000-01-01'
-        elif self.adjust_type == AdjustType.qfq:
+        else:
             fq_ref_date = to_time_str(now_pd_timestamp())
 
         if not self.end_timestamp:
@@ -101,9 +112,9 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                           count=size,
                           unit=self.jq_trading_level,
                           fields=['date', 'open', 'close', 'low', 'high', 'volume', 'money'],
-                          end_dt=end_timestamp,
+                          end_date=end_timestamp,
                           fq_ref_date=fq_ref_date,
-                          include_now=False)
+                          include_now=self.real_time)
         if pd_is_not_null(df):
             df['name'] = entity.name
             df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
@@ -137,13 +148,9 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                     return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_ISO8601))
 
             df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
-
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
-
         return None
 
-
-__all__ = ['JqChinaStockKdataRecorder']
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -159,4 +166,7 @@ if __name__ == '__main__':
     JqChinaStockKdataRecorder(level=level, sleeping_time=0, codes=codes, real_time=False,
                               adjust_type=AdjustType.hfq).run()
 
-
+    print(get_kdata(entity_id='stock_sz_000001', limit=10, order=Stock1dHfqKdata.timestamp.desc(),
+                    adjust_type=AdjustType.hfq))
+# the __all__ is generated
+__all__ = ['JqChinaStockKdataRecorder']

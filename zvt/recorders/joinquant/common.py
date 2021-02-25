@@ -77,7 +77,8 @@ def get_fc(security_item):
         fc = "{}01".format(security_item.code)
     if security_item.exchange == 'sz':
         fc = "{}02".format(security_item.code)
-
+    if security_item.exchange == 'hk':
+        fc = "{}03".format(security_item.code)
     return fc
 
 

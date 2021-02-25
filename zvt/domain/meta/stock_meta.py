@@ -38,7 +38,6 @@ class BasePortfolio(BaseSecurity):
 class Stock(StockMetaBase, BaseSecurity):
     __tablename__ = 'stock'
 
-
 # 板块
 @register_entity(entity_type='block')
 class Block(StockMetaBase, BasePortfolio):
@@ -46,6 +45,7 @@ class Block(StockMetaBase, BasePortfolio):
 
     # 板块类型，行业(industry),概念(concept)
     category = Column(String(length=64))
+    block_type = Column(String(length=64))
 
 
 # 指数
@@ -107,13 +107,58 @@ class BasePortfolioStockHistory(BasePortfolioStock):
     # 持有股票的市值
     market_cap = Column(Float)
 
+class BaseStatus(EntityMixin):
+    # 公告日期
+    pub_date = Column(DateTime)
+    # 变更日期
+    change_date = Column(DateTime)
+    # 变更原因
+    change_reason = Column(String(length=500))
+    # 上市状态
+    public_status= Column(String(length=32))
+    # 变更类型
+    change_type= Column(String(length=60))
+
+
+class BaseName(EntityMixin):
+    # 公告日期
+    pub_date = Column(DateTime)
+    # 变更日期
+    change_date = Column(DateTime)
+    # 新股票简称
+    new_name = Column(String(length=40))
+    # 新英文简称
+    new_spelling = Column(String(length=40))
+    # 原证券简称
+    org_name= Column(String(length=40))
+    # 原证券英文简称
+    org_spelling= Column(String(length=40))
+
+class StockStatus(StockMetaBase, BaseStatus):
+    __tablename__ = 'stock_status'
+
+
+class StockNames(StockMetaBase, BaseName):
+    __tablename__ = 'stock_name_change'
 
 class BlockStock(StockMetaBase, BasePortfolioStock):
     __tablename__ = 'block_stock'
-
+    block_type = Column(String(length=40))
 
 class IndexStock(StockMetaBase, BasePortfolioStockHistory):
     __tablename__ = 'index_stock'
+
+class IndexStockNew(StockMetaBase,BasePortfolioStock):
+    """
+    指数成分股
+    """
+    __tablename__ = 'index_stock_new'
+    # 更新时间
+    pub_date = Column(DateTime)
+    # 调入时间
+    into_date = Column(DateTime)
+    # 调出时间
+    out_date = Column(DateTime)
 
 
 class EtfStock(StockMetaBase, BasePortfolioStockHistory):
@@ -148,6 +193,36 @@ class StockDetail(StockMetaBase, BaseSecurity):
     issue_pe = Column(Float)
     # 网上中签率
     net_winning_rate = Column(Float)
+    # 注册资金
+    register_capital = Column(Float)
+
+# 个股详情
+class StockDetailNew(StockMetaBase, BaseSecurity):
+    __tablename__ = 'stock_detail_new'
+
+    industries = Column(String(length=64))
+    industry_indices = Column(String(length=64))
+    concept_indices = Column(String(length=256))
+    area_indices = Column(String(length=64))
+
+    # 成立日期
+    date_of_establishment = Column(DateTime)
+    # 公司简介
+    profile = Column(String(length=5000))
+    # 主营业务
+    main_business = Column(String(length=3000))
+    # 发行量(股)
+    issues = Column(BigInteger)
+    # 发行价格
+    price = Column(Float)
+    # 募资净额(元)
+    raising_fund = Column(Float)
+    # 发行市盈率
+    issue_pe = Column(Float)
+    # 网上中签率
+    net_winning_rate = Column(Float)
+    # 注册资金
+    register_capital = Column(Float)
 
 # 场外基金详情
 @register_entity(entity_type='fund_detail')
@@ -174,6 +249,6 @@ class FundDetail(StockMetaBase, BaseSecurity):
 register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina','emquantapi'], db_name='stock_meta',
                 schema_base=StockMetaBase)
 
-__all__ = ['Stock', 'Index', 'Block', 'Etf','Fund',
+__all__ = ['Stock', 'Index', 'Block', 'Etf','Fund','IndexStockNew','StockDetailNew',
            'IndexStock','FundStock', 'BlockStock', 'EtfStock',
-           'StockDetail','FundDetail']
+           'StockDetail','FundDetail','StockStatus','StockNames']

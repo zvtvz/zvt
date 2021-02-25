@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from EmQuantAPI import *
+from zvt.recorders.joinquant.common import JoinquantTimestampsDataRecorder, call_joinquant_api, get_from_path_fields, \
+    get_fc
 
+from zvt.api import  to_report_period_type
 from zvt.contract.api import df_to_db
-from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import StockDetail
-from zvt.recorders.eastmoney.common import company_type_flag
 from zvt.recorders.emquantapi.common import mainCallback, to_em_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp
+from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, now_pd_timestamp, to_pd_timestamp
 
 
-class BaseChinaStockFinanceQtrRecorder(TimeSeriesDataRecorder):
+class BaseChinaStockFinanceQtrRecorder(JoinquantTimestampsDataRecorder):
     finance_report_type = None
     data_type = 1
+
+    timestamps_fetching_url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetCompanyReportDateList'
+    timestamp_list_path_fields = ['CompanyReportDateList']
+    timestamp_path_fields = ['ReportDate']
 
     entity_provider = 'joinquant'
     entity_schema = StockDetail
@@ -40,36 +45,62 @@ class BaseChinaStockFinanceQtrRecorder(TimeSeriesDataRecorder):
             print("login in fail")
             exit()
 
+    def init_timestamps(self, entity):
+        param = {
+            "color": "w",
+            "fc": get_fc(entity),
+            "DataType": 1
+        }
+
+        if self.finance_report_type == 'INCOME_STATEMENT' or self.finance_report_type == 'CASHFLOW_STATEMENT':
+            param['ReportType'] = 1
+
+        timestamp_json_list = call_joinquant_api(url=self.timestamps_fetching_url,
+                                                 path_fields=self.timestamp_list_path_fields,
+                                                 param=param)
+
+        if self.timestamp_path_fields:
+            timestamps = [get_from_path_fields(data, self.timestamp_path_fields) for data in timestamp_json_list]
+
+        return [to_pd_timestamp(t) for t in timestamps]
+
+    def generate_request_param(self, security_item, start, end, size, timestamps):
+        return [to_time_str(i) for i in (timestamps)]
+
+
     def record(self, entity, start, end, size, timestamps):
+        param = self.generate_request_param(entity, start, end, size, timestamps)
         if not end:
             end = to_time_str(now_pd_timestamp())
         start = to_time_str(start)
-        reportdate_list = list({to_time_str(i)[:4] + '-03-31' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-06-30' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-09-30' for i in pd.date_range(start, end)}) + list(
-            {to_time_str(i)[:4] + '-12-31' for i in pd.date_range(start, end)})
         em_code = to_em_entity_id(entity)
         df = pd.DataFrame()
         columns_map = {key:value[0] for key,value in self.get_data_map().items()}
         columns_list =list(columns_map.values())
-        for reportdate in reportdate_list:
-            # 方案
-            data = c.ctr(self.finance_report_type, columns_list,
-                         "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
-            if data.Data == {}:
-                continue
-            data = pd.DataFrame(data.Data['0']).T
-            df = df.append(data)
-        df.columns = columns_list
-        df = df.sort_values("REPORTDATE", ascending=True)
+        for reportdate in param:
+            # 获取数据
+            # 三大财务报表 使用ctr方法读取表名
+            if self.data_type < 4:
+                em_data = c.ctr(self.finance_report_type, columns_list,
+                             "secucode=" + em_code + ",ReportDate=" + reportdate + ",ReportType=1")
+                if em_data.Data == {}:
+                    continue
+                data = pd.DataFrame(em_data.Data['0']).T
+                data.columns = em_data.Indicators
+                data['report_date'] = reportdate
+                df = df.append(data)
+
+        if df.empty:
+            return None
+        df.rename(columns = {value:key for key,value in columns_map.items()},inplace=True)
+        df = df.sort_values("report_date", ascending=True)
         if pd_is_not_null(df):
-            df.reset_index(drop=True, inplace=True)
             df.rename(columns={value:key for key,value in columns_map.items()}, inplace=True)
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df.report_date)
             df['provider'] = 'emquantapi'
             df['code'] = entity.code
-
+            df['report_period'] = df['report_date'].apply(lambda x: to_report_period_type(x))
             def generate_id(se):
                 return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 

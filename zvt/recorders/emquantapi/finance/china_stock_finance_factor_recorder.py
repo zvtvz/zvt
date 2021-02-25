@@ -8,7 +8,6 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 finance_factor_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
-    "report_date": "REPORTDATE",
     # 基本每股收益(元)
     "basic_eps": "Epsjb",
     # 扣非每股收益(元)

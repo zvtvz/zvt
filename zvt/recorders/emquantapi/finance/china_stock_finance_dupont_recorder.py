@@ -4,8 +4,6 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 finance_dupont_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
     'inc_net_profit_shareholders_to_net_profit': 'DUPONTPNITONI',  # 归属母公司股东的净利润与净利润之比
     'roe_avg': 'DUPONTROE',  # 净资产收益率ROE
     'em': 'DUPONTASSETSTOEQUITY',  # 权益乘数(杜邦分析)

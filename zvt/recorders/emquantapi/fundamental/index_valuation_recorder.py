@@ -59,7 +59,7 @@ class EmChinaStockValuationRecorder(TimeSeriesDataRecorder):
             'PCFTTM': 'pcf_ttm', #市现率PCF(最新年报，经营性现金流)
             'DIVIDENDYIELD': 'div_yield', #股息率
         }
-        df = c.csd(em_code, [i for i in columns_list.keys()], start,end,"ispandas=1,DelType=2")
+        df = c.csd(em_code, [i for i in columns_list.keys()], start,end,"ispandas=1,DelType=1")
         if not isinstance(df,pd.DataFrame):
             return None
         # 该方法会获取到未来数据,总市值为Nan时删除该条

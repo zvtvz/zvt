@@ -12,6 +12,6 @@ class Stock1dKdata(KdataBase, StockKdataCommon):
     __tablename__ = 'stock_1d_kdata'
 
 
-register_schema(providers=['joinquant'], db_name='stock_1d_kdata', schema_base=KdataBase)
+register_schema(providers=['joinquant','emquantapi'], db_name='stock_1d_kdata', schema_base=KdataBase)
 
 __all__ = ['Stock1dKdata']

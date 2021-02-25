@@ -262,38 +262,3 @@ if __name__ == '__main__':
     # init_log('blance_sheet.log')
     recorder = JqStockBalanceSheetRecorder(codes=['002572'])
     recorder.run()
-
-
-
-
-
- # [
-# 'fi_cash_and_deposit_in_central_bank',
-#  'fi_deposit_in_other_fi',
-#  'fi_expensive_metals',
-#  'fi_financial_assets_effect_current_income',
-#  'fi_disbursing_loans_and_advances',
-#  'fi_account_receivable_investment',
-#  'fi_other_asset',
-#  'fi_deposit_from_other_fi',
-#  'fi_financial_liability_effect_current_income',
-#  'fi_savings_absorption',
-#  'fi_other_liability',
-#  'fi_capital',
-#  'fi_total_liability_equity',
-#  'fi_client_fund',
-#  'fi_client_deposit_reservation_for_balance',
-#  'fi_margin_out_fund',
-#  'fi_receivables',
-#  'fi_deposit_for_recognizance',
-#  'fi_short_financing_payable',
- # 'fi_policy_pledge_loans',
- # 'fi_time_deposit',
- # 'fi_deposit_for_capital_recognizance',
- # 'fi_capital_in_independent_accounts',
- # 'fi_advance_from_customers',
- # 'fi_advance_premium',
- # 'fi_claims_payable',
- # 'fi_policy_holder_dividend_payable',
- # 'fi_policy_holder_deposits_and_investment_funds'
- # ]

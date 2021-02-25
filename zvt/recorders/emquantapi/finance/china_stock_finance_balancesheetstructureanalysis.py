@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 financial_balancesheetstructureanalysis_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'cfo_to_gr': 'CFOTOGR',  #经营活动产生的现金流量净额/营业总收入
     'sales_cash_intoor': 'SALESCASHINTOOR',  # 销售商品提供劳务收到的现金/营业收入
     'qcfi_to_cf': 'QCFITOCF',  # 投资活动产生的现金流量净额占比

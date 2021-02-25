@@ -4,11 +4,8 @@ from jqdatasdk import auth, query, indicator, get_fundamentals, logout, finance
 
 from zvt import zvt_env
 from zvt.api.quote import to_jq_report_period, get_recent_report_period
-from zvt.contract import IntervalLevel
 from zvt.contract.api import get_data, df_to_db
-from zvt.contract.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvt.domain import FinanceFactor
-
 from zvt.recorders.joinquant.common import company_type_flag, get_fc, \
     call_joinquant_api, get_from_path_fields, JoinquantTimestampsDataRecorder
 from zvt.recorders.joinquant.common import to_jq_entity_id
@@ -102,24 +99,19 @@ class BaseJqDividendFinancingRecorder(JoinquantTimestampsDataRecorder):
         # different with the default timestamps handling
         param = self.generate_request_param(entity, start, end, size, timestamps)
 
-
         from jqdatasdk import finance
 
-        to_time_str(start)
         # 上市公司分红送股（除权除息）数据
         df = finance.run_query(query(finance.STK_XR_XD).filter(finance.STK_XR_XD.code == to_jq_entity_id(entity),
                                                                finance.STK_XR_XD.board_plan_pub_date >= to_time_str(start)).order_by(
-            finance.STK_XR_XD.report_date).limit(2))
+            finance.STK_XR_XD.report_date).limit(10))
         df.rename({'board_plan_pub_date':'pub_date'},inplace=True)
         df2 = finance.run_query(
             query(finance.STK_CAPITAL_CHANGE).filter(finance.STK_CAPITAL_CHANGE.code == to_jq_entity_id(entity),
                                                      finance.STK_CAPITAL_CHANGE.pub_date >= to_time_str(start)).order_by(
                 finance.STK_CAPITAL_CHANGE.pub_date).limit(2))
         df2['company_name'] = df.company_name[0]
-        df_res = df.append(df2)
-        self.get_data_map()
-        df_res
-        df_res.company_name
+        df = df.append(df2)
         # 财报时间  公告时间
         df.set_index(['report_date', 'pub_date'], drop=True, inplace=True)
         map_data = {value[0]: key for key, value in self.get_data_map().items()}

@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 financial_growth_ability_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'total_op_income_growth_yoy': 'YOYGR',  # 营业总收入同比增长率
     'op_income_growth_yoy': 'YOYOR',  # 营业收入同比增长率
     'op_profit_growth_yoy': 'YOYOP',  # 营业利润同比增长率

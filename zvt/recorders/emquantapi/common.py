@@ -175,13 +175,6 @@ class BaseEastmoneyRecorder(object):
                                             path_fields=self.path_fields)
 
 
-class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecorder):
-    entity_provider = 'joinquant'
-    entity_schema = StockDetail
-
-    provider = 'eastmoney'
-
-
 
 class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
     entity_provider = 'emquantapi'

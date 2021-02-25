@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 from jqdatasdk import auth, get_query_count, finance, query, normalize_code
 import pandas as pd
+from zvt.recorders.joinquant.common import to_jq_entity_id
+
 from zvt import zvt_env
 from zvt.api import get_str_schema, to_time_str, pd_is_not_null, generate_kdata_id, TIME_FORMAT_ISO8601, TIME_FORMAT_DAY
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.utils.utils import to_float
 from zvt.domain import HolderTrading
-from zvt.domain import Stock, StockKdataCommon
+from zvt.domain import Stock
+
 
 class HolderTradingRecorder(FixedCycleDataRecorder):
     """
-    记录公募基金的净值数据
+    大股东交易
     """
     entity_provider = 'joinquant'
     entity_schema = Stock
@@ -51,43 +54,38 @@ class HolderTradingRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         df = finance.run_query(query(finance.STK_SHAREHOLDERS_SHARE_CHANGE).filter(
-            finance.STK_SHAREHOLDERS_SHARE_CHANGE.code == normalize_code(entity.code)).filter(
-            finance.STK_SHAREHOLDERS_SHARE_CHANGE.pub_date > to_time_str(start)))
+            finance.STK_SHAREHOLDERS_SHARE_CHANGE.code == to_jq_entity_id(entity)).filter(
+            finance.STK_SHAREHOLDERS_SHARE_CHANGE.pub_date >= to_time_str(start)))
         if pd_is_not_null(df):
             df.reset_index(inplace=True, drop=True)
             df['name'] = entity.name
             df['index_columns'] = df.index
 
-            df.rename(columns={'pub_date': 'end_date',
-                               'shareholder_name': 'holder_name',
-                               'change_number': 'volume',
-                               'change_ratio': 'change_pct',
-                               'after_change_ratio': 'holding_pct',
-                               'price_ceiling': 'price',
-                               }, inplace=True)
+            df.rename(columns={
+                'pub_date': 'timestamp',  # 公告日期
+                'end_date': 'holder_end_date',  # 变动截至日期
+                'shareholder_name': 'holder_name',  # 股东名称
+                'change_number': 'volume',  # 变动数量
+                'change_ratio': 'change_pct',  # 变动比例  变动数量占总股本比例(%)
+                'after_change_ratio': 'holding_pct',  # 变动后_占总股本比例(%)
+                'price_ceiling': 'price',  # 交易均价(元)
+            }, inplace=True)
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df.timestamp)
             df['provider'] = 'joinquant'
             df['code'] = entity.code
+            df['holder_direction'] = df.type.replace(1, '减持').replace(0, '增持')
 
-            df['id'] = df[['entity_id', 'timestamp', 'holder_name','index_columns']].apply(
-                lambda x: x.entity_id + '_' + to_time_str(x.timestamp,
-                                                          fmt=TIME_FORMAT_DAY) + '_' + x.holder_name + '_' + str(x.index_columns),
-                axis=1)
+            def generate_id(se):
+                return "{}_{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY), se.name)
 
-            df['holder_name'] = df['holder_name'].apply(lambda x:str(x).replace('(有限合伙)',''))
-            df['holder_name'] = df['holder_name'].apply(lambda x:str(x).replace('（有限合伙）',''))
-            df['holder_name'] = df['holder_name'].apply(lambda x:str(x).split('-')[0])
-            # df['holding_pct'] = df['holding_pct'].fillna(0)
-            # 股东名称
-            # holder_name = Column(String(length=32))
-            # 变动数量
-            # volume = Column(Float)
-            # 变动比例
-            # change_pct = Column(Float)
-            # 变动后持股比例
-            # holding_pct = Column(Float)
-            # df[['provider', 'holding_pct', 'change_pct', 'holder_name', 'timestamp', 'volume', 'entity_id', 'id', 'code']]
+            df = pd.concat([i.reset_index(drop=True) for i in dict(list(df.groupby('timestamp'))).values()])
+            df.index += 1
+            df['id'] = df[['entity_id', 'timestamp']].apply(generate_id, axis=1)
+
+            df['holder_name'] = df['holder_name'].apply(lambda x: str(x).replace('(有限合伙)', ''))
+            df['holder_name'] = df['holder_name'].apply(lambda x: str(x).replace('（有限合伙）', ''))
+            df['holder_name'] = df['holder_name'].apply(lambda x: str(x).split('-')[0])
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         return None
 

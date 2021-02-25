@@ -8,7 +8,7 @@ from zvt.recorders.joinquant.finance.base_jq_stock_finance_recorder import BaseJ
 
 income_statement_map = {
     # 营业总收入
-    #
+    "total_op_income": "total_operating_revenue",
     # 营业收入
     "operating_income": "operating_revenue",
     # 营业总成本

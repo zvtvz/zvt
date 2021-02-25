@@ -34,6 +34,64 @@ class ManagerTrading(TradingBase, Mixin):
     relationship_with_manager = Column(String(length=32))
 
 
+
+class LockedShares(TradingBase, Mixin):
+    """
+    限售解禁
+    """
+    __tablename__ = 'locked_shares'
+    """
+    day: 解禁日期
+    code: 股票代码
+    num: 解禁股数
+    rate1: 解禁股数/总股本
+    rate2: 解禁股数/总流通股本
+    """
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    end_date = Column(DateTime)
+
+    # 解禁股数
+    locked_num = Column(Float)
+    # 解禁股数/总股本
+    locked_rate1 = Column(Float)
+    # 解禁股数/总流通股本
+    locked_rate2 = Column(Float)
+
+
+
+class EquityPledge(TradingBase, Mixin):
+    """
+    股权质押
+    """
+    __tablename__ = 'equity_pledge'
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    pub_date = Column(DateTime)
+
+    # 出质人 将资产质押出去的人成为出质人
+    pledgor = Column(String(length=100))
+    # 质权人
+    pledgee = Column(String(length=100))
+    # 质押事项
+    pledge_item = Column(String(length=500))
+    # 质押股份性质	varchar(120)
+    pledge_nature = Column(String(length=120))
+    # 质押数量
+    pledge_number =  Column(Float)
+    # 占总股本比例 %
+    pledge_total_ratio =  Column(Float)
+    # 质押起始日
+    start_date =  Column(DateTime)
+    # 质押终止日
+    end_date = Column(DateTime)
+    # 质押解除日
+    unpledged_date = Column(DateTime)
+    # 是否质押式回购交易	char(1)
+    is_buy_back = Column(String(length=1))
+
+
 class HolderTrading(TradingBase, Mixin):
     __tablename__ = 'holder_trading'
 
@@ -57,12 +115,12 @@ class HolderTrading(TradingBase, Mixin):
     code = Column(String(length=32))
 
     # 股东名称
-    holder_name = Column(String(length=32))
+    holder_name = Column(String(length=150))
     # 变动数量
     volume = Column(Float)
-    # 变动比例
+    # 变动比例 变动数量占总股本比例  %
     change_pct = Column(Float)
-    # 变动后持股比例
+    # 变动后_占总股本比例
     holding_pct = Column(Float)
 
     # 股东类型
@@ -76,15 +134,57 @@ class HolderTrading(TradingBase, Mixin):
     # 变动后_持股总数
     holder_share_af = Column(Float)
     # 交易均价
-    price = Column(Float)
+    price = Column(String(length=32))
     # 变动起始日期
     holder_start_date = Column(DateTime)
     # 变动截止日期
     holder_end_date = Column(DateTime)
     # 变动原因 说明
-    holder_remark = Column(String(length=300))
+    holder_remark = Column(String(length=2000))
     # 变动前_持股总数(万股)
     holder_share_bf = Column(Float)
+
+
+class HolderTradePlan(TradingBase, Mixin):
+    """
+    大股东交易计划
+    """
+    __tablename__ = 'holder_trade_plan'
+
+    def get_data_map(self):
+        return {
+            'HOLDDECREASEANNCDATENEWPLAN': 'report_date',  # 公告日期
+            'HOLDDECREASENAMENEWPLAN': 'holder_name',  # 股东名称
+            # 'FX': 'holder_direction',  # 方向
+            'DECRENEWMAXSHANUM': 'volume_plan_max',  # 最新计划减持股份数量上限(股)
+            'DECRENEWMINSHANUM': 'volume_plan_min',  # 最新计划减持股份数量下限(股)
+
+            'HOLDMAXSHARENEWPLAN': 'volume_plan_max',  # 最新计划增持股份数量上限(股)
+            'HOLDMINSHARENEWPLAN': 'volume_plan_min',  # 最新计划增持股份数量下限(股)
+
+            'DECRENEWPROGRESS': 'plan_progress ',  # 减持计划进度
+            'HOLDPLANSCHEDULE': 'plan_progress ',  # 增持计划进度
+
+        }
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    # 股东名称
+    holder_name = Column(String(length=200))
+    # 变动数量上限(股)
+    volume_plan_max = Column(Float)
+    # 变动数量下限(股)
+    volume_plan_mix = Column(Float)
+    # 变动比例 变动数量占总股本比例 %
+    change_pct = Column(Float)
+    # 计划进度
+    plan_progress = Column(String(length=32))
+    # 方向
+    holder_direction = Column(String(length=32))
+
+
+
 
 
 class BigDealTrading(TradingBase, Mixin):
@@ -185,4 +285,4 @@ class DragonAndTiger(TradingBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='trading', schema_base=TradingBase)
 
-__all__ = ['ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
+__all__ = ['HolderTradePlan','LockedShares','EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']

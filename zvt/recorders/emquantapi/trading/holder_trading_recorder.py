@@ -50,14 +50,16 @@ class HolderTradingRecorder(TimeSeriesDataRecorder):
         columns_list = list(self.data_schema.get_data_map(self))
         data = c.ctr("HoldTradeDetailInfo", columns_list,
                      "secucode=" + em_code + ",StartDate=" + start + ",EndDate=" + end + ",HoldType=0")
+        if data.Data=={}:
+            return None
         df = pd.DataFrame(data.Data).T
-        df.columns = columns_list
+        df.columns = data.Indicators
         df = df.sort_values("NOTICEDATE", ascending=True)
         df['TOTALSHARE'] = df.NOTICEDATE.apply(
             lambda x: c.css(em_code, "TOTALSHARE", "EndDate=" + x + ",ispandas=1").TOTALSHARE[0])
         # 变动比例（千分位） h = (df['变动_流通股数量(万股)'] / (df['变动后_持股总数(万股)'] / (df['变动后_占总股本比例(%)'] / 100)))
         df['CHANGENUM'] = df['CHANGENUM'] * 10000
-        df['BDHCGZS'] = df['BDHCGZS'] * 10000
+        df['BDHCGZS'] = df['BDHCGZS'] * 10000  # 变动后_持股总数
         df['change_pct'] = abs(df['CHANGENUM'] / df['TOTALSHARE']).astype(float) * 1000
         df['change_pct'] = df['change_pct'].round(5)
         if pd_is_not_null(df):
@@ -74,6 +76,7 @@ class HolderTradingRecorder(TimeSeriesDataRecorder):
             df_res = pd.concat([i.reset_index(drop=True) for i in dict(list(df.groupby('timestamp'))).values()])
             df_res.index+=1
             df_res['id'] = df_res[['entity_id', 'timestamp']].apply(generate_id, axis=1)
+
             df_to_db(df=df_res, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         return None
 
@@ -81,5 +84,5 @@ __all__ = ['HolderTradingRecorder']
 
 if __name__ == '__main__':
     # 上证50
-    HolderTradingRecorder(codes=['050002']).run()
+    HolderTradingRecorder(codes=['000002'],sleeping_time=0.1).run()
     # JqChinaEtfValuationRecorder(codes=['512290']).run()

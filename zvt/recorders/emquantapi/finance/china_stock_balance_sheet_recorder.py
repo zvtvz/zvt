@@ -6,7 +6,6 @@ from zvt.utils.utils import add_func_to_value, first_item_to_float
 balance_sheet_map = {
     # 更新时间
     "pub_date": "FIRSTNOTICEDATE",
-    "report_date": "REPORTDATE",
     # 流动资产
     #CASHTOCL
     # 货币资金

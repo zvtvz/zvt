@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 financial_operational_capability_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
     'fixed_assets_turnover_rate': 'FATURNRATIO',  # 固定资产周转率
     'current_asset_turnover_rate': 'CATURNRATIO',  # 流动资产周转率
     'total_assets_turnover': 'ASSETTURNRATIO',  # 总资产周转率

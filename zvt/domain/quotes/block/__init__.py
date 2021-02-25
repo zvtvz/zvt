@@ -3,3 +3,4 @@
 from zvt.domain.quotes.block.block_1d_kdata import *
 from zvt.domain.quotes.block.block_1wk_kdata import *
 from zvt.domain.quotes.block.block_1mon_kdata import *
+from zvt.domain.quotes.block.bond_1d_kdata import *

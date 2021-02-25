@@ -4,8 +4,7 @@ from zvt.recorders.emquantapi.finance.base_china_stock_finance_recorder import E
 from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 finance_derivative_map = {
-    # 更新时间
-    "report_date": "REPORTDATE",
+
 
     'fi_interest_free_current_liabilities': 'EXINTERESTCL',  # 无息流动负债
     'fi_interest_free_non_current_liabilities': 'EXINTERESTNCL',  # 无息非流动负债

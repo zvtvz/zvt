@@ -6,8 +6,7 @@ from zvt.recorders.emquantapi.finance_qtr.base_china_stock_finance_qtr_recorder 
 
 cash_flow_qtr_map = {
     # 经营活动产生的现金流量
-    # 报告时间
-    "report_date": "REPORTDATE",
+
     # 销售商品、提供劳务收到的现金
     "cash_from_selling": "SALEGOODSSERVICEREC_S",
 

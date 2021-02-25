@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from jqdatasdk import auth, get_all_securities, logout, query, finance,normalize_code,get_query_count,get_concept,get_security_info
-
-from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code, get_entities
+from EmQuantAPI import *
+from zvt.recorders.emquantapi.common import mainCallback, to_em_entity_id
+from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code, get_entities,get_data
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.recorders.tonglian.common import to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
@@ -14,14 +15,16 @@ from zvt.utils.time_utils import to_pd_timestamp
 from zvt.utils.utils import to_float, pct_to_float
 
 
-class BaseJqChinaMetaRecorder(Recorder):
-    provider = 'joinquant'
+class BaseEmChinaMetaRecorder(Recorder):
+    provider = 'emquantapi'
 
     def __init__(self, batch_size=10, force_update=True, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
-
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare'] / 10000}万")
+        # 调用登录函数（激活后使用，不需要用户名密码）
+        loginResult = c.start("ForceLogin=1", '', mainCallback)
+        if (loginResult.ErrorCode != 0):
+            print("login in fail")
+            exit()
 
     def to_zvt_entity(self, df, entity_type, category=None):
         df.index.name = 'entity_id'
@@ -31,26 +34,57 @@ class BaseJqChinaMetaRecorder(Recorder):
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df['list_date'] = df['timestamp']
         df['end_date'] = pd.to_datetime(df['end_date'])
-
+        df['entity_id'] = df['entity_id'].apply(lambda x: x.lower())
         df['entity_id'] = df['entity_id'].apply(lambda x: to_entity_id(entity_type=entity_type, jq_code=x))
         df['id'] = df['entity_id']
         df['entity_type'] = entity_type
         df['exchange'] = df['entity_id'].apply(lambda x: get_entity_exchange(x))
         df['code'] = df['entity_id'].apply(lambda x: get_entity_code(x))
-        df['name'] = df['display_name']
-
+        df['end_date'].fillna(pd.to_datetime("22000101"),inplace=True)
         if category:
             df['category'] = category
 
         return df
 
 
-class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
+class EmChinaStockRecorder(BaseEmChinaMetaRecorder):
     data_schema = Stock
 
     def run(self):
-        # 抓取股票列表
-        df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
+        # 抓取股票列表 001004 全部A股
+        # cn_stock_market  = c.sector("001004", "2021-01-17")
+        hk_stock_market = c.sector("401001", "2021-01-17")
+        import pandas as pd
+        # cn_stock_market_df = pd.DataFrame(cn_stock_market.Data, columns=['code'])
+        hk_stock_market_df = pd.DataFrame(hk_stock_market.Data, columns=['code'])
+        # em_data = pd.concat([cn_stock_market_df,hk_stock_market_df],axis=0)
+        # try:
+        df_res = pd.DataFrame()
+        for code in hk_stock_market_df.code:
+            if '.SH' in code or '.SZ' in code:
+                data_css = c.css(code, "NAME,CODE,LISTDATE,LISTMKT,DELISTDATE", "ispandas=1")
+            elif '.HK' in code:
+                # 港、美股和A股的字段不同
+                try:
+                    self.logger.info(f"开始获取{code}的数据!")
+                    data_css = c.css(code, "NAME,CODE,IPOLISTDATE,DELISTDATE", "ispandas=1")
+                except:
+                    self.logger.info(f"获取{code}的数据失败,跳过!")
+                    continue
+            else:
+                continue
+            df_res = df_res.append(data_css)
+            self.logger.info(f"{code}的数据获取成功!")
+        df_res.rename(columns = {
+            "NAME":"name",
+            "LISTDATE":"start_date",
+            "IPOLISTDATE":"start_date",
+            "DELISTDATE":"end_date",
+        },inplace=True)
+        # except:
+        #     print()
+        df_stock = self.to_zvt_entity(df_res, entity_type='stock')
+        # df_stock = self.to_zvt_entity(get_all_securities(['stock']), entity_type='stock')
         df_to_db(df_stock, data_schema=Stock, provider=self.provider, force_update=self.force_update)
         # persist StockDetail too
         # df_to_db(df=df_stock, data_schema=StockDetail, provider=self.provider, force_update=self.force_update)
@@ -58,29 +92,27 @@ class JqChinaStockRecorder(BaseJqChinaMetaRecorder):
         # self.logger.info(df_stock)
         self.logger.info("persist stock list success")
 
-        logout()
 
 
-class JqChinaStockDetailRecorder(Recorder):
-    provider = 'joinquant'
+
+class EmChinaStockDetailRecorder(Recorder):
+    provider = 'emquantapi'
     data_schema = StockDetail
 
     def __init__(self, batch_size=10, force_update=False, sleeping_time=5, codes=None) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
-
-        # get list at first
-        JqChinaStockRecorder().run()
-
-        auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare'] / 10000}万")
+        loginResult = c.start("ForceLogin=1", '', mainCallback)
+        if (loginResult.ErrorCode != 0):
+            print("login in fail")
+            exit()
         self.codes = codes
         if not self.force_update:
             self.entities = get_entities(session=self.session,
                                          entity_type='stock_detail',
-                                         exchanges=['sh', 'sz'],
+                                         exchanges=['hk'],
                                          codes=self.codes,
-                                         filters=[StockDetail.profile.is_(None)],
+                                         # filters=[StockDetail.profile.is_(None)],
                                          return_type='domain',
                                          provider=self.provider)
 
@@ -88,34 +120,34 @@ class JqChinaStockDetailRecorder(Recorder):
         for security_item in self.entities:
             assert isinstance(security_item, StockDetail)
             security = to_jq_entity_id(security_item)
-            # 基本资料
-            df = finance.run_query(query(finance.STK_COMPANY_INFO).filter(finance.STK_COMPANY_INFO.code == security))
-            concept_dict = get_concept(security, date=security_item.timestamp)
-            security_item.profile = df.description[0]
-            security_item.main_business = df.main_business.values[0]
-            security_item.date_of_establishment = to_pd_timestamp(df.establish_date.values[0])
-            # 关联行业
-            security_item.industries = df[['industry_1','industry_2']].values.tolist()[0]
-            # 关联概念
-            security_item.concept_indices = [i['concept_name'] for i in concept_dict["000001.XSHE"]['jq_concept']]
-            # 关联地区
-            security_item.area_indices = df.province.values[0]
 
-            self.sleep()
+            # 基本资料
+            data = c.css(security, "COMPANYPROFILE,FOUNDDATE,AREA,CAPITAL,IPOSHARESVOL,IPOPRICE,IPONETCOLLECTION,IPOPE,HKSE,IPOPLANISSUEVOL",
+                         "CurType=1,ClassiFication=4,ispandas=1")
+            security_item.profile = data.COMPANYPROFILE[0]
+            security_item.date_of_establishment = to_pd_timestamp(data.FOUNDDATE.values[0])
+            # 关联行业
+            security_item.industries = data.HKSE.values[0]
+            # 关联概念
+            # security_item.concept_indices = [i['concept_name'] for i in concept_dict["000001.XSHE"]['jq_concept']]
+            # 关联地区
+            security_item.area_indices = data.AREA.values[0]
 
             # 发行相关
-            df_stk = finance.run_query(query(finance.STK_LIST).filter(finance.STK_LIST.code == security))
-            security_item.price = df_stk.book_price.values[0]
-            security_item.issues = df_stk.ipo_shares.values[0]
-            security_item.raising_fund = df_stk.ipo_shares.values[0] * df_stk.book_price.values[0]
-
+            security_item.price = data.IPOPRICE.values[0]
+            security_item.issues = data.IPOPLANISSUEVOL.values[0]
+            security_item.raising_fund = data.IPONETCOLLECTION.values[0]
+            try:
+                security_item.register_capital = to_float(data.CAPITAL.values[0].split(' ')[0])/10000
+            except AttributeError:
+                pass
             self.session.commit()
             self.logger.info('finish recording stock meta for:{}'.format(security_item.code))
             self.sleep()
 
-        logout()
 
-class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
+
+class EmChinaEtfRecorder(BaseEmChinaMetaRecorder):
     data_schema = Etf
 
     def run(self):
@@ -127,7 +159,7 @@ class JqChinaEtfRecorder(BaseJqChinaMetaRecorder):
         self.logger.info("persist etf list success")
         logout()
 
-class JqChinaFundDetailRecorder(BaseJqChinaMetaRecorder):
+class EmChinaFundDetailRecorder(BaseEmChinaMetaRecorder):
     data_schema = FundDetail
 
     def run(self):
@@ -157,7 +189,7 @@ class JqChinaFundDetailRecorder(BaseJqChinaMetaRecorder):
         self.logger.info("persist etf list success")
         logout()
 
-class JqChinaFundRecorder(BaseJqChinaMetaRecorder):
+class JqChinaFundRecorder(BaseEmChinaMetaRecorder):
     data_schema = Fund
 
     def run(self):
@@ -170,7 +202,7 @@ class JqChinaFundRecorder(BaseJqChinaMetaRecorder):
         logout()
 
 
-class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
+class EmChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
     entity_provider = 'joinquant'
     entity_schema = Etf
 
@@ -274,8 +306,8 @@ class JqChinaFundEtfPortfolioRecorder(TimeSeriesDataRecorder):
 
 
 
-__all__ = ['JqChinaStockDetailRecorder','JqChinaStockRecorder', 'JqChinaEtfRecorder', 'JqChinaStockEtfPortfolioRecorder','JqChinaFundDetailRecorder']
+__all__ = ['EmChinaStockDetailRecorder','EmChinaStockRecorder', 'EmChinaEtfRecorder', 'EmChinaStockEtfPortfolioRecorder','EmChinaFundDetailRecorder']
 
 if __name__ == '__main__':
-    # JqChinaStockRecorder().run()
-    JqChinaStockEtfPortfolioRecorder(codes=['510050']).run()
+    # EmChinaStockRecorder().run()
+    EmChinaStockEtfPortfolioRecorder(codes=['510050']).run()
