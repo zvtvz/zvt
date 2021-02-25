@@ -534,6 +534,11 @@ def annotations(annotation_df: pd.DataFrame, yref='y'):
     return None
 
 
+def distribute(df, col):
+    import plotly.express as px
+    fig = px.histogram(df, x=col)
+    fig.show()
+
 if __name__ == '__main__':
     from zvt.factors.zen import ZenFactor
 

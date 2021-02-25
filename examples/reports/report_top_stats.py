@@ -37,7 +37,6 @@ def report_top_stats(periods=[7, 30, 180, 365], ignore_new_stock=True):
     ups = []
     downs = []
     msg = ''
-    stable = None
     for period in periods:
         start = next_date(current_timestamp, -period)
         df, _ = get_top_performance_entities(start_timestamp=start, filters=filters, pct=1, show_name=True)
