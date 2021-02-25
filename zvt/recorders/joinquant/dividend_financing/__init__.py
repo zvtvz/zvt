@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.recorders.joinquant.dividend_financing.dividend_detail_recorder import *
+from zvt.recorders.joinquant.dividend_financing.fund_dividend_detail_recorder import *
 from zvt.recorders.joinquant.dividend_financing.dividend_financing_recorder import *
 from zvt.recorders.joinquant.dividend_financing.rights_issue_detail_recorder import *
 from zvt.recorders.joinquant.dividend_financing.spo_detail_recorder import *

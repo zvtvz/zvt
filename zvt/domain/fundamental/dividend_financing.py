@@ -45,6 +45,48 @@ dividenddetail_map = {
 }
 
 
+funddividenddetail_map = {
+    "pub_date": "announce_date",  # 除权除息日
+    "ex_date": "dividend_date",  # 除权除息日
+    "record_date": "record_date",  # 股权登记日
+    "pay_date": "dividend_pay_date",  # 派息日
+    "dividend_implement_date": "announce_date_dividend_implementation",  # 分红实施公告日
+
+    "proportion": "dividend_per_share_after_tax",  # 每股股利(税后)
+
+    "split_ratio": "split_ratio",  # 分拆（合并、赠送）比例
+    "process": "dividend_plan_progress",  # 分红方案进度
+}
+
+
+class FundDividendDetail(DividendFinancingBase, Mixin):
+    """
+    基金拆分、分红明细
+    """
+    __tablename__ = "fund_dividend_detail"
+
+    def get_data_map(self):
+        return funddividenddetail_map
+
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+
+    announce_date = Column(DateTime)  # 公告日  DIVRECORDDATE  pub_date  公告日
+    record_date = Column(DateTime)  # 股权登记日
+    dividend_date = Column(DateTime)  # 除权除息日 DIVEXDATE 除权除息日  #ex_date 除息日 date  fund_paid_date	基金红利派发日
+    announce_date_dividend_implementation = Column(DateTime)   # 分红实施公告日  #dividend_implement_date 分红实施公告日
+    # 派息日
+    dividend_pay_date = Column(DateTime)
+    # 每股股利(税后)
+    dividend_per_share_after_tax = Column(Float)
+    # 分拆（合并、赠送）比例
+    split_ratio = Column(Float)
+    # 分红方案进度
+    dividend_plan_progress = Column(String(length=128))
+
+
+
+
 class DividendDetail(DividendFinancingBase, Mixin):
     """
     分红明细
@@ -310,5 +352,4 @@ class SharesChange(DividendFinancingBase, Mixin):
 register_schema(providers=['eastmoney', 'emquantapi', 'joinquant'], db_name='dividend_financing',
                 schema_base=DividendFinancingBase)
 
-# __all__ = ['SharesChange', 'DividendFinancing', 'DividendDetail', 'SpoDetail', 'RightsIssueDetail','StkXrXd']
-__all__ = ['DividendFinancing', 'DividendDetail', 'SpoDetail', 'RightsIssueDetail']
+__all__ = ['FundDividendDetail','DividendFinancing', 'DividendDetail', 'SpoDetail', 'RightsIssueDetail']

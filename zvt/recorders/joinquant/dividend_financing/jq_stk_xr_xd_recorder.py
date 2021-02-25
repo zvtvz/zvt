@@ -1,189 +1,87 @@
-# # -*- coding: utf-8 -*-
-# import pandas as pd
-# from jqdatasdk import auth, query, indicator, get_fundamentals, logout, finance
-#
-# from zvt import zvt_env
-# from zvt.api.quote import to_jq_report_period
-#
-# from zvt.contract.api import get_data, df_to_db
-#
-# # from zvt.domain import FinanceFactor, StkXrXd
-#
-# from zvt.recorders.joinquant.common import company_type_flag, get_fc, \
-#     call_joinquant_api, get_from_path_fields, JoinquantTimestampsDataRecorder
-# from zvt.recorders.joinquant.common import to_jq_entity_id
-# from zvt.utils.pd_utils import index_df
-# from zvt.utils.pd_utils import pd_is_not_null
-# from zvt.utils.time_utils import to_time_str, to_pd_timestamp, TIME_FORMAT_DAY
-# from zvt.domain import StockDetail
-#
-#
-# class JqStkXrXdRecorder(JoinquantTimestampsDataRecorder):
-#     timestamps_fetching_url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetCompanyReportDateList'
-#     timestamp_list_path_fields = ['CompanyReportDateList']
-#     timestamp_path_fields = ['ReportDate']
-#     finance_report_type = None
-#     data_type = 1
-#
-#     entity_provider = 'joinquant'
-#     entity_schema = StockDetail
-#     data_schema = StkXrXd
-#     provider = 'joinquant'
-#
-#     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
-#                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
-#                  fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0,
-#                  close_minute=0) -> None:
-#         super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
-#                          default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-#                          close_minute)
-#         try:
-#             auth(zvt_env['jq_username'], zvt_env['jq_password'])
-#             self.fetch_jq_timestamp = True
-#             self.data_schema = StkXrXd
-#         except Exception as e:
-#             self.fetch_jq_timestamp = False
-#             self.logger.warning(
-#                 f'joinquant account not ok,the timestamp(publish date) for finance would be not correct', e)
-#
-#     def init_timestamps(self, entity):
-#         param = {
-#             "color": "w",
-#             "fc": get_fc(entity),
-#             "DataType": self.data_type
-#         }
-#
-#         timestamp_json_list = call_joinquant_api(url=self.timestamps_fetching_url,
-#                                                  path_fields=self.timestamp_list_path_fields,
-#                                                  param=param)
-#
-#         if self.timestamp_path_fields:
-#             timestamps = [get_from_path_fields(data, self.timestamp_path_fields) for data in timestamp_json_list]
-#
-#         return [to_pd_timestamp(t) for t in timestamps]
-#
-#     def generate_request_param(self, security_item, start, end, size, timestamps):
-#         if len(timestamps) <= 10:
-#             param = {
-#                 "color": "w",
-#                 "fc": get_fc(security_item),
-#                 "corpType": company_type_flag(security_item),
-#                 # 0 means get all types
-#                 "reportDateType": 0,
-#                 "endDate": '',
-#                 "latestCount": size
-#             }
-#         else:
-#             param = {
-#                 "color": "w",
-#                 "fc": get_fc(security_item),
-#                 "corpType": company_type_flag(security_item),
-#                 # 0 means get all types
-#                 "reportDateType": 0,
-#                 "endDate": to_time_str(timestamps[10]),
-#                 "latestCount": 10
-#             }
-#         return param
-#
-#     def record(self, entity, start, end, size, timestamps):
-#         # different with the default timestamps handling
-#         param = self.generate_request_param(entity, start, end, size, timestamps)
-#
-#         # 上市公司分红送股（除权除息）数据
-#         df = finance.run_query(query(finance.STK_XR_XD).filter(finance.STK_XR_XD.code == to_jq_entity_id(entity),
-#                                                                finance.STK_XR_XD.board_plan_pub_date >= to_time_str(start)).order_by(
-#             finance.STK_XR_XD.report_date).limit(size))
-#         df.rename(columns = {'board_plan_pub_date':'pub_date'},inplace=True)
-#
-#         df.drop(['id', 'company_id', 'company_name', 'code'], axis=1, inplace=True)
-#
-#         df['pub_date'] = pd.to_datetime(df['pub_date'])
-#         df['report_date'] = pd.to_datetime(df['report_date'])
-#         df['timestamp'] = df['report_date']
-#
-#         df['entity_id'] = entity.id
-#         df['provider'] = 'joinquant'
-#         df['code'] = entity.code
-#
-#         def generate_finance_id(se):
-#             return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
-#
-#         df['id'] = df[['entity_id', 'timestamp']].apply(generate_finance_id, axis=1)
-#         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
-#         return None
-#
-#     def get_original_time_field(self):
-#         return 'ReportDate'
-#
-#     def fill_timestamp_with_jq(self, security_item, the_data):
-#         # get report published date from jq
-#         try:
-#             q = query(
-#                 indicator.pubDate
-#             ).filter(
-#                 indicator.code == to_jq_entity_id(security_item),
-#             )
-#
-#             df = get_fundamentals(q, statDate=to_jq_report_period(the_data.report_date))
-#             if not df.empty and pd.isna(df).empty:
-#                 the_data.timestamp = to_pd_timestamp(df['pubDate'][0])
-#                 self.session.commit()
-#
-#         except Exception as e:
-#             self.logger.error(e)
-#
-#     def on_finish_entity(self, entity):
-#         super().on_finish_entity(entity)
-#
-#         if not self.fetch_jq_timestamp:
-#             return
-#
-#         # fill the timestamp for report published date
-#         the_data_list = get_data(data_schema=self.data_schema,
-#                                  provider=self.provider,
-#                                  entity_id=entity.id,
-#                                  order=self.data_schema.timestamp.asc(),
-#                                  return_type='domain',
-#                                  session=self.session,
-#                                  filters=[self.data_schema.timestamp == self.data_schema.report_date,
-#                                           self.data_schema.timestamp >= to_pd_timestamp('2005-01-01')])
-#         if the_data_list:
-#             if self.data_schema == FinanceFactor:
-#                 for the_data in the_data_list:
-#                     self.fill_timestamp_with_jq(entity, the_data)
-#             else:
-#                 df = FinanceFactor.query_data(entity_id=entity.id,
-#                                               columns=[FinanceFactor.timestamp, FinanceFactor.report_date,
-#                                                        FinanceFactor.id],
-#                                               filters=[FinanceFactor.timestamp != FinanceFactor.report_date,
-#                                                        FinanceFactor.timestamp >= to_pd_timestamp('2005-01-01'),
-#                                                        FinanceFactor.report_date >= the_data_list[0].report_date,
-#                                                        FinanceFactor.report_date <= the_data_list[
-#                                                            -1].report_date, ])
-#
-#                 if pd_is_not_null(df):
-#                     index_df(df, index='report_date', time_field='report_date')
-#
-#                 for the_data in the_data_list:
-#                     if (df is not None) and (not df.empty) and the_data.report_date in df.index:
-#                         the_data.timestamp = df.at[the_data.report_date, 'timestamp']
-#                         self.logger.info(
-#                             'db fill {} {} timestamp:{} for report_date:{}'.format(self.data_schema, entity.id,
-#                                                                                    the_data.timestamp,
-#                                                                                    the_data.report_date))
-#                         self.session.commit()
-#                     else:
-#                         # self.logger.info(
-#                         #     'waiting jq fill {} {} timestamp:{} for report_date:{}'.format(self.data_schema,
-#                         #                                                                    security_item.id,
-#                         #                                                                    the_data.timestamp,
-#                         #                                                                    the_data.report_date))
-#
-#                         self.fill_timestamp_with_jq(entity, the_data)
-#
-#     def on_finish(self):
-#         super().on_finish()
-#         logout()
-#
-#
-# __all__ = ['JqStkXrXdRecorder']
+# -*- coding: utf-8 -*-
+import pandas as pd
+
+from zvt import zvt_env
+from zvt.api import TIME_FORMAT_DAY, get_str_schema
+from zvt.contract.api import df_to_db
+from zvt.contract.recorder import TimeSeriesDataRecorder
+from zvt.domain import DividendDetail,StockDetail
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import now_pd_timestamp, to_time_str
+from jqdatasdk import auth, query, indicator, get_fundamentals, logout, finance
+from zvt.recorders.joinquant.common import to_jq_entity_id
+
+class JqDividendDetailRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'joinquant'
+    entity_schema = StockDetail
+    provider = 'joinquant'
+
+    data_schema = DividendDetail
+
+    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, batch_size=10,
+                 force_update=False, sleeping_time=5, default_size=2000, real_time=False,
+                 fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0,
+                 close_minute=0) -> None:
+        self.data_schema = get_str_schema('DividendDetail')
+        super().__init__(entity_type, exchanges, entity_ids, codes, batch_size, force_update, sleeping_time,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
+        auth(zvt_env['jq_username'], zvt_env['jq_password'])
+
+
+    def record(self, entity, start, end, size, timestamps):
+        if not end:
+            end = to_time_str(now_pd_timestamp())
+        start = to_time_str(start)
+        em_code = to_jq_entity_id(entity)
+
+        div_columns_dict = {
+            "report_date": "report_date", #报告时间
+            "board_plan_pub_date": "announce_date",  #公告日
+            "a_registration_date": "record_date",  #股权登记日
+            "a_bonus_date": "dividend_date",  # 除权除息日
+            "shareholders_plan_bonusnote": "dividend",  # 方案
+            "announce_date_general_meeting": "shareholders_plan_pub_date",  # 股东大会公告日
+            "implementation_pub_date": "announce_date_dividend_implementation",  # 分红实施公告日
+            "b_registration_date": "last_trading_day_b_shares",  # B股最后交易日 股权登记日
+            "at_bonus_ratio_rmb": "dividend_per_share_after_tax",  # 每股股利(税后) 原始数据/10
+            "bonus_ratio_rmb": "dividend_per_share_before_tax",  # 每股股利(税前) 原始数据/10
+            "plan_progress": "dividend_plan_progress",  # 分红方案进度
+            "dividend_arrival_date": "dividend_pay_date",  # 派息日,红利到账日
+            "dividend_ratio": "share_bonus_per_share",  # 每股送股比例  原始数据/10
+            "transfer_ratio": "per_share_conversion_ratio",  # 每股转增比例 应该 原始数据/10
+        }
+
+        df = finance.run_query(query(finance.STK_XR_XD).filter(
+            finance.STK_XR_XD.code == em_code,
+            finance.STK_XR_XD.board_plan_pub_date >= start).order_by(
+            finance.STK_XR_XD.report_date).limit(100))
+        df.rename(columns=div_columns_dict, inplace=True)
+        df.dropna(subset=['dividend_date'], inplace=True)
+        if pd_is_not_null(df):
+            df.reset_index(drop=True,inplace=True)
+            df['dividend_per_share_after_tax'] = df['dividend_per_share_after_tax']/10
+            df['dividend_per_share_before_tax'] = df['dividend_per_share_before_tax']/10
+            df['share_bonus_per_share'] = df['share_bonus_per_share']/10
+            df['per_share_conversion_ratio'] = df['per_share_conversion_ratio']/10
+            # df['dividend'] = df['dividend'].apply(lambda x: str(x).split('（')[0])
+            df['entity_id'] = entity.id
+            df['timestamp'] = pd.to_datetime(df.report_date)
+            df['provider'] = 'joinquant'
+            df['code'] = entity.code
+
+            def generate_id(se):
+                return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
+
+            df['id'] = df[['entity_id', 'timestamp']].apply(generate_id, axis=1)
+            # df.replace('None',pd.NaT,inplace=True)
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        return None
+
+
+__all__ = ['JqDividendDetailRecorder']
+
+if __name__ == '__main__':
+    # 上证50
+    JqDividendDetailRecorder(codes=['050002']).run()
+    # JqChinaEtfValuationRecorder(codes=['512290']).run()

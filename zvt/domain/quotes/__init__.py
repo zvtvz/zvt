@@ -78,6 +78,7 @@ class EtfKdataCommon(KdataCommon):
     # ETF 净值增长率
     change_pct = Column(Float)
 
+
 class StockKdataCommon(KdataCommon):
     # 涨跌幅
     change_pct = Column(Float)

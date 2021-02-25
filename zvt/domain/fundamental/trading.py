@@ -118,9 +118,9 @@ class HolderTrading(TradingBase, Mixin):
     holder_name = Column(String(length=150))
     # 变动数量
     volume = Column(Float)
-    # 变动比例
+    # 变动比例 变动数量占总股本比例  %
     change_pct = Column(Float)
-    # 变动后持股比例
+    # 变动后_占总股本比例
     holding_pct = Column(Float)
 
     # 股东类型
@@ -143,6 +143,48 @@ class HolderTrading(TradingBase, Mixin):
     holder_remark = Column(String(length=2000))
     # 变动前_持股总数(万股)
     holder_share_bf = Column(Float)
+
+
+class HolderTradePlan(TradingBase, Mixin):
+    """
+    大股东交易计划
+    """
+    __tablename__ = 'holder_trade_plan'
+
+    def get_data_map(self):
+        return {
+            'HOLDDECREASEANNCDATENEWPLAN': 'report_date',  # 公告日期
+            'HOLDDECREASENAMENEWPLAN': 'holder_name',  # 股东名称
+            # 'FX': 'holder_direction',  # 方向
+            'DECRENEWMAXSHANUM': 'volume_plan_max',  # 最新计划减持股份数量上限(股)
+            'DECRENEWMINSHANUM': 'volume_plan_min',  # 最新计划减持股份数量下限(股)
+
+            'HOLDMAXSHARENEWPLAN': 'volume_plan_max',  # 最新计划增持股份数量上限(股)
+            'HOLDMINSHARENEWPLAN': 'volume_plan_min',  # 最新计划增持股份数量下限(股)
+
+            'DECRENEWPROGRESS': 'plan_progress ',  # 减持计划进度
+            'HOLDPLANSCHEDULE': 'plan_progress ',  # 增持计划进度
+
+        }
+    provider = Column(String(length=32))
+    code = Column(String(length=32))
+    report_date = Column(DateTime)
+
+    # 股东名称
+    holder_name = Column(String(length=200))
+    # 变动数量上限(股)
+    volume_plan_max = Column(Float)
+    # 变动数量下限(股)
+    volume_plan_mix = Column(Float)
+    # 变动比例 变动数量占总股本比例 %
+    change_pct = Column(Float)
+    # 计划进度
+    plan_progress = Column(String(length=32))
+    # 方向
+    holder_direction = Column(String(length=32))
+
+
+
 
 
 class BigDealTrading(TradingBase, Mixin):
@@ -243,4 +285,4 @@ class DragonAndTiger(TradingBase, Mixin):
 
 register_schema(providers=['eastmoney', 'joinquant','emquantapi'], db_name='trading', schema_base=TradingBase)
 
-__all__ = ['LockedShares','EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']
+__all__ = ['HolderTradePlan','LockedShares','EquityPledge','ManagerTrading', 'HolderTrading', 'MarginTrading', 'BigDealTrading', 'DragonAndTiger']

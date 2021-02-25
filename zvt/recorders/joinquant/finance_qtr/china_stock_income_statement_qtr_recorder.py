@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.time_utils import to_pd_timestamp
+from zvt.domain import IncomeStatementQtr
+from zvt.recorders.joinquant.finance_qtr.base_china_stock_finance_qtr_recorder import BaseChinaStockFinanceQtrRecorder
 from zvt.utils.utils import add_func_to_value, first_item_to_float
-from zvt.api.quote import to_report_period_type
-from zvt.domain import IncomeStatement
-from zvt.recorders.joinquant.finance.base_jq_stock_finance_recorder import BaseJqStockFinanceRecorder
 
-
-income_statement_map = {
+income_statement_qtr_map = {
     # 营业总收入
     "total_op_income": "total_operating_revenue",
     # 营业收入
@@ -103,24 +100,22 @@ income_statement_map = {
 
 }
 
+add_func_to_value(income_statement_qtr_map, first_item_to_float)
 
-add_func_to_value(income_statement_map, first_item_to_float)
-income_statement_map["report_period"] = ("ReportDate", to_report_period_type)
-income_statement_map["report_date"] = ("ReportDate", to_pd_timestamp)
 
-class JqStockIncomeStatementRecorder(BaseJqStockFinanceRecorder):
-    data_schema = IncomeStatement
-    finance_report_type = 'INCOME_STATEMENT'
+class ChinaStockIncomeStatementQtrRecorder(BaseChinaStockFinanceQtrRecorder):
 
+    data_schema = IncomeStatementQtr
+    finance_report_type = 'IncomeStatementQSHSZ'
     data_type = 2
 
     def get_data_map(self):
-        return income_statement_map
+        return income_statement_qtr_map
 
 
-__all__ = ['JqStockIncomeStatementRecorder']
+__all__ = ['ChinaStockIncomeStatementQtrRecorder']
 
 if __name__ == '__main__':
     # init_log('income_statement.log')
-    recorder = JqStockIncomeStatementRecorder(codes=['002572'])
+    recorder = ChinaStockIncomeStatementQtrRecorder(codes=['002572'])
     recorder.run()

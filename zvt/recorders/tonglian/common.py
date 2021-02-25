@@ -25,6 +25,8 @@ def to_jq_entity_id(security_item):
             return '{}.XSHG'.format(security_item.code)
         if security_item.exchange == 'sz':
             return '{}.XSHE'.format(security_item.code)
+        if security_item.exchange == 'hk':
+            return '{}.HK'.format(security_item.code)
 
 
 def to_entity_id(jq_code: str, entity_type):

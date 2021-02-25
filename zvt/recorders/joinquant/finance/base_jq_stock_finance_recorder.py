@@ -83,7 +83,7 @@ class BaseJqStockFinanceRecorder(JoinquantTimestampsDataRecorder):
                 # 0 means get all types
                 "reportDateType": 0,
                 "endDate": to_time_str(timestamps[0]),
-                "latestCount": 10
+                "latestCount": 20
             }
 
         # if self.finance_report_type == 'LiRunBiaoList' or self.finance_report_type == 'XianJinLiuLiangBiaoList':

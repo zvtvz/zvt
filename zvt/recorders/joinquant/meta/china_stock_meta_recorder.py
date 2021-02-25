@@ -95,7 +95,7 @@ class JqChinaStockDetailNewRecorder(Recorder):
                                          entity_type='stock_detail',
                                          exchanges=['sh', 'sz'],
                                          codes=self.codes,
-                                         filters=[StockDetail.profile.is_(None)],
+                                         filters=[StockDetail.issues.is_(None)],
                                          return_type='domain',
                                          provider=self.provider)
 
@@ -105,7 +105,8 @@ class JqChinaStockDetailNewRecorder(Recorder):
             security = to_jq_entity_id(security_item)
             # 基本资料
             df = finance.run_query(query(finance.STK_COMPANY_INFO).filter(finance.STK_COMPANY_INFO.code == security))
-
+            if df.empty:
+                continue
             concept_dict = get_concept(security, date=security_item.timestamp)
             security_df = pd.DataFrame(index=[0])
             security_df['profile'] = df.description.values[0]
@@ -122,9 +123,13 @@ class JqChinaStockDetailNewRecorder(Recorder):
             security_df['area_indices'] = df.province.values[0]
 
             df_stk = finance.run_query(query(finance.STK_LIST).filter(finance.STK_LIST.code == security))
-            security_df['price'] = df_stk.book_price.values[0]
-            security_df['issues'] = df_stk.ipo_shares.values[0]
-            security_df['raising_fund'] = df_stk.ipo_shares.values[0] * df_stk.book_price.values[0]
+            if not df_stk.empty:
+                security_df['price'] = df_stk.book_price.values[0]
+                security_df['issues'] = df_stk.ipo_shares.values[0]
+                try:
+                    security_df['raising_fund'] = df_stk.ipo_shares.values[0] * df_stk.book_price.values[0]
+                except TypeError:
+                    pass
             security_df['timestamp'] =security_item.timestamp
             security_df['id'] =security_item.id
             security_df['entity_id'] =security_item.entity_id
@@ -355,7 +360,8 @@ class JqChinaIndexListSpiderNewRecorder(TimeSeriesDataRecorder):
         data_schema_df = self.data_schema.query_data(entity_id=entity.id)
         if not data_schema_df.empty and data_schema_df.timestamp.max() <= start:
             from datetime import timedelta
-            bdate_range_date = pd.bdate_range(start, start + timedelta(weeks=1))
+            # bdate_range_date = pd.bdate_range(start, start + timedelta(weeks=1))
+            bdate_range_date = pd.bdate_range(start, start + timedelta(weeks=4*6))
             if bdate_range_date[bdate_range_date > start][-1] > now_pd_timestamp():
                 start = to_time_str(now_pd_timestamp())
             else:

@@ -260,6 +260,6 @@ class CashFlowStatementQtr(FinanceQtrBase, Mixin):
     fi_cash_to_interest_commission = Column(Float)
 
 
-register_schema(providers=['emquantapi'], db_name='finance_qtr', schema_base=FinanceQtrBase)
+register_schema(providers=['emquantapi','joinquant'], db_name='finance_qtr', schema_base=FinanceQtrBase)
 
 __all__ = ['IncomeStatementQtr', 'CashFlowStatementQtr']

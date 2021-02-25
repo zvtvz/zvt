@@ -55,7 +55,7 @@ class HolderTradingRecorder(FixedCycleDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         df = finance.run_query(query(finance.STK_SHAREHOLDERS_SHARE_CHANGE).filter(
             finance.STK_SHAREHOLDERS_SHARE_CHANGE.code == to_jq_entity_id(entity)).filter(
-            finance.STK_SHAREHOLDERS_SHARE_CHANGE.pub_date > to_time_str(start)))
+            finance.STK_SHAREHOLDERS_SHARE_CHANGE.pub_date >= to_time_str(start)))
         if pd_is_not_null(df):
             df.reset_index(inplace=True, drop=True)
             df['name'] = entity.name
@@ -64,11 +64,11 @@ class HolderTradingRecorder(FixedCycleDataRecorder):
             df.rename(columns={
                 'pub_date': 'timestamp',  # 公告日期
                 'end_date': 'holder_end_date',  # 变动截至日期
-                'shareholder_name': 'holder_name',  ## 股东名称
-                'change_number': 'volume',  ## 变动数量
-                'change_ratio': 'change_pct',  # # 变动比例
+                'shareholder_name': 'holder_name',  # 股东名称
+                'change_number': 'volume',  # 变动数量
+                'change_ratio': 'change_pct',  # 变动比例  变动数量占总股本比例(%)
                 'after_change_ratio': 'holding_pct',  # 变动后_占总股本比例(%)
-                'price_ceiling': 'price',  # # 交易均价(元)
+                'price_ceiling': 'price',  # 交易均价(元)
             }, inplace=True)
             df['entity_id'] = entity.id
             df['timestamp'] = pd.to_datetime(df.timestamp)

@@ -29,6 +29,35 @@ class IndexValuation(ValuationBase, Mixin):
     div_yield= Column(Float)  # 股息率
 
 
+class StockValuationNew(ValuationBase, Mixin):
+    __tablename__ = 'stock_valuation_new'
+
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+    # 总股本(股)
+    capitalization = Column(Float)
+    # 公司已发行的普通股股份总数(包含A股，B股和H股的总股本)
+    circulating_cap = Column(Float)
+    # 市值
+    market_cap = Column(Float)
+    # 流通市值
+    circulating_market_cap = Column(Float)
+    # 换手率
+    turnover_ratio = Column(Float)
+    # 静态pe
+    pe = Column(Float)
+    # 动态pe
+    pe_ttm = Column(Float)
+    # 市净率
+    pb = Column(Float)
+    # 市销率
+    ps_ttm = Column(Float)
+    # 市现率
+    pcf_ttm = Column(Float)
+    # 股息率
+    div_yield= Column(Float)
+    # 加权平均资本成本
+    wacc = Column(Float)
 
 class StockValuation(ValuationBase, Mixin):
     __tablename__ = 'stock_valuation'
@@ -86,4 +115,4 @@ class EtfValuation(ValuationBase, Mixin):
 
 register_schema(providers=['joinquant','emquantapi'], db_name='valuation',schema_base=ValuationBase)
 
-__all__ = ['StockValuation','EtfValuation','IndexValuation']
+__all__ = ['StockValuationNew','StockValuation','EtfValuation','IndexValuation']

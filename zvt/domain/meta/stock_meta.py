@@ -45,6 +45,7 @@ class Block(StockMetaBase, BasePortfolio):
 
     # 板块类型，行业(industry),概念(concept)
     category = Column(String(length=64))
+    block_type = Column(String(length=64))
 
 
 # 指数
@@ -118,12 +119,31 @@ class BaseStatus(EntityMixin):
     # 变更类型
     change_type= Column(String(length=60))
 
+
+class BaseName(EntityMixin):
+    # 公告日期
+    pub_date = Column(DateTime)
+    # 变更日期
+    change_date = Column(DateTime)
+    # 新股票简称
+    new_name = Column(String(length=40))
+    # 新英文简称
+    new_spelling = Column(String(length=40))
+    # 原证券简称
+    org_name= Column(String(length=40))
+    # 原证券英文简称
+    org_spelling= Column(String(length=40))
+
 class StockStatus(StockMetaBase, BaseStatus):
     __tablename__ = 'stock_status'
 
+
+class StockNames(StockMetaBase, BaseName):
+    __tablename__ = 'stock_name_change'
+
 class BlockStock(StockMetaBase, BasePortfolioStock):
     __tablename__ = 'block_stock'
-
+    block_type = Column(String(length=40))
 
 class IndexStock(StockMetaBase, BasePortfolioStockHistory):
     __tablename__ = 'index_stock'
@@ -202,7 +222,7 @@ class StockDetailNew(StockMetaBase, BaseSecurity):
     # 网上中签率
     net_winning_rate = Column(Float)
     # 注册资金
-    register_capital = Column(DateTime)
+    register_capital = Column(Float)
 
 # 场外基金详情
 @register_entity(entity_type='fund_detail')
@@ -231,4 +251,4 @@ register_schema(providers=['joinquant', 'eastmoney', 'exchange', 'sina','emquant
 
 __all__ = ['Stock', 'Index', 'Block', 'Etf','Fund','IndexStockNew','StockDetailNew',
            'IndexStock','FundStock', 'BlockStock', 'EtfStock',
-           'StockDetail','FundDetail','StockStatus']
+           'StockDetail','FundDetail','StockStatus','StockNames']

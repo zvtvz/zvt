@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
-import json
-
-import demjson
 import pandas as pd
-from jqdatasdk import auth, get_query_count, get_industries, get_industry_stocks, finance, query
+from jqdatasdk import auth, get_query_count, get_industries, get_industry_stocks, finance, query, get_concepts, \
+    get_concept_stocks
 
 from zvt import zvt_env
-from zvt.contract.api import df_to_db
+from zvt.contract.api import df_to_db, get_data
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.recorders.joinquant.common import to_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_pd_timestamp, to_time_str, TIME_FORMAT_DAY
-from zvt.domain import BlockStock, Block,Block1dKdata,BlockMoneyFlow
+from zvt.domain import BlockStock, Block, Block1dKdata, BlockMoneyFlow,Stock
 
 
 class JqChinaBlockRecorder(Recorder):
     provider = 'joinquant'
     data_schema = Block
 
-    # 用于抓取行业/概念/地域列表
+    # 用于抓取行业
     category_map = {
         "sw_l1": "申万一级行业",
         "sw_l2": "申万二级行业",
@@ -27,27 +25,39 @@ class JqChinaBlockRecorder(Recorder):
         "jq_l2": "聚宽二级行业",
         "zjw": "证监会行业",
     }
-
     def __init__(self, batch_size=10, force_update=True, sleeping_time=10) -> None:
         super().__init__(batch_size, force_update, sleeping_time)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare'] / 10000}万")
 
     def run(self):
         # get stock blocks from sina
         for category, name_ch in self.category_map.items():
             df = get_industries(name=category, date=None)
             df['code'] = df.index
-            df['exchange'] = category.replace("_","")
+            df['exchange'] = 'cn'
             df['list_date'] = df['start_date']
             df['timestamp'] = df['list_date']
             df['entity_type'] = 'block'
+            df['block_type'] = category.replace("_", "")
             df['category'] = "industry"
             df['id'] = df['entity_id'] = df.apply(lambda x: "block_" + x.exchange + "_" + x.code, axis=1)
             df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
                      force_update=True)
             self.logger.info(f"完成聚宽数据行业数据保存:{name_ch}")
+
+        concept_df = get_concepts()
+        concept_df['code'] = concept_df.index
+        concept_df['exchange'] = 'cn'
+        concept_df['list_date'] = concept_df['start_date']
+        concept_df['timestamp'] = concept_df['list_date']
+        concept_df['entity_type'] = 'block'
+        concept_df['category'] = "concept"
+        concept_df['id'] = concept_df['entity_id'] = concept_df.apply(lambda x: "block_" + x.exchange + "_" + x.code,
+                                                                      axis=1)
+        df_to_db(data_schema=self.data_schema, df=concept_df, provider=self.provider,
+                 force_update=True)
+        self.logger.info(f"完成聚宽数据概念数据保存")
 
 
 class JqChinaBlockStockRecorder(TimeSeriesDataRecorder):
@@ -65,24 +75,26 @@ class JqChinaBlockStockRecorder(TimeSeriesDataRecorder):
                          close_minute)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare'] / 10000}万")
 
     def record(self, entity, start, end, size, timestamps):
-
-        industry_stocks = get_industry_stocks(entity.code,date=now_pd_timestamp())
-        if len(industry_stocks)==0:
+        try:
+            industry_stocks = get_industry_stocks(entity.code, date=now_pd_timestamp())
+        except:
+            industry_stocks = get_concept_stocks(entity.code, date=now_pd_timestamp())
+        if len(industry_stocks) == 0:
             return None
-        df = pd.DataFrame({"stock":industry_stocks})
-        df["stock_id"] = df.stock.apply(lambda x:to_entity_id(x,"stock"))
+        df = pd.DataFrame({"stock": industry_stocks})
+        df["stock_id"] = df.stock.apply(lambda x: to_entity_id(x, "stock"))
         df["stock_code"] = df.stock_id.str.split("_", expand=True)[2]
-
+        df["stock_name"] = df.stock_id.apply(lambda x:get_data(data_schema=Stock, entity_id=x, provider='joinquant').name)
+        df["block_type"] = entity.block_type
         df["code"] = entity.code
         df["name"] = entity.name
         df["exchange"] = entity.exchange
         df["timestamp"] = now_pd_timestamp()
         df["entity_id"] = entity.id
         df["entity_type"] = "block"
-        df["id"] = df.apply(lambda x:x.entity_id+"_"+x.stock_id,axis=1)
+        df["id"] = df.apply(lambda x: x.entity_id + "_" + x.stock_id, axis=1)
         if df.empty:
             return None
         df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
@@ -106,16 +118,15 @@ class JqChinaBlockKdataRecorder(TimeSeriesDataRecorder):
                          close_minute)
 
         auth(zvt_env['jq_username'], zvt_env['jq_password'])
-        print(f"剩余{get_query_count()['spare'] / 10000}万")
 
     def record(self, entity, start, end, size, timestamps):
-        if "swl1" not in entity.id:
-            return None
+        # if "swl1" not in entity.id:
+        #     return None
         start = to_time_str(start)
         df = finance.run_query(
             query(finance.SW1_DAILY_PRICE).filter(
-                finance.SW1_DAILY_PRICE.code==entity.code).filter(
-                finance.SW1_DAILY_PRICE.date>start).limit(size))
+                finance.SW1_DAILY_PRICE.code == entity.code).filter(
+                finance.SW1_DAILY_PRICE.date > start).limit(size))
         if pd_is_not_null(df):
             df['name'] = entity.name
             df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
@@ -126,7 +137,6 @@ class JqChinaBlockKdataRecorder(TimeSeriesDataRecorder):
             df['level'] = '1d'
             df['code'] = entity.code
 
-
             def generate_kdata_id(se):
                 return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 
@@ -135,6 +145,7 @@ class JqChinaBlockKdataRecorder(TimeSeriesDataRecorder):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
+
 
 class JqChinaBlockMoneyFlowRecorder(TimeSeriesDataRecorder):
     entity_provider = 'joinquant'
@@ -159,8 +170,8 @@ class JqChinaBlockMoneyFlowRecorder(TimeSeriesDataRecorder):
         start = to_time_str(start)
         df = finance.run_query(
             query(finance.SW1_DAILY_PRICE).filter(
-                finance.SW1_DAILY_PRICE.code==entity.code).filter(
-                finance.SW1_DAILY_PRICE.date>=start).limit(size))
+                finance.SW1_DAILY_PRICE.code == entity.code).filter(
+                finance.SW1_DAILY_PRICE.date >= start).limit(size))
         if pd_is_not_null(df):
             df['name'] = entity.name
             df.rename(columns={'money': 'turnover', 'date': 'timestamp'}, inplace=True)
@@ -171,7 +182,6 @@ class JqChinaBlockMoneyFlowRecorder(TimeSeriesDataRecorder):
             df['level'] = '1d'
             df['code'] = entity.code
 
-
             def generate_kdata_id(se):
                 return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
 
@@ -180,6 +190,7 @@ class JqChinaBlockMoneyFlowRecorder(TimeSeriesDataRecorder):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
+
 
 __all__ = ['JqChinaBlockRecorder', 'JqChinaBlockStockRecorder']
 

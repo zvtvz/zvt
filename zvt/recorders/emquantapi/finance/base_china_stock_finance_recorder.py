@@ -81,7 +81,7 @@ class EmBaseChinaStockFinanceRecorder(JoinquantTimestampsDataRecorder):
         columns_list =list(columns_map.values())
         if self.finance_report_type == 'AuditOpinions':
             #审计意见数据只有年报有
-            reportdate_list = [i for i in param if '12-31' in i]
+            param = [i for i in param if '12-31' in i]
         for reportdate in param:
             # 获取数据
             # 三大财务报表 使用ctr方法读取表名
