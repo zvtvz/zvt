@@ -3,11 +3,11 @@ from sqlalchemy import Column, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvt.contract import EntityMixin
-from zvt.contract.register import register_schema
+from zvt.contract.register import register_schema, register_entity
 
 ${entity_class}MetaBase = declarative_base()
 
-
+@register_entity(entity_type='${entity_type}')
 class ${entity_class}(EntityMixin, ${entity_class}MetaBase):
     __tablename__ = '${entity_type}'
     # 上市日

@@ -30,5 +30,5 @@ def export():
 
 
 if __name__ == '__main__':
-    # gen_plugin_project(dir_path='../../', entity_type='future')
+    gen_plugin_project(dir_path='../../', entity_type='coin', providers=['ccxt'])
     main()

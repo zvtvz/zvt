@@ -6,6 +6,9 @@ providers = []
 # all registered entity types
 entity_types = []
 
+# all entity schemas
+entity_schemas = []
+
 # all registered schemas
 schemas = []
 
