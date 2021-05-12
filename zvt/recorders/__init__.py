@@ -130,7 +130,7 @@ def init_main_index(provider='exchange'):
     # print(df)
     df_to_db(df=df, data_schema=Index, provider=provider, force_update=False)
     # delete dirty data
-    del_data(data_schema=Index, provider=provider, filters=[Index.exchange == 'cn'])
+    # del_data(data_schema=Index, provider=provider, filters=[Index.exchange == 'cn'])
 
 
 init_main_index(provider='joinquant')

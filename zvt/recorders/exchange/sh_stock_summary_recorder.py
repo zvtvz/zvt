@@ -19,10 +19,10 @@ class StockSummaryRecorder(TimestampsDataRecorder):
 
     url = 'http://query.sse.com.cn/marketdata/tradedata/queryTradingByProdTypeData.do?jsonCallBack=jsonpCallback30731&searchDate={}&prodType=gp&_=1515717065511'
 
-    def __init__(self, exchanges=['cn'], entity_ids=None, codes=['000001'], batch_size=10,
+    def __init__(self, exchanges=['sh', 'sz'], entity_ids=None, codes=['000001'], batch_size=10,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add') -> None:
-        super().__init__('index', exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
+        super().__init__('index', exchanges, entity_ids, codes, True, batch_size, force_update, sleeping_time,
                          default_size, real_time, fix_duplicate_way)
 
     def init_timestamps(self, entity):
