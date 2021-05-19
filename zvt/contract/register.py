@@ -75,7 +75,6 @@ def register_schema(providers: List[str],
     zvt_context.dbname_map_schemas[db_name] = schemas
 
     for provider in providers:
-        # track in in  _providers
         if provider not in zvt_context.providers:
             zvt_context.providers.append(provider)
 

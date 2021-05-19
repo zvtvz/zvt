@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import List, Union
 
 import pandas as pd
-from sqlalchemy import Column, String, DateTime, Float
+from sqlalchemy import Column, String, DateTime, Float, BIGINT
 from sqlalchemy.orm import Session
 
 from zvt.contract import IntervalLevel
@@ -18,6 +18,9 @@ class Mixin(object):
 
     # the meaning could be different for different case,most of time it means 'happen time'
     timestamp = Column(DateTime)
+
+    # unix epoch,same meaning with timestamp
+    # ts = Column(BIGINT)
 
     @classmethod
     def help(cls):
