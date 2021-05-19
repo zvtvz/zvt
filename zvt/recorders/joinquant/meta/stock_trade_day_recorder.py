@@ -15,12 +15,13 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
     provider = 'joinquant'
     data_schema = StockTradeDay
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False, batch_size=10,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, ['000001'], batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute)
+    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False,
+                 batch_size=10, force_update=False, sleeping_time=5, default_size=2000, real_time=False,
+                 fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0,
+                 entity_filters=None) -> None:
+        super().__init__(entity_type, exchanges, entity_ids, ['000001'], day_data, batch_size, force_update,
+                         sleeping_time, default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
+                         close_hour, close_minute, entity_filters)
 
     def record(self, entity, start, end, size, timestamps):
         df = pd.DataFrame()
