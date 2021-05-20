@@ -26,8 +26,24 @@ class EntityType(Enum):
     future = 'future'
     coin = 'coin'
     option = 'option'
+    fund = 'fund'
 
 
 class Exchange(Enum):
+    # 上证交易所
     sh = 'sh'
+    # 深证交易所
     sz = 'sz'
+
+    # 数字货币
+    binance = 'binance'
+    huobipro = 'huobipro'
+
+    # 上海期货交易所
+    shfe = 'shfe'
+    # 大连商品交易所
+    dce = "dce"
+    # 郑州商品交易所
+    czce = 'czce'
+    # 中国金融期货交易所
+    cffex = 'cffex'
