@@ -12,19 +12,17 @@ Referer: http://www.sse.com.cn/market/price/trends/
 Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.8,en;q=0.6
 Cookie: yfx_c_g_u_id_10000042=_ck17072000172016360411059933357; yfx_f_l_v_t_10000042=f_t_1500481040618__r_t_1507560823182__v_t_1507561607501__r_c_1; VISITED_MENU=%5B%228451%22%2C%228453%22%5D
-'''
-                                              )
+''')
 
 DEFAULT_SH_HEADER = chrome_copy_header_to_dict('''
-Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-Accept-Encoding:gzip, deflate, sdch
-Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
-Connection:keep-alive
-Cookie:PHPStat_First_Time_10000011=1464572600205; PHPStat_Cookie_Global_User_Id=_ck16053009432012139947369251193; PHPStat_Main_Website_10000011=_ck16053009432012139947369251193%7C10000011%7C%7C%7C; VISITED_STOCK_CODE=%5B%22600272%22%5D; VISITED_COMPANY_CODE=%5B%22600272%22%5D; seecookie=%5B600272%5D%3A%u5F00%u5F00%u5B9E%u4E1A; PHPStat_Return_Count_10000011=3; PHPStat_Return_Time_10000011=1476152548261; _trs_uv=1j7y_532_itpgj4e2; VISITED_MENU=%5B%228482%22%2C%228530%22%2C%228529%22%2C%228453%22%2C%228454%22%2C%228464%22%2C%228466%22%2C%228469%22%2C%228451%22%2C%228528%22%5D
-Host:query.sse.com.cn
-Referer:http://www.sse.com.cn/assortment/stock/list/share/
-Upgrade-Insecure-Requests:1
-User-Agent:Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36
+Accept: */*
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
+Connection: keep-alive
+Cookie: yfx_c_g_u_id_10000042=_ck21052517524516575117884257529; yfx_f_l_v_t_10000042=f_t_1621936365643__r_t_1621936365643__v_t_1621936365643__r_c_0; VISITED_MENU=%5B%228466%22%2C%228528%22%5D; JSESSIONID=3C970EA11443D2B7F3844558174C2CDB
+Host: query.sse.com.cn
+Referer: http://www.sse.com.cn/
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36
 ''')
 
 DEFAULT_SZ_HEADER = chrome_copy_header_to_dict('''

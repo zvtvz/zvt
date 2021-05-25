@@ -7,9 +7,9 @@ import requests
 
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
-from zvt.utils.time_utils import to_pd_timestamp
 from zvt.domain import Stock, StockDetail
 from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 class ExchangeChinaStockListRecorder(Recorder):
@@ -31,7 +31,7 @@ class ExchangeChinaStockListRecorder(Recorder):
         df = None
         if exchange == 'sh':
             df = pd.read_csv(io.BytesIO(response.content), sep='\s+', encoding='GB2312', dtype=str,
-                             parse_dates=['上市日期'])
+                             parse_dates=['上市日期'], error_bad_lines=False)
             if df is not None:
                 df = df.loc[:, ['公司代码', '公司简称', '上市日期']]
 
