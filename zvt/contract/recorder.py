@@ -1,19 +1,38 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import time
 import uuid
 from typing import List
 
 import pandas as pd
+from sqlalchemy import Column, String, Text
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
 from zvt.contract import IntervalLevel, Mixin, EntityMixin
-from zvt.contract.api import get_db_session, get_schema_columns
+from zvt.contract.api import get_db_session, get_schema_columns, del_data
 from zvt.contract.api import get_entities, get_data
+from zvt.contract.register import register_schema
 from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
     evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp, now_time_str
 from zvt.utils.utils import fill_domain_from_dict
+
+RecoderInfoBase = declarative_base()
+
+
+# 用于保存recorder的状态
+class RecorderState(RecoderInfoBase, Mixin):
+    __tablename__ = 'recoder_state'
+    # recorder名字
+    recoder_name = Column(String(length=128))
+
+    # json string
+    state = Column(Text())
+
+
+register_schema(providers=['zvt'], db_name='recoder_info', schema_base=RecoderInfoBase)
 
 
 class Meta(type):
@@ -35,6 +54,8 @@ class Recorder(metaclass=Meta):
     data_schema: Mixin = None
 
     url = None
+
+    name = None
 
     def __init__(self,
                  batch_size: int = 10,
@@ -63,6 +84,19 @@ class Recorder(metaclass=Meta):
         # using to do db operations
         self.session = get_db_session(provider=self.provider,
                                       data_schema=self.data_schema)
+        self.state_session = get_db_session(provider='zvt',
+                                            data_schema=RecorderState)
+
+        if not self.name:
+            self.name = type(self).__name__.lower()
+        self.recorder_state = None
+        self.state = None
+
+        states = RecorderState.query_data(provider='zvt', filters=[RecorderState.recoder_name == self.name],
+                                          return_type='domain')
+        if states:
+            self.recorder_state = states[0]
+            self.state: dict = self.decode_state(self.recorder_state.state)
 
     def run(self):
         raise NotImplementedError
@@ -71,6 +105,33 @@ class Recorder(metaclass=Meta):
         if self.sleeping_time > 0:
             self.logger.info(f'sleeping {self.sleeping_time} seconds')
             time.sleep(self.sleeping_time)
+
+    def recorder_state_object_hook(self):
+        return None
+
+    def clear_state_data(self):
+        del_data(RecorderState, filters=[RecorderState.recoder_name == self.name], provider='zvt')
+
+    def decode_state(self, state: str):
+        return json.loads(state, object_hook=self.recorder_state_object_hook())
+
+    def encode_state(self, state: object):
+        return json.dumps(state, cls=self.recorder_state_encoder())
+
+    def recorder_state_encoder(self):
+        return None
+
+    def persist_state(self, entity_id, state):
+        state_str = self.encode_state(state)
+        if self.recorder_state:
+            self.recorder_state.state = state_str
+        else:
+            domain_id = f'{self.name}_{entity_id}'
+            self.recorder_state = RecorderState(id=domain_id, entity_id=entity_id,
+                                                recoder_name=self.name,
+                                                state=state_str)
+        self.state_session.add(self.recorder_state)
+        self.state_session.commit()
 
 
 class RecorderForEntities(Recorder):

@@ -3,7 +3,6 @@
 [![image](https://img.shields.io/pypi/l/${project}.svg)](https://pypi.org/project/${project}/)
 [![image](https://img.shields.io/pypi/pyversions/${project}.svg)](https://pypi.org/project/${project}/)
 [![Build Status](https://api.travis-ci.org/zvtvz/${project}.svg?branch=master)](https://travis-ci.org/zvtvz/${project})
-[![HitCount](http://hits.dwyl.com/zvtvz/${project}.svg)](http://hits.dwyl.com/zvtvz/${project})
 
 ### introduction
 

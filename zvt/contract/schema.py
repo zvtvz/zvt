@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import List, Union
 
 import pandas as pd
-from sqlalchemy import Column, String, DateTime, Float, BIGINT
+from sqlalchemy import Column, String, DateTime, Float
 from sqlalchemy.orm import Session
 
 from zvt.contract import IntervalLevel
