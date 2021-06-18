@@ -4,7 +4,7 @@ from typing import List, Union, Type, Optional
 
 import pandas as pd
 
-from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.api import get_entities, get_schema_by_name
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
@@ -25,7 +25,7 @@ def get_ma_factor_schema(entity_type: str,
 
 
 class MaFactor(TechnicalFactor):
-    def __init__(self, entity_schema: Type[EntityMixin] = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
@@ -68,7 +68,7 @@ class CrossMaFactor(MaFactor):
 
 class VolumeUpMaFactor(TechnicalFactor):
 
-    def __init__(self, entity_schema: Type[EntityMixin] = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None, filters: List = None,

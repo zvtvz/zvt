@@ -13,7 +13,7 @@ from sqlalchemy.orm import Query
 from sqlalchemy.orm import sessionmaker, Session
 
 from zvt import zvt_env
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract import IntervalLevel, TradableEntity
 from zvt.contract import Mixin
 from zvt.contract import zvt_context
 from zvt.utils.pd_utils import pd_is_not_null, index_df
@@ -479,7 +479,7 @@ def df_to_db(df: pd.DataFrame,
 
 
 def get_entities(
-        entity_schema: EntityMixin = None,
+        entity_schema: TradableEntity = None,
         entity_type: str = None,
         exchanges: List[str] = None,
         ids: List[str] = None,
@@ -519,7 +519,7 @@ def get_entities(
                     filters=filters, session=session, order=order, limit=limit, index=index)
 
 
-def get_entity_ids(entity_type='stock', entity_schema: EntityMixin = None, exchanges=None, codes=None, provider=None,
+def get_entity_ids(entity_type='stock', entity_schema: TradableEntity = None, exchanges=None, codes=None, provider=None,
                    filters=None):
     df = get_entities(entity_type=entity_type, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
                       provider=provider, filters=filters)

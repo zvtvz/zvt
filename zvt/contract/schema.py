@@ -181,18 +181,7 @@ class NormalMixin(Mixin):
     updated_timestamp = Column(DateTime)
 
 
-class Player(Mixin):
-    # 参与者类型
-    player_type = Column(String(length=64))
-    # 所属国家
-    country = Column(String(length=32))
-    # 编码
-    code = Column(String(length=64))
-    # 名字
-    name = Column(String(length=128))
-
-
-class EntityMixin(Mixin):
+class Entity(Mixin):
     # 标的类型
     entity_type = Column(String(length=64))
     # 所属交易所
@@ -206,6 +195,8 @@ class EntityMixin(Mixin):
     # 退市日
     end_date = Column(DateTime)
 
+
+class TradableEntity(Entity):
     @classmethod
     def get_trading_dates(cls, start_date=None, end_date=None):
         """
@@ -306,14 +297,18 @@ class EntityMixin(Mixin):
         return 1
 
 
-class NormalEntityMixin(EntityMixin):
+class ActorEntity(Entity):
+    pass
+
+
+class NormalEntityMixin(TradableEntity):
     # the record created time in db
     created_timestamp = Column(DateTime, default=pd.Timestamp.now())
     # the record updated time in db, some recorder would check it for whether need to refresh
     updated_timestamp = Column(DateTime)
 
 
-class Portfolio(EntityMixin):
+class Portfolio(TradableEntity):
     @classmethod
     def get_stocks(cls,
                    code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
@@ -367,5 +362,5 @@ class PortfolioStockHistory(PortfolioStock):
     market_cap = Column(Float)
 
 
-__all__ = ['EntityMixin', 'Mixin', 'NormalMixin', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock',
+__all__ = ['TradableEntity', 'Mixin', 'NormalMixin', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock',
            'PortfolioStockHistory']

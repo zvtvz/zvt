@@ -6,33 +6,16 @@ import uuid
 from typing import List
 
 import pandas as pd
-from sqlalchemy import Column, String, Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
-from zvt.contract import IntervalLevel, Mixin, EntityMixin
+from zvt.contract import IntervalLevel, Mixin, TradableEntity
 from zvt.contract.api import get_db_session, get_schema_columns, del_data
 from zvt.contract.api import get_entities, get_data
-from zvt.contract.register import register_schema
+from zvt.contract.zvt_info import RecorderState
 from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
     evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp, now_time_str
 from zvt.utils.utils import fill_domain_from_dict
-
-RecoderInfoBase = declarative_base()
-
-
-# 用于保存recorder的状态
-class RecorderState(RecoderInfoBase, Mixin):
-    __tablename__ = 'recoder_state'
-    # recorder名字
-    recoder_name = Column(String(length=128))
-
-    # json string
-    state = Column(Text())
-
-
-register_schema(providers=['zvt'], db_name='recoder_info', schema_base=RecoderInfoBase)
 
 
 class Meta(type):
@@ -137,7 +120,7 @@ class Recorder(metaclass=Meta):
 class RecorderForEntities(Recorder):
     # overwrite them to fetch the entity list
     entity_provider: str = None
-    entity_schema: EntityMixin = None
+    entity_schema: TradableEntity = None
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False,
                  batch_size=10, force_update=False, sleeping_time=10, entity_filters=None) -> None:

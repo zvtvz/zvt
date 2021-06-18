@@ -7,7 +7,7 @@ from typing import List
 from zvt.api import get_kdata
 from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.api.trader_info_api import get_trader_info, clear_trader
-from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.api import get_db_session
 from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignalType, TradingListener, TradingSignal
@@ -99,7 +99,7 @@ class AccountService(TradingListener):
 class SimAccountService(AccountService):
 
     def __init__(self,
-                 entity_schema: EntityMixin,
+                 entity_schema: TradableEntity,
                  trader_name,
                  timestamp,
                  provider=None,

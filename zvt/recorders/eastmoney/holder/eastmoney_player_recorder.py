@@ -3,14 +3,14 @@ import requests
 
 from zvt.api import get_recent_report_date
 from zvt.contract.recorder import Recorder
-from zvt.domain.player.player_meta import PlayerMeta
+from zvt.domain.player.player_meta import ActorMeta
 from zvt.utils import to_pd_timestamp
 
 
-class EastmoneyPlayerRecorder(Recorder):
-    name = "eastmoney_player_recorder"
+class EastmoneyActorRecorder(Recorder):
+    name = "eastmoney_actor_recorder"
     provider = 'eastmoney'
-    data_schema = PlayerMeta
+    data_schema = ActorMeta
 
     url = "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_FREEHOLDERS_BASIC_INFO&columns=HOLDER_NAME,END_DATE,HOLDER_NEW,HOLDER_NUM,HOLDER_CODE&quoteColumns=&filter=(END_DATE='{}')&pageNumber={}&pageSize={}&sortTypes=-1,-1&sortColumns=HOLDER_NUM,HOLDER_NAME&source=SECURITIES&client=SW"
 
@@ -59,4 +59,4 @@ class EastmoneyPlayerRecorder(Recorder):
 
 
 if __name__ == '__main__':
-    EastmoneyPlayerRecorder().run()
+    EastmoneyActorRecorder().run()

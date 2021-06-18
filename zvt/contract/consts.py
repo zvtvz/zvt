@@ -2,11 +2,11 @@
 from enum import Enum
 
 
-class PlayerType(Enum):
+class ActorType(Enum):
     # 个人
     individual = 'individual'
-    # 基金
-    fund = 'fund'
+    # 公募基金
+    raised_fund = 'raised_fund'
     # 社保
     social_security = 'social_security'
     # 保险
@@ -17,11 +17,13 @@ class PlayerType(Enum):
     trust = 'trust'
     # 券商
     broker = 'broker'
-    # 公司(包括私募)
+    # 私募
+    private_equity = 'private_equity'
+    # 公司(可能包括私募)
     corporation = 'corporation'
 
 
-class EntityType(Enum):
+class TradableType(Enum):
     stock = 'stock'
     future = 'future'
     coin = 'coin'

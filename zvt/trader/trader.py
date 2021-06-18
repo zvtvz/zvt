@@ -6,7 +6,7 @@ from typing import List, Union, Type, Tuple
 import pandas as pd
 
 from zvt.api.trader_info_api import AccountStatsReader
-from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.drawer import Drawer
 from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock, AccountStats, Position
@@ -17,7 +17,7 @@ from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str,
 
 
 class Trader(object):
-    entity_schema: Type[EntityMixin] = None
+    entity_schema: Type[TradableEntity] = None
 
     def __init__(self,
                  entity_ids: List[str] = None,

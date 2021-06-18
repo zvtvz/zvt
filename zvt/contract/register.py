@@ -5,7 +5,7 @@ from typing import List
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from zvt.contract import EntityMixin, zvt_context, Mixin
+from zvt.contract import TradableEntity, zvt_context, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
 from zvt.utils.utils import add_to_map_list
 
@@ -24,7 +24,7 @@ def register_entity(entity_type: str = None):
 
     def register(cls):
         # register the entity
-        if issubclass(cls, EntityMixin):
+        if issubclass(cls, TradableEntity):
             entity_type_ = entity_type
             if not entity_type:
                 entity_type_ = cls.__name__.lower()

@@ -9,7 +9,7 @@ import pandas as pd
 from sqlalchemy import Column, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract import IntervalLevel, TradableEntity
 from zvt.contract import Mixin
 from zvt.contract.api import get_data, df_to_db, get_db_session, del_data
 from zvt.contract.reader import DataReader, DataListener
@@ -209,7 +209,7 @@ class Factor(DataReader, DataListener):
 
     def __init__(self,
                  data_schema: Type[Mixin],
-                 entity_schema: Type[EntityMixin] = None,
+                 entity_schema: Type[TradableEntity] = None,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,

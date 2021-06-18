@@ -4,7 +4,7 @@ from typing import List, Union
 import pandas as pd
 
 from zvt.contract import AdjustType
-from zvt.contract import IntervalLevel, EntityMixin
+from zvt.contract import IntervalLevel, TradableEntity
 from zvt.contract.drawer import Drawer
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
@@ -32,7 +32,7 @@ class TopBottomTransformer(Transformer):
 
 
 class TopBottomFactor(TechnicalFactor):
-    def __init__(self, entity_schema: EntityMixin = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: TradableEntity = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,

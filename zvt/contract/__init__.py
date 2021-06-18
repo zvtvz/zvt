@@ -108,7 +108,7 @@ class AdjustType(enum.Enum):
 
 
 from . import zvt_context
-from .schema import Mixin, NormalMixin, EntityMixin, NormalEntityMixin, PortfolioStock, Portfolio, PortfolioStockHistory
+from .schema import Mixin, NormalMixin, TradableEntity, NormalEntityMixin, PortfolioStock, Portfolio, PortfolioStockHistory
 
-__all__ = ['IntervalLevel', 'Mixin', 'NormalMixin', 'EntityMixin', 'NormalEntityMixin', 'zvt_context', 'AdjustType',
+__all__ = ['IntervalLevel', 'Mixin', 'NormalMixin', 'TradableEntity', 'NormalEntityMixin', 'zvt_context', 'AdjustType',
            'Portfolio', 'PortfolioStock', 'PortfolioStockHistory']

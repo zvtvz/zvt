@@ -8,7 +8,7 @@ from typing import Union, Optional, Type
 import numpy as np
 import pandas as pd
 
-from zvt.contract import EntityMixin
+from zvt.contract import TradableEntity
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import get_schema_by_name
 from zvt.contract.data_type import Bean
@@ -535,7 +535,7 @@ class ZenAccumulator(Accumulator):
 
 class ZenFactor(TechnicalFactor):
 
-    def __init__(self, entity_schema: Type[EntityMixin] = Stock, provider: str = None, entity_provider: str = None,
+    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
                  the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,

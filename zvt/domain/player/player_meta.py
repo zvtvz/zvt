@@ -3,16 +3,16 @@
 from sqlalchemy.ext.declarative import declarative_base
 
 from zvt.contract.register import register_schema
-from zvt.contract.schema import Player
+from zvt.contract.schema import ActorEntity
 
-PlayerMetaBase = declarative_base()
+ActorMetaBase = declarative_base()
 
 
 # 个股
-class PlayerMeta(PlayerMetaBase, Player):
-    __tablename__ = 'player_meta'
+class ActorMeta(ActorMetaBase, ActorEntity):
+    __tablename__ = 'actor_meta'
 
 
-register_schema(providers=['eastmoney'], db_name='player_meta', schema_base=PlayerMetaBase)
+register_schema(providers=['eastmoney'], db_name='actor_meta', schema_base=ActorMetaBase)
 # the __all__ is generated
-__all__ = ['PlayerMeta']
+__all__ = ['ActorMeta']
