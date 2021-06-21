@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Column, String, DateTime, BigInteger, Float
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from zvt.contract import TradableEntity
 from zvt.contract.register import register_schema, register_entity

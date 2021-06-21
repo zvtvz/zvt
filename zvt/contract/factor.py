@@ -7,7 +7,7 @@ from typing import List, Union, Optional, Type
 
 import pandas as pd
 from sqlalchemy import Column, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from zvt.contract import IntervalLevel, TradableEntity
 from zvt.contract import Mixin

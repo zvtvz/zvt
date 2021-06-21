@@ -57,8 +57,8 @@ def register_schema(providers: List[str],
     :rtype:
     """
     schemas = []
-    for item in schema_base._decl_class_registry.items():
-        cls = item[1]
+    for item in schema_base.registry.mappers:
+        cls = item.class_
         if type(cls) == DeclarativeMeta:
             # register provider to the schema
             for provider in providers:
