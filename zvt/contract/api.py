@@ -261,6 +261,16 @@ def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
     session.commit()
 
 
+def get_one(data_schema, id: str, provider: str = None, session: Session = None):
+    assert provider is not None
+    assert provider in zvt_context.providers
+
+    if not session:
+        session = get_db_session(provider=provider, data_schema=data_schema)
+
+    return session.query(data_schema).get(id)
+
+
 def get_data(data_schema,
              ids: List[str] = None,
              entity_ids: List[str] = None,
