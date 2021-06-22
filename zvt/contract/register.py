@@ -29,10 +29,10 @@ def register_entity(entity_type: str = None):
             if not entity_type:
                 entity_type_ = cls.__name__.lower()
 
-            if entity_type_ not in zvt_context.entity_types:
-                zvt_context.entity_types.append(entity_type_)
+            if entity_type_ not in zvt_context.tradable_entity_types:
+                zvt_context.tradable_entity_types.append(entity_type_)
                 zvt_context.entity_schemas.append(cls)
-            zvt_context.entity_schema_map[entity_type_] = cls
+            zvt_context.tradable_schema_map[entity_type_] = cls
         return cls
 
     return register

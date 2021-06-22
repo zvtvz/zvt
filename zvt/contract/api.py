@@ -190,7 +190,7 @@ def get_entity_schema(entity_type: str) -> object:
     :return:
     :rtype:
     """
-    return zvt_context.zvt_entity_schema_map[entity_type]
+    return zvt_context.tradable_schema_map[entity_type]
 
 
 def get_schema_by_name(name: str) -> DeclarativeMeta:
@@ -262,8 +262,10 @@ def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
 
 
 def get_one(data_schema, id: str, provider: str = None, session: Session = None):
-    assert provider is not None
-    assert provider in zvt_context.providers
+    if 'providers' not in data_schema.__dict__:
+        logger.error("no provider registered for: {}", data_schema)
+    if not provider:
+        provider = data_schema.providers[0]
 
     if not session:
         session = get_db_session(provider=provider, data_schema=data_schema)
@@ -271,7 +273,7 @@ def get_one(data_schema, id: str, provider: str = None, session: Session = None)
     return session.query(data_schema).get(id)
 
 
-def get_data(data_schema,
+def get_data(data_schema: Mixin,
              ids: List[str] = None,
              entity_ids: List[str] = None,
              entity_id: str = None,
@@ -290,9 +292,10 @@ def get_data(data_schema,
              limit: int = None,
              index: Union[str, list] = None,
              time_field: str = 'timestamp'):
-    assert data_schema is not None
-    assert provider is not None
-    assert provider in zvt_context.providers
+    if 'providers' not in data_schema.__dict__:
+        logger.error("no provider registered for: {}", data_schema)
+    if not provider:
+        provider = data_schema.providers[0]
 
     if not session:
         session = get_db_session(provider=provider, data_schema=data_schema)
@@ -509,7 +512,7 @@ def get_entities(
         limit: int = None,
         index: Union[str, list] = 'code') -> object:
     if not entity_schema:
-        entity_schema = zvt_context.entity_schema_map[entity_type]
+        entity_schema = zvt_context.tradable_schema_map[entity_type]
 
     if not provider:
         provider = entity_schema.providers[0]

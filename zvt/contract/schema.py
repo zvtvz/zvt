@@ -59,6 +59,11 @@ class Mixin(object):
             cls.providers.append(provider)
 
     @classmethod
+    def get_providers(cls) -> List[str]:
+        assert hasattr(cls, 'providers')
+        return cls.providers
+
+    @classmethod
     def test_data_correctness(cls, provider, data_samples):
         for data in data_samples:
             item = cls.query_data(provider=provider, ids=[data['id']], return_type='dict')
@@ -369,5 +374,18 @@ class PortfolioStockHistory(PortfolioStock):
     market_cap = Column(Float)
 
 
+# 交易标的和参与者的关系应该继承自该类, meet,遇见,恰如其分的诠释参与者和交易标的的关系
+class TradableMeetActor(Mixin):
+    # tradable code
+    code = Column(String(length=64))
+    # tradable name
+    name = Column(String(length=128))
+
+    actor_id = Column(String)
+    actor_type = Column(String)
+    actor_code = Column(String(length=64))
+    actor_name = Column(String(length=128))
+
+
 __all__ = ['TradableEntity', 'Mixin', 'NormalMixin', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock',
-           'PortfolioStockHistory']
+           'PortfolioStockHistory', 'TradableMeetActor']

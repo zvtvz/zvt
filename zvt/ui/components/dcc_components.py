@@ -6,7 +6,7 @@ from zvt.api.quote import decode_entity_id, get_kdata_schema
 from zvt.api.trader_info_api import OrderReader, AccountStatsReader
 from zvt.contract.drawer import Drawer
 from zvt.contract.reader import DataReader
-from zvt.contract.zvt_context import entity_schema_map
+from zvt.contract.zvt_context import tradable_schema_map
 from zvt.utils.pd_utils import pd_is_not_null
 
 
@@ -37,7 +37,7 @@ def get_trading_signals_figure(order_reader: OrderReader,
     if not end_timestamp:
         end_timestamp = order_reader.end_timestamp
     kdata_reader = DataReader(entity_ids=[entity_id], data_schema=data_schema,
-                              entity_schema=entity_schema_map.get(entity_type),
+                              entity_schema=tradable_schema_map.get(entity_type),
                               start_timestamp=start_timestamp,
                               end_timestamp=end_timestamp,
                               level=order_reader.level)

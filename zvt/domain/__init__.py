@@ -93,6 +93,6 @@ from .trader_info import __all__ as _trader_info_all
 __all__ += _trader_info_all
 
 # import all from submodule player
-from .player import *
-from .player import __all__ as _player_all
+from .actor import *
+from .actor import __all__ as _player_all
 __all__ += _player_all

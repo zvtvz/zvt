@@ -3,7 +3,7 @@ import requests
 
 from zvt.api import get_recent_report_date
 from zvt.contract.recorder import Recorder
-from zvt.domain.player.player_meta import ActorMeta
+from zvt.domain.actor.actor_meta import ActorMeta
 from zvt.utils import to_pd_timestamp
 
 

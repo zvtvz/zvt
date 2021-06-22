@@ -3,8 +3,8 @@
 # all registered providers
 providers = []
 
-# all registered entity types
-entity_types = []
+# all registered entity types(str)
+tradable_entity_types = []
 
 # all entity schemas
 entity_schemas = []
@@ -12,8 +12,8 @@ entity_schemas = []
 # all registered schemas
 schemas = []
 
-# entity_type -> entity schema
-entity_schema_map = {}
+# tradable entity  type -> schema
+tradable_schema_map = {}
 
 # global sessions
 sessions = {}

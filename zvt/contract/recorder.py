@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 import time
 import uuid
@@ -9,8 +8,9 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from zvt.contract import IntervalLevel, Mixin, TradableEntity
-from zvt.contract.api import get_db_session, get_schema_columns, del_data
+from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
+from zvt.contract.base import StatefulService
 from zvt.contract.zvt_info import RecorderState
 from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
@@ -29,16 +29,17 @@ class Meta(type):
         return cls
 
 
-class Recorder(metaclass=Meta):
-    logger = logging.getLogger(__name__)
-
+class Recorder(StatefulService, metaclass=Meta):
     # overwrite them to setup the data you want to record
     provider: str = None
     data_schema: Mixin = None
 
+    # original page url
+    original_page_url = None
+    # request url
     url = None
 
-    name = None
+    state_schema = RecorderState
 
     def __init__(self,
                  batch_size: int = 10,
@@ -54,6 +55,7 @@ class Recorder(metaclass=Meta):
         :param sleeping_time:sleeping seconds for recoding loop
         :type sleeping_time:int
         """
+        super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
 
         assert self.provider is not None
@@ -88,33 +90,6 @@ class Recorder(metaclass=Meta):
         if self.sleeping_time > 0:
             self.logger.info(f'sleeping {self.sleeping_time} seconds')
             time.sleep(self.sleeping_time)
-
-    def recorder_state_object_hook(self):
-        return None
-
-    def clear_state_data(self):
-        del_data(RecorderState, filters=[RecorderState.recoder_name == self.name], provider='zvt')
-
-    def decode_state(self, state: str):
-        return json.loads(state, object_hook=self.recorder_state_object_hook())
-
-    def encode_state(self, state: object):
-        return json.dumps(state, cls=self.recorder_state_encoder())
-
-    def recorder_state_encoder(self):
-        return None
-
-    def persist_state(self, entity_id, state):
-        state_str = self.encode_state(state)
-        if self.recorder_state:
-            self.recorder_state.state = state_str
-        else:
-            domain_id = f'{self.name}_{entity_id}'
-            self.recorder_state = RecorderState(id=domain_id, entity_id=entity_id,
-                                                recoder_name=self.name,
-                                                state=state_str)
-        self.state_session.add(self.recorder_state)
-        self.state_session.commit()
 
 
 class RecorderForEntities(Recorder):
