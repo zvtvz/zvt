@@ -8,8 +8,8 @@ from zvt.contract.schema import TradableMeetActor
 StockActorBase = declarative_base()
 
 
-class StockTopTenTradableHolder(StockActorBase, TradableMeetActor):
-    __tablename__ = 'stock_top_ten_tradable_holder'
+class StockTopTenFreeHolder(StockActorBase, TradableMeetActor):
+    __tablename__ = 'stock_top_ten_free_holder'
 
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
@@ -57,4 +57,4 @@ class StockInstitutionalInvestorHolder(StockActorBase, TradableMeetActor):
 register_schema(providers=['em'], db_name='stock_actor', schema_base=StockActorBase, entity_type='stock')
 
 # the __all__ is generated
-__all__ = ['StockTopTenTradableHolder', 'StockTopTenHolder', 'StockInstitutionalInvestorHolder']
+__all__ = ['StockTopTenFreeHolder', 'StockTopTenHolder', 'StockInstitutionalInvestorHolder']

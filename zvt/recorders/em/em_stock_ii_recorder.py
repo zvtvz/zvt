@@ -7,13 +7,36 @@ from zvt.api import to_report_period_type
 from zvt.contract import ActorType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
-from zvt.domain import Stock
+from zvt.domain import Stock, ActorMeta
 from zvt.domain.actor.stock_actor import StockInstitutionalInvestorHolder
 from zvt.recorders.em.common import get_ii_holder_report_dates, get_ii_holder, actor_type_to_org_type
 from zvt.utils import to_pd_timestamp, to_time_str
 
 
-class EMStockActorRecorder(TimestampsDataRecorder):
+# {'END_DATE': '2021-03-31 00:00:00',
+#   'HOLDER_CODE': '10015776',
+#   'HOLDER_CODE_OLD': '80010104',
+#   'HOLDER_NAME': '香港中央结算代理人有限公司',
+#   'HOLDER_RANK': 1,
+#   'HOLD_NUM': 1938664086,
+#   'HOLD_NUM_RATIO': 24.44,
+#   'HOLD_RATIO_QOQ': '0.04093328',
+#   'IS_HOLDORG': '1',
+#   'SECUCODE': '000338.SZ'}
+
+#  {'END_DATE': '2021-03-31 00:00:00',
+#   'FREE_HOLDNUM_RATIO': 0.631949916991,
+#   'FREE_RATIO_QOQ': '-5.33046217',
+#   'HOLDER_CODE': '161606',
+#   'HOLDER_CODE_OLD': '161606',
+#   'HOLDER_NAME': '交通银行-融通行业景气证券投资基金',
+#   'HOLDER_RANK': 10,
+#   'HOLD_NUM': 39100990,
+#   'IS_HOLDORG': '1',
+#   'SECUCODE': '000338.SZ'}
+
+
+class EMStockIIRecorder(TimestampsDataRecorder):
     entity_provider = 'joinquant'
     entity_schema = Stock
 
@@ -27,8 +50,9 @@ class EMStockActorRecorder(TimestampsDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             the_date = to_time_str(timestamp)
+            self.logger.info(f'to {entity.code} {the_date}')
             for actor_type in ActorType:
-                if actor_type == ActorType.private_equity:
+                if actor_type == ActorType.private_equity or actor_type == ActorType.individual:
                     continue
                 result = get_ii_holder(code=entity.code, report_date=the_date,
                                        org_type=actor_type_to_org_type(actor_type))
@@ -53,8 +77,22 @@ class EMStockActorRecorder(TimestampsDataRecorder):
                                 } for item in result]
                     df = pd.DataFrame.from_records(holders)
                     df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                             force_update=True)
+                             force_update=True, drop_duplicates=True)
+
+                    # save the actors
+                    actors = [{'id': f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                               'entity_id': f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                               'entity_type': actor_type.value,
+                               'exchange': 'cn',
+                               'code': item["HOLDER_CODE"],
+                               'name': f'{item["HOLDER_NAME"]}',
+                               } for item in result]
+                    df1 = pd.DataFrame.from_records(actors)
+                    df_to_db(data_schema=ActorMeta, df=df1, provider=self.provider, force_update=False,
+                             drop_duplicates=True)
 
 
 if __name__ == '__main__':
-    EMStockActorRecorder(codes=['000338']).run()
+    EMStockIIRecorder(codes=['300999']).run()
+# the __all__ is generated
+__all__ = ['EMStockIIRecorder']
