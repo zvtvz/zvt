@@ -5,7 +5,7 @@ from typing import List, Union, Type
 
 import pandas as pd
 
-from zvt.contract import IntervalLevel, Mixin, EntityMixin
+from zvt.contract import IntervalLevel, Mixin, TradableEntity
 from zvt.contract.factor import Factor, Transformer, Accumulator, FilterFactor
 from zvt.domain import FinanceFactor, BalanceSheet, Stock
 
@@ -13,7 +13,7 @@ from zvt.domain import FinanceFactor, BalanceSheet, Stock
 class FinanceBaseFactor(Factor):
     def __init__(self,
                  data_schema: Type[Mixin] = FinanceFactor,
-                 entity_schema: Type[EntityMixin] = Stock,
+                 entity_schema: Type[TradableEntity] = Stock,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,
@@ -51,7 +51,7 @@ class FinanceBaseFactor(Factor):
 
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
-    def __init__(self, data_schema: Type[Mixin] = FinanceFactor, entity_schema: EntityMixin = Stock,
+    def __init__(self, data_schema: Type[Mixin] = FinanceFactor, entity_schema: TradableEntity = Stock,
                  provider: str = None,
                  entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
                  codes: List[str] = None, the_timestamp: Union[str, pd.Timestamp] = None,

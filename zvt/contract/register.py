@@ -5,7 +5,7 @@ from typing import List
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from zvt.contract import EntityMixin, zvt_context, Mixin
+from zvt.contract import TradableEntity, zvt_context, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
 from zvt.utils.utils import add_to_map_list
 
@@ -24,15 +24,15 @@ def register_entity(entity_type: str = None):
 
     def register(cls):
         # register the entity
-        if issubclass(cls, EntityMixin):
+        if issubclass(cls, TradableEntity):
             entity_type_ = entity_type
             if not entity_type:
                 entity_type_ = cls.__name__.lower()
 
-            if entity_type_ not in zvt_context.entity_types:
-                zvt_context.entity_types.append(entity_type_)
+            if entity_type_ not in zvt_context.tradable_entity_types:
+                zvt_context.tradable_entity_types.append(entity_type_)
                 zvt_context.entity_schemas.append(cls)
-            zvt_context.entity_schema_map[entity_type_] = cls
+            zvt_context.tradable_schema_map[entity_type_] = cls
         return cls
 
     return register
@@ -57,8 +57,8 @@ def register_schema(providers: List[str],
     :rtype:
     """
     schemas = []
-    for item in schema_base._decl_class_registry.items():
-        cls = item[1]
+    for item in schema_base.registry.mappers:
+        cls = item.class_
         if type(cls) == DeclarativeMeta:
             # register provider to the schema
             for provider in providers:

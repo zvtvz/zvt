@@ -58,7 +58,7 @@ def init_log(file_name='zvt.log', log_dir=None, simple_formatter=True):
     root_logger.addHandler(file_log_handler)
     root_logger.addHandler(console_log_handler)
 
-
+os.environ.setdefault('SQLALCHEMY_WARN_20',"1")
 pd.set_option('expand_frame_repr', False)
 pd.set_option('mode.chained_assignment', 'raise')
 # pd.set_option('display.max_rows', None)

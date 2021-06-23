@@ -7,9 +7,11 @@ from typing import List
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from zvt.contract import IntervalLevel, Mixin, EntityMixin
+from zvt.contract import IntervalLevel, Mixin, TradableEntity
 from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
+from zvt.contract.base import StatefulService
+from zvt.contract.zvt_info import RecorderState
 from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
     evaluate_size_from_timestamp, is_in_same_interval, now_pd_timestamp, now_time_str
@@ -27,14 +29,17 @@ class Meta(type):
         return cls
 
 
-class Recorder(metaclass=Meta):
-    logger = logging.getLogger(__name__)
-
+class Recorder(StatefulService, metaclass=Meta):
     # overwrite them to setup the data you want to record
     provider: str = None
     data_schema: Mixin = None
 
+    # original page url
+    original_page_url = None
+    # request url
     url = None
+
+    state_schema = RecorderState
 
     def __init__(self,
                  batch_size: int = 10,
@@ -50,6 +55,7 @@ class Recorder(metaclass=Meta):
         :param sleeping_time:sleeping seconds for recoding loop
         :type sleeping_time:int
         """
+        super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
 
         assert self.provider is not None
@@ -63,6 +69,19 @@ class Recorder(metaclass=Meta):
         # using to do db operations
         self.session = get_db_session(provider=self.provider,
                                       data_schema=self.data_schema)
+        self.state_session = get_db_session(provider='zvt',
+                                            data_schema=RecorderState)
+
+        if not self.name:
+            self.name = type(self).__name__.lower()
+        self.recorder_state = None
+        self.state = None
+
+        states = RecorderState.query_data(provider='zvt', filters=[RecorderState.recoder_name == self.name],
+                                          return_type='domain')
+        if states:
+            self.recorder_state = states[0]
+            self.state: dict = self.decode_state(self.recorder_state.state)
 
     def run(self):
         raise NotImplementedError
@@ -76,7 +95,7 @@ class Recorder(metaclass=Meta):
 class RecorderForEntities(Recorder):
     # overwrite them to fetch the entity list
     entity_provider: str = None
-    entity_schema: EntityMixin = None
+    entity_schema: TradableEntity = None
 
     def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False,
                  batch_size=10, force_update=False, sleeping_time=10, entity_filters=None) -> None:
