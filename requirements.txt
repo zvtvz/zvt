@@ -1,5 +1,5 @@
 requests == 2.20.1
-SQLAlchemy == 1.3.24
+SQLAlchemy == 1.4.18
 pandas == 1.1.4
 arrow == 0.11.0
 tzlocal == 1.5.1

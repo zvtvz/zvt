@@ -6,7 +6,7 @@ from typing import List, Union, Type, Optional
 
 import pandas as pd
 
-from zvt.contract import IntervalLevel, Mixin, EntityMixin
+from zvt.contract import IntervalLevel, Mixin, TradableEntity
 from zvt.contract.api import get_entities
 from zvt.contract.drawer import Drawable
 from zvt.utils.pd_utils import pd_is_not_null
@@ -48,7 +48,7 @@ class DataReader(Drawable):
 
     def __init__(self,
                  data_schema: Type[Mixin],
-                 entity_schema: Type[EntityMixin],
+                 entity_schema: Type[TradableEntity],
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,

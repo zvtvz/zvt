@@ -82,7 +82,17 @@ from .fundamental import *
 from .fundamental import __all__ as _fundamental_all
 __all__ += _fundamental_all
 
+# import all from submodule macro
+from .macro import *
+from .macro import __all__ as _macro_all
+__all__ += _macro_all
+
 # import all from submodule trader_info
 from .trader_info import *
 from .trader_info import __all__ as _trader_info_all
 __all__ += _trader_info_all
+
+# import all from submodule actor
+from .actor import *
+from .actor import __all__ as _actor_all
+__all__ += _actor_all

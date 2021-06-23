@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class Bean(object):
 
     def __init__(self) -> None:

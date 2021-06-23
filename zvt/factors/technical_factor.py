@@ -3,14 +3,14 @@ from typing import List, Union, Type
 import pandas as pd
 
 from zvt.api.quote import get_kdata_schema
-from zvt.contract import IntervalLevel, EntityMixin, AdjustType
+from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.factor import Factor, Transformer, Accumulator, FactorMeta
 from zvt.domain import Stock
 
 
 class TechnicalFactor(Factor, metaclass=FactorMeta):
     def __init__(self,
-                 entity_schema: Type[EntityMixin] = Stock,
+                 entity_schema: Type[TradableEntity] = Stock,
                  provider: str = None,
                  entity_provider: str = None,
                  entity_ids: List[str] = None,
