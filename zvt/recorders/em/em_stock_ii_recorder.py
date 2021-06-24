@@ -45,7 +45,8 @@ class EMStockIIRecorder(TimestampsDataRecorder):
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
         result = get_ii_holder_report_dates(code=entity_item.code)
-        return [to_pd_timestamp(item['REPORT_DATE']) for item in result]
+        if result:
+            return [to_pd_timestamp(item['REPORT_DATE']) for item in result]
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
@@ -93,6 +94,6 @@ class EMStockIIRecorder(TimestampsDataRecorder):
 
 
 if __name__ == '__main__':
-    EMStockIIRecorder(codes=['300999']).run()
+    EMStockIIRecorder(codes=['001201']).run()
 # the __all__ is generated
 __all__ = ['EMStockIIRecorder']

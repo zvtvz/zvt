@@ -22,7 +22,8 @@ class EMStockTopTenFreeRecorder(TimestampsDataRecorder):
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
         result = get_holder_report_dates(code=entity_item.code)
-        return [to_pd_timestamp(item['END_DATE']) for item in result]
+        if result:
+            return [to_pd_timestamp(item['END_DATE']) for item in result]
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
