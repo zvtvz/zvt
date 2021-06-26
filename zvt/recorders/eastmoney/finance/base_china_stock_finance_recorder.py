@@ -21,13 +21,13 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
     timestamp_list_path_fields = ['CompanyReportDateList']
     timestamp_path_fields = ['ReportDate']
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False, batch_size=10,
+    def __init__(self,  exchanges=None, entity_ids=None, codes=None, day_data=False,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0,
                  close_minute=0) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute)
 
         try:
             self.fetch_jq_timestamp = True

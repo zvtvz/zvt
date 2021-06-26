@@ -126,7 +126,7 @@ class BaseEastmoneyRecorder(object):
                 for tmp in tmp_list:
                     tmp[self.get_evaluated_time_field()] = the_timestamp
                 original_list += tmp_list
-                if len(original_list) == self.batch_size:
+                if len(original_list) == 50:
                     break
             return original_list
 

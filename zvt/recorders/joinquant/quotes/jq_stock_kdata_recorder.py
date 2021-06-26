@@ -26,11 +26,11 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
     data_schema = StockKdataCommon
 
     def __init__(self,
-                 exchanges=['sh', 'sz'],
+                 exchanges=None,
                  entity_ids=None,
                  codes=None,
                  day_data=False,
-                 batch_size=10,
+
                  force_update=True,
                  sleeping_time=0,
                  default_size=2000,
@@ -49,9 +49,10 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type='stock', level=level, adjust_type=adjust_type)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__('stock', exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute, level=level,
+                         kdata_use_begin_time=kdata_use_begin_time, one_day_trading_minutes=one_day_trading_minutes)
         self.adjust_type = adjust_type
 
         get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)
@@ -61,7 +62,6 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         # 过滤掉退市的
         self.entities = [entity for entity in self.entities if
                          (entity.end_date is None) or (entity.end_date > now_pd_timestamp())]
-
 
     def generate_domain_id(self, entity, original_data):
         return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)

@@ -16,9 +16,9 @@ from zvt.domain import IndexStock, Index
 class ChinaIndexListSpider(Recorder):
     data_schema = IndexStock
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=2.0, provider='exchange') -> None:
+    def __init__(self, force_update=False, sleeping_time=2.0, provider='exchange') -> None:
         self.provider = provider
-        super().__init__(batch_size, force_update, sleeping_time)
+        super().__init__(force_update, sleeping_time)
 
     def run(self):
         # 上证、中证

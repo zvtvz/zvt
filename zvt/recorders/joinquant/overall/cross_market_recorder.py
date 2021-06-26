@@ -13,7 +13,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
     provider = 'joinquant'
     data_schema = CrossMarketSummary
 
-    def __init__(self, batch_size=10,
+    def __init__(self,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add') -> None:
 
@@ -25,9 +25,8 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         # 310004	港股通（深）
 
         codes = ['310001', '310002', '310003', '310004']
-        super().__init__('index', ['sz'], None, codes, True, batch_size,
-                         force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way)
+        super().__init__(force_update, sleeping_time, ['sz'], None, codes, True, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way=fix_duplicate_way)
 
     def init_entities(self):
         super().init_entities()
@@ -63,6 +62,6 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
 
 
 if __name__ == '__main__':
-    CrossMarketSummaryRecorder(batch_size=30).run()
+    CrossMarketSummaryRecorder().run()
 # the __all__ is generated
 __all__ = ['CrossMarketSummaryRecorder']

@@ -28,13 +28,14 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_zjlrqs?page=1&num={}&sort=opendate&asc=0&bankuai={}%2F{}'
 
-    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False, batch_size=10,
+    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
                  force_update=True, sleeping_time=10, default_size=2000, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
-        super().__init__('block', exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute, level, kdata_use_begin_time, one_day_trading_minutes)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute, level=level,
+                         kdata_use_begin_time=kdata_use_begin_time, one_day_trading_minutes=one_day_trading_minutes)
 
     def generate_url(self, category, code, number):
         if category == BlockCategory.industry.value:

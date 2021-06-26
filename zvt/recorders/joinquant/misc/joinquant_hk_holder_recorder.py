@@ -34,8 +34,9 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
         # 310004	港股通（深）
         codes = ['310001', '310002']
 
-        super().__init__('index', ['sh', 'sz'], None, codes, day_data, 10, force_update, sleeping_time,
-                         default_size, real_time, 'ignore', start_timestamp, end_timestamp, 0, 0)
+        super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, day_data, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way='ignore', start_timestamp=start_timestamp,
+                         end_timestamp=end_timestamp, close_hour=0, close_minute=0)
 
     def init_timestamps(self, entity):
         # 聚宽数据从2017年3月17开始

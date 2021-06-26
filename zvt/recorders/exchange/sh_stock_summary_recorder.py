@@ -19,11 +19,11 @@ class StockSummaryRecorder(TimestampsDataRecorder):
 
     url = 'http://query.sse.com.cn/marketdata/tradedata/queryTradingByProdTypeData.do?jsonCallBack=jsonpCallback30731&searchDate={}&prodType=gp&_=1515717065511'
 
-    def __init__(self, exchanges=['sh', 'sz'], entity_ids=None, codes=['000001'], batch_size=10,
+    def __init__(self, exchanges=None, entity_ids=None, codes=['000001'],
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
                  fix_duplicate_way='add') -> None:
-        super().__init__('index', exchanges, entity_ids, codes, True, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, True, default_size=default_size,
+                         real_time=real_time, fix_duplicate_way=fix_duplicate_way)
 
     def init_timestamps(self, entity):
         return pd.date_range(start=entity.timestamp,
@@ -54,7 +54,7 @@ class StockSummaryRecorder(TimestampsDataRecorder):
                     'turnover_rate': to_float(result_json['exchangeRate'], 0.0),
                 })
 
-                if len(json_results) > self.batch_size:
+                if len(json_results) > 30:
                     return json_results
 
         return json_results
@@ -64,4 +64,4 @@ class StockSummaryRecorder(TimestampsDataRecorder):
 
 
 if __name__ == '__main__':
-    StockSummaryRecorder(batch_size=30).run()
+    StockSummaryRecorder().run()

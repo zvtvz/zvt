@@ -41,54 +41,35 @@ class Recorder(StatefulService, metaclass=Meta):
 
     state_schema = RecorderState
 
-    def __init__(self,
-                 batch_size: int = 10,
-                 force_update: bool = False,
-                 sleeping_time: int = 10) -> None:
-        """
-
-        :param batch_size:batch size to saving to db
-        :type batch_size:int
-        :param force_update: whether force update the data even if it exists,please set it to True if the data need to
-        be refreshed from the provider
-        :type force_update:bool
-        :param sleeping_time:sleeping seconds for recoding loop
-        :type sleeping_time:int
-        """
+    def __init__(self, force_update: bool = False, sleeping_time: int = 10) -> None:
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
 
         assert self.provider is not None
         assert self.data_schema is not None
-        assert self.provider in self.data_schema.providers
+        if self.provider not in self.data_schema.providers:
+            self.logger.error(
+                f'provider: {self.provider} is not registered for {self.data_schema}({self.data_schema.providers})')
+            assert False
 
-        self.batch_size = batch_size
         self.force_update = force_update
         self.sleeping_time = sleeping_time
 
         # using to do db operations
         self.session = get_db_session(provider=self.provider,
                                       data_schema=self.data_schema)
-        self.state_session = get_db_session(provider='zvt',
-                                            data_schema=RecorderState)
-
-        if not self.name:
-            self.name = type(self).__name__.lower()
-        self.recorder_state = None
-        self.state = None
-
-        states = RecorderState.query_data(provider='zvt', filters=[RecorderState.recoder_name == self.name],
-                                          return_type='domain')
-        if states:
-            self.recorder_state = states[0]
-            self.state: dict = self.decode_state(self.recorder_state.state)
 
     def run(self):
         raise NotImplementedError
 
-    def sleep(self):
-        if self.sleeping_time > 0:
-            self.logger.info(f'sleeping {self.sleeping_time} seconds')
+    def sleep(self, seconds=None):
+        if seconds:
+            sleeping_time = seconds
+        else:
+            sleeping_time = self.sleeping_time
+
+        if sleeping_time and sleeping_time > 0:
+            self.logger.info(f'sleeping {sleeping_time} seconds')
             time.sleep(self.sleeping_time)
 
 
@@ -97,26 +78,23 @@ class RecorderForEntities(Recorder):
     entity_provider: str = None
     entity_schema: TradableEntity = None
 
-    def __init__(self, entity_type='stock', exchanges=['sh', 'sz'], entity_ids=None, codes=None, day_data=False,
-                 batch_size=10, force_update=False, sleeping_time=10, entity_filters=None) -> None:
+    def __init__(self, force_update=False, sleeping_time=10, exchanges=None, entity_ids=None, codes=None,
+                 day_data=False, entity_filters=None) -> None:
         """
         :param entity_filters:
-        :param entity_type:
         :param exchanges:
         :param entity_ids: set entity_ids or (entity_type,exchanges,codes)
         :param codes:
         :param day_data: one record per day,set to True if you want skip recording it when data of today exist
-        :param batch_size:
         :param force_update:
         :param sleeping_time:
         """
-        super().__init__(batch_size=batch_size, force_update=force_update, sleeping_time=sleeping_time)
+        super().__init__(force_update=force_update, sleeping_time=sleeping_time)
 
         assert self.entity_provider is not None
         assert self.entity_schema is not None
 
         # setup the entities you want to record
-        self.entity_type = entity_type
         self.exchanges = exchanges
         self.codes = codes
         self.day_data = day_data
@@ -153,7 +131,6 @@ class RecorderForEntities(Recorder):
         # init the entity list
         self.entities = get_entities(session=self.entity_session,
                                      entity_schema=self.entity_schema,
-                                     entity_type=self.entity_type,
                                      exchanges=self.exchanges,
                                      entity_ids=self.entity_ids,
                                      codes=self.codes,
@@ -163,23 +140,9 @@ class RecorderForEntities(Recorder):
 
 
 class TimeSeriesDataRecorder(RecorderForEntities):
-    def __init__(self,
-                 entity_type='stock',
-                 exchanges=['sh', 'sz'],
-                 entity_ids=None,
-                 codes=None,
-                 day_data=False,
-                 batch_size=10,
-                 force_update=False,
-                 sleeping_time=5,
-                 default_size=2000,
-                 real_time=False,
-                 fix_duplicate_way='add',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 close_hour=0,
-                 close_minute=0,
-                 entity_filters=None) -> None:
+    def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='add', start_timestamp=None,
+                 end_timestamp=None, close_hour=0, close_minute=0) -> None:
 
         self.default_size = default_size
         self.real_time = real_time
@@ -192,8 +155,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
         self.start_timestamp = to_pd_timestamp(start_timestamp)
         self.end_timestamp = to_pd_timestamp(end_timestamp)
 
-        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         entity_filters)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters)
 
     def get_latest_saved_record(self, entity):
         order = eval('self.data_schema.{}.desc()'.format(self.get_evaluated_time_field()))
@@ -507,30 +469,13 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 
 
 class FixedCycleDataRecorder(TimeSeriesDataRecorder):
-    def __init__(self,
-                 entity_type='stock',
-                 exchanges=['sh', 'sz'],
-                 entity_ids=None,
-                 codes=None,
-                 day_data=False,
-                 batch_size=10,
-                 force_update=True,
-                 sleeping_time=10,
-                 default_size=2000,
-                 real_time=False,
-                 fix_duplicate_way='ignore',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 close_hour=0,
-                 close_minute=0,
-                 # child add
-                 level=IntervalLevel.LEVEL_1DAY,
-                 kdata_use_begin_time=False,
-                 one_day_trading_minutes=24 * 60,
-                 entity_filters=None) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         close_hour, close_minute, entity_filters)
+    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
+                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
 
         self.level = IntervalLevel(level)
         self.kdata_use_begin_time = kdata_use_begin_time
@@ -589,26 +534,12 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 
 class TimestampsDataRecorder(TimeSeriesDataRecorder):
 
-    def __init__(self,
-                 entity_type='stock',
-                 exchanges=['sh', 'sz'],
-                 entity_ids=None,
-                 codes=None,
-                 day_data=False,
-                 batch_size=10,
-                 force_update=False,
-                 sleeping_time=5,
-                 default_size=2000,
-                 real_time=False,
-                 fix_duplicate_way='add',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 close_hour=0,
-                 close_minute=0,
-                 entity_filters=None) -> None:
-        super().__init__(entity_type, exchanges, entity_ids, codes, day_data, batch_size, force_update, sleeping_time,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp,
-                         close_hour, close_minute, entity_filters)
+    def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='add', start_timestamp=None,
+                 end_timestamp=None, close_hour=0, close_minute=0) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
+                         close_minute)
         self.security_timestamps_map = {}
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:

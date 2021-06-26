@@ -33,11 +33,11 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
                 code_security[item.code] = item
 
                 need_fill_items = DividendFinancing.query_data(provider=self.provider, codes=list(code_security.keys()),
-                                                           return_type='domain',
-                                                           session=self.session,
-                                                           filters=[
-                                                               DividendFinancing.ipo_raising_fund.is_(None),
-                                                               DividendFinancing.ipo_issues != 0])
+                                                               return_type='domain',
+                                                               session=self.session,
+                                                               filters=[
+                                                                   DividendFinancing.ipo_raising_fund.is_(None),
+                                                                   DividendFinancing.ipo_issues != 0])
 
                 for need_fill_item in need_fill_items:
                     if need_fill_item:

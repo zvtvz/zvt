@@ -117,7 +117,6 @@ class Mixin(object):
                     exchanges=None,
                     entity_ids=None,
                     codes=None,
-                    batch_size=None,
                     force_update=None,
                     sleeping_time=None,
                     default_size=None,
@@ -143,7 +142,7 @@ class Mixin(object):
                 args = [item for item in inspect.getfullargspec(cls.record_data).args if
                         item not in ('cls', 'provider_index', 'provider')]
             else:
-                args = ['batch_size', 'force_update', 'sleeping_time']
+                args = ['force_update', 'sleeping_time']
 
             # just fill the None arg to kw,so we could use the recorder_class default args
             kw = {}

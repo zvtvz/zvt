@@ -19,8 +19,8 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
     provider = 'eastmoney'
     data_schema = StockDetail
 
-    def __init__(self, batch_size=10, force_update=False, sleeping_time=5, codes=None) -> None:
-        super().__init__(batch_size, force_update, sleeping_time)
+    def __init__(self, force_update=False, sleeping_time=5, codes=None) -> None:
+        super().__init__(force_update, sleeping_time)
 
         # get list at first
         EastmoneyChinaStockListRecorder().run()
@@ -29,7 +29,7 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
         if not self.force_update:
             self.entities = get_entities(session=self.session,
                                          entity_type='stock_detail',
-                                         exchanges=['sh', 'sz'],
+                                         exchanges=None,
                                          codes=self.codes,
                                          filters=[StockDetail.profile.is_(None)],
                                          return_type='domain',
