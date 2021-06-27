@@ -17,11 +17,10 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
 
     def __init__(self,  exchanges=None, entity_ids=None, codes=None, day_data=False,
                  force_update=False, sleeping_time=5, default_size=2000, real_time=False,
-                 fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0,
+                 fix_duplicate_way='add', start_timestamp=None, end_timestamp=None, 
                  entity_filters=None) -> None:
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, ['000001'], day_data, entity_filters,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):
         df = pd.DataFrame()

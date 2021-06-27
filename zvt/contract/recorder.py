@@ -142,13 +142,12 @@ class RecorderForEntities(Recorder):
 class TimeSeriesDataRecorder(RecorderForEntities):
     def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
                  entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='add', start_timestamp=None,
-                 end_timestamp=None, close_hour=0, close_minute=0) -> None:
+                 end_timestamp=None) -> None:
 
         self.default_size = default_size
         self.real_time = real_time
 
-        self.close_hour = close_hour
-        self.close_minute = close_minute
+        self.close_hour, self.close_minute = self.entity_schema.get_close_hour_and_minute()
 
         self.fix_duplicate_way = fix_duplicate_way
 
@@ -471,11 +470,10 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
                  entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='ignore',
-                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
-                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
+                 one_day_trading_minutes=24 * 60) -> None:
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
 
         self.level = IntervalLevel(level)
         self.kdata_use_begin_time = kdata_use_begin_time
@@ -536,10 +534,9 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
 
     def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
                  entity_filters=None, default_size=2000, real_time=False, fix_duplicate_way='add', start_timestamp=None,
-                 end_timestamp=None, close_hour=0, close_minute=0) -> None:
+                 end_timestamp=None) -> None:
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
-                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp, close_hour,
-                         close_minute)
+                         default_size, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
         self.security_timestamps_map = {}
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:

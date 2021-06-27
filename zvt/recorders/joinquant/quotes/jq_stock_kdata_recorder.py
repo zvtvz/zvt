@@ -40,8 +40,6 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                  end_timestamp=None,
                  level=IntervalLevel.LEVEL_1WEEK,
                  kdata_use_begin_time=False,
-                 close_hour=15,
-                 close_minute=0,
                  one_day_trading_minutes=4 * 60,
                  adjust_type=AdjustType.qfq) -> None:
         level = IntervalLevel(level)
@@ -51,8 +49,8 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
 
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
                          real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute, level=level,
-                         kdata_use_begin_time=kdata_use_begin_time, one_day_trading_minutes=one_day_trading_minutes)
+                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
+                         one_day_trading_minutes=one_day_trading_minutes)
         self.adjust_type = adjust_type
 
         get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)

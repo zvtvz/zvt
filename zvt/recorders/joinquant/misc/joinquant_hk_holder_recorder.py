@@ -36,7 +36,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
 
         super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, day_data, default_size=default_size,
                          real_time=real_time, fix_duplicate_way='ignore', start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, close_hour=0, close_minute=0)
+                         end_timestamp=end_timestamp)
 
     def init_timestamps(self, entity):
         # 聚宽数据从2017年3月17开始

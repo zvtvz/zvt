@@ -26,12 +26,12 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
     def __init__(self, entity_type='etf', exchanges=None, entity_ids=None, codes=None, day_data=False,
                  force_update=False, sleeping_time=10, default_size=2000, real_time=True, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, close_hour=0, close_minute=0,
+                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False, 
                  one_day_trading_minutes=24 * 60) -> None:
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
                          real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute, level=level,
-                         kdata_use_begin_time=kdata_use_begin_time, one_day_trading_minutes=one_day_trading_minutes)
+                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
+                         one_day_trading_minutes=one_day_trading_minutes)
 
     def get_data_map(self):
         return {}

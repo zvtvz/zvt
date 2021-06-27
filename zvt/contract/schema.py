@@ -229,6 +229,21 @@ class TradableEntity(Entity):
         return [('09:30', '11:30'), ('13:00', '15:00')]
 
     @classmethod
+    def in_trading_time(cls, timestamp=None):
+        if not timestamp:
+            timestamp = now_pd_timestamp()
+        else:
+            timestamp = pd.Timestamp(timestamp)
+        open_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[0][0])
+        close_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[-1][1])
+        return open_time < timestamp < close_time
+
+    @classmethod
+    def get_close_hour_and_minute(cls):
+        hour, minute = cls.get_trading_intervals()[-1][1].split(":")
+        return int(hour), int(minute)
+
+    @classmethod
     def get_interval_timestamps(cls, start_date, end_date, level: IntervalLevel):
         """
         generate the timestamps for the level

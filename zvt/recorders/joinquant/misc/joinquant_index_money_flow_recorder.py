@@ -17,7 +17,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
 
     def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
                  force_update=True, sleeping_time=0, default_size=2000, real_time=False, fix_duplicate_way='ignore',
-                 start_timestamp=None, end_timestamp=None, close_hour=0, close_minute=0, level=IntervalLevel.LEVEL_1DAY,
+                 start_timestamp=None, end_timestamp=None,  level=IntervalLevel.LEVEL_1DAY,
                  kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
         # 上证指数，深证成指，创业板指，科创板
         support_codes = ['000001', '399001', '399006', '000688']
@@ -28,8 +28,8 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
 
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
                          real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, close_hour=close_hour, close_minute=close_minute, level=level,
-                         kdata_use_begin_time=kdata_use_begin_time, one_day_trading_minutes=one_day_trading_minutes)
+                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
+                         one_day_trading_minutes=one_day_trading_minutes)
 
     def record(self, entity, start, end, size, timestamps):
         # 上证
