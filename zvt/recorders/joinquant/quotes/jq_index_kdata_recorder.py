@@ -33,7 +33,7 @@ class JqChinaIndexKdataRecorder(FixedCycleDataRecorder):
 
                  force_update=True,
                  sleeping_time=0,
-                 default_size=2000,
+                 
                  real_time=False,
                  fix_duplicate_way='ignore',
                  start_timestamp=None,
@@ -45,8 +45,8 @@ class JqChinaIndexKdataRecorder(FixedCycleDataRecorder):
         self.data_schema = get_kdata_schema(entity_type='index', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
-                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
+                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
                          end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
                          one_day_trading_minutes=one_day_trading_minutes)
 

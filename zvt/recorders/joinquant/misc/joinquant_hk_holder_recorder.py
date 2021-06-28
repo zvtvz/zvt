@@ -24,7 +24,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
     data_schema = HkHolder
 
     def __init__(self, day_data=False,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False,
+                 force_update=False, sleeping_time=5,  real_time=False,
                  start_timestamp=None, end_timestamp=None) -> None:
         # 聚宽编码
         # 市场通编码	市场通名称
@@ -34,9 +34,8 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
         # 310004	港股通（深）
         codes = ['310001', '310002']
 
-        super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, day_data, default_size=default_size,
-                         real_time=real_time, fix_duplicate_way='ignore', start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp)
+        super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, day_data, real_time=real_time,
+                         fix_duplicate_way='ignore', start_timestamp=start_timestamp, end_timestamp=end_timestamp)
 
     def init_timestamps(self, entity):
         # 聚宽数据从2017年3月17开始

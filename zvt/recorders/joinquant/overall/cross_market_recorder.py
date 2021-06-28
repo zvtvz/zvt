@@ -14,7 +14,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
     data_schema = CrossMarketSummary
 
     def __init__(self,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False,
+                 force_update=False, sleeping_time=5,  real_time=False,
                  fix_duplicate_way='add') -> None:
 
         # 聚宽编码
@@ -25,8 +25,8 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         # 310004	港股通（深）
 
         codes = ['310001', '310002', '310003', '310004']
-        super().__init__(force_update, sleeping_time, ['sz'], None, codes, True, default_size=default_size,
-                         real_time=real_time, fix_duplicate_way=fix_duplicate_way)
+        super().__init__(force_update, sleeping_time, ['sz'], None, codes, True, real_time=real_time,
+                         fix_duplicate_way=fix_duplicate_way)
 
     def init_entities(self):
         super().init_entities()

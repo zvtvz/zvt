@@ -21,10 +21,10 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
     data_schema = MarginTrading
 
     def __init__(self,  exchanges=None, entity_ids=None, codes=None, day_data=True,
-                 force_update=False, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 force_update=False, sleeping_time=5,  real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, ) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
-                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
+                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
                          end_timestamp=end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):

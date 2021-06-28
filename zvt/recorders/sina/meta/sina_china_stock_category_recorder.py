@@ -66,10 +66,10 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
     category_stocks_url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page={}&num=5000&sort=symbol&asc=1&node={}&symbol=&_s_r_a=page'
 
     def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 force_update=True, sleeping_time=5, default_size=2000, real_time=False, fix_duplicate_way='add',
+                 force_update=True, sleeping_time=5,  real_time=False, fix_duplicate_way='add',
                  start_timestamp=None, end_timestamp=None, ) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, default_size=default_size,
-                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
+                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
                          end_timestamp=end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):
