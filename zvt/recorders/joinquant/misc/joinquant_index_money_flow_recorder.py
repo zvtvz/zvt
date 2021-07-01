@@ -15,21 +15,19 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
     provider = 'joinquant'
     data_schema = IndexMoneyFlow
 
-    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 force_update=True, sleeping_time=0,  real_time=False, fix_duplicate_way='ignore',
-                 start_timestamp=None, end_timestamp=None,  level=IntervalLevel.LEVEL_1DAY,
-                 kdata_use_begin_time=False, one_day_trading_minutes=24 * 60) -> None:
+    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
+                 one_day_trading_minutes=24 * 60) -> None:
         # 上证指数，深证成指，创业板指，科创板
         support_codes = ['000001', '399001', '399006', '000688']
         if not codes:
             codes = support_codes
         else:
             codes = list(set(codes) & set(support_codes))
-
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
-                         one_day_trading_minutes=one_day_trading_minutes)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
+                         kdata_use_begin_time, one_day_trading_minutes)
 
     def record(self, entity, start, end, size, timestamps):
         # 上证

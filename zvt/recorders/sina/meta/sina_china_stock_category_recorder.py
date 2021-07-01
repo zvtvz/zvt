@@ -5,11 +5,11 @@ import demjson
 import pandas as pd
 import requests
 
+from zvt.api.quote import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
-from zvt.utils.time_utils import now_pd_timestamp
-from zvt.api.quote import china_stock_code_to_id
 from zvt.domain import BlockStock, BlockCategory, Block
+from zvt.utils.time_utils import now_pd_timestamp
 
 
 class SinaChinaBlockRecorder(Recorder):
@@ -64,13 +64,6 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
 
     # 用于抓取行业包含的股票
     category_stocks_url = 'http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page={}&num=5000&sort=symbol&asc=1&node={}&symbol=&_s_r_a=page'
-
-    def __init__(self, entity_type='block', exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 force_update=True, sleeping_time=5,  real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, ) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):
         for page in range(1, 5):

@@ -75,13 +75,6 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 
     data_schema = EtfStock
 
-    def __init__(self, entity_type='etf', exchanges=None, entity_ids=None, codes=None, day_data=True,
-                 force_update=False, sleeping_time=5,  real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, ) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp)
-
     def record(self, entity, start, end, size, timestamps):
         df = run_query(table='finance.FUND_PORTFOLIO_STOCK',
                        conditions=f'pub_date#>=#{to_time_str(start)}&code#=#{entity.code}',

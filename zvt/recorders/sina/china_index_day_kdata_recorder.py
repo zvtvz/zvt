@@ -6,7 +6,6 @@ import pandas as pd
 import requests
 
 from zvt.api.quote import generate_kdata_id
-from zvt.contract import IntervalLevel
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Index, Index1dKdata
 from zvt.utils.time_utils import get_year_quarters, is_same_date
@@ -19,16 +18,6 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
     provider = 'sina'
     data_schema = Index1dKdata
     url = 'http://vip.stock.finance.sina.com.cn/corp/go.php/vMS_MarketHistory/stockid/{}/type/S.phtml?year={}&jidu={}'
-
-    def __init__(self, exchanges=['cn'], entity_ids=None, codes=None, day_data=False,
-                 force_update=False, sleeping_time=10,  real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
-                 one_day_trading_minutes=24 * 60) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
-                         one_day_trading_minutes=one_day_trading_minutes)
 
     def get_data_map(self):
         return {}

@@ -420,7 +420,7 @@ def df_to_db(df: pd.DataFrame,
              provider: str,
              force_update: bool = False,
              sub_size: int = 5000,
-             drop_duplicates: bool = False) -> object:
+             drop_duplicates: bool = True) -> object:
     """
     FIXME:improve
     store the df to db

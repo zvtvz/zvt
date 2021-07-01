@@ -2,12 +2,12 @@
 import pandas as pd
 import requests
 
+from zvt.api.quote import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
+from zvt.domain import BlockStock, BlockCategory, Block
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt.utils.utils import json_callback_param
-from zvt.api.quote import china_stock_code_to_id
-from zvt.domain import BlockStock, BlockCategory, Block
 
 
 class EastmoneyChinaBlockRecorder(Recorder):
@@ -56,13 +56,6 @@ class EastmoneyChinaBlockStockRecorder(TimeSeriesDataRecorder):
 
     # 用于抓取行业包含的股票
     category_stocks_url = 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C.{}{}&sty=SFCOO&st=(Close)&sr=-1&p=1&ps=300&cb=jsonp_B66B5BAA1C1B47B5BB9778045845B947&token=7bc05d0d4c3c22ef9fca8c2a912d779c'
-
-    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 force_update=False, sleeping_time=5,  real_time=False, fix_duplicate_way='add',
-                 start_timestamp=None, end_timestamp=None, ) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):
         resp = requests.get(self.category_stocks_url.format(entity.code, '1'))

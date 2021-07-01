@@ -73,14 +73,15 @@ class Recorder(StatefulService, metaclass=Meta):
             time.sleep(self.sleeping_time)
 
 
-class RecorderForEntities(Recorder):
+class EntityEventRecorder(Recorder):
     # overwrite them to fetch the entity list
     entity_provider: str = None
     entity_schema: TradableEntity = None
 
     def __init__(self, force_update=False, sleeping_time=10, exchanges=None, entity_ids=None, codes=None,
-                 day_data=False, entity_filters=None) -> None:
+                 day_data=False, entity_filters=None, ignore_failed=True) -> None:
         """
+        :param ignore_failed:
         :param entity_filters:
         :param exchanges:
         :param entity_ids: set entity_ids or (entity_type,exchanges,codes)
@@ -102,6 +103,7 @@ class RecorderForEntities(Recorder):
         # set entity_ids or (entity_type,exchanges,codes)
         self.entity_ids = entity_ids
         self.entity_filters = entity_filters
+        self.ignore_failed = ignore_failed
 
         self.entity_session: Session = None
         self.entities: List = None
@@ -139,13 +141,14 @@ class RecorderForEntities(Recorder):
                                      filters=self.entity_filters)
 
 
-class TimeSeriesDataRecorder(RecorderForEntities):
+class TimeSeriesDataRecorder(EntityEventRecorder):
     default_size = 2000
 
     def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 entity_filters=None, real_time=False, fix_duplicate_way='add', start_timestamp=None,
-                 end_timestamp=None) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters)
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed)
 
         self.real_time = real_time
         self.close_hour, self.close_minute = self.entity_schema.get_close_hour_and_minute()
@@ -170,6 +173,7 @@ class TimeSeriesDataRecorder(RecorderForEntities):
     def evaluate_start_end_size_timestamps(self, entity):
         # not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
+            self.logger.info("ignore entity: {} list date: {}", entity.id, entity.timestamp)
             return entity.timestamp, None, 0, None
 
         latest_saved_record = self.get_latest_saved_record(entity=entity)
@@ -466,11 +470,13 @@ class TimeSeriesDataRecorder(RecorderForEntities):
 
 class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 entity_filters=None, real_time=False, fix_duplicate_way='ignore', start_timestamp=None,
-                 end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
                  one_day_trading_minutes=24 * 60) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters, real_time,
-                         fix_duplicate_way, start_timestamp, end_timestamp)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time=real_time, fix_duplicate_way=fix_duplicate_way,
+                         start_timestamp=start_timestamp,
+                         end_timestamp=end_timestamp)
 
         self.level = IntervalLevel(level)
         self.kdata_use_begin_time = kdata_use_begin_time
@@ -530,10 +536,11 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
 class TimestampsDataRecorder(TimeSeriesDataRecorder):
 
     def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 entity_filters=None, real_time=False, fix_duplicate_way='add', start_timestamp=None,
-                 end_timestamp=None) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters, real_time,
-                         fix_duplicate_way, start_timestamp, end_timestamp)
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time=real_time, fix_duplicate_way=fix_duplicate_way,
+                         start_timestamp=start_timestamp, end_timestamp=end_timestamp)
         self.security_timestamps_map = {}
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
@@ -572,5 +579,5 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
         return timestamps[0], timestamps[-1], len(timestamps), timestamps
 
 
-__all__ = ['Recorder', 'RecorderForEntities', 'FixedCycleDataRecorder', 'TimestampsDataRecorder',
+__all__ = ['Recorder', 'EntityEventRecorder', 'FixedCycleDataRecorder', 'TimestampsDataRecorder',
            'TimeSeriesDataRecorder']

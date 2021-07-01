@@ -25,32 +25,17 @@ class JqChinaIndexKdataRecorder(FixedCycleDataRecorder):
     # 只是为了把recorder注册到data_schema
     data_schema = IndexKdataCommon
 
-    def __init__(self,
-                 exchanges=None,
-                 entity_ids=None,
-                 codes=None,
-                 day_data=True,
-
-                 force_update=True,
-                 sleeping_time=0,
-                 
-                 real_time=False,
-                 fix_duplicate_way='ignore',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1WEEK,
-                 kdata_use_begin_time=False,
-                 one_day_trading_minutes=4 * 60) -> None:
+    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
+                 one_day_trading_minutes=24 * 60) -> None:
         level = IntervalLevel(level)
         self.data_schema = get_kdata_schema(entity_type='index', level=level)
         self.jq_trading_level = to_jq_trading_level(level)
-
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
-                         one_day_trading_minutes=one_day_trading_minutes)
-
         get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
+                         kdata_use_begin_time, one_day_trading_minutes)
 
     def init_entities(self):
         super().init_entities()

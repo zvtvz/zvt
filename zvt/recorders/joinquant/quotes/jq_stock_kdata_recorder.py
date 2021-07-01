@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-import argparse
 
 import pandas as pd
 from jqdatapy.api import get_token, get_bars
 
-from zvt import init_log, zvt_config
+from zvt import zvt_config
 from zvt.api.quote import generate_kdata_id, get_kdata_schema, get_kdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Stock, StockKdataCommon, Stock1dHfqKdata, Stock1wkHfqKdata
+from zvt.domain import Stock, StockKdataCommon, Stock1wkHfqKdata
 from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
@@ -25,32 +24,19 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
     # 只是为了把recorder注册到data_schema
     data_schema = StockKdataCommon
 
-    def __init__(self,
-                 exchanges=None,
-                 entity_ids=None,
-                 codes=None,
-                 day_data=False,
-
-                 force_update=True,
-                 sleeping_time=0,
-                 
-                 real_time=False,
-                 fix_duplicate_way='ignore',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1WEEK,
-                 kdata_use_begin_time=False,
-                 one_day_trading_minutes=4 * 60,
-                 adjust_type=AdjustType.qfq) -> None:
+    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
+                 start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
+                 one_day_trading_minutes=24 * 60, adjust_type=AdjustType.qfq) -> None:
         level = IntervalLevel(level)
         adjust_type = AdjustType(adjust_type)
         self.data_schema = get_kdata_schema(entity_type='stock', level=level, adjust_type=adjust_type)
         self.jq_trading_level = to_jq_trading_level(level)
 
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp, level=level, kdata_use_begin_time=kdata_use_begin_time,
-                         one_day_trading_minutes=one_day_trading_minutes)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
+                         kdata_use_begin_time, one_day_trading_minutes)
+
         self.adjust_type = adjust_type
 
         get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)

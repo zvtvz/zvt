@@ -68,13 +68,6 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
     provider = 'joinquant'
     data_schema = FundStock
 
-    def __init__(self, entity_ids=None, codes=None, day_data=True, force_update=False, sleeping_time=5,
-                  real_time=False, fix_duplicate_way='add', start_timestamp=None, end_timestamp=None,
-                 ) -> None:
-        super().__init__(force_update, sleeping_time, ['sh', 'sz'], entity_ids, codes, day_data, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
-                         end_timestamp=end_timestamp)
-
     def init_entities(self):
         # 只抓股票型，混合型并且没退市的持仓,
         self.entities = Fund.query_data(

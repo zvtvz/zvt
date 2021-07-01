@@ -21,13 +21,13 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
     provider = 'joinquant'
     data_schema = MarginTradingSummary
 
-    def __init__(self,
-                 force_update=False, sleeping_time=5,  real_time=False,
-                 fix_duplicate_way='add') -> None:
+    def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, day_data=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None) -> None:
         # 上海A股,深圳市场
         codes = ['000001', '399106']
-        super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, True, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way)
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):
         jq_code = code_map_jq.get(entity.code)
