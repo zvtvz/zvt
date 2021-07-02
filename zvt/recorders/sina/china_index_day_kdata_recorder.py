@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import requests
 
-from zvt.api.quote import generate_kdata_id
+from zvt.api.kdata import generate_kdata_id
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Index, Index1dKdata
 from zvt.utils.time_utils import get_year_quarters, is_same_date

@@ -2,7 +2,8 @@
 import pandas as pd
 from jqdatapy.api import run_query
 
-from zvt.api import portfolio_relate_stock, china_stock_code_to_id
+from zvt.api.portfolio import portfolio_relate_stock
+from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain.meta.fund_meta import Fund, FundStock

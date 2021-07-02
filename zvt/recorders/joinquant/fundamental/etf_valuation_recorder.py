@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from zvt.api.quote import get_etf_stocks
+from zvt.api.portfolio import get_etf_stocks
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import StockValuation, Etf, EtfValuation

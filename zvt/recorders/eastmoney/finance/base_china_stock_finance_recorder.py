@@ -1,16 +1,31 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
 
 from jqdatapy.api import get_fundamentals
-from zvt.api.quote import to_jq_report_period
+
+from zvt.api.utils import to_report_period_type
 from zvt.contract.api import get_data
-from zvt.domain import FinanceFactor
+from zvt.domain import FinanceFactor, ReportPeriod
 from zvt.recorders.eastmoney.common import company_type_flag, get_fc, EastmoneyTimestampsDataRecorder, \
     call_eastmoney_api, get_from_path_fields
 from zvt.recorders.joinquant.common import to_jq_entity_id
 from zvt.utils.pd_utils import index_df
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+
+
+def to_jq_report_period(timestamp):
+    the_date = to_pd_timestamp(timestamp)
+    report_period = to_report_period_type(timestamp)
+    if report_period == ReportPeriod.year.value:
+        return '{}'.format(the_date.year)
+    if report_period == ReportPeriod.season1.value:
+        return '{}q1'.format(the_date.year)
+    if report_period == ReportPeriod.half_year.value:
+        return '{}q2'.format(the_date.year)
+    if report_period == ReportPeriod.season3.value:
+        return '{}q3'.format(the_date.year)
+
+    assert False
 
 
 class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
@@ -21,8 +36,8 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
     timestamp_list_path_fields = ['CompanyReportDateList']
     timestamp_path_fields = ['ReportDate']
 
-    def __init__(self,  exchanges=None, entity_ids=None, codes=None, day_data=False,
-                 force_update=False, sleeping_time=5,  real_time=False,
+    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
+                 force_update=False, sleeping_time=5, real_time=False,
                  fix_duplicate_way='add', start_timestamp=None, end_timestamp=None) -> None:
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
                          fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,

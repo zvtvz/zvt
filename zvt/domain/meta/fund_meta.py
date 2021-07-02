@@ -45,7 +45,7 @@ class Fund(FundMetaBase, Portfolio):
 
     @classmethod
     def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
-        from zvt.api.quote import get_fund_stocks
+        from zvt.api.portfolio import get_fund_stocks
         return get_fund_stocks(code=code, codes=codes, ids=ids, timestamp=timestamp, provider=provider)
 
 

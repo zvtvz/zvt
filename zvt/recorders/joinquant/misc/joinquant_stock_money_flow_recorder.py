@@ -3,7 +3,7 @@ import pandas as pd
 from jqdatapy import get_token, get_money_flow
 
 from zvt import zvt_config
-from zvt.api import generate_kdata_id
+from zvt.api.kdata import generate_kdata_id
 from zvt.contract import IntervalLevel
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder

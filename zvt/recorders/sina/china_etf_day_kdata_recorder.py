@@ -5,8 +5,7 @@ import pandas as pd
 import requests
 
 from zvt import init_log
-from zvt.api import get_kdata
-from zvt.api.quote import generate_kdata_id
+from zvt.api.kdata import generate_kdata_id,get_kdata
 from zvt.contract import IntervalLevel
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Etf, Etf1dKdata

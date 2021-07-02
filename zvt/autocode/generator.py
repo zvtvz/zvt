@@ -2,8 +2,8 @@
 import os
 from typing import List
 
-from zvt.contract import IntervalLevel, AdjustType
 from zvt.autocode.templates import all_tpls
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.utils import now_pd_timestamp
 from zvt.utils.file_utils import list_all_files
 from zvt.utils.git_utils import get_git_user_name, get_git_user_email
@@ -122,7 +122,7 @@ def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated'):
 
 
 # kdata schema rule
-# 1)name:{entity_type}{level}Kdata
+# 1)name:{entity_type.capitalize()}{IntervalLevel.value.capitalize()}Kdata
 # 2)one db file for one schema
 
 def gen_kdata_schema(pkg: str,

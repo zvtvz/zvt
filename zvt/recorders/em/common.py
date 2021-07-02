@@ -124,6 +124,4 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation))
     # print(resp)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
-           'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters',
-           'get_em_data']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data']

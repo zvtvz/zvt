@@ -5,7 +5,8 @@ from typing import Union
 
 import pandas as pd
 
-from zvt.api import get_kdata_schema, get_recent_report_date
+from zvt.api.kdata import get_kdata_schema
+from zvt.api.utils import get_recent_report_date
 from zvt.contract import Mixin, AdjustType
 from zvt.contract.api import decode_entity_id
 from zvt.domain import FundStock, StockValuation
@@ -196,4 +197,4 @@ if __name__ == '__main__':
     df = get_top_fund_holding_stocks()
     pprint(df)
 # the __all__ is generated
-__all__ = ['get_top_performance_entities', 'get_performance', 'get_top_volume_entities', 'get_top_entities']
+__all__ = ['WindowMethod', 'TopType', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance', 'get_top_volume_entities', 'get_top_entities']

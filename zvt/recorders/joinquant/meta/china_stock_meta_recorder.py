@@ -2,7 +2,8 @@
 import pandas as pd
 from jqdatapy.api import get_all_securities, run_query
 
-from zvt.api.quote import china_stock_code_to_id, portfolio_relate_stock
+from zvt.api.portfolio import portfolio_relate_stock
+from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db, get_entity_exchange, get_entity_code
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain import EtfStock, Stock, Etf, StockDetail

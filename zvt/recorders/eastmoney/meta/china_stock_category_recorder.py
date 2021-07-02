@@ -2,7 +2,7 @@
 import pandas as pd
 import requests
 
-from zvt.api.quote import china_stock_code_to_id
+from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain import BlockStock, BlockCategory, Block

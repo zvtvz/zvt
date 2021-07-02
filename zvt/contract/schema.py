@@ -386,6 +386,8 @@ class PortfolioStockHistory(PortfolioStock):
 
 
 # 交易标的和参与者的关系应该继承自该类, meet,遇见,恰如其分的诠释参与者和交易标的的关系
+# 市场就是参与者与交易标的的关系，类的命名规范为{Entity}{relation}{Entity}，entity_id代表"所"为的entity,"受"者entity以具体类别的id命名
+# 比如StockTopTenHolder:TradableMeetActor中entity_id和actor_id,分别代表股票和股东
 class TradableMeetActor(Mixin):
     # tradable code
     code = Column(String(length=64))

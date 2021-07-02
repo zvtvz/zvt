@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from zvt.api import to_report_period_type
+from zvt.api.utils import to_report_period_type
 from zvt.contract import ActorType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder

@@ -2,7 +2,7 @@
 
 import requests
 
-from zvt.api.quote import generate_kdata_id, get_kdata_schema
+from zvt.api.kdata import generate_kdata_id, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_db_session
 from zvt.contract.api import get_entities

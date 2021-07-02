@@ -69,6 +69,7 @@ def test_split_time_interval():
 
     assert is_same_date(last[-1], end)
 
+
 def test_split_time_interval_month():
     first = None
     last = None

@@ -2,8 +2,9 @@
 
 import dash_core_components as dcc
 
-from zvt.api.quote import decode_entity_id, get_kdata_schema
+from zvt.api.kdata import get_kdata_schema
 from zvt.api.trader_info_api import OrderReader, AccountStatsReader
+from zvt.contract.api import decode_entity_id
 from zvt.contract.drawer import Drawer
 from zvt.contract.reader import DataReader
 from zvt.contract.zvt_context import tradable_schema_map

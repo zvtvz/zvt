@@ -9,7 +9,7 @@ import requests
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.api.quote import china_stock_code_to_id
+from zvt.api.utils import china_stock_code_to_id
 from zvt.domain import IndexStock, Index
 
 

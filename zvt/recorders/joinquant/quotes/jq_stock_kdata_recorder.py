@@ -4,7 +4,7 @@ import pandas as pd
 from jqdatapy.api import get_token, get_bars
 
 from zvt import zvt_config
-from zvt.api.quote import generate_kdata_id, get_kdata_schema, get_kdata
+from zvt.api.kdata import generate_kdata_id, get_kdata_schema, get_kdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
