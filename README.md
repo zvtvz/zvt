@@ -8,14 +8,14 @@
 
 **Read this in other languages: [English](README-en.md).**  
 ## ZVT是什么
-* 市场，几何结构也。Z : 中枢也；V : 趋势，起落也；T : k线，级别也。
+* 市场，几何结构也。Z ：中枢也；V ：趋势，起落也；T ：K线，级别也。
 * 市场，合力也。知各方之力，而不增不减其力，是谓zero vector trader。
 * 市场，人性也。交易，困于其中，非交易之错，人之错也；人，奶头乐，生而被骗，此困局，唯站立，可破之，zvt logo之意也。
 
 ## 世界观
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
 
-* 市场由[ActorEntity(参与者)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L312:7) 和[TradableEntity(交易标的)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L211:7)构成
+* 市场由[ActorEntity(参与者)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L323:7) 和[TradableEntity(交易标的)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L207:7)构成
 
 * 关于它们的[事件(故事)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L14:7)发生了
 
