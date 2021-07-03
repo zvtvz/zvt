@@ -400,5 +400,18 @@ class TradableMeetActor(Mixin):
     actor_name = Column(String(length=128))
 
 
+# 也可以"所"为参与者，"受"为标的
+class ActorMeetTradable(Mixin):
+    # actor code
+    code = Column(String(length=64))
+    # actor name
+    name = Column(String(length=128))
+
+    tradable_id = Column(String)
+    tradable_type = Column(String)
+    tradable_code = Column(String(length=64))
+    tradable_name = Column(String(length=128))
+
+
 __all__ = ['TradableEntity', 'Mixin', 'NormalMixin', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock',
            'PortfolioStockHistory', 'TradableMeetActor']
