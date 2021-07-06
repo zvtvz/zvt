@@ -86,7 +86,7 @@ class EMStockIIRecorder(TimestampsDataRecorder):
                                'entity_type': actor_type.value,
                                'exchange': 'cn',
                                'code': item["HOLDER_CODE"],
-                               'name': f'{item["HOLDER_NAME"]}',
+                               'name': f'{item["HOLDER_NAME"]}'
                                } for item in result]
                     df1 = pd.DataFrame.from_records(actors)
                     df_to_db(data_schema=ActorMeta, df=df1, provider=self.provider, force_update=False,

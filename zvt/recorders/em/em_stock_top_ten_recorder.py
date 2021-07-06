@@ -84,6 +84,6 @@ class EMStockTopTenRecorder(TimestampsDataRecorder):
 
 
 if __name__ == '__main__':
-    EMStockTopTenRecorder(codes=['000338']).run()
+    EMStockTopTenRecorder(codes=['000002']).run()
 # the __all__ is generated
 __all__ = ['EMStockTopTenRecorder']
