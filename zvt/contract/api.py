@@ -376,7 +376,7 @@ def get_data_count(data_schema, filters=None, session=None):
         for filter in filters:
             query = query.filter(filter)
 
-    count_q = query.statement.with_only_columns([func.count()]).order_by(None)
+    count_q = query.statement.with_only_columns([func.count(data_schema.id)]).order_by(None)
     count = session.execute(count_q).scalar()
     return count
 
