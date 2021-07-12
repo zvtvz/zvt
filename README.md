@@ -21,6 +21,21 @@
 
 * 它们之间互相影响
 
+## ZVT操盘法
+从zvt是什么和世界观可得出如下的三段操盘法：
+* 走势分类
+
+比如只做成交活跃的强势股
+* 参与者
+
+比如只做基金重仓的个股
+* 宏观
+
+比如只做成长赛道的行业，只在放水凶猛时大干
+
+> 这里最关键的就是"只做"，把时间放在重要的东西上，才能不被信息淹没；而三者结合便可兼顾安全和效率
+
+
 ## 设计哲学
 * 若无必要，勿增实体
 * 统一性
@@ -59,9 +74,11 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 
 ### 扩展应用例子
 
-[数字货币插件](https://github.com/zvtvz/zvt-ccxt)
+[数字货币插件](https://github.com/zvtvz/zvt_coin)
 
-[定时选股推送](https://github.com/zvtvz/zvt/issues/48)
+[期货插件](https://github.com/zvtvz/zvt_future)
+
+[定时选股推送](https://github.com/zvtvz/zvt/issues/48)（测试使用，勿据此买卖）
 
 > 目前主干代码提供的标的类型为A股，其他标的可以通过plugin的方式来实现
 
