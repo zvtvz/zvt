@@ -8,7 +8,7 @@
 
 **Read this in other languages: [English](README-en.md).**  
 ## ZVT是什么
-* 市场，几何结构也。Z ：震荡，中枢也；V ：趋势，起落也；T ：K线，级别也。
+* 市场，几何结构也。Z：震荡，中枢也；V ：趋势，起落也；T ：K线，级别也。
 * 市场，合力也。知各方之力，而不增不减其力，是谓zero vector trader。
 * 市场，人性也。交易，困于其中，非交易之错，人之错也；人，奶头乐，生而被骗，此困局，唯站立，可破之，zvt logo之意也。
 
@@ -247,7 +247,7 @@ https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4
 
 > 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
 
-> 添加其他数据提供商, 请参考[数据扩展教程](https://zvtvz.github.io/zvt/#/data_extending)
+> 添加其他数据提供商， 请参考[数据扩展教程](https://zvtvz.github.io/zvt/#/data_extending)
 
 ## 3. 数据
 下面介绍如何用一种**统一**的方式来回答三个问题：**有什么数据？如何更新数据？如何查询数据？**
@@ -290,7 +290,7 @@ In [5]: IncomeStatement.record_data(codes=['000338'])
 In [5]: CashFlowStatement.record_data(codes=['000338'])
 ```
 
-其他数据依样画葫芦即可。
+其他数据依样画葫芦即可。
 
 > 标准流程就是: Schema.record_data(provoder='your provoder',codes='the codes')
 
