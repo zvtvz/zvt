@@ -8,7 +8,7 @@ from zvt.contract import ActorType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock, ActorMeta
-from zvt.domain.actor.stock_actor import StockTopTenFreeHolder
+from zvt.domain.actor.stock_actor import StockTopTenFreeHolder, StockInstitutionalInvestorHolder
 from zvt.recorders.em.common import get_holder_report_dates, get_free_holders
 from zvt.utils import to_pd_timestamp, to_time_str
 
@@ -24,6 +24,24 @@ class EMStockTopTenFreeRecorder(TimestampsDataRecorder):
         result = get_holder_report_dates(code=entity_item.code)
         if result:
             return [to_pd_timestamp(item['END_DATE']) for item in result]
+
+    def on_finish_entity(self, entity):
+        super().on_finish_entity(entity)
+        holders = StockTopTenFreeHolder.query_data(entity_id=entity.id,
+                                                   filters=[StockTopTenFreeHolder.holding_values == None],
+                                                   session=self.session,
+                                                   return_type='domain')
+        for holder in holders:
+            ii = StockInstitutionalInvestorHolder.query_data(entity_id=entity.id,
+                                                             filters=[
+                                                                 StockInstitutionalInvestorHolder.holding_values > 1,
+                                                                 StockInstitutionalInvestorHolder.holding_ratio > 0.01,
+                                                                 StockInstitutionalInvestorHolder.timestamp == holder.timestamp],
+                                                             limit=1,
+                                                             return_type='domain')
+            if ii:
+                holder.holding_values = holder.holding_ratio * ii[0].holding_values / ii[0].holding_ratio
+        self.session.commit()
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
@@ -81,7 +99,7 @@ class EMStockTopTenFreeRecorder(TimestampsDataRecorder):
                               'report_period': to_report_period_type(timestamp),
 
                               'holding_numbers': item['HOLD_NUM'],
-                              'holding_ratio': item['FREE_HOLDNUM_RATIO']}
+                              'holding_ratio': item['FREE_HOLDNUM_RATIO'] / 100}
                     holders.append(holder)
                 if holders:
                     df = pd.DataFrame.from_records(holders)

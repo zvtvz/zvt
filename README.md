@@ -12,7 +12,7 @@
 * 市场，合力也。知各方之力，而不增不减其力，是谓zero vector trader。
 * 市场，人性也。交易，困于其中，非交易之错，人之错也；人，奶头乐，生而被骗，此困局，唯站立，可破之，zvt logo之意也。
 
-## 世界观
+## ZVT世界观
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
 
 * 市场由[ActorEntity(参与者)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L323:7) 和[TradableEntity(交易标的)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L207:7)构成
@@ -22,7 +22,7 @@
 * 它们之间互相影响
 
 ## ZVT操盘法
-从zvt是什么和世界观可得出如下的三段操盘法：
+从 **zvt是什么** 和 **世界观** 可得如下的三段操盘法：
 * 走势分类
 
 比如只做成交活跃的强势股
@@ -31,10 +31,15 @@
 比如只做基金重仓的个股
 * 宏观
 
-比如只做成长赛道的行业，只在放水凶猛时大干
+比如只做成长期的行业
 
 > 这里最关键的就是"只做"，把时间放在重要的东西上，才能不被信息淹没；而三者结合便可兼顾安全和效率
 
+## ZVT愿景
+
+追求市场的公开，透明，系统，平民，避免市场的市井化，神秘化，高深化，贵族化。
+
+> zvt虽然可以做小级别的回测和交易，但通过其提供的**原语**构造自己的**世界观**才是最重要的
 
 ## 设计哲学
 * 若无必要，勿增实体

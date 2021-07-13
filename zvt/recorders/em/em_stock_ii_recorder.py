@@ -73,7 +73,7 @@ class EMStockIIRecorder(TimestampsDataRecorder):
                                 'report_period': to_report_period_type(timestamp),
 
                                 'holding_numbers': item['TOTAL_SHARES'],
-                                'holding_ratio': item['FREESHARES_RATIO'],
+                                'holding_ratio': item['FREESHARES_RATIO'] / 100,
                                 'holding_values': item['HOLD_VALUE']
                                 } for item in result]
                     df = pd.DataFrame.from_records(holders)

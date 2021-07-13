@@ -18,10 +18,8 @@ class StockTopTenFreeHolder(StockActorBase, TradableMeetActor):
     holding_numbers = Column(Float)
     # 持股比例
     holding_ratio = Column(Float)
-    # 变动
-    change = Column(Float)
-    # 变动比例
-    change_ratio = Column(Float)
+    # 持股市值
+    holding_values = Column(Float)
 
 
 class StockTopTenHolder(StockActorBase, TradableMeetActor):
@@ -34,10 +32,8 @@ class StockTopTenHolder(StockActorBase, TradableMeetActor):
     holding_numbers = Column(Float)
     # 持股比例
     holding_ratio = Column(Float)
-    # 变动
-    change = Column(Float)
-    # 变动比例
-    change_ratio = Column(Float)
+    # 持股市值
+    holding_values = Column(Float)
 
 
 class StockInstitutionalInvestorHolder(StockActorBase, TradableMeetActor):
