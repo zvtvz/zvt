@@ -537,20 +537,19 @@ class ZenFactor(TechnicalFactor):
 
     def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
                  entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None, start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
-                 order: object = None, limit: int = None, level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
-                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
-                 transformer: Transformer = None, accumulator: Accumulator = ZenAccumulator(),
-                 need_persist: bool = False, dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
-                 not_load_data: bool = False,
+                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
+                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
+                 accumulator: Accumulator = ZenAccumulator(), need_persist: bool = False, dry_run: bool = False,
+                 factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
         self.factor_schema = get_zen_factor_schema(entity_type=entity_schema.__name__, level=level)
-        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, the_timestamp,
-                         start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
-                         time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, level, category_field, time_field,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         need_persist, dry_run, factor_name, clear_state, not_load_data, adjust_type)
 
     def factor_col_map_object_hook(self) -> dict:
         return {

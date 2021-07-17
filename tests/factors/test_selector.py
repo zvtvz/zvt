@@ -9,10 +9,9 @@ init_test_context()
 
 
 class TechnicalSelector(TargetSelector):
-    def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp,
-                     end_timestamp, level):
+    def init_factors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, level):
         bull_factor = BullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
-                                 codes=codes, the_timestamp=the_timestamp, start_timestamp=start_timestamp,
+                                 codes=codes, start_timestamp=start_timestamp,
                                  end_timestamp=end_timestamp, provider='joinquant', level=level, adjust_type='qfq')
 
         self.filter_factors = [bull_factor]
@@ -23,9 +22,7 @@ def test_cross_ma_selector():
     entity_type = 'stock'
     start_timestamp = '2018-01-01'
     end_timestamp = '2019-06-30'
-    my_selector = TargetSelector(entity_ids=entity_ids,
-                                 entity_schema=entity_type,
-                                 start_timestamp=start_timestamp,
+    my_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_type, start_timestamp=start_timestamp,
                                  end_timestamp=end_timestamp)
     # add the factors
     my_selector \

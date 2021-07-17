@@ -15,7 +15,7 @@ class MultipleLevelTrader(StockTrader):
         # 周线策略
         week_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                       provider='joinquant', level=IntervalLevel.LEVEL_1WEEK, long_threshold=0.7)
+                                       long_threshold=0.7, level=IntervalLevel.LEVEL_1WEEK, provider='joinquant')
         week_gold_cross_factor = GoldCrossFactor(entity_ids=entity_ids, entity_schema=entity_schema,
                                                  exchanges=exchanges,
                                                  codes=codes, start_timestamp=start_timestamp,
@@ -26,7 +26,7 @@ class MultipleLevelTrader(StockTrader):
         # 日线策略
         day_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                      provider='joinquant', level=IntervalLevel.LEVEL_1DAY, long_threshold=0.7)
+                                      long_threshold=0.7, level=IntervalLevel.LEVEL_1DAY, provider='joinquant')
         day_gold_cross_factor = GoldCrossFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                                 codes=codes, start_timestamp=start_timestamp,
                                                 end_timestamp=end_timestamp,

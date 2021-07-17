@@ -207,35 +207,15 @@ class Factor(DataReader, DataListener):
     transformer: Transformer = None
     accumulator: Accumulator = None
 
-    def __init__(self,
-                 data_schema: Type[Mixin],
-                 entity_schema: Type[TradableEntity] = None,
-                 provider: str = None,
-                 entity_provider: str = None,
-                 entity_ids: List[str] = None,
-                 exchanges: List[str] = None,
-                 codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 limit: int = None,
-                 level: Union[str, IntervalLevel] = None,
-                 category_field: str = 'entity_id',
-                 time_field: str = 'timestamp',
-                 computing_window: int = None,
-                 # child added arguments
-                 keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill',
-                 effective_number: int = None,
-                 transformer: Transformer = None,
-                 accumulator: Accumulator = None,
-                 need_persist: bool = False,
-                 dry_run: bool = False,
-                 factor_name: str = None,
-                 clear_state: bool = False,
+    def __init__(self, data_schema: Type[Mixin], entity_schema: Type[TradableEntity] = None, provider: str = None,
+                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
+                 codes: List[str] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None, columns: List = None, filters: List = None,
+                 order: object = None, limit: int = None, level: Union[str, IntervalLevel] = None,
+                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
+                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
+                 transformer: Transformer = None, accumulator: Accumulator = None, need_persist: bool = False,
+                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
                  not_load_data: bool = False) -> None:
         """
 
@@ -252,7 +232,7 @@ class Factor(DataReader, DataListener):
         self.not_load_data = not_load_data
 
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
-                         the_timestamp, start_timestamp, end_timestamp, columns, filters, order, limit, level,
+                         start_timestamp, end_timestamp, columns, filters, order, limit, level,
                          category_field, time_field, computing_window)
 
         # define unique name of your factor if you want to keep factor state

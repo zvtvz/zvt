@@ -21,7 +21,7 @@ class MacdDayTrader(StockTrader):
         start_timestamp = next_date(start_timestamp, -50)
         day_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                       codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                                      provider='joinquant', level=IntervalLevel.LEVEL_1DAY, long_threshold=0.7)
+                                      long_threshold=0.7, level=IntervalLevel.LEVEL_1DAY, provider='joinquant')
         day_gold_cross_factor = GoldCrossFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                                                 codes=codes, start_timestamp=start_timestamp,
                                                 end_timestamp=end_timestamp,

@@ -42,15 +42,9 @@ def get_order_securities(trader_name):
 
 class AccountStatsReader(DataReader):
 
-    def __init__(self,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY,
-                 trader_names: List[str] = None) -> None:
+    def __init__(self, start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None,
+                 level: IntervalLevel = IntervalLevel.LEVEL_1DAY, trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
         self.filters = filters
@@ -62,7 +56,7 @@ class AccountStatsReader(DataReader):
             else:
                 self.filters = filter
         super().__init__(AccountStats, None, None, None, None, None, None,
-                         the_timestamp, start_timestamp, end_timestamp, columns, self.filters, order, None, level,
+                         start_timestamp, end_timestamp, columns, self.filters, order, None, level,
                          category_field='trader_name', time_field='timestamp', computing_window=None)
 
     def draw_line(self, show=True):
@@ -72,14 +66,8 @@ class AccountStatsReader(DataReader):
 
 
 class OrderReader(DataReader):
-    def __init__(self,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None,
-                 filters: List = None,
-                 order: object = None,
-                 level: IntervalLevel = None,
+    def __init__(self, start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None, filters: List = None, order: object = None, level: IntervalLevel = None,
                  trader_names: List[str] = None) -> None:
         self.trader_names = trader_names
 
@@ -93,7 +81,7 @@ class OrderReader(DataReader):
                 self.filters = filter
 
         super().__init__(Order, None, None, None, None, None, None,
-                         the_timestamp, start_timestamp, end_timestamp, columns, self.filters, order, None, level,
+                         start_timestamp, end_timestamp, columns, self.filters, order, None, level,
                          category_field='trader_name', time_field='timestamp', computing_window=None)
 
 

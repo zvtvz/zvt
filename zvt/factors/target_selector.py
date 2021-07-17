@@ -23,17 +23,8 @@ class TargetType(Enum):
 
 
 class TargetSelector(object):
-    def __init__(self,
-                 entity_ids=None,
-                 entity_schema=Stock,
-                 exchanges=None,
-                 codes=None,
-                 the_timestamp=None,
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 long_threshold=0.8,
-                 short_threshold=0.2,
-                 level=IntervalLevel.LEVEL_1DAY,
+    def __init__(self, entity_ids=None, entity_schema=Stock, exchanges=None, codes=None, start_timestamp=None,
+                 end_timestamp=None, long_threshold=0.8, short_threshold=0.2, level=IntervalLevel.LEVEL_1DAY,
                  provider=None) -> None:
         self.entity_ids = entity_ids
         self.entity_schema = entity_schema
@@ -41,17 +32,12 @@ class TargetSelector(object):
         self.codes = codes
         self.provider = provider
 
-        if the_timestamp:
-            self.the_timestamp = to_pd_timestamp(the_timestamp)
-            self.start_timestamp = self.the_timestamp
-            self.end_timestamp = self.the_timestamp
+        if start_timestamp:
+            self.start_timestamp = to_pd_timestamp(start_timestamp)
+        if end_timestamp:
+            self.end_timestamp = to_pd_timestamp(end_timestamp)
         else:
-            if start_timestamp:
-                self.start_timestamp = to_pd_timestamp(start_timestamp)
-            if end_timestamp:
-                self.end_timestamp = to_pd_timestamp(end_timestamp)
-            else:
-                self.end_timestamp = now_pd_timestamp()
+            self.end_timestamp = now_pd_timestamp()
 
         self.long_threshold = long_threshold
         self.short_threshold = short_threshold
@@ -66,11 +52,9 @@ class TargetSelector(object):
         self.open_short_df: DataFrame = None
 
         self.init_factors(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
-                          the_timestamp=the_timestamp, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                          level=self.level)
+                          start_timestamp=start_timestamp, end_timestamp=end_timestamp, level=self.level)
 
-    def init_factors(self, entity_ids, entity_schema, exchanges, codes, the_timestamp, start_timestamp, end_timestamp,
-                     level):
+    def init_factors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, level):
         pass
 
     def add_filter_factor(self, factor: FilterFactor):

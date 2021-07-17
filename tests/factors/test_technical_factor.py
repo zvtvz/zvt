@@ -10,14 +10,9 @@ from zvt.factors.technical_factor import TechnicalFactor
 
 
 def test_ma():
-    factor = TechnicalFactor(codes=['000338'],
-                             start_timestamp='2019-01-01',
-                             end_timestamp='2019-06-10',
-                             level=IntervalLevel.LEVEL_1DAY,
-                             provider='joinquant',
-                             computing_window=30,
-                             transformer=MaTransformer(windows=[5, 10, 30]),
-                             adjust_type='qfq')
+    factor = TechnicalFactor(provider='joinquant', codes=['000338'], start_timestamp='2019-01-01',
+                             end_timestamp='2019-06-10', level=IntervalLevel.LEVEL_1DAY, computing_window=30,
+                             transformer=MaTransformer(windows=[5, 10, 30]), adjust_type='qfq')
 
     print(factor.factor_df.tail())
 
@@ -41,14 +36,9 @@ def test_ma():
 
 
 def test_macd():
-    factor = TechnicalFactor(codes=['000338'],
-                             start_timestamp='2019-01-01',
-                             end_timestamp='2019-06-10',
-                             level=IntervalLevel.LEVEL_1DAY,
-                             provider='joinquant',
-                             computing_window=None,
-                             transformer=MacdTransformer(),
-                             adjust_type='qfq')
+    factor = TechnicalFactor(provider='joinquant', codes=['000338'], start_timestamp='2019-01-01',
+                             end_timestamp='2019-06-10', level=IntervalLevel.LEVEL_1DAY, computing_window=None,
+                             transformer=MacdTransformer(), adjust_type='qfq')
 
     print(factor.factor_df.tail())
 

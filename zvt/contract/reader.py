@@ -54,7 +54,6 @@ class DataReader(Drawable):
                  entity_ids: List[str] = None,
                  exchanges: List[str] = None,
                  codes: List[str] = None,
-                 the_timestamp: Union[str, pd.Timestamp] = None,
                  start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = now_pd_timestamp(),
                  columns: List = None,
@@ -74,13 +73,8 @@ class DataReader(Drawable):
         self.provider = provider
         self.entity_provider = entity_provider
 
-        self.the_timestamp = the_timestamp
-        if the_timestamp:
-            self.start_timestamp = the_timestamp
-            self.end_timestamp = the_timestamp
-        else:
-            self.start_timestamp = start_timestamp
-            self.end_timestamp = end_timestamp
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
 
         self.start_timestamp = to_pd_timestamp(self.start_timestamp)
         self.end_timestamp = to_pd_timestamp(self.end_timestamp)
