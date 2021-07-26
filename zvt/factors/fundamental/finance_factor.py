@@ -20,23 +20,27 @@ class FinanceBaseFactor(Factor):
                  category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
                  keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
                  transformer: Transformer = None, accumulator: Accumulator = None, need_persist: bool = False,
-                 dry_run: bool = False, factor_name: str = None, clear_state: bool = False,
-                 not_load_data: bool = False) -> None:
+                 only_compute_factor: bool = False, factor_name: str = None, clear_state: bool = False,
+                 only_load_factor: bool = False) -> None:
         if not columns:
             columns = data_schema.important_cols()
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data)
+                         accumulator, need_persist, only_compute_factor, factor_name, clear_state, only_load_factor)
 
 
 class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
-    def __init__(self, data_schema: Type[Mixin] = FinanceFactor, entity_schema: TradableEntity = Stock,
+    def __init__(self,
+                 data_schema: Type[Mixin] = FinanceFactor,
+                 entity_schema: TradableEntity = Stock,
                  provider: str = None,
-                 entity_provider: str = None, entity_ids: List[str] = None, exchanges: List[str] = None,
-                 codes: List[str] = None, start_timestamp: Union[str, pd.Timestamp] = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
                  end_timestamp: Union[str, pd.Timestamp] = None,
-                 # 高roe,高现金流,低财务杠杆，有增长
                  columns: List = (FinanceFactor.roe,
                                   FinanceFactor.op_income_growth_yoy,
                                   FinanceFactor.net_profit_growth_yoy,
@@ -52,13 +56,22 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
                                   FinanceFactor.sales_net_cash_flow_per_op_income >= 0.3,
                                   FinanceFactor.current_ratio >= 1,
                                   FinanceFactor.debt_asset_ratio <= 0.5),
-                 order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = True,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = None, need_persist: bool = False, dry_run: bool = False,
-                 factor_name: str = None, clear_state: bool = False, not_load_data: bool = False,
-                 # 3 years
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = True,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = False,
                  window='1095d',
                  count=8,
                  col_period_threshold={'roe': 0.02}) -> None:
@@ -76,7 +89,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
         super().__init__(data_schema, entity_schema, provider, entity_provider, entity_ids, exchanges, codes,
                          start_timestamp, end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, transformer,
-                         accumulator, need_persist, dry_run, factor_name, clear_state, not_load_data)
+                         accumulator, need_persist, only_compute_factor, factor_name, clear_state, only_load_factor)
 
     def compute_factor(self):
         def filter_df(df):
@@ -127,11 +140,9 @@ if __name__ == '__main__':
     # print(f1.result_df)
 
     # 高股息 低应收
-    factor2 = GoodCompanyFactor(data_schema=BalanceSheet,
-                                columns=[BalanceSheet.accounts_receivable],
-                                filters=[
-                                    BalanceSheet.accounts_receivable <= 0.2 * BalanceSheet.total_current_assets],
-                                col_period_threshold=None, keep_all_timestamp=False)
+    factor2 = GoodCompanyFactor(data_schema=BalanceSheet, columns=[BalanceSheet.accounts_receivable], filters=[
+        BalanceSheet.accounts_receivable <= 0.2 * BalanceSheet.total_current_assets], keep_all_timestamp=False,
+                                col_period_threshold=None)
     print(factor2.result_df)
 # the __all__ is generated
 __all__ = ['FinanceBaseFactor', 'GoodCompanyFactor']
