@@ -6,6 +6,11 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule ma_stats_factor
+from .ma_stats_factor import *
+from .ma_stats_factor import __all__ as _ma_stats_factor_all
+__all__ += _ma_stats_factor_all
+
 # import all from submodule top_bottom_factor
 from .top_bottom_factor import *
 from .top_bottom_factor import __all__ as _top_bottom_factor_all

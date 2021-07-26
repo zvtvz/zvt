@@ -61,11 +61,3 @@ class GoldCrossFactor(MacdFactor):
 
 # the __all__ is generated
 __all__ = ['MacdFactor', 'BullFactor', 'KeepBullFactor', 'LiveOrDeadFactor', 'GoldCrossFactor']
-
-if __name__ == '__main__':
-    from zvt.contract import IntervalLevel
-
-    f1 = LiveOrDeadFactor(level=IntervalLevel.LEVEL_1WEEK, start_timestamp='2018-01-01')
-
-    df = f1.factor_df
-    print(df[(df['score'] > 0) & (df['timestamp'] == '2021-01-04')])

@@ -581,7 +581,4 @@ if __name__ == '__main__':
     zen.draw(show=True)
 
 # the __all__ is generated
-__all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including',
-           'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including',
-           'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_zen_factor_schema', 'ZenState',
-           'ZenAccumulator', 'ZenFactor']
+__all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including', 'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including', 'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_zen_factor_schema', 'ZenState', 'handle_zhongshu', 'ZenAccumulator', 'ZenFactor']

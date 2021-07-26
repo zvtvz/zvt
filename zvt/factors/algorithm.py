@@ -284,5 +284,4 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer',
-           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
+__all__ = ['ma', 'ema', 'live_or_dead', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
