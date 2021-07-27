@@ -296,7 +296,7 @@ class Factor(DataReader, DataListener):
 
         if self.clear_state:
             self.clear_state_data()
-        elif self.need_persist:
+        elif self.need_persist or self.only_load_factor:
             self.load_factor()
 
             # 根据已经计算的factor_df和computing_window来保留data_df
@@ -447,6 +447,8 @@ class Factor(DataReader, DataListener):
         self.logger.info(f'[[[ ^^^^^^^^factor:{self.factor_name} ^^^^^^^^]]]')
 
     def drawer_main_df(self) -> Optional[pd.DataFrame]:
+        if self.only_load_factor:
+            return self.factor_df
         return self.data_df
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:

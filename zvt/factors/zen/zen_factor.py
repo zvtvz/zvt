@@ -8,16 +8,17 @@ from typing import Union, Optional, Type
 import numpy as np
 import pandas as pd
 
-from zvt.contract import TradableEntity
 from zvt.contract import IntervalLevel, AdjustType
+from zvt.contract import TradableEntity
 from zvt.contract.api import get_schema_by_name
 from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
+from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock
-from zvt.factors.algorithm import intersect
 from zvt.factors.technical_factor import TechnicalFactor
+from zvt.factors.algorithm import intersect
 from zvt.utils import pd_is_not_null, to_string
 from zvt.utils import to_time_str
 from zvt.utils.time_utils import TIME_FORMAT_ISO8601
@@ -111,7 +112,7 @@ def is_down(kdata, pre_kdata):
 def handle_first_fenxing(one_df, step=11):
     if step >= len(one_df):
         logger.info(f"coult not get fenxing by step {step}, len {len(one_df)}")
-        return None, None, None
+        return None, None, None, None
 
     logger.info(f"try to get first fenxing by step {step}")
 
@@ -132,17 +133,19 @@ def handle_first_fenxing(one_df, step=11):
             start_index = ding_index
             # 目前的笔的方向，up代表寻找 can_ding;down代表寻找can_di
             direction = Direction.up
+            interval = ding_index - di_index
         else:
             fenxing = 'bi_ding'
             fenxing_index = ding_index
             one_df.loc[ding_index, 'bi_ding'] = True
             start_index = di_index
             direction = Direction.down
+            interval = di_index - ding_index
         return Fenxing(state=fenxing, index=fenxing_index,
                        kdata={
                            'low': float(one_df.loc[fenxing_index]['low']),
                            'high': float(one_df.loc[fenxing_index]['high'])
-                       }), start_index, direction
+                       }), start_index, direction, interval
     else:
         logger.info("need add step")
         return handle_first_fenxing(one_df, step=step + 1)
@@ -228,8 +231,8 @@ def get_zen_factor_schema(entity_type: str,
     if type(level) == str:
         level = IntervalLevel(level)
 
-    # zen factor schema rule
-    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}ZenFactor
+    # z factor schema rule
+    # 1)name:{SecurityType.value.capitalize()}{IntervalLevel.value.upper()}ZFactor
     schema_str = '{}{}ZenFactor'.format(entity_type.capitalize(), level.value.capitalize())
 
     return get_schema_by_name(schema_str)
@@ -262,8 +265,14 @@ class ZenState(Bean):
         # 目前段的方向
         self.current_duan_state = state.get('current_duan_state', 'yi')
 
+        # 记录用于计算中枢的段
         # list of (timestamp,value)
         self.duans = state.get('duans', [])
+        self.bis = state.get('bis', [])
+
+        # 前一个点
+        self.pre_bi = state.get('pre_bi')
+        self.pre_duan = state.get('pre_duan')
 
 
 def handle_zhongshu(points: list, acc_df, end_index, zhongshu_col='zhongshu', zhongshu_change_col='zhongshu_change'):
@@ -354,6 +363,7 @@ class ZenAccumulator(Accumulator):
                 zen_state = ZenState(state)
 
                 acc_df = acc_df.reset_index(drop=True)
+                current_interval = acc_df.iloc[start_index - 1]['current_interval']
             else:
                 self.logger.info('no need to compute')
                 return acc_df, state
@@ -365,12 +375,34 @@ class ZenAccumulator(Accumulator):
             acc_df['bi_ding'] = False
             # 记录笔顶/底分型的值，bi_di取low,bi_ding取high,其他为None,绘图时取有值的连线即为 笔
             acc_df['bi_value'] = np.NAN
+            # 笔的变化
+            acc_df['bi_change'] = np.NAN
+            # 笔的斜率
+            acc_df['bi_slope'] = np.NAN
+            # 持续的周期
+            acc_df['bi_interval'] = np.NAN
 
             # 记录临时分型，不变
             acc_df['tmp_ding'] = False
             acc_df['tmp_di'] = False
             # 分型的力度
             acc_df['fenxing_power'] = np.NAN
+
+            # 目前分型确定的方向
+            acc_df['current_direction'] = None
+            acc_df['current_change'] = np.NAN
+            acc_df['current_interval'] = np.NAN
+            acc_df['current_slope'] = np.NAN
+            # 最近的一个笔中枢
+            # acc_df['current_zhongshu'] = np.NAN
+            acc_df['current_zhongshu_change'] = np.NAN
+            acc_df['current_zhongshu_y0'] = np.NAN
+            acc_df['current_zhongshu_y1'] = np.NAN
+            # 目前走势的临时方向 其跟direction的的关系 确定了下一个分型
+            acc_df['tmp_direction'] = None
+            acc_df['opposite_change'] = np.NAN
+            acc_df['opposite_interval'] = np.NAN
+            acc_df['opposite_slope'] = np.NAN
 
             acc_df['duan_state'] = 'yi'
 
@@ -380,9 +412,19 @@ class ZenAccumulator(Accumulator):
             acc_df['duan_ding'] = False
             # 记录段顶/底的值，为duan_di时取low,为duan_ding时取high,其他为None,绘图时取有值的连线即为 段
             acc_df['duan_value'] = np.NAN
+            # 段的变化
+            acc_df['duan_change'] = np.NAN
+            # 段的斜率
+            acc_df['duan_slope'] = np.NAN
+            # 持续的周期
+            acc_df['duan_interval'] = np.NAN
 
             # 记录在确定中枢的最后一个段的终点x1，值为Rect(x0,y0,x1,y1)
             acc_df['zhongshu'] = np.NAN
+            acc_df['zhongshu_change'] = np.NAN
+
+            acc_df['bi_zhongshu'] = np.NAN
+            acc_df['bi_zhongshu_change'] = np.NAN
 
             acc_df = acc_df.reset_index(drop=True)
 
@@ -395,7 +437,7 @@ class ZenAccumulator(Accumulator):
             # 注:只是一种方便的确定第一个分型的办法，有了第一个分型，后面的处理就比较统一
             # start_index 为遍历开始的位置
             # direction为一个确定分型后的方向，即顶分型后为:down，底分型后为:up
-            fenxing, start_index, direction = handle_first_fenxing(acc_df, step=11)
+            fenxing, start_index, direction, current_interval = handle_first_fenxing(acc_df, step=11)
             if not fenxing:
                 return None, None
 
@@ -404,16 +446,43 @@ class ZenAccumulator(Accumulator):
 
             # list of (timestamp,value)
             zen_state.duans = []
+            zen_state.bis = []
 
         pre_kdata = acc_df.iloc[start_index - 1]
         pre_index = start_index - 1
 
         tmp_direction = zen_state.direction
 
+        current_zhongshu = None
+        current_zhongshu_change = None
         for index, kdata in acc_df.iloc[start_index:].iterrows():
             # print(f'timestamp: {kdata.timestamp}')
             # 临时方向
             tmp_direction = get_direction(kdata, pre_kdata, current=tmp_direction)
+
+            # current states
+            current_interval = current_interval + 1
+            if zen_state.direction == Direction.up:
+                pre_value = acc_df.loc[zen_state.fenxing_list[0].index, 'low']
+                current_value = kdata['high']
+            else:
+                pre_value = acc_df.loc[zen_state.fenxing_list[0].index, 'high']
+                current_value = kdata['low']
+            acc_df.loc[index, 'current_direction'] = zen_state.direction.value
+            acc_df.loc[index, 'current_interval'] = current_interval
+            change = (current_value - pre_value) / pre_value
+            acc_df.loc[index, 'current_change'] = change
+            acc_df.loc[index, 'current_slope'] = change / current_interval
+            if current_zhongshu:
+                # acc_df.loc[index, 'current_zhongshu'] = current_zhongshu
+                acc_df.loc[index, 'current_zhongshu_y0'] = current_zhongshu.y0
+                acc_df.loc[index, 'current_zhongshu_y1'] = current_zhongshu.y1
+                acc_df.loc[index, 'current_zhongshu_change'] = current_zhongshu_change
+            else:
+                # acc_df.loc[index, 'current_zhongshu'] = acc_df.loc[index - 1, 'current_zhongshu']
+                acc_df.loc[index, 'current_zhongshu_y0'] = acc_df.loc[index - 1, 'current_zhongshu_y0']
+                acc_df.loc[index, 'current_zhongshu_y1'] = acc_df.loc[index - 1, 'current_zhongshu_y1']
+                acc_df.loc[index, 'current_zhongshu_change'] = acc_df.loc[index - 1, 'current_zhongshu_change']
 
             # 处理包含关系
             handle_including(one_df=acc_df, index=index, kdata=kdata, pre_index=pre_index, pre_kdata=pre_kdata,
@@ -433,6 +502,21 @@ class ZenAccumulator(Accumulator):
             # 反向，寻找反 分型
             else:
                 zen_state.opposite_count = zen_state.opposite_count + 1
+
+                # opposite states
+                current_interval = zen_state.opposite_count
+                if tmp_direction == Direction.up:
+                    pre_value = acc_df.loc[index - zen_state.opposite_count, 'low']
+                    current_value = kdata['high']
+                else:
+                    pre_value = acc_df.loc[index - zen_state.opposite_count, 'high']
+                    current_value = kdata['low']
+                acc_df.loc[index, 'tmp_direction'] = tmp_direction.value
+                acc_df.loc[index, 'opposite_interval'] = current_interval
+                change = (current_value - pre_value) / pre_value
+                acc_df.loc[index, 'opposite_change'] = change
+                acc_df.loc[index, 'opposite_slope'] = change / current_interval
+
                 # 第一次反向
                 if zen_state.opposite_count == 1:
                     acc_df.loc[pre_index, tmp_fenxing_col] = True
@@ -468,6 +552,25 @@ class ZenAccumulator(Accumulator):
                         else:
                             bi_value = acc_df.loc[zen_state.can_fenxing_index, 'low']
                         acc_df.loc[zen_state.can_fenxing_index, 'bi_value'] = bi_value
+
+                        # 计算笔斜率
+                        if zen_state.pre_bi:
+                            change = ((bi_value - zen_state.pre_bi[1]) / zen_state.pre_bi[1])
+                            interval = (zen_state.can_fenxing_index - zen_state.pre_bi[0])
+                            bi_slope = change / interval
+                            acc_df.loc[zen_state.can_fenxing_index, 'bi_change'] = change
+                            acc_df.loc[zen_state.can_fenxing_index, 'bi_slope'] = bi_slope
+                            acc_df.loc[zen_state.can_fenxing_index, 'bi_interval'] = interval
+
+                        # 记录用于计算笔中枢的笔
+                        zen_state.bis.append((acc_df.loc[zen_state.can_fenxing_index, 'timestamp'], bi_value))
+
+                        # 计算笔中枢
+                        zen_state.bis, current_zhongshu, current_zhongshu_change = handle_zhongshu(points=zen_state.bis,
+                                                                                                   acc_df=acc_df,
+                                                                                                   end_index=zen_state.can_fenxing_index,
+                                                                                                   zhongshu_col='bi_zhongshu',
+                                                                                                   zhongshu_change_col='bi_zhongshu_change')
 
                         zen_state.pre_bi = (zen_state.can_fenxing_index, bi_value)
 
@@ -509,6 +612,17 @@ class ZenAccumulator(Accumulator):
                                     # 记录段的值
                                     acc_df.loc[duan_index, 'duan_value'] = duan_value
 
+                                    # 计算段斜率
+                                    if zen_state.pre_duan:
+                                        change = ((duan_value - zen_state.pre_duan[1]) / zen_state.pre_duan[1])
+                                        interval = (duan_index - zen_state.pre_duan[0])
+                                        duan_slope = change / interval
+                                        acc_df.loc[duan_index, 'duan_change'] = change
+                                        acc_df.loc[duan_index, 'duan_slope'] = duan_slope
+                                        acc_df.loc[duan_index, 'duan_interval'] = interval
+
+                                    zen_state.pre_duan = (duan_index, duan_value)
+
                                     # 记录用于计算中枢的段
                                     zen_state.duans.append((acc_df.loc[duan_index, 'timestamp'], duan_value))
 
@@ -534,16 +648,38 @@ class ZenAccumulator(Accumulator):
 
 
 class ZenFactor(TechnicalFactor):
+    accumulator = ZenAccumulator()
 
-    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
-                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, transformer: Transformer = None,
-                 accumulator: Accumulator = ZenAccumulator(), need_persist: bool = False, only_compute_factor: bool = False,
-                 factor_name: str = None, clear_state: bool = False, only_load_factor: bool = False,
+    def drawer_main_data(self) -> Optional[NormalData]:
+        return super().drawer_main_data()
+
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
         self.factor_schema = get_zen_factor_schema(entity_type=entity_schema.__name__, level=level)
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
@@ -553,7 +689,9 @@ class ZenFactor(TechnicalFactor):
 
     def factor_col_map_object_hook(self) -> dict:
         return {
-            'zhongshu': decode_rect
+            'zhongshu': decode_rect,
+            'current_zhongshu': decode_rect,
+            'bi_zhongshu': decode_rect
         }
 
     def factor_encoder(self):
@@ -565,20 +703,158 @@ class ZenFactor(TechnicalFactor):
         return [bi_value, duan_value]
 
     def drawer_rects(self) -> List[Rect]:
-        df = self.factor_df[['zhongshu']].dropna()
-        return df['zhongshu'].tolist()
+        df1 = self.factor_df[['bi_zhongshu']].dropna()
+        return df1['bi_zhongshu'].tolist()
+
+    def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
+        # bi_slope = self.factor_df[['bi_slope']].dropna()
+        # duan_slope = self.factor_df[['duan_slope']].dropna()
+        # power = self.factor_df[['fenxing_power']].dropna()
+        # zhongshu_change = self.factor_df[['zhongshu_change']].dropna()
+        # return [bi_slope, duan_slope, power, zhongshu_change]
+        change1 = self.factor_df[['current_change']].dropna()
+        change2 = self.factor_df[['opposite_change']].dropna()
+        return [change1, change2]
+
+    def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
+        if pd_is_not_null(self.result_df):
+            annotation_df = self.result_df.copy()
+            annotation_df = annotation_df[annotation_df['score']]
+            annotation_df['value'] = self.factor_df.loc[annotation_df.index]['close']
+            annotation_df['flag'] = annotation_df['score'].apply(lambda x: order_type_flag(x))
+            return annotation_df
+
+
+def order_type_flag(order_type):
+    if order_type:
+        return 'B'
+
+
+class TrendingFactor(ZenFactor):
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = True,
+                 adjust_type: Union[AdjustType, str] = None) -> None:
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, level, category_field, time_field,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         need_persist, only_compute_factor, factor_name, clear_state, only_load_factor, adjust_type)
+
+    def compute_result(self):
+        super().compute_result()
+        # 窄幅震荡
+        s1 = self.factor_df['current_zhongshu_change'] <= 0.15
+        s2 = self.factor_df['close'] > self.factor_df['current_zhongshu_y1'] * 1.1
+        s = s1 & s2
+
+        self.result_df = s.to_frame(name='score')
+
+    def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+        zhongshu_y0 = self.factor_df[['current_zhongshu_y0']].dropna()
+        zhongshu_y1 = self.factor_df[['current_zhongshu_y1']].dropna()
+        return [zhongshu_y0, zhongshu_y1]
+
+    def drawer_main_df(self) -> Optional[pd.DataFrame]:
+        return self.factor_df
+
+
+class ShakingFactor(ZenFactor):
+    # 震荡区间
+    shaking_range = 0.15
+
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = True,
+                 adjust_type: Union[AdjustType, str] = None) -> None:
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, level, category_field, time_field,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         need_persist, only_compute_factor, factor_name, clear_state, only_load_factor, adjust_type)
+
+    def compute_result(self):
+        super().compute_result()
+        s1 = self.factor_df['current_zhongshu_change'] >= self.shaking_range
+        # 震荡低点
+        middle = (self.factor_df['current_zhongshu_y0'] + self.factor_df['current_zhongshu_y1']) / 2
+        s2 = self.factor_df['close'] <= middle
+        s3 = self.factor_df['close'] >= 0.9 * self.factor_df['current_zhongshu_y0']
+        s = s1 & s2 & s3
+
+        self.result_df = s.to_frame(name='score')
+
+    def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
+        if pd_is_not_null(self.result_df):
+            annotation_df = self.result_df.copy()
+            annotation_df = annotation_df[annotation_df['score']]
+            annotation_df['value'] = self.factor_df.loc[annotation_df.index]['close']
+            annotation_df['flag'] = annotation_df['score'].apply(lambda x: order_type_flag(x))
+            return annotation_df
+
+    def drawer_main_df(self) -> Optional[pd.DataFrame]:
+        return self.factor_df
+
+    def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+        zhongshu_y0 = self.factor_df[['current_zhongshu_y0']].dropna()
+        zhongshu_y1 = self.factor_df[['current_zhongshu_y1']].dropna()
+        return [zhongshu_y0, zhongshu_y1]
 
 
 if __name__ == '__main__':
-    zen = ZenFactor(entity_ids=['stock_sz_000338', 'stock_sz_000001'], level='1d', need_persist=True, clear_state=False)
+    from zvt.factors.zen.domain import Stock1dZenFactor
+    from zvt.domain import Stock1dHfqKdata
 
-    print(zen.factor_df)
-
-    zen.move_on(timeout=1)
-
-    print(zen.factor_df)
-
+    Stock1dHfqKdata.record_data(codes=['000338','601318'])
+    zen = ZenFactor(level='1d', need_persist=True, clear_state=False, codes=['000338','601318'])
     zen.draw(show=True)
 
 # the __all__ is generated
-__all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including', 'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including', 'FactorStateEncoder', 'decode_rect', 'decode_fenxing', 'get_zen_factor_schema', 'ZenState', 'handle_zhongshu', 'ZenAccumulator', 'ZenFactor']
+__all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including', 'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_duan', 'handle_including', 'FactorStateEncoder', 'decode_rect', 'decode_fenxing',
+           'get_zen_factor_schema', 'ZenState', 'handle_zhongshu', 'ZenAccumulator', 'ZenFactor', 'order_type_flag', 'TrendingFactor', 'ShakingFactor']
