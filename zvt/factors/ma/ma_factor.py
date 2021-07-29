@@ -25,15 +25,33 @@ def get_ma_factor_schema(entity_type: str,
 
 
 class MaFactor(TechnicalFactor):
-    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
-                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 columns: List = None, filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, need_persist: bool = False,
-                 only_compute_factor: bool = False, factor_name: str = None, clear_state: bool = False, only_load_factor: bool = False,
-                 adjust_type: Union[AdjustType, str] = None, windows=None) -> None:
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = False,
+                 adjust_type: Union[AdjustType, str] = None,
+                 windows=None) -> None:
         if need_persist:
             self.factor_schema = get_ma_factor_schema(entity_type=entity_schema.__name__, level=level)
 
@@ -67,15 +85,33 @@ class CrossMaFactor(MaFactor):
 
 class VolumeUpMaFactor(TechnicalFactor):
 
-    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
-                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, accumulator: Accumulator = None,
-                 need_persist: bool = False, only_compute_factor: bool = False, factor_name: str = None, clear_state: bool = False,
-                 only_load_factor: bool = False, adjust_type: Union[AdjustType, str] = None, windows=None,
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = False,
+                 adjust_type: Union[AdjustType, str] = None,
+                 windows=None,
                  vol_windows=None) -> None:
         if not windows:
             windows = [250]
@@ -119,6 +155,23 @@ class VolumeUpMaFactor(TechnicalFactor):
         self.result_df = filter_se.to_frame(name='score')
 
 
+class CrossMaVolumeFactor(VolumeUpMaFactor):
+    def compute_result(self):
+        # 均线多头排列
+        cols = [f'ma{window}' for window in self.windows]
+        filter_se = self.factor_df[cols[0]] > self.factor_df[cols[1]]
+        current_col = cols[1]
+        for col in cols[2:]:
+            filter_se = filter_se & (self.factor_df[current_col] > self.factor_df[col])
+            current_col = col
+
+        # 成交额大于5亿️
+        filter_se = filter_se & (self.factor_df['turnover'] > 500000000)
+
+        print(self.factor_df[filter_se])
+        self.result_df = filter_se.to_frame(name='score')
+
+
 if __name__ == '__main__':
     print('start')
     parser = argparse.ArgumentParser()
@@ -142,4 +195,4 @@ if __name__ == '__main__':
                               end_timestamp=now_pd_timestamp(), level=level, need_persist=False)
     print(factor.result_df)
 # the __all__ is generated
-__all__ = ['get_ma_factor_schema', 'MaFactor', 'CrossMaFactor', 'VolumeUpMaFactor']
+__all__ = ['get_ma_factor_schema', 'MaFactor', 'CrossMaFactor', 'VolumeUpMaFactor', 'CrossMaVolumeFactor']

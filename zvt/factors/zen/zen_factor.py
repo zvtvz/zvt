@@ -846,6 +846,46 @@ class ShakingFactor(ZenFactor):
         zhongshu_y1 = self.factor_df[['current_zhongshu_y1']].dropna()
         return [zhongshu_y0, zhongshu_y1]
 
+class ShowFactor(ZenFactor):
+
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 columns: List = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 transformer: Transformer = None,
+                 accumulator: Accumulator = None,
+                 need_persist: bool = False,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = True,
+                 adjust_type: Union[AdjustType, str] = None) -> None:
+        super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
+                         end_timestamp, columns, filters, order, limit, level, category_field, time_field,
+                         computing_window, keep_all_timestamp, fill_method, effective_number, transformer, accumulator,
+                         need_persist, only_compute_factor, factor_name, clear_state, only_load_factor, adjust_type)
+
+    def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
+        change1 = self.factor_df[['current_slope']].dropna()
+        change2 = self.factor_df[['opposite_slope']].dropna()
+        return [change1, change2]
+
 
 if __name__ == '__main__':
     from zvt.factors.zen.domain import Stock1dZenFactor
