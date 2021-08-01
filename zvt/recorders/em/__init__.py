@@ -16,6 +16,11 @@ from .common import *
 from .common import __all__ as _common_all
 __all__ += _common_all
 
+# import all from submodule em_stock_actor_summary_recorder
+from .em_stock_actor_summary_recorder import *
+from .em_stock_actor_summary_recorder import __all__ as _em_stock_actor_summary_recorder_all
+__all__ += _em_stock_actor_summary_recorder_all
+
 # import all from submodule em_stock_top_ten_recorder
 from .em_stock_top_ten_recorder import *
 from .em_stock_top_ten_recorder import __all__ as _em_stock_top_ten_recorder_all

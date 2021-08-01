@@ -34,6 +34,13 @@ def get_ii_holder(code, report_date, org_type):
                        filters=generate_filters(code=code, report_date=report_date, org_type=org_type))
 
 
+# 机构持仓汇总
+def get_ii_summary(code, report_date, org_type):
+    return get_em_data(request_type='RPT_F10_MAIN_ORGHOLDDETAILS',
+                       fields='SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE',
+                       filters=generate_filters(code=code, report_date=report_date, org_type=org_type))
+
+
 def get_free_holders(code, end_date):
     return get_em_data(request_type='RPT_F10_EH_FREEHOLDERS',
                        fields='SECUCODE,END_DATE,HOLDER_NAME,HOLDER_CODE,HOLDER_CODE_OLD,HOLD_NUM,FREE_HOLDNUM_RATIO,FREE_RATIO_QOQ,IS_HOLDORG,HOLDER_RANK',
@@ -47,6 +54,12 @@ def get_holders(code, end_date):
 
 
 def get_url(type, sty, filters, order_by='', order='asc', pn=1, ps=2000):
+    # 根据 url 映射如下
+    # type=RPT_F10_MAIN_ORGHOLDDETAILS
+    # sty=SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE
+    # filter=(SECUCODE="000338.SZ")(REPORT_DATE=\'2021-03-31\')(ORG_TYPE="01")
+    # sr=1
+    # st=
     if order == 'asc':
         sr = 1
     else:
@@ -119,9 +132,10 @@ if __name__ == '__main__':
     # pprint(get_free_holder_report_dates(code='000338'))
     # pprint(get_holder_report_dates(code='000338'))
     # pprint(get_holders(code='000338', end_date='2021-03-31'))
-    pprint(get_free_holders(code='000338', end_date='2021-03-31'))
-    # resp = get_ii_holder(code='000338', report_date='2021-03-31',
-    #                      org_type=actor_type_to_org_type(ActorType.corporation))
-    # print(resp)
+    # pprint(get_free_holders(code='000338', end_date='2021-03-31'))
+    # pprint(get_ii_holder(code='000338', report_date='2021-03-31',
+    #                      org_type=actor_type_to_org_type(ActorType.corporation)))
+    pprint(get_ii_summary(code='000338', report_date='2021-03-31',
+                          org_type=actor_type_to_org_type(ActorType.corporation)))
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data']

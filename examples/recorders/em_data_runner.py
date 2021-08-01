@@ -22,6 +22,7 @@ def run():
         try:
             StockInstitutionalInvestorHolder.record_data(provider='em')
             StockTopTenFreeHolder.record_data(provider='em')
+            StockActorSummary.record_data(provider='em')
 
             email_action.send_message("5533061@qq.com", 'em runner finished', '')
             break
