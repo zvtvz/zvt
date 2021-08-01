@@ -46,7 +46,6 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
                 result = get_ii_summary(code=entity.code, report_date=the_date,
                                         org_type=actor_type_to_org_type(actor_type))
                 if result:
-                    pprint(result)
                     summary_list = [{'id': f'{entity.entity_id}_{the_date}_{actor_type.value}',
                                      'entity_id': entity.entity_id,
                                      'timestamp': timestamp,
