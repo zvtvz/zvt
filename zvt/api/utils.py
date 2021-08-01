@@ -47,7 +47,6 @@ def get_china_exchange(code):
     else:
         return 'sz'
 
-
 def china_stock_code_to_id(code):
     return "{}_{}_{}".format('stock', get_china_exchange(code), code)
 # the __all__ is generated

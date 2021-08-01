@@ -46,6 +46,7 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
                 result = get_ii_summary(code=entity.code, report_date=the_date,
                                         org_type=actor_type_to_org_type(actor_type))
                 if result:
+                    pprint(result)
                     summary_list = [{'id': f'{entity.entity_id}_{the_date}_{actor_type.value}',
                                      'entity_id': entity.entity_id,
                                      'timestamp': timestamp,
@@ -58,10 +59,11 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
                                      'report_date': timestamp,
                                      'report_period': to_report_period_type(timestamp),
 
-                                     'change_ratio': item['CHANGE_RATIO'],
+                                     'change_ratio': item['CHANGE_RATIO'] / 100 if item['CHANGE_RATIO'] else 1,
                                      'is_complete': item['IS_COMPLETE'],
                                      'holding_numbers': item['TOTAL_FREE_SHARES'],
-                                     'holding_ratio': item['TOTAL_SHARES_RATIO'] / 100,
+                                     'holding_ratio': item['TOTAL_SHARES_RATIO'] / 100 if item[
+                                         'TOTAL_SHARES_RATIO'] else 0,
                                      'holding_values': item['TOTAL_MARKET_CAP']
                                      } for item in result]
                     df = pd.DataFrame.from_records(summary_list)

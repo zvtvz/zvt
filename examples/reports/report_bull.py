@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
+from typing import List
 
 import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log, zvt_config
+from zvt.contract import ActorType
 from zvt.contract.api import get_entities
-from zvt.domain import Stock, Stock1dHfqKdata
+from zvt.domain import Stock, Stock1dHfqKdata, StockActorSummary
 from zvt.factors import BullFactor, CrossMaVolumeFactor
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
@@ -60,8 +62,28 @@ def report_bull():
                     email_action.send_message(zvt_config['email_username'], f'report_bull error',
                                               'report_bull error:{}'.format(e))
 
-                info = [f'{stock.name}({stock.code})' for stock in stocks]
-                msg = msg + '盈利股:' + ' '.join(info) + '\n'
+                infos = []
+                for stock in stocks:
+                    info = f'{stock.name}({stock.code})'
+                    summary: List[StockActorSummary] = StockActorSummary.query_data(entity_id=stock.entity_id,
+                                                                                    order=StockActorSummary.timestamp.desc(),
+                                                                                    filters=[
+                                                                                        StockActorSummary.actor_type == ActorType.raised_fund.value],
+                                                                                    limit=1, return_type='domain')
+                    if summary:
+                        info = info + f'(共{summary[0].actor_count}家基金持有流通股比例:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+
+                    summary: List[StockActorSummary] = StockActorSummary.query_data(entity_id=stock.entity_id,
+                                                                                    order=StockActorSummary.timestamp.desc(),
+                                                                                    filters=[
+                                                                                        StockActorSummary.actor_type == ActorType.qfii.value],
+                                                                                    limit=1, return_type='domain')
+                    if summary:
+                        info = info + f'(共{summary[0].actor_count}家qfii持有流通股比例:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+
+                    infos.append(info)
+
+                msg = '\n'.join(infos) + '\n'
 
             logger.info(msg)
 
