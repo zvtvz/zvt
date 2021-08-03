@@ -47,7 +47,15 @@ def get_china_exchange(code):
     else:
         return 'sz'
 
+
 def china_stock_code_to_id(code):
     return "{}_{}_{}".format('stock', get_china_exchange(code), code)
+
+
+def value_to_pct(value, default):
+    return value / 100 if value else default
+
+
 # the __all__ is generated
-__all__ = ['to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'get_china_exchange', 'china_stock_code_to_id']
+__all__ = ['to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'get_china_exchange',
+           'china_stock_code_to_id', 'value_to_pct']

@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from zvt.api.utils import to_report_period_type
+from zvt.api.utils import to_report_period_type, value_to_pct
 from zvt.contract import ActorType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
@@ -58,11 +58,10 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
                                      'report_date': timestamp,
                                      'report_period': to_report_period_type(timestamp),
 
-                                     'change_ratio': item['CHANGE_RATIO'] / 100 if item['CHANGE_RATIO'] else 1,
+                                     'change_ratio': value_to_pct(item['CHANGE_RATIO'], default=1),
                                      'is_complete': item['IS_COMPLETE'],
                                      'holding_numbers': item['TOTAL_FREE_SHARES'],
-                                     'holding_ratio': item['TOTAL_SHARES_RATIO'] / 100 if item[
-                                         'TOTAL_SHARES_RATIO'] else 0,
+                                     'holding_ratio': value_to_pct(item['TOTAL_SHARES_RATIO'], default=0),
                                      'holding_values': item['TOTAL_MARKET_CAP']
                                      } for item in result]
                     df = pd.DataFrame.from_records(summary_list)
