@@ -6,6 +6,7 @@ from typing import List
 
 from sqlalchemy import or_
 
+from zvt.api import float_to_pct_str
 from zvt.contract import ActorType
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, Stock, StockActorSummary
 from zvt.utils.pd_utils import pd_is_not_null
@@ -69,7 +70,7 @@ def stocks_with_info(stocks: List[Stock]):
                                                                             StockActorSummary.actor_type == ActorType.raised_fund.value],
                                                                         limit=1, return_type='domain')
         if summary:
-            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家基金持股占比:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家基金持股占比:{float_to_pct_str(summary[0].holding_ratio)}, 变化: {float_to_pct_str(summary[0].change_ratio)})'
 
         summary: List[StockActorSummary] = StockActorSummary.query_data(entity_id=stock.entity_id,
                                                                         order=StockActorSummary.timestamp.desc(),
@@ -77,7 +78,7 @@ def stocks_with_info(stocks: List[Stock]):
                                                                             StockActorSummary.actor_type == ActorType.qfii.value],
                                                                         limit=1, return_type='domain')
         if summary:
-            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家qfii持股占比:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家qfii持股占比:{float_to_pct_str(summary[0].holding_ratio)}, 变化: {float_to_pct_str(summary[0].change_ratio)})'
 
         infos.append(info)
     return infos
