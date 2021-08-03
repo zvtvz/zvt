@@ -56,7 +56,7 @@ def report_core_company():
                                               'report_core_company error:{}'.format(e))
 
                 infos = stocks_with_info(stocks)
-                msg = ' '.join(infos)
+                msg = '\n'.join(infos)
             else:
                 msg = 'no targets'
 

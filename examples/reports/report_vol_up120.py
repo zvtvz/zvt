@@ -80,7 +80,7 @@ def report_vol_up_120():
                                               'report_vol_up_120 error:{}'.format(e))
 
                 infos = stocks_with_info(stocks)
-                msg = msg + '盈利股:' + ' '.join(infos) + '\n'
+                msg = msg + '盈利股:' + '\n'.join(infos) + '\n'
 
             logger.info(msg)
 
