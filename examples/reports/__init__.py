@@ -2,12 +2,14 @@
 import datetime
 import json
 import os
+from typing import List
 
 from sqlalchemy import or_
 
+from zvt.contract import ActorType
+from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, Stock, StockActorSummary
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_time_str
-from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement
 
 
 def get_subscriber_emails():
@@ -55,6 +57,30 @@ def risky_company(the_date=to_pd_timestamp(now_time_str()), income_yoy=-0.1, pro
         codes = codes + df1[df1.accounts_receivable > df2.net_profit / 2].index.tolist()
 
     return list(set(codes))
+
+
+def stocks_with_info(stocks: List[Stock]):
+    infos = []
+    for stock in stocks:
+        info = f'{stock.name}({stock.code})'
+        summary: List[StockActorSummary] = StockActorSummary.query_data(entity_id=stock.entity_id,
+                                                                        order=StockActorSummary.timestamp.desc(),
+                                                                        filters=[
+                                                                            StockActorSummary.actor_type == ActorType.raised_fund.value],
+                                                                        limit=1, return_type='domain')
+        if summary:
+            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家基金持股占比:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+
+        summary: List[StockActorSummary] = StockActorSummary.query_data(entity_id=stock.entity_id,
+                                                                        order=StockActorSummary.timestamp.desc(),
+                                                                        filters=[
+                                                                            StockActorSummary.actor_type == ActorType.qfii.value],
+                                                                        limit=1, return_type='domain')
+        if summary:
+            info = info + f'([{summary[0].timestamp}]共{summary[0].actor_count}家qfii持股占比:{summary[0].holding_ratio * 100}%, 变化: {summary[0].change_ratio * 100}%)'
+
+        infos.append(info)
+    return infos
 
 
 if __name__ == '__main__':

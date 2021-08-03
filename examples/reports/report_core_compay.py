@@ -6,13 +6,13 @@ import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
-from examples.reports import get_subscriber_emails
+from examples.reports import get_subscriber_emails, stocks_with_info
+from zvt import init_log, zvt_config
 from zvt.contract.api import get_entities
-from zvt.utils.time_utils import now_pd_timestamp, to_time_str
-from zvt import init_log
 from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
+from zvt.utils.time_utils import now_pd_timestamp, to_time_str
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +52,11 @@ def report_core_company():
                     for stock in stocks:
                         eastmoneypy.add_to_group(stock.code, group_name='core')
                 except Exception as e:
-                    email_action.send_message("5533061@qq.com", f'report_core_company error',
+                    email_action.send_message(zvt_config['email_username'], f'report_core_company error',
                                               'report_core_company error:{}'.format(e))
 
-                info = [f'{stock.name}({stock.code})' for stock in stocks]
-                msg = ' '.join(info)
+                infos = stocks_with_info(stocks)
+                msg = ' '.join(infos)
             else:
                 msg = 'no targets'
 
@@ -69,7 +69,7 @@ def report_core_company():
             time.sleep(60 * 3)
             error_count = error_count + 1
             if error_count == 10:
-                email_action.send_message("5533061@qq.com", f'report_core_company error',
+                email_action.send_message(zvt_config['email_username'], f'report_core_company error',
                                           'report_core_company error:{}'.format(e))
 
 

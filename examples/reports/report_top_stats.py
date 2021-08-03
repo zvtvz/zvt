@@ -60,7 +60,7 @@ def report_top_stats(periods=[7, 30, 180, 365], ignore_new_stock=True):
                     eastmoneypy.add_to_group(code=code, group_name='最靓仔')
             except Exception as e:
                 logger.exception(e)
-                email_action.send_message("5533061@qq.com", f'report_top_stats error',
+                email_action.send_message(zvt_config['email_username'], f'report_top_stats error',
                                           'report_top_stats error:{}'.format(e))
 
         # 一年内没怎么动的
