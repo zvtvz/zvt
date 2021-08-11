@@ -67,10 +67,14 @@ class EtfStock(StockMetaBase, PortfolioStockHistory):
 @register_entity(entity_type='stock_detail')
 class StockDetail(StockMetaBase, TradableEntity):
     __tablename__ = 'stock_detail'
-
+    
+    # 所属行业
     industries = Column(String)
+    # 行业指数
     industry_indices = Column(String)
+    # 所属板块
     concept_indices = Column(String)
+    # 所属区域
     area_indices = Column(String)
 
     # 成立日期
