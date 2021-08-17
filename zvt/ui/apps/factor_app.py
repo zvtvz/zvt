@@ -81,7 +81,7 @@ def factor_layout():
                                 ],
                             ),
 
-                            # select entity_type
+                            # select entity type
                             html.Div(
                                 className="padding-top-bot",
                                 children=[
@@ -92,6 +92,15 @@ def factor_layout():
                                                           zvt_context.tradable_schema_map.keys()],
                                                  value='stock',
                                                  clearable=False)
+                                ],
+                            ),
+                            # select entity provider
+                            html.Div(
+                                className="padding-top-bot",
+                                children=[
+                                    html.H6("select entity provider:"),
+                                    dcc.Dropdown(id='entity-provider-selector',
+                                                 placeholder='select entity provider')
                                 ],
                             ),
 
@@ -182,9 +191,11 @@ def factor_layout():
 @zvt_app.callback(
     [Output('trader-details', 'children'),
      Output('entity-type-selector', 'options'),
+     Output('entity-provider-selector', 'options'),
      Output('entity-selector', 'options')],
-    [Input('trader-selector', 'value'), Input('entity-type-selector', 'value')])
-def update_trader_details(trader_index, entity_type):
+    [Input('trader-selector', 'value'), Input('entity-type-selector', 'value'),
+     Input('entity-provider-selector', 'value')])
+def update_trader_details(trader_index, entity_type, entity_provider):
     if trader_index is not None:
         # change entity_type options
         entity_type = traders[trader_index].entity_type
@@ -195,21 +206,28 @@ def update_trader_details(trader_index, entity_type):
         # account stats
         account_stats = get_account_stats_figure(account_stats_reader=account_readers[trader_index])
 
+        providers = zvt_context.tradable_schema_map.get(entity_type).providers
+        entity_provider_options = [{'label': name, 'value': name} for name in providers]
+
         # entities
         entity_ids = get_order_securities(trader_name=trader_names[trader_index])
-        df = get_entities(entity_type=entity_type, entity_ids=entity_ids, columns=['entity_id', 'code', 'name'],
+        df = get_entities(provider=entity_provider, entity_type=entity_type, entity_ids=entity_ids,
+                          columns=['entity_id', 'code', 'name'],
                           index='entity_id')
         entity_options = [{'label': f'{entity_id}({entity["name"]})', 'value': entity_id} for entity_id, entity in
                           df.iterrows()]
 
-        return account_stats, entity_type_options, entity_options
+        return account_stats, entity_type_options, entity_provider_options, entity_options
     else:
         entity_type_options = [{'label': name, 'value': name} for name in zvt_context.tradable_schema_map.keys()]
         account_stats = None
-        df = get_entities(entity_type=entity_type, columns=['entity_id', 'code', 'name'], index='entity_id')
+        providers = zvt_context.tradable_schema_map.get(entity_type).providers
+        entity_provider_options = [{'label': name, 'value': name} for name in providers]
+        df = get_entities(provider=entity_provider, entity_type=entity_type, columns=['entity_id', 'code', 'name'],
+                          index='entity_id')
         entity_options = [{'label': f'{entity_id}({entity["name"]})', 'value': entity_id} for entity_id, entity in
                           df.iterrows()]
-        return account_stats, entity_type_options, entity_options
+        return account_stats, entity_type_options, entity_provider_options, entity_options
 
 
 @zvt_app.callback(

@@ -6,6 +6,7 @@ from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain import BlockStock, BlockCategory, Block
+from zvt.recorders.consts import DEFAULT_HEADER
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt.utils.utils import json_callback_param
 
@@ -23,7 +24,7 @@ class EastmoneyChinaBlockRecorder(Recorder):
 
     def run(self):
         for category, url in self.category_map_url.items():
-            resp = requests.get(url)
+            resp = requests.get(url, headers=DEFAULT_HEADER)
             results = json_callback_param(resp.text)
             the_list = []
             for result in results:
@@ -58,7 +59,7 @@ class EastmoneyChinaBlockStockRecorder(TimeSeriesDataRecorder):
     category_stocks_url = 'https://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd=C.{}{}&sty=SFCOO&st=(Close)&sr=-1&p=1&ps=300&cb=jsonp_B66B5BAA1C1B47B5BB9778045845B947&token=7bc05d0d4c3c22ef9fca8c2a912d779c'
 
     def record(self, entity, start, end, size, timestamps):
-        resp = requests.get(self.category_stocks_url.format(entity.code, '1'))
+        resp = requests.get(self.category_stocks_url.format(entity.code, '1'), headers=DEFAULT_HEADER)
         try:
             results = json_callback_param(resp.text)
             the_list = []
@@ -96,6 +97,7 @@ __all__ = ['EastmoneyChinaBlockRecorder', 'EastmoneyChinaBlockStockRecorder']
 
 if __name__ == '__main__':
     # init_log('china_stock_category.log')
+    EastmoneyChinaBlockRecorder().run()
 
     recorder = EastmoneyChinaBlockStockRecorder(codes=['BK0727'])
     recorder.run()

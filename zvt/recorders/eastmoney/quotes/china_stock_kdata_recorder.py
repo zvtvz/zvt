@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-
+import pandas as pd
 import requests
 
 from zvt.api.kdata import generate_kdata_id, get_kdata_schema
 from zvt.contract import IntervalLevel
-from zvt.contract.api import get_db_session
+from zvt.contract.api import get_db_session, df_to_db
 from zvt.contract.api import get_entities
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Index, BlockCategory, Block
+from zvt.domain import BlockCategory, Block
 from zvt.utils.time_utils import to_pd_timestamp, now_time_str, TIME_FORMAT_DAY1
 from zvt.utils.utils import json_callback_param, to_float
 
@@ -26,6 +26,7 @@ def level_flag(level: IntervalLevel):
 
 # 抓取行业的日线,周线,月线数据，用于中期选行业
 class ChinaStockKdataRecorder(FixedCycleDataRecorder):
+    default_size = 50000
     entity_provider: str = 'eastmoney'
     entity_schema = Block
 
@@ -36,7 +37,7 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                  entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
                  one_day_trading_minutes=24 * 60) -> None:
-        self.data_schema = get_kdata_schema(entity_type='index', level=level)
+        self.data_schema = get_kdata_schema(entity_type='block', level=level)
 
         super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
                          ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
@@ -45,13 +46,13 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
     def init_entities(self):
         self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
 
-        self.entities = get_entities(session=self.entity_session, entity_type='index',
+        self.entities = get_entities(session=self.entity_session, entity_type='block',
                                      exchanges=self.exchanges,
                                      codes=self.codes,
                                      entity_ids=self.entity_ids,
                                      return_type='domain', provider=self.provider,
                                      # 只抓概念和行业
-                                     filters=[Index.category.in_(
+                                     filters=[Block.category.in_(
                                          [BlockCategory.industry.value, BlockCategory.concept.value])])
 
     def record(self, entity, start, end, size, timestamps):
@@ -87,11 +88,12 @@ class ChinaStockKdataRecorder(FixedCycleDataRecorder):
                                    low=to_float(fields[4]),
                                    volume=to_float(fields[5]),
                                    turnover=to_float(fields[6])))
-        return kdatas
+        df = pd.DataFrame.from_records(kdatas)
+        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
 
 __all__ = ['ChinaStockKdataRecorder']
 
 if __name__ == '__main__':
-    recorder = ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1MON)
+    recorder = ChinaStockKdataRecorder(level=IntervalLevel.LEVEL_1DAY,codes=['BK0978'])
     recorder.run()
