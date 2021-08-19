@@ -6,7 +6,8 @@ import requests
 from zvt.contract.api import get_data_count, get_data
 from zvt.contract.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvt.utils.time_utils import to_pd_timestamp
-from zvt.domain import CompanyType, Stock, StockDetail
+from zvt.domain import CompanyType
+from zvt.domain.meta.stock_meta import Stock, StockDetail
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +138,7 @@ class BaseEastmoneyRecorder(object):
 
 
 class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = 'eastmoney'
     entity_schema = StockDetail
 
     provider = 'eastmoney'
@@ -163,7 +164,7 @@ class EastmoneyTimestampsDataRecorder(BaseEastmoneyRecorder, TimestampsDataRecor
 
 
 class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = 'eastmoney'
     entity_schema = StockDetail
 
     provider = 'eastmoney'
@@ -205,7 +206,7 @@ class EastmoneyPageabeDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder
 
 
 class EastmoneyMoreDataRecorder(BaseEastmoneyRecorder, TimeSeriesDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = 'eastmoney'
     entity_schema = StockDetail
 
     provider = 'eastmoney'

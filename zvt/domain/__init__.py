@@ -57,7 +57,7 @@ class CompanyType(enum.Enum):
 
 
 # the __all__ is generated
-__all__ = ['BlockCategory', 'ReportPeriod', 'CompanyType']
+__all__ = ['BlockCategory', 'IndexCategory', 'ReportPeriod', 'CompanyType']
 
 # __init__.py structure:
 # common code of the package
@@ -66,41 +66,34 @@ __all__ = ['BlockCategory', 'ReportPeriod', 'CompanyType']
 # import all from submodule misc
 from .misc import *
 from .misc import __all__ as _misc_all
-
 __all__ += _misc_all
 
 # import all from submodule quotes
 from .quotes import *
 from .quotes import __all__ as _quotes_all
-
 __all__ += _quotes_all
 
 # import all from submodule meta
 from .meta import *
 from .meta import __all__ as _meta_all
-
 __all__ += _meta_all
 
 # import all from submodule fundamental
 from .fundamental import *
 from .fundamental import __all__ as _fundamental_all
-
 __all__ += _fundamental_all
 
 # import all from submodule macro
 from .macro import *
 from .macro import __all__ as _macro_all
-
 __all__ += _macro_all
 
 # import all from submodule trader_info
 from .trader_info import *
 from .trader_info import __all__ as _trader_info_all
-
 __all__ += _trader_info_all
 
 # import all from submodule actor
 from .actor import *
 from .actor import __all__ as _actor_all
-
 __all__ += _actor_all
