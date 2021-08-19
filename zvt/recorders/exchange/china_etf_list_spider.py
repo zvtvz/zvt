@@ -7,12 +7,12 @@ import demjson
 import pandas as pd
 import requests
 
+from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
-from zvt.utils.time_utils import now_pd_timestamp
-from zvt.api.utils import china_stock_code_to_id
-from zvt.domain import EtfStock, BlockCategory, Etf
+from zvt.domain import EtfStock, Etf
 from zvt.recorders.consts import DEFAULT_SH_ETF_LIST_HEADER
+from zvt.utils.time_utils import now_pd_timestamp
 
 
 class ChinaETFListSpider(Recorder):
@@ -63,7 +63,7 @@ class ChinaETFListSpider(Recorder):
         df['entity_id'] = df['id']
         df['exchange'] = exchange
         df['entity_type'] = 'etf'
-        df['category'] = BlockCategory.etf.value
+        df['category'] = 'etf'
 
         df = df.dropna(axis=0, how='any')
         df = df.drop_duplicates(subset='id', keep='last')

@@ -6,19 +6,16 @@ import demjson
 import pandas as pd
 import requests
 
+from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
-from zvt.api.utils import china_stock_code_to_id
 from zvt.domain import IndexStock, Index
+from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 
 class ChinaIndexListSpider(Recorder):
     data_schema = IndexStock
-
-    def __init__(self, force_update=False, sleeping_time=2.0, provider='exchange') -> None:
-        self.provider = provider
-        super().__init__(force_update, sleeping_time)
+    provider = 'exchange'
 
     def run(self):
         # 上证、中证

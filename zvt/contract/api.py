@@ -471,9 +471,9 @@ def df_to_db(df: pd.DataFrame,
             session = get_db_session(provider=provider, data_schema=data_schema)
             ids = df_current["id"].tolist()
             if len(ids) == 1:
-                sql = f'delete from {data_schema.__tablename__} where id = "{ids[0]}"'
+                sql = f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"'
             else:
-                sql = f'delete from {data_schema.__tablename__} where id in {tuple(ids)}'
+                sql = f'delete from `{data_schema.__tablename__}` where id in {tuple(ids)}'
 
             session.execute(sql)
             session.commit()
