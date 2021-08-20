@@ -34,7 +34,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
         # 310004	港股通（深）
         codes = ['310001', '310002']
 
-        super().__init__(force_update, sleeping_time, ['sh', 'sz'], None, codes, day_data, real_time=real_time,
+        super().__init__(force_update, sleeping_time, ['cn'], None, codes, day_data, real_time=real_time,
                          fix_duplicate_way='ignore', start_timestamp=start_timestamp, end_timestamp=end_timestamp)
 
     def init_timestamps(self, entity):

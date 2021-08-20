@@ -7,14 +7,14 @@ from zvt.utils.utils import multiple_number
 
 
 class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
-    entity_provider = 'exchange'
+    entity_provider = 'joinquant'
     entity_schema = Index
 
     provider = 'joinquant'
     data_schema = CrossMarketSummary
 
     def __init__(self,
-                 force_update=False, sleeping_time=5,  real_time=False,
+                 force_update=False, sleeping_time=5, real_time=False,
                  fix_duplicate_way='add') -> None:
 
         # 聚宽编码
@@ -25,7 +25,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         # 310004	港股通（深）
 
         codes = ['310001', '310002', '310003', '310004']
-        super().__init__(force_update, sleeping_time, ['sz'], None, codes, True, real_time=real_time,
+        super().__init__(force_update, sleeping_time, ['cn'], None, codes, True, real_time=real_time,
                          fix_duplicate_way=fix_duplicate_way)
 
     def init_entities(self):
