@@ -79,3 +79,5 @@ __all__ = ['ChinaIndexDayKdataRecorder']
 
 if __name__ == '__main__':
     ChinaIndexDayKdataRecorder().run()
+# the __all__ is generated
+__all__ = ['ChinaIndexDayKdataRecorder']

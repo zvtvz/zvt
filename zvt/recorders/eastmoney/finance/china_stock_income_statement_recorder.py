@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.time_utils import to_pd_timestamp
-from zvt.utils.utils import add_func_to_value, first_item_to_float
 from zvt.api.utils import to_report_period_type
 from zvt.domain import IncomeStatement
 from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
+from zvt.utils.time_utils import to_pd_timestamp
+from zvt.utils.utils import add_func_to_value, first_item_to_float
 
 income_statement_map = {
     # 营业总收入
@@ -171,9 +171,9 @@ class ChinaStockIncomeStatementRecorder(BaseChinaStockFinanceRecorder):
         return income_statement_map
 
 
-__all__ = ['ChinaStockIncomeStatementRecorder']
-
 if __name__ == '__main__':
     # init_log('income_statement.log')
     recorder = ChinaStockIncomeStatementRecorder(codes=['002572'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['ChinaStockIncomeStatementRecorder']

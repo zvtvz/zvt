@@ -26,6 +26,6 @@ class EtfStock(EtfMetaBase, PortfolioStockHistory):
     __tablename__ = 'etf_stock'
 
 
-register_schema(providers=['joinquant'], db_name='etf_meta', schema_base=EtfMetaBase)
+register_schema(providers=['exchange','joinquant'], db_name='etf_meta', schema_base=EtfMetaBase)
 # the __all__ is generated
 __all__ = ['Etf', 'EtfStock']

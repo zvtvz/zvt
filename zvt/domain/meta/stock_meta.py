@@ -16,7 +16,6 @@ class Stock(StockMetaBase, TradableEntity):
 
 
 # 个股详情
-@register_entity(entity_type='stock_detail')
 class StockDetail(StockMetaBase, TradableEntity):
     __tablename__ = 'stock_detail'
 

@@ -60,3 +60,5 @@ class EastmoneyActorRecorder(Recorder):
 
 if __name__ == '__main__':
     EastmoneyActorRecorder().run()
+# the __all__ is generated
+__all__ = ['EastmoneyActorRecorder']

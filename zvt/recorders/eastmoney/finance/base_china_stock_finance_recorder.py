@@ -181,3 +181,5 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                         #                                                                    the_data.report_date))
 
                         self.fill_timestamp_with_jq(entity, the_data)
+# the __all__ is generated
+__all__ = ['to_jq_report_period', 'BaseChinaStockFinanceRecorder']

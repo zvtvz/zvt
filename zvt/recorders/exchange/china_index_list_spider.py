@@ -255,5 +255,7 @@ class ChinaIndexListSpider(Recorder):
 __all__ = ['ChinaIndexListSpider']
 
 if __name__ == '__main__':
-    spider = ChinaIndexListSpider(provider='exchange')
+    spider = ChinaIndexListSpider()
     spider.run()
+# the __all__ is generated
+__all__ = ['ChinaIndexListSpider']

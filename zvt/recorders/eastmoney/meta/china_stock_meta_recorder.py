@@ -2,12 +2,12 @@
 
 import requests
 
-from zvt.contract.recorder import Recorder
-from zvt.utils.time_utils import to_pd_timestamp
-from zvt.utils.utils import to_float, pct_to_float
 from zvt.contract.api import get_entities
+from zvt.contract.recorder import Recorder
 from zvt.domain.meta.stock_meta import StockDetail, Stock
 from zvt.recorders.exchange.china_stock_list_spider import ExchangeChinaStockListRecorder
+from zvt.utils.time_utils import to_pd_timestamp
+from zvt.utils.utils import to_float, pct_to_float
 
 
 class EastmoneyChinaStockListRecorder(ExchangeChinaStockListRecorder):
@@ -28,7 +28,7 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
         self.codes = codes
         if not self.force_update:
             self.entities = get_entities(session=self.session,
-                                         entity_type='stock_detail',
+                                         entity_schema=StockDetail,
                                          exchanges=None,
                                          codes=self.codes,
                                          filters=[StockDetail.profile.is_(None)],
@@ -87,11 +87,11 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
             self.sleep()
 
 
-__all__ = ['EastmoneyChinaStockListRecorder', 'EastmoneyChinaStockDetailRecorder']
-
 if __name__ == '__main__':
     # init_log('china_stock_meta.log')
 
-    # recorder = EastmoneyChinaStockDetailRecorder()
-    # recorder.run()
+    recorder = EastmoneyChinaStockListRecorder()
+    recorder.run()
     StockDetail.record_data(codes=['000338', '000777'], provider='eastmoney')
+# the __all__ is generated
+__all__ = ['EastmoneyChinaStockListRecorder', 'EastmoneyChinaStockDetailRecorder']

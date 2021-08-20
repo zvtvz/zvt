@@ -26,8 +26,8 @@ def gen_kdata_schemas():
 if __name__ == '__main__':
     # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
     # gen_exports('api')
-    # gen_exports('recorders/em')
-    gen_exports('domain')
+    gen_exports('recorders')
+    # gen_exports('domain')
     # gen_exports('informer')
     # gen_exports('utils')
     # gen_exports('trader')

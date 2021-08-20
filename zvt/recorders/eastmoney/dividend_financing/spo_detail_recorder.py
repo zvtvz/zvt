@@ -43,10 +43,10 @@ class SPODetailRecorder(EastmoneyPageabeDataRecorder):
         super().on_finish()
 
 
-__all__ = ['SPODetailRecorder']
-
 if __name__ == '__main__':
     # init_log('spo_detail.log')
 
     recorder = SPODetailRecorder(codes=['000999'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['SPODetailRecorder']

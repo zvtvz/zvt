@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.time_utils import to_pd_timestamp
-from zvt.utils.utils import add_func_to_value, to_float
 from zvt.api.utils import to_report_period_type
 from zvt.domain import FinanceFactor
 from zvt.recorders.eastmoney.finance.base_china_stock_finance_recorder import BaseChinaStockFinanceRecorder
+from zvt.utils.time_utils import to_pd_timestamp
+from zvt.utils.utils import add_func_to_value, to_float
 
 finance_factor_map = {
     # 基本每股收益(元)
@@ -153,9 +153,9 @@ class ChinaStockFinanceFactorRecorder(BaseChinaStockFinanceRecorder):
         return finance_factor_map
 
 
-__all__ = ['ChinaStockFinanceFactorRecorder']
-
 if __name__ == '__main__':
     # init_log('finance_factor.log')
     recorder = ChinaStockFinanceFactorRecorder(codes=['000001'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['ChinaStockFinanceFactorRecorder']

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.utils import to_float
 from zvt.domain import ManagerTrading
-
 from zvt.recorders.eastmoney.common import EastmoneyMoreDataRecorder
+from zvt.utils.utils import to_float
 
 
 class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
@@ -33,10 +32,10 @@ class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
         return the_id
 
 
-__all__ = ['ManagerTradingRecorder']
-
 if __name__ == '__main__':
     # init_log('manager_trading.log')
 
     recorder = ManagerTradingRecorder(codes=['002572'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['ManagerTradingRecorder']

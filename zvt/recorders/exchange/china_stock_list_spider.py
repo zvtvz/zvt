@@ -69,3 +69,5 @@ __all__ = ['ExchangeChinaStockListRecorder']
 if __name__ == '__main__':
     spider = ExchangeChinaStockListRecorder()
     spider.run()
+# the __all__ is generated
+__all__ = ['ExchangeChinaStockListRecorder']

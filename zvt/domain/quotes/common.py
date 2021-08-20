@@ -65,6 +65,5 @@ class StockKdataCommon(KdataCommon):
     turnover_rate = Column(Float)
 
 
-__all__ = ['KdataCommon', 'TickCommon', 'BlockKdataCommon', 'IndexKdataCommon', 'EtfKdataCommon', 'StockKdataCommon']
 # the __all__ is generated
 __all__ = ['KdataCommon', 'TickCommon', 'BlockKdataCommon', 'IndexKdataCommon', 'EtfKdataCommon', 'StockKdataCommon']

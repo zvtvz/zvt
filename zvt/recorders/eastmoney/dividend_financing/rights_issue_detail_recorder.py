@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from zvt.consts import SAMPLE_STOCK_CODES
 from zvt.domain import RightsIssueDetail, DividendFinancing
 from zvt.recorders.eastmoney.common import EastmoneyPageabeDataRecorder
-from zvt.consts import SAMPLE_STOCK_CODES
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import now_pd_timestamp
 from zvt.utils.utils import to_float
@@ -46,10 +46,10 @@ class RightsIssueDetailRecorder(EastmoneyPageabeDataRecorder):
         super().on_finish()
 
 
-__all__ = ['RightsIssueDetailRecorder']
-
 if __name__ == '__main__':
     # init_log('rights_issue.log')
 
     recorder = RightsIssueDetailRecorder(codes=SAMPLE_STOCK_CODES)
     recorder.run()
+# the __all__ is generated
+__all__ = ['RightsIssueDetailRecorder']

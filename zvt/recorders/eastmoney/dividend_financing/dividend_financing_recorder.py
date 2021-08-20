@@ -49,10 +49,10 @@ class DividendFinancingRecorder(EastmoneyPageabeDataRecorder):
         super().on_finish()
 
 
-__all__ = ['DividendFinancingRecorder']
-
 if __name__ == '__main__':
     # init_log('dividend_financing.log')
 
     recorder = DividendFinancingRecorder(codes=['000999'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['DividendFinancingRecorder']

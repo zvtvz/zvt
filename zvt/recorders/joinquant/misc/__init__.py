@@ -9,17 +9,14 @@ __all__ = []
 # import all from submodule joinquant_hk_holder_recorder
 from .joinquant_hk_holder_recorder import *
 from .joinquant_hk_holder_recorder import __all__ as _joinquant_hk_holder_recorder_all
-
 __all__ += _joinquant_hk_holder_recorder_all
 
 # import all from submodule joinquant_index_money_flow_recorder
 from .joinquant_index_money_flow_recorder import *
 from .joinquant_index_money_flow_recorder import __all__ as _joinquant_index_money_flow_recorder_all
-
 __all__ += _joinquant_index_money_flow_recorder_all
 
 # import all from submodule joinquant_stock_money_flow_recorder
 from .joinquant_stock_money_flow_recorder import *
 from .joinquant_stock_money_flow_recorder import __all__ as _joinquant_stock_money_flow_recorder_all
-
 __all__ += _joinquant_stock_money_flow_recorder_all

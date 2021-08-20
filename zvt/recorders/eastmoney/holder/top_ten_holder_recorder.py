@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
-from zvt.utils.utils import to_float
 from zvt.api.utils import to_report_period_type
 from zvt.domain.misc.holder import TopTenHolder
 from zvt.recorders.eastmoney.common import EastmoneyTimestampsDataRecorder, get_fc
+from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+from zvt.utils.utils import to_float
 
 
 class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
@@ -48,9 +48,9 @@ class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
         return the_id
 
 
-__all__ = ['TopTenHolder']
-
 if __name__ == '__main__':
     # init_log('top_ten_holder.log')
 
     TopTenHolderRecorder(codes=['002572']).run()
+# the __all__ is generated
+__all__ = ['TopTenHolderRecorder']

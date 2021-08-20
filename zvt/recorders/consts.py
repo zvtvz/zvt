@@ -123,3 +123,5 @@ Referer: http://fund.eastmoney.com/
 DEFAULT_HEADER = chrome_copy_header_to_dict('''
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
 ''')
+# the __all__ is generated
+__all__ = []

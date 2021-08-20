@@ -3,11 +3,11 @@ from ...context import init_test_context
 
 init_test_context()
 
-from zvt.recorders.exchange.china_stock_list_spider import ExchangeChinaStockListRecorder
+from zvt.recorders.eastmoney import EastmoneyChinaStockListRecorder
 
 
 def test_china_stock_recorder():
-    recorder = ExchangeChinaStockListRecorder()
+    recorder = EastmoneyChinaStockListRecorder()
 
     try:
         recorder.run()

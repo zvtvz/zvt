@@ -157,11 +157,11 @@ class EastmoneyChinaIndexStockRecorder(TimestampsDataRecorder):
             self.sleep()
 
 
-__all__ = ['EastmoneyChinaIndexRecorder', 'EastmoneyChinaIndexStockRecorder']
-
 if __name__ == '__main__':
     # init_log('china_stock_category.log')
     EastmoneyChinaIndexRecorder().run()
 
     recorder = EastmoneyChinaIndexStockRecorder(codes=['399370'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['get_resp_data', 'EastmoneyChinaIndexRecorder', 'EastmoneyChinaIndexStockRecorder']

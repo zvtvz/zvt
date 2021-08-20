@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 
 from zvt import init_log
-from zvt.api.kdata import generate_kdata_id,get_kdata
+from zvt.api.kdata import generate_kdata_id, get_kdata
 from zvt.contract import IntervalLevel
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Etf, Etf1dKdata
@@ -116,3 +116,5 @@ __all__ = ['ChinaETFDayKdataRecorder']
 if __name__ == '__main__':
     init_log('sina_china_etf_day_kdata.log')
     ChinaETFDayKdataRecorder(level=IntervalLevel.LEVEL_1DAY).run()
+# the __all__ is generated
+__all__ = ['ChinaETFDayKdataRecorder']
