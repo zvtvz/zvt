@@ -142,6 +142,10 @@ class Exchange(Enum):
     # 深证交易所
     sz = 'sz'
 
+    # 对于中国的不属于可直接交易的 指数类 标的，可归于cn
+    # 比如上证指数，沪深300等指数
+    cn = 'cn'
+
     # 数字货币
     binance = 'binance'
     huobipro = 'huobipro'

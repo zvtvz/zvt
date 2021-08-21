@@ -5,22 +5,22 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule china_etf_list_spider
-from .china_etf_list_spider import *
-from .china_etf_list_spider import __all__ as _china_etf_list_spider_all
-__all__ += _china_etf_list_spider_all
+# import all from submodule exchange_index_meta_recorder
+from .exchange_index_meta_recorder import *
+from .exchange_index_meta_recorder import __all__ as _exchange_index_meta_recorder_all
+__all__ += _exchange_index_meta_recorder_all
 
-# import all from submodule sh_stock_summary_recorder
-from .sh_stock_summary_recorder import *
-from .sh_stock_summary_recorder import __all__ as _sh_stock_summary_recorder_all
-__all__ += _sh_stock_summary_recorder_all
+# import all from submodule exchange_etf_meta_recorder
+from .exchange_etf_meta_recorder import *
+from .exchange_etf_meta_recorder import __all__ as _exchange_etf_meta_recorder_all
+__all__ += _exchange_etf_meta_recorder_all
 
-# import all from submodule china_stock_list_spider
-from .china_stock_list_spider import *
-from .china_stock_list_spider import __all__ as _china_stock_list_spider_all
-__all__ += _china_stock_list_spider_all
+# import all from submodule exchange_stock_meta_recorder
+from .exchange_stock_meta_recorder import *
+from .exchange_stock_meta_recorder import __all__ as _exchange_stock_meta_recorder_all
+__all__ += _exchange_stock_meta_recorder_all
 
-# import all from submodule china_index_list_spider
-from .china_index_list_spider import *
-from .china_index_list_spider import __all__ as _china_index_list_spider_all
-__all__ += _china_index_list_spider_all
+# import all from submodule exchange_stock_summary_recorder
+from .exchange_stock_summary_recorder import *
+from .exchange_stock_summary_recorder import __all__ as _exchange_stock_summary_recorder_all
+__all__ += _exchange_stock_summary_recorder_all

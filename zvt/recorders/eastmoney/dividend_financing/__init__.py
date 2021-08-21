@@ -6,22 +6,22 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule spo_detail_recorder
-from .spo_detail_recorder import *
-from .spo_detail_recorder import __all__ as _spo_detail_recorder_all
-__all__ += _spo_detail_recorder_all
+# import all from submodule eastmoney_dividend_detail_recorder
+from .eastmoney_dividend_detail_recorder import *
+from .eastmoney_dividend_detail_recorder import __all__ as _eastmoney_dividend_detail_recorder_all
+__all__ += _eastmoney_dividend_detail_recorder_all
 
-# import all from submodule rights_issue_detail_recorder
-from .rights_issue_detail_recorder import *
-from .rights_issue_detail_recorder import __all__ as _rights_issue_detail_recorder_all
-__all__ += _rights_issue_detail_recorder_all
+# import all from submodule eastmoney_dividend_financing_recorder
+from .eastmoney_dividend_financing_recorder import *
+from .eastmoney_dividend_financing_recorder import __all__ as _eastmoney_dividend_financing_recorder_all
+__all__ += _eastmoney_dividend_financing_recorder_all
 
-# import all from submodule dividend_detail_recorder
-from .dividend_detail_recorder import *
-from .dividend_detail_recorder import __all__ as _dividend_detail_recorder_all
-__all__ += _dividend_detail_recorder_all
+# import all from submodule eastmoney_rights_issue_detail_recorder
+from .eastmoney_rights_issue_detail_recorder import *
+from .eastmoney_rights_issue_detail_recorder import __all__ as _eastmoney_rights_issue_detail_recorder_all
+__all__ += _eastmoney_rights_issue_detail_recorder_all
 
-# import all from submodule dividend_financing_recorder
-from .dividend_financing_recorder import *
-from .dividend_financing_recorder import __all__ as _dividend_financing_recorder_all
-__all__ += _dividend_financing_recorder_all
+# import all from submodule eastmoney_spo_detail_recorder
+from .eastmoney_spo_detail_recorder import *
+from .eastmoney_spo_detail_recorder import __all__ as _eastmoney_spo_detail_recorder_all
+__all__ += _eastmoney_spo_detail_recorder_all

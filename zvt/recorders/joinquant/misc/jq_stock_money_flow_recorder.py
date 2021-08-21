@@ -9,7 +9,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import StockMoneyFlow, Stock
 from zvt.recorders.joinquant.common import to_jq_entity_id
-from zvt.recorders.joinquant.misc.joinquant_index_money_flow_recorder import JoinquantIndexMoneyFlowRecorder
+from zvt.recorders.joinquant.misc.jq_index_money_flow_recorder import JoinquantIndexMoneyFlowRecorder
 from zvt.utils import pd_is_not_null, to_time_str
 from zvt.utils.time_utils import TIME_FORMAT_DAY
 

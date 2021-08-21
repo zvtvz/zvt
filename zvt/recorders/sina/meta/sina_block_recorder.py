@@ -12,7 +12,7 @@ from zvt.domain import BlockStock, BlockCategory, Block
 from zvt.utils.time_utils import now_pd_timestamp
 
 
-class SinaChinaBlockRecorder(Recorder):
+class SinaBlockRecorder(Recorder):
     provider = 'sina'
     data_schema = Block
 
@@ -108,4 +108,4 @@ if __name__ == '__main__':
     recorder = SinaChinaBlockStockRecorder(codes=['new_cbzz'])
     recorder.run()
 # the __all__ is generated
-__all__ = ['SinaChinaBlockRecorder', 'SinaChinaBlockStockRecorder']
+__all__ = ['SinaBlockRecorder', 'SinaChinaBlockStockRecorder']

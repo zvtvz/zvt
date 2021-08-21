@@ -3,27 +3,29 @@ import pandas as pd
 import requests
 
 from zvt.contract.recorder import TimestampsDataRecorder
-from zvt.utils.time_utils import to_time_str
-from zvt.utils.utils import to_float
 from zvt.domain import Index
 from zvt.domain.misc import StockSummary
 from zvt.recorders.consts import DEFAULT_SH_SUMMARY_HEADER
+from zvt.utils.time_utils import to_time_str
+from zvt.utils.utils import to_float
 
 
-class StockSummaryRecorder(TimestampsDataRecorder):
+class ExchangeStockSummaryRecorder(TimestampsDataRecorder):
     entity_provider = 'exchange'
     entity_schema = Index
 
     provider = 'exchange'
     data_schema = StockSummary
 
+    original_page_url = 'http://www.sse.com.cn/market/stockdata/overview/day/'
+
     url = 'http://query.sse.com.cn/marketdata/tradedata/queryTradingByProdTypeData.do?jsonCallBack=jsonpCallback30731&searchDate={}&prodType=gp&_=1515717065511'
 
-    def __init__(self, exchanges=None, entity_ids=None, codes=['000001'],
-                 force_update=False, sleeping_time=5,  real_time=False,
-                 fix_duplicate_way='add') -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, True, real_time=real_time,
-                         fix_duplicate_way=fix_duplicate_way)
+    def __init__(self, force_update=False, sleeping_time=5, exchanges=None, entity_ids=None, day_data=False,
+                 entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='add',
+                 start_timestamp=None, end_timestamp=None) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, ['000001'], day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
 
     def init_timestamps(self, entity):
         return pd.date_range(start=entity.timestamp,
@@ -64,6 +66,6 @@ class StockSummaryRecorder(TimestampsDataRecorder):
 
 
 if __name__ == '__main__':
-    StockSummaryRecorder().run()
+    ExchangeStockSummaryRecorder().run()
 # the __all__ is generated
-__all__ = ['StockSummaryRecorder']
+__all__ = ['ExchangeStockSummaryRecorder']

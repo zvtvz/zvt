@@ -5,10 +5,10 @@ init_test_context()
 
 from zvt.consts import SAMPLE_STOCK_CODES
 
-from zvt.recorders.eastmoney.finance.china_stock_finance_factor_recorder import ChinaStockFinanceFactorRecorder
-from zvt.recorders.eastmoney.finance.china_stock_cash_flow_recorder import ChinaStockCashFlowRecorder
-from zvt.recorders.eastmoney.finance.china_stock_balance_sheet_recorder import ChinaStockBalanceSheetRecorder
-from zvt.recorders.eastmoney.finance.china_stock_income_statement_recorder import ChinaStockIncomeStatementRecorder
+from zvt.recorders.eastmoney.finance.eastmoney_finance_factor_recorder import ChinaStockFinanceFactorRecorder
+from zvt.recorders.eastmoney.finance.eastmoney_cash_flow_recorder import ChinaStockCashFlowRecorder
+from zvt.recorders.eastmoney.finance.eastmoney_balance_sheet_recorder import ChinaStockBalanceSheetRecorder
+from zvt.recorders.eastmoney.finance.eastmoney_income_statement_recorder import ChinaStockIncomeStatementRecorder
 
 
 def test_finance_factor_recorder():

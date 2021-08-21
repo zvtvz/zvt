@@ -5,8 +5,8 @@ init_test_context()
 
 from zvt.consts import SAMPLE_STOCK_CODES
 
-from zvt.recorders.eastmoney.holder.top_ten_holder_recorder import TopTenHolderRecorder
-from zvt.recorders.eastmoney.holder.top_ten_tradable_holder_recorder import TopTenTradableHolderRecorder
+from zvt.recorders.eastmoney.holder.eastmoney_top_ten_holder_recorder import TopTenHolderRecorder
+from zvt.recorders.eastmoney.holder.eastmoney_top_ten_tradable_holder_recorder import TopTenTradableHolderRecorder
 
 
 def test_top_ten_holder_recorder():

@@ -5,8 +5,8 @@ init_test_context()
 
 from zvt.consts import SAMPLE_STOCK_CODES
 
-from zvt.recorders.eastmoney.trading.manager_trading_recorder import ManagerTradingRecorder
-from zvt.recorders.eastmoney.trading.holder_trading_recorder import HolderTradingRecorder
+from zvt.recorders.eastmoney.trading.eastmoney_manager_trading_recorder import ManagerTradingRecorder
+from zvt.recorders.eastmoney.trading.eastmoney_holder_trading_recorder import HolderTradingRecorder
 
 
 def test_manager_trading_recorder():

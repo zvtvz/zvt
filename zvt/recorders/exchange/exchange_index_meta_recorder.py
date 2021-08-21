@@ -13,7 +13,7 @@ from zvt.domain import IndexStock, Index
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 
-class ChinaIndexListSpider(Recorder):
+class ExchangeIndexMetaRecorder(Recorder):
     data_schema = IndexStock
     provider = 'exchange'
 
@@ -252,10 +252,10 @@ class ChinaIndexListSpider(Recorder):
         df_to_db(df=df, data_schema=Index, provider=self.provider, force_update=False)
 
 
-__all__ = ['ChinaIndexListSpider']
+__all__ = ['ExchangeIndexMetaRecorder']
 
 if __name__ == '__main__':
-    spider = ChinaIndexListSpider()
+    spider = ExchangeIndexMetaRecorder()
     spider.run()
 # the __all__ is generated
-__all__ = ['ChinaIndexListSpider']
+__all__ = ['ExchangeIndexMetaRecorder']

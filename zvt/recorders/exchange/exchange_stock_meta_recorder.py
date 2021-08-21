@@ -12,18 +12,18 @@ from zvt.recorders.consts import DEFAULT_SH_HEADER, DEFAULT_SZ_HEADER
 from zvt.utils.time_utils import to_pd_timestamp
 
 
-class ExchangeChinaStockListRecorder(Recorder):
+class ExchangeStockMetaRecorder(Recorder):
     data_schema = Stock
     provider = 'exchange'
 
+    original_page_url = 'http://www.sse.com.cn/assortment/stock/list/share/'
+
     def run(self):
         url = 'http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=1'
-
         resp = requests.get(url, headers=DEFAULT_SH_HEADER)
         self.download_stock_list(response=resp, exchange='sh')
 
         url = 'http://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1&random=0.20932135244582617'
-
         resp = requests.get(url, headers=DEFAULT_SZ_HEADER)
         self.download_stock_list(response=resp, exchange='sz')
 
@@ -64,10 +64,10 @@ class ExchangeChinaStockListRecorder(Recorder):
             self.logger.info("persist stock list successs")
 
 
-__all__ = ['ExchangeChinaStockListRecorder']
+__all__ = ['ExchangeStockMetaRecorder']
 
 if __name__ == '__main__':
-    spider = ExchangeChinaStockListRecorder()
-    spider.run()
+    recorder = ExchangeStockMetaRecorder()
+    recorder.run()
 # the __all__ is generated
-__all__ = ['ExchangeChinaStockListRecorder']
+__all__ = ['ExchangeStockMetaRecorder']

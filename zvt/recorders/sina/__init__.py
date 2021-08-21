@@ -5,10 +5,10 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule china_index_day_kdata_recorder
-from .china_index_day_kdata_recorder import *
-from .china_index_day_kdata_recorder import __all__ as _china_index_day_kdata_recorder_all
-__all__ += _china_index_day_kdata_recorder_all
+# import all from submodule quotes
+from .quotes import *
+from .quotes import __all__ as _quotes_all
+__all__ += _quotes_all
 
 # import all from submodule money_flow
 from .money_flow import *
@@ -19,8 +19,3 @@ __all__ += _money_flow_all
 from .meta import *
 from .meta import __all__ as _meta_all
 __all__ += _meta_all
-
-# import all from submodule china_etf_day_kdata_recorder
-from .china_etf_day_kdata_recorder import *
-from .china_etf_day_kdata_recorder import __all__ as _china_etf_day_kdata_recorder_all
-__all__ += _china_etf_day_kdata_recorder_all
