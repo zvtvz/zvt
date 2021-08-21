@@ -128,9 +128,9 @@ def init_main_index(provider='exchange'):
     # del_data(data_schema=Index, provider=provider, filters=[Index.exchange == 'cn'])
 
 
-init_main_index(provider='joinquant')
-init_main_index(provider='eastmoney')
-init_main_index(provider='exchange')
+# init_main_index(provider='joinquant')
+# init_main_index(provider='eastmoney')
+# init_main_index(provider='exchange')
 # the __all__ is generated
 __all__ = ['init_main_index']
 

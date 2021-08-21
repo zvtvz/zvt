@@ -17,21 +17,37 @@ def get_resp_data(resp: requests.Response):
     return resp.json()['data']
 
 
-class EastmoneyChinaIndexRecorder(Recorder):
-    provider = 'eastmoney'
+# 深证指数，国证指数
+class ExchangeCNIndexRecorder(Recorder):
+    provider = 'exchange'
     data_schema = Index
+    original_page_url = 'http://www.cnindex.com.cn/zh_indices/sese/index.html?act_menu=1&index_type=-1'
     url = 'http://www.cnindex.net.cn/index/indexList?channelCode={}&rows=1000&pageNum=1'
-    category_map_url = {
+
+    # 中证指数 抓取 风格指数 行业指数 规模指数 基金指数
+    cni_category_map_url = {
         IndexCategory.style: url.format('202'),
         IndexCategory.industry: url.format('201'),
         IndexCategory.scope: url.format('200'),
         IndexCategory.fund: url.format('207'),
     }
 
-    def run(self):
+    # 深证指数 只取规模指数
+    sz_category_map_url = {
+        IndexCategory.scope: url.format('100'),
+    }
+
+    def record_index(self, index_type):
+        if index_type == 'cni':
+            category_map_url = self.cni_category_map_url
+        elif index_type == 'sz':
+            category_map_url = self.sz_category_map_url
+        else:
+            assert False
+
         requests_session = requests.Session()
 
-        for category, url in self.category_map_url.items():
+        for category, url in category_map_url.items():
             resp = requests_session.get(url, headers=DEFAULT_HEADER)
 
             results = get_resp_data(resp)['rows']
@@ -82,12 +98,13 @@ class EastmoneyChinaIndexRecorder(Recorder):
                 index_item = {
                     'id': entity_id,
                     'entity_id': entity_id,
-                    'timestamp': index_info['fbrq'],
+                    'timestamp': index_info['jr'],
                     'entity_type': 'index',
-                    'exchange': 'cn',
+                    'exchange': 'sz',
                     'code': code,
                     'name': name,
                     'category': category.value,
+                    'list_date': to_pd_timestamp(index_info['fbrq']),
                     'base_point': index_info['jd'],
                     'publisher': 'cnindex'
                 }
@@ -98,15 +115,22 @@ class EastmoneyChinaIndexRecorder(Recorder):
                 df = pd.DataFrame.from_records(the_list)
                 df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
                          force_update=True)
-            self.logger.info(f"finish record cnindex index:{category.value}")
+            self.logger.info(f"finish record {index_type} index:{category.value}")
+
+    def run(self):
+        self.record_index('sz')
+        # self.record_index('cni')
 
 
-class EastmoneyChinaIndexStockRecorder(TimestampsDataRecorder):
-    entity_provider = 'eastmoney'
+class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
+    entity_provider = 'exchange'
     entity_schema = Index
 
-    provider = 'eastmoney'
+    provider = 'exchange'
     data_schema = IndexStock
+
+    original_page_url = 'http://www.cnindex.com.cn/module/index-detail.html?act_menu=1&indexCode=399001'
+    url = 'http://www.cnindex.net.cn/sample-detail/detail?indexcode={}&dateStr={}&pageNum=1&rows=5000'
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
         return [to_pd_timestamp(item) for item in pd.date_range(entity_item.timestamp, now_pd_timestamp(), freq='M')]
@@ -114,8 +138,7 @@ class EastmoneyChinaIndexStockRecorder(TimestampsDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             data_str = to_time_str(timestamp, TIME_FORMAT_MON)
-            url = f'http://www.cnindex.net.cn/sample-detail/detail?indexcode={entity.code}&dateStr={data_str}&pageNum=1&rows=5000'
-            resp = requests.get(url, headers=DEFAULT_HEADER)
+            resp = requests.get(self.url.format(entity.code, data_str), headers=DEFAULT_HEADER)
             try:
                 results = get_resp_data(resp)['rows']
                 the_list = []
@@ -159,9 +182,9 @@ class EastmoneyChinaIndexStockRecorder(TimestampsDataRecorder):
 
 if __name__ == '__main__':
     # init_log('china_stock_category.log')
-    EastmoneyChinaIndexRecorder().run()
+    ExchangeCNIndexRecorder().run()
 
-    recorder = EastmoneyChinaIndexStockRecorder(codes=['399370'])
+    recorder = ExchangeCNIndexStockRecorder(codes=['399001'])
     recorder.run()
 # the __all__ is generated
-__all__ = ['get_resp_data', 'EastmoneyChinaIndexRecorder', 'EastmoneyChinaIndexStockRecorder']
+__all__ = ['get_resp_data', 'ExchangeCNIndexRecorder', 'ExchangeCNIndexStockRecorder']

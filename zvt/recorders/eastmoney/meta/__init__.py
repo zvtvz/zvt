@@ -5,11 +5,6 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule eastmoney_index_meta_recorder
-from .eastmoney_index_meta_recorder import *
-from .eastmoney_index_meta_recorder import __all__ as _eastmoney_index_meta_recorder_all
-__all__ += _eastmoney_index_meta_recorder_all
-
 # import all from submodule eastmoney_block_meta_recorder
 from .eastmoney_block_meta_recorder import *
 from .eastmoney_block_meta_recorder import __all__ as _eastmoney_block_meta_recorder_all

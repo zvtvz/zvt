@@ -12,8 +12,15 @@ class BlockCategory(enum.Enum):
 
 
 class IndexCategory(enum.Enum):
-    # 根据国证指数分类， 只实现比较重要的几种
+    # 中国指数提供商：
+    # 中证指数公司 http://www.csindex.com.cn/zh-CN
+    # 上证指数(上交所标的) 中证指数(沪深)
+
+    # 国证指数公司 http://www.cnindex.com.cn/index.html
+    # 深证指数(深交所标的) 国证指数(沪深)
+
     # 规模指数
+    # 常见的上证指数，深证指数等
     scope = 'scope'
     # 行业指数
     industry = 'industry'
@@ -36,8 +43,6 @@ class IndexCategory(enum.Enum):
     # 跨境指数
     #
     # 其他指数
-    # 主要指数，常用的上证，深证，创业板等
-    main = 'main'
 
 
 class ReportPeriod(enum.Enum):
