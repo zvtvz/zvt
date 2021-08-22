@@ -98,7 +98,7 @@ class ExchangeCNIndexRecorder(Recorder):
                 index_item = {
                     'id': entity_id,
                     'entity_id': entity_id,
-                    'timestamp': index_info['jr'],
+                    'timestamp': to_pd_timestamp(index_info['jr']),
                     'entity_type': 'index',
                     'exchange': 'sz',
                     'code': code,
@@ -141,6 +141,8 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
             resp = requests.get(self.url.format(entity.code, data_str), headers=DEFAULT_HEADER)
             try:
                 results = get_resp_data(resp)['rows']
+                if not results:
+                    continue
                 the_list = []
                 for result in results:
                     # date: 1614268800000
@@ -158,13 +160,13 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
                     stock_id = china_stock_code_to_id(stock_code)
 
                     the_list.append({
-                        'id': '{}_{}'.format(entity.id, stock_id),
+                        'id': '{}_{}_{}'.format(entity.id, stock_id, result['dateStr']),
                         'entity_id': entity.id,
                         'entity_type': entity.entity_type,
                         'exchange': entity.exchange,
                         'code': entity.code,
                         'name': entity.name,
-                        'timestamp': now_pd_timestamp(),
+                        'timestamp': to_pd_timestamp(result['dateStr']),
                         'stock_id': stock_id,
                         'stock_code': stock_code,
                         'stock_name': stock_name

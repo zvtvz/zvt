@@ -7,10 +7,10 @@ import requests
 
 from zvt.api.utils import china_stock_code_to_id
 from zvt.contract.api import df_to_db
-from zvt.contract.recorder import Recorder
-from zvt.domain import Index, IndexCategory
+from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
+from zvt.domain import Index, IndexCategory, IndexStock
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 def get_resp_data(resp: requests.Response):
@@ -75,7 +75,7 @@ class ExchangeIndexMetaRecorder(Recorder):
                     'code': code,
                     'name': name,
                     'category': category.value,
-                    'list_date': result['online_date'],
+                    'list_date': to_pd_timestamp(result['online_date']),
                     'base_point': result['base_point'],
                     'publisher': 'csindex'
                 }
@@ -87,59 +87,41 @@ class ExchangeIndexMetaRecorder(Recorder):
                          force_update=True)
             self.logger.info(f"finish record {index_type} index:{category.value}")
 
-    def fetch_csi_index_component(self, df: pd.DataFrame):
-        """
-        抓取上证、中证指数成分股
-        """
-        query_url = 'http://www.csindex.com.cn/uploads/file/autofile/cons/{}cons.xls'
 
-        for _, index in df.iterrows():
-            index_code = index['code']
+class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
+    entity_provider = 'exchange'
+    entity_schema = Index
 
-            url = query_url.format(index_code)
+    provider = 'exchange'
+    data_schema = IndexStock
 
-            try:
-                response = requests.get(url)
-                response.raise_for_status()
-            except requests.HTTPError as error:
-                self.logger.error(f'{index["name"]} - {index_code} 成分股抓取错误 ({error})')
-                continue
+    original_page_url = 'http://www.csindex.com.cn/zh-CN/downloads/indices'
+    url = 'http://www.csindex.com.cn/uploads/file/autofile/cons/{}cons.xls'
 
-            response_df = pd.read_excel(io.BytesIO(response.content))
+    def record(self, entity, start, end, size, timestamps):
+        url = self.url.format(entity.code)
+        response = requests.get(url)
+        response.raise_for_status()
 
-            response_df = response_df[['成分券代码Constituent Code', '成分券名称Constituent Name']].rename(
-                columns={'成分券代码Constituent Code': 'stock_code',
-                         '成分券名称Constituent Name': 'stock_name'})
+        df = pd.read_excel(io.BytesIO(response.content))
 
-            index_id = f'index_cn_{index_code}'
-            response_df['entity_id'] = index_id
-            response_df['entity_type'] = 'index'
-            response_df['exchange'] = 'cn'
-            response_df['code'] = index_code
-            response_df['name'] = index['name']
-            response_df['timestamp'] = now_pd_timestamp()
+        df = df[['日期Date', '成分券代码Constituent Code', '成分券名称Constituent Name']].rename(
+            columns={'日期Date': 'timestamp', '成分券代码Constituent Code': 'stock_code',
+                     '成分券名称Constituent Name': 'stock_name'})
 
-            response_df['stock_id'] = response_df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
-            response_df['id'] = response_df['stock_id'].apply(
-                lambda x: f'{index_id}_{x}')
-
-            df_to_db(data_schema=self.data_schema, df=response_df, provider=self.provider, force_update=True)
-            self.logger.info(f'{index["name"]} - {index_code} 成分股抓取完成...')
-
-            self.sleep()
-
-    def persist_index(self, df) -> None:
-        df['timestamp'] = df['timestamp'].apply(lambda x: to_pd_timestamp(x))
-        df['list_date'] = df['list_date'].apply(lambda x: to_pd_timestamp(x))
-        df['id'] = df['code'].apply(lambda code: f'index_cn_{code}')
-        df['entity_id'] = df['id']
-        df['exchange'] = 'cn'
+        index_id = f'index_sh_{entity.code}'
+        df['entity_id'] = index_id
         df['entity_type'] = 'index'
+        df['exchange'] = 'sh'
+        df['code'] = entity.code
+        df['name'] = entity.name
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-        df = df.dropna(axis=0, how='any')
-        df = df.drop_duplicates(subset='id', keep='last')
+        df['stock_id'] = df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
+        df['id'] = df['stock_id'].apply(
+            lambda x: f'{index_id}_{x}')
 
-        df_to_db(df=df, data_schema=Index, provider=self.provider, force_update=False)
+        df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
 
 
 __all__ = ['ExchangeIndexMetaRecorder']
