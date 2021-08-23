@@ -13,11 +13,6 @@ from zvt.recorders.consts import DEFAULT_HEADER
 from zvt.utils.time_utils import to_pd_timestamp
 
 
-def get_resp_data(resp: requests.Response):
-    resp.raise_for_status()
-    return resp.json()['list']
-
-
 # 上证指数 中证指数
 class ExchangeIndexMetaRecorder(Recorder):
     original_page_url = 'http://www.csindex.com.cn/zh-CN/indices/index?class_2=2&class_17=17&class_10=10&class_7=7&is_custom_0=1'
@@ -42,6 +37,11 @@ class ExchangeIndexMetaRecorder(Recorder):
 
     def run(self):
         self.record_index('sh')
+        self.record_index('csi')
+
+    def get_resp_data(self, resp: requests.Response):
+        resp.raise_for_status()
+        return resp.json()['list']
 
     def record_index(self, index_type):
         if index_type == 'csi':
@@ -49,6 +49,7 @@ class ExchangeIndexMetaRecorder(Recorder):
         elif index_type == 'sh':
             category_map_url = self.sh_category_map_url
         else:
+            self.logger.warning(f'not support index type: {index_type}')
             assert False
 
         requests_session = requests.Session()
@@ -56,7 +57,7 @@ class ExchangeIndexMetaRecorder(Recorder):
         for category, url in category_map_url.items():
             resp = requests_session.get(url, headers=DEFAULT_HEADER)
 
-            results = get_resp_data(resp)
+            results = self.get_resp_data(resp)
             the_list = []
 
             self.logger.info(f'category: {category} ')
@@ -100,7 +101,7 @@ class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         url = self.url.format(entity.code)
-        response = requests.get(url)
+        response = requests.get(url, headers=DEFAULT_HEADER)
         response.raise_for_status()
 
         df = pd.read_excel(io.BytesIO(response.content))
@@ -115,11 +116,10 @@ class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
         df['exchange'] = 'sh'
         df['code'] = entity.code
         df['name'] = entity.name
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-
         df['stock_id'] = df['stock_code'].apply(lambda x: china_stock_code_to_id(str(x)))
-        df['id'] = df['stock_id'].apply(
-            lambda x: f'{index_id}_{x}')
+        # id format: {entity_id}_{timestamp}_{stock_id}
+        df['id'] = df[['entity_id', 'timestamp', 'stock_id']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
 
         df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
 
@@ -127,7 +127,7 @@ class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
 __all__ = ['ExchangeIndexMetaRecorder']
 
 if __name__ == '__main__':
-    spider = ExchangeIndexMetaRecorder()
-    spider.run()
+    # ExchangeIndexMetaRecorder().run()
+    ExchangeCSIndexStockRecorder(codes=['000001']).run()
 # the __all__ is generated
 __all__ = ['ExchangeIndexMetaRecorder']

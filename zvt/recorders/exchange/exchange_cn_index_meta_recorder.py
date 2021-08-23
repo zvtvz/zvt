@@ -12,11 +12,6 @@ from zvt.recorders.consts import DEFAULT_HEADER
 from zvt.utils.time_utils import now_pd_timestamp, to_pd_timestamp, to_time_str, TIME_FORMAT_MON
 
 
-def get_resp_data(resp: requests.Response):
-    resp.raise_for_status()
-    return resp.json()['data']
-
-
 # 深证指数，国证指数
 class ExchangeCNIndexRecorder(Recorder):
     provider = 'exchange'
@@ -37,12 +32,21 @@ class ExchangeCNIndexRecorder(Recorder):
         IndexCategory.scope: url.format('100'),
     }
 
+    def run(self):
+        self.record_index('sz')
+        self.record_index('cni')
+
+    def get_resp_data(self, resp: requests.Response):
+        resp.raise_for_status()
+        return resp.json()['data']
+
     def record_index(self, index_type):
         if index_type == 'cni':
             category_map_url = self.cni_category_map_url
         elif index_type == 'sz':
             category_map_url = self.sz_category_map_url
         else:
+            self.logger.error(f'not support index_type: {index_type}')
             assert False
 
         requests_session = requests.Session()
@@ -50,7 +54,7 @@ class ExchangeCNIndexRecorder(Recorder):
         for category, url in category_map_url.items():
             resp = requests_session.get(url, headers=DEFAULT_HEADER)
 
-            results = get_resp_data(resp)['rows']
+            results = self.get_resp_data(resp)['rows']
             # e.g
             # amount: 277743699997.9
             # closeingPoint: 6104.7592
@@ -92,7 +96,7 @@ class ExchangeCNIndexRecorder(Recorder):
                 # typl: 2
                 # xyfw: "沪深A股"
                 # xygz: "在国证1000指数样本股中，选取主营业务收入增长率、净利润增长率和净资产收益率综合排名前332只"
-                index_info = get_resp_data(info_resp)
+                index_info = self.get_resp_data(info_resp)
                 name = result['indexname']
                 entity_id = f'index_cn_{code}'
                 index_item = {
@@ -117,10 +121,6 @@ class ExchangeCNIndexRecorder(Recorder):
                          force_update=True)
             self.logger.info(f"finish record {index_type} index:{category.value}")
 
-    def run(self):
-        self.record_index('sz')
-        # self.record_index('cni')
-
 
 class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
     entity_provider = 'exchange'
@@ -133,52 +133,51 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
     url = 'http://www.cnindex.net.cn/sample-detail/detail?indexcode={}&dateStr={}&pageNum=1&rows=5000'
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
+        # 每个月记录一次
         return [to_pd_timestamp(item) for item in pd.date_range(entity_item.timestamp, now_pd_timestamp(), freq='M')]
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             data_str = to_time_str(timestamp, TIME_FORMAT_MON)
             resp = requests.get(self.url.format(entity.code, data_str), headers=DEFAULT_HEADER)
-            try:
-                results = get_resp_data(resp)['rows']
-                if not results:
-                    continue
-                the_list = []
-                for result in results:
-                    # date: 1614268800000
-                    # dateStr: "2021-02-26"
-                    # freeMarketValue: 10610.8
-                    # indexcode: "399370"
-                    # market: null
-                    # seccode: "600519"
-                    # secname: "贵州茅台"
-                    # totalMarketValue: 26666.32
-                    # trade: "主要消费"
-                    # weight: 10.01
-                    stock_code = result['indexcode']
-                    stock_name = result['secname']
-                    stock_id = china_stock_code_to_id(stock_code)
+            results = get_resp_data(resp)['rows']
+            if not results:
+                self.logger.warning(f'no data for timestamp: {data_str}')
+                continue
+            the_list = []
+            for result in results:
+                # date: 1614268800000
+                # dateStr: "2021-02-26"
+                # freeMarketValue: 10610.8
+                # indexcode: "399370"
+                # market: null
+                # seccode: "600519"
+                # secname: "贵州茅台"
+                # totalMarketValue: 26666.32
+                # trade: "主要消费"
+                # weight: 10.01
+                stock_code = result['indexcode']
+                stock_name = result['secname']
+                stock_id = china_stock_code_to_id(stock_code)
 
-                    the_list.append({
-                        'id': '{}_{}_{}'.format(entity.id, stock_id, result['dateStr']),
-                        'entity_id': entity.id,
-                        'entity_type': entity.entity_type,
-                        'exchange': entity.exchange,
-                        'code': entity.code,
-                        'name': entity.name,
-                        'timestamp': to_pd_timestamp(result['dateStr']),
-                        'stock_id': stock_id,
-                        'stock_code': stock_code,
-                        'stock_name': stock_name
-                    })
-                if the_list:
-                    df = pd.DataFrame.from_records(the_list)
-                    df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
+                the_list.append({
+                    'id': '{}_{}_{}'.format(entity.id, result['dateStr'], stock_id),
+                    'entity_id': entity.id,
+                    'entity_type': entity.entity_type,
+                    'exchange': entity.exchange,
+                    'code': entity.code,
+                    'name': entity.name,
+                    'timestamp': to_pd_timestamp(result['dateStr']),
+                    'stock_id': stock_id,
+                    'stock_code': stock_code,
+                    'stock_name': stock_name
+                })
+            if the_list:
+                df = pd.DataFrame.from_records(the_list)
+                df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
 
-                self.logger.info('finish recording index:{},{}'.format(entity.category, entity.name))
+            self.logger.info('finish recording index:{},{}'.format(entity.category, entity.name))
 
-            except Exception as e:
-                self.logger.error("error:,resp.text:", e, resp.text)
             self.sleep()
 
 
@@ -189,4 +188,4 @@ if __name__ == '__main__':
     recorder = ExchangeCNIndexStockRecorder(codes=['399001'])
     recorder.run()
 # the __all__ is generated
-__all__ = ['get_resp_data', 'ExchangeCNIndexRecorder', 'ExchangeCNIndexStockRecorder']
+__all__ = ['ExchangeCNIndexRecorder', 'ExchangeCNIndexStockRecorder']
