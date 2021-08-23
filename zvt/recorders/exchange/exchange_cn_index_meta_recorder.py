@@ -136,11 +136,15 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
         # 每个月记录一次
         return [to_pd_timestamp(item) for item in pd.date_range(entity_item.timestamp, now_pd_timestamp(), freq='M')]
 
+    def get_resp_data(self, resp: requests.Response):
+        resp.raise_for_status()
+        return resp.json()['data']
+
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             data_str = to_time_str(timestamp, TIME_FORMAT_MON)
             resp = requests.get(self.url.format(entity.code, data_str), headers=DEFAULT_HEADER)
-            results = get_resp_data(resp)['rows']
+            results = self.get_resp_data(resp)['rows']
             if not results:
                 self.logger.warning(f'no data for timestamp: {data_str}')
                 continue
@@ -185,7 +189,7 @@ if __name__ == '__main__':
     # init_log('china_stock_category.log')
     ExchangeCNIndexRecorder().run()
 
-    recorder = ExchangeCNIndexStockRecorder(codes=['399001'])
-    recorder.run()
+    # recorder = ExchangeCNIndexStockRecorder(codes=['399001'])
+    # recorder.run()
 # the __all__ is generated
 __all__ = ['ExchangeCNIndexRecorder', 'ExchangeCNIndexStockRecorder']

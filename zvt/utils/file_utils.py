@@ -28,3 +28,5 @@ def list_all_files(dir_path: str = './domain', ext: str = '.py', excludes=None, 
         else:
             pass
     return files
+# the __all__ is generated
+__all__ = ['list_all_files']

@@ -21,10 +21,20 @@ from .utils import *
 from .utils import __all__ as _utils_all
 __all__ += _utils_all
 
+# import all from submodule file_utils
+from .file_utils import *
+from .file_utils import __all__ as _file_utils_all
+__all__ += _file_utils_all
+
 # import all from submodule zip_utils
 from .zip_utils import *
 from .zip_utils import __all__ as _zip_utils_all
 __all__ += _zip_utils_all
+
+# import all from submodule git_utils
+from .git_utils import *
+from .git_utils import __all__ as _git_utils_all
+__all__ += _git_utils_all
 
 # import all from submodule pd_utils
 from .pd_utils import *

@@ -127,7 +127,7 @@ class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
 __all__ = ['ExchangeIndexMetaRecorder']
 
 if __name__ == '__main__':
-    # ExchangeIndexMetaRecorder().run()
+    ExchangeIndexMetaRecorder().run()
     ExchangeCSIndexStockRecorder(codes=['000001']).run()
 # the __all__ is generated
 __all__ = ['ExchangeIndexMetaRecorder']

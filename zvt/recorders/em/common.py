@@ -125,7 +125,36 @@ def get_em_data(request_type, fields, filters, sort_by='', sort='asc', pn=1, ps=
         return None
     raise RuntimeError(f'request em data code: {resp.status_code}, error: {resp.text}')
 
-
+# quote
+# url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?'
+# 日线      klt=101
+# 周线      klt=102
+# 月线      klt=103
+#
+# limit    lmt=2000
+#
+# 结束时间   end=20500000
+#
+# 复权      fqt 0 不复权 1 前复权 2 后复权
+#          iscca
+#
+# 字段
+# f51,f52,f53,f54,f55,
+# timestamp,open,close,high,low
+# f56,f57,f58,f59,f60,f61,f62,f63,f64
+# volumn,turnover,震幅,change_pct,change,turnover_rate
+# 深圳
+# secid=0.399001&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
+# secid=0.399001&klt=102&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
+# secid=0.000338&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
+#
+# 港股
+# secid=116.01024&klt=102&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
+# 美股
+# secid=106.BABA&klt=102&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
+#
+# 上海
+# secid=1.512660&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
 if __name__ == '__main__':
     from pprint import pprint
 

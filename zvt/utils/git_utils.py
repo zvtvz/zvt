@@ -14,3 +14,5 @@ def get_git_user_email():
         return subprocess.check_output(['git', 'config', '--get', 'user.email']).decode('utf8').strip()
     except:
         return ""
+# the __all__ is generated
+__all__ = ['get_git_user_name', 'get_git_user_email']
