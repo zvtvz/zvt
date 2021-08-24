@@ -4,12 +4,12 @@ from typing import List
 import pandas as pd
 import requests
 
-from zvt.api.utils import china_stock_code_to_id
+from zvt.api.utils import china_stock_code_to_id, value_to_pct, value_multiply
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder, TimestampsDataRecorder
 from zvt.domain import Index, IndexCategory, IndexStock
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils.time_utils import now_pd_timestamp, to_pd_timestamp, to_time_str, TIME_FORMAT_MON
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_MON, pre_month
 
 
 # 深证指数，国证指数
@@ -132,9 +132,32 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
     original_page_url = 'http://www.cnindex.com.cn/module/index-detail.html?act_menu=1&indexCode=399001'
     url = 'http://www.cnindex.net.cn/sample-detail/detail?indexcode={}&dateStr={}&pageNum=1&rows=5000'
 
+    def __init__(self,
+                 force_update=False,
+                 sleeping_time=5,
+                 exchanges=None,
+                 entity_ids=None,
+                 codes=None,
+                 day_data=False,
+                 entity_filters=None,
+                 ignore_failed=True,
+                 real_time=False,
+                 fix_duplicate_way='add',
+                 start_timestamp=None,
+                 end_timestamp=None,
+                 record_history=False) -> None:
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
+        self.record_history = record_history
+
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
-        # 每个月记录一次
-        return [to_pd_timestamp(item) for item in pd.date_range(entity_item.timestamp, now_pd_timestamp(), freq='M')]
+        last_valid_date = pre_month()
+        if self.record_history:
+            # 每个月记录一次
+            return [to_pd_timestamp(item) for item in
+                    pd.date_range(entity_item.list_date, last_valid_date, freq='M')]
+        else:
+            return [last_valid_date]
 
     def get_resp_data(self, resp: requests.Response):
         resp.raise_for_status()
@@ -147,6 +170,7 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
             results = self.get_resp_data(resp)['rows']
             if not results:
                 self.logger.warning(f'no data for timestamp: {data_str}')
+                self.sleep(3)
                 continue
             the_list = []
             for result in results:
@@ -174,22 +198,24 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
                     'timestamp': to_pd_timestamp(result['dateStr']),
                     'stock_id': stock_id,
                     'stock_code': stock_code,
-                    'stock_name': stock_name
+                    'stock_name': stock_name,
+                    'proportion': value_to_pct(result['weight'], 0),
+                    'market_cap': value_multiply(result['freeMarketValue'], 100000000, 0)
                 })
             if the_list:
                 df = pd.DataFrame.from_records(the_list)
                 df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
 
-            self.logger.info('finish recording index:{},{}'.format(entity.category, entity.name))
+            self.logger.info(f'finish recording index:{entity.id}, {entity.name}, {data_str}')
 
-            self.sleep()
+            self.sleep(3)
 
 
 if __name__ == '__main__':
     # init_log('china_stock_category.log')
-    ExchangeCNIndexRecorder().run()
+    # ExchangeCNIndexRecorder().run()
 
-    # recorder = ExchangeCNIndexStockRecorder(codes=['399001'])
-    # recorder.run()
+    recorder = ExchangeCNIndexStockRecorder(codes=['399370'])
+    recorder.run()
 # the __all__ is generated
 __all__ = ['ExchangeCNIndexRecorder', 'ExchangeCNIndexStockRecorder']

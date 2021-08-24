@@ -69,6 +69,19 @@ def next_date(the_time, days=1):
     return to_pd_timestamp(the_time) + datetime.timedelta(days=days)
 
 
+def pre_month(t=now_pd_timestamp()):
+    t = to_pd_timestamp(t)
+    t.replace(day=1)
+    if t.month > 1:
+        year = t.year
+        month = t.month - 1
+    else:
+        year = t.year - 1
+        month = 12
+    last_valid_date = t.replace(year=year, month=month)
+    return last_valid_date
+
+
 def is_same_date(one, two):
     return to_pd_timestamp(one).date() == to_pd_timestamp(two).date()
 
@@ -195,4 +208,4 @@ def split_time_interval(start, end, method=None, interval=30, freq='D'):
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))
 # the __all__ is generated
-__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str', 'now_time_str', 'next_date', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']
+__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str', 'now_time_str', 'next_date', 'pre_month', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']

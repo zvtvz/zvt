@@ -2,9 +2,14 @@
 import logging
 import random
 
+import pandas as pd
 import requests
 
-from zvt.contract import ActorType
+from zvt.api import generate_kdata_id
+from zvt.contract import ActorType, AdjustType, IntervalLevel
+from zvt.contract.api import decode_entity_id
+from zvt.recorders.consts import DEFAULT_HEADER
+from zvt.utils import to_pd_timestamp, to_float
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +130,7 @@ def get_em_data(request_type, fields, filters, sort_by='', sort='asc', pn=1, ps=
         return None
     raise RuntimeError(f'request em data code: {resp.status_code}, error: {resp.text}')
 
+
 # quote
 # url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?'
 # 日线      klt=101
@@ -155,16 +161,103 @@ def get_em_data(request_type, fields, filters, sort_by='', sort='asc', pn=1, ps=
 #
 # 上海
 # secid=1.512660&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
-if __name__ == '__main__':
-    from pprint import pprint
+def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.qfq, limit=5000):
+    entity_type, exchange, code = decode_entity_id(entity_id)
+    level = IntervalLevel(level)
 
+    sec_id = to_em_sec_id(entity_id)
+    fq_flag = to_em_fq_flag(adjust_type)
+    level_flag = to_em_level_flag(level)
+    url = f'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid={sec_id}&klt={level_flag}&fqt={fq_flag}&lmt={limit}&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1'
+
+    resp = requests.get(url, headers=DEFAULT_HEADER)
+    resp.raise_for_status()
+    results = resp.json()
+
+    kdatas = []
+
+    if results:
+        klines = results['data']['klines']
+        name = results['data']['name']
+
+        # TODO: ignore the last unfinished kdata now,could control it better if need
+        for result in klines[:-1]:
+            # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
+            # time,open,close,high,low,volume,turnover
+            fields = result.split(',')
+            the_timestamp = to_pd_timestamp(fields[0])
+
+            the_id = generate_kdata_id(entity_id=entity_id, timestamp=the_timestamp, level=level)
+
+            kdatas.append(dict(id=the_id,
+                               timestamp=the_timestamp,
+                               entity_id=entity_id,
+                               code=code,
+                               name=name,
+                               level=level.value,
+                               open=to_float(fields[1]),
+                               close=to_float(fields[2]),
+                               high=to_float(fields[3]),
+                               low=to_float(fields[4]),
+                               volume=to_float(fields[5]),
+                               turnover=to_float(fields[6])))
+    if kdatas:
+        df = pd.DataFrame.from_records(kdatas)
+        return df
+
+
+def to_em_fq_flag(adjust_type: AdjustType):
+    adjust_type = AdjustType(adjust_type)
+    if adjust_type == AdjustType.bfq:
+        return 0
+    if adjust_type == AdjustType.qfq:
+        return 1
+    if adjust_type == AdjustType.hfq:
+        return 2
+
+
+def to_em_level_flag(level: IntervalLevel):
+    level = IntervalLevel(level)
+    if level == IntervalLevel.LEVEL_1DAY:
+        return 101
+    if level == IntervalLevel.LEVEL_1WEEK:
+        return 102
+    if level == IntervalLevel.LEVEL_1MON:
+        return 103
+
+    assert False
+
+
+def to_em_sec_id(entity_id):
+    entity_type, exchange, code = decode_entity_id(entity_id)
+
+    # 深圳
+    if exchange == 'sz':
+        return f'0.{code}'
+    # 上海
+    if exchange == 'sh':
+        return f'1.{code}'
+    # 港股
+    if exchange == 'hk':
+        return f'116.{code}'
+    # 美股
+    if exchange == 'us':
+        return f'106.{code}'
+    assert False
+
+
+if __name__ == '__main__':
     # pprint(get_free_holder_report_dates(code='000338'))
     # pprint(get_holder_report_dates(code='000338'))
     # pprint(get_holders(code='000338', end_date='2021-03-31'))
     # pprint(get_free_holders(code='000338', end_date='2021-03-31'))
     # pprint(get_ii_holder(code='000338', report_date='2021-03-31',
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
-    pprint(get_ii_summary(code='000338', report_date='2021-03-31',
-                          org_type=actor_type_to_org_type(ActorType.corporation)))
+    # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
+    #                       org_type=actor_type_to_org_type(ActorType.corporation)))
+    df = get_kdata(entity_id='stock_sz_000001')
+    print(df)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
+           'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
+           'generate_filters', 'get_em_data']

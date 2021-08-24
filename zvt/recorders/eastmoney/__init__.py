@@ -5,11 +5,6 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule quotes
-from .quotes import *
-from .quotes import __all__ as _quotes_all
-__all__ += _quotes_all
-
 # import all from submodule meta
 from .meta import *
 from .meta import __all__ as _meta_all

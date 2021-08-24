@@ -17,7 +17,7 @@ from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, to_pd_timestamp
 # 抓取的角度是entity从Index中获取 沪股通/深股通，然后按 每日 去获取
 
 class JoinquantHkHolderRecorder(TimestampsDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = 'exchange'
     entity_schema = Index
 
     provider = 'joinquant'

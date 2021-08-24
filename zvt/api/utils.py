@@ -52,8 +52,12 @@ def china_stock_code_to_id(code):
     return "{}_{}_{}".format('stock', get_china_exchange(code), code)
 
 
-def value_to_pct(value, default):
+def value_to_pct(value, default=0):
     return value / 100 if value else default
+
+
+def value_multiply(value, multiplier, default=0):
+    return value * multiplier if value else default
 
 
 def float_to_pct_str(value):

@@ -9,7 +9,7 @@ from zvt.utils import pd_is_not_null, to_time_str
 
 
 class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = 'exchange'
     entity_schema = Index
 
     provider = 'joinquant'
