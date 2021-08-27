@@ -12,8 +12,8 @@ from .em_stock_top_ten_free_recorder import __all__ as _em_stock_top_ten_free_re
 __all__ += _em_stock_top_ten_free_recorder_all
 
 # import all from submodule common
-from .common import *
-from .common import __all__ as _common_all
+from .em_api import *
+from .em_api import __all__ as _common_all
 __all__ += _common_all
 
 # import all from submodule em_stock_actor_summary_recorder

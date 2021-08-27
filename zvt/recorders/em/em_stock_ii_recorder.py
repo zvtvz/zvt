@@ -9,7 +9,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock, ActorMeta
 from zvt.domain.actor.stock_actor import StockInstitutionalInvestorHolder
-from zvt.recorders.em.common import get_ii_holder_report_dates, get_ii_holder, actor_type_to_org_type
+from zvt.recorders.em.em_api import get_ii_holder_report_dates, get_ii_holder, actor_type_to_org_type
 from zvt.utils import to_pd_timestamp, to_time_str
 
 

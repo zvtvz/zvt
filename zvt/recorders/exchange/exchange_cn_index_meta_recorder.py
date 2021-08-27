@@ -98,7 +98,7 @@ class ExchangeCNIndexRecorder(Recorder):
                 # xygz: "在国证1000指数样本股中，选取主营业务收入增长率、净利润增长率和净资产收益率综合排名前332只"
                 index_info = self.get_resp_data(info_resp)
                 name = result['indexname']
-                entity_id = f'index_cn_{code}'
+                entity_id = f'index_sz_{code}'
                 index_item = {
                     'id': entity_id,
                     'entity_id': entity_id,

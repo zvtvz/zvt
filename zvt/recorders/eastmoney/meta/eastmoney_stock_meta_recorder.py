@@ -26,12 +26,14 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
         EastmoneyChinaStockListRecorder().run()
 
         self.codes = codes
+        filters = None
         if not self.force_update:
-            self.entities = get_entities(session=self.session,
+            filters = [StockDetail.profile.is_(None)]
+        self.entities = get_entities(session=self.session,
                                          entity_schema=StockDetail,
                                          exchanges=None,
                                          codes=self.codes,
-                                         filters=[StockDetail.profile.is_(None)],
+                                         filters=filters,
                                          return_type='domain',
                                          provider=self.provider)
 
