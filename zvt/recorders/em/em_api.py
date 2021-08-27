@@ -9,7 +9,7 @@ from zvt.api import generate_kdata_id, value_to_pct
 from zvt.contract import ActorType, AdjustType, IntervalLevel
 from zvt.contract.api import decode_entity_id
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import to_pd_timestamp, to_float
+from zvt.utils import to_pd_timestamp, to_float, json_callback_param
 
 logger = logging.getLogger(__name__)
 
@@ -221,6 +221,33 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
         return df
 
 
+def get_stock_us(exchange='ndq', limit=10000):
+    ex_flag = to_em_entity_flag(exchange=exchange)
+    url = f'https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields=f1,f2,f3,f4,f12,f13,f14&pn=1&pz={limit}&fid=f3&po=1&fs=m:{ex_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_1630075457902&_=1630075457905'
+    resp = requests.get(url, headers=DEFAULT_HEADER)
+
+    resp.raise_for_status()
+
+    result = json_callback_param(resp.text)
+    data = result['data']['diff']
+    df = pd.DataFrame.from_records(data=data)
+    df = df[['f12', 'f13', 'f14']]
+    df.columns = ['code', 'exchange', 'name']
+    df['exchange'] = exchange
+    df['entity_type'] = 'stockus'
+    df['id'] = df[['entity_type', 'exchange', 'code']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
+
+    return df
+
+
+def to_em_entity_flag(exchange):
+    if exchange == 'ndq':
+        return 105
+    if exchange == 'nyse':
+        return 106
+    assert False
+
+
 def to_em_fq_flag(adjust_type: AdjustType):
     adjust_type = AdjustType(adjust_type)
     if adjust_type == AdjustType.bfq:
@@ -255,9 +282,14 @@ def to_em_sec_id(entity_id):
     # 港股
     if exchange == 'hk':
         return f'116.{code}'
-    # 美股
-    if exchange == 'us':
+
+    # 纳斯达克
+    if exchange == 'ndq':
+        return f'105.{code}'
+    # 纽交所
+    if exchange == 'nyse':
         return f'106.{code}'
+
     assert False
 
 
@@ -270,8 +302,11 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    df = get_kdata(entity_id='stock_sh_000001')
+    # df = get_kdata(entity_id='stock_sh_000001')
+    df = get_stock_us(exchange='nyse')
     print(df)
+    kdata = get_kdata('stockus_nyse_NNA')
+    print(kdata)
 # the __all__ is generated
 __all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
            'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',

@@ -71,7 +71,7 @@ def pct_to_float(the_str, default=None):
 
 
 def json_callback_param(the_str):
-    json_str = the_str[the_str.index("(") + 1:the_str.index(")")].replace('null', 'None')
+    json_str = the_str[the_str.index("(") + 1:the_str.rindex(")")].replace('null', 'None')
     return eval(json_str)
 
 
