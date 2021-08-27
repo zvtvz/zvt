@@ -4,7 +4,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt import init_log
+from zvt import init_log, zvt_config
 from zvt.domain import *
 from zvt.informer.informer import EmailInformer
 
@@ -20,12 +20,12 @@ def record_margin_trading():
 
     try:
         MarginTrading.record_data(provider='joinquant', sleeping_time=1)
-        email_action.send_message("5533061@qq.com", 'joinquant record margin trading finished', '')
+        email_action.send_message(zvt_config['email_username'], 'joinquant record margin trading finished', '')
     except Exception as e:
         msg = f'joinquant record margin trading:{e}'
         logger.exception(msg)
 
-        email_action.send_message("5533061@qq.com", 'joinquant record margin trading error', msg)
+        email_action.send_message(zvt_config['email_username'], 'joinquant record margin trading error', msg)
         time.sleep(60)
 
 
@@ -39,13 +39,13 @@ def record_valuation():
             # 个股估值数据
             StockValuation.record_data(provider='joinquant', sleeping_time=1)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record valuation finished', '')
+            email_action.send_message(zvt_config['email_username'], 'joinquant record valuation finished', '')
             break
         except Exception as e:
             msg = f'joinquant record kdata:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record valuation error', msg)
+            email_action.send_message(zvt_config['email_username'], 'joinquant record valuation error', msg)
             time.sleep(60)
 
 
@@ -59,13 +59,13 @@ def record_others():
             Etf.record_data(provider='joinquant', sleeping_time=1)
             EtfStock.record_data(provider='joinquant', sleeping_time=1)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record etf finished', '')
+            email_action.send_message(zvt_config['email_username'], 'joinquant record etf finished', '')
             break
         except Exception as e:
             msg = f'joinquant record etf error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'joinquant record etf error', msg)
+            email_action.send_message(zvt_config['email_username'], 'joinquant record etf error', msg)
             time.sleep(60)
 
 

@@ -4,7 +4,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt import init_log
+from zvt import init_log, zvt_config
 from zvt.domain import *
 from zvt.informer.informer import EmailInformer
 
@@ -22,13 +22,13 @@ def record_block():
             Block.record_data(provider='sina')
             BlockStock.record_data(provider='sina')
 
-            email_action.send_message("5533061@qq.com", 'sina block finished', '')
+            email_action.send_message(zvt_config['email_username'], 'sina block finished', '')
             break
         except Exception as e:
             msg = f'sina block error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'sina block error', msg)
+            email_action.send_message(zvt_config['email_username'], 'sina block error', msg)
             time.sleep(60)
 
 
@@ -40,13 +40,13 @@ def record_money_flow():
         try:
             BlockMoneyFlow.record_data(provider='sina')
 
-            email_action.send_message("5533061@qq.com", 'sina money flow finished', '')
+            email_action.send_message(zvt_config['email_username'], 'sina money flow finished', '')
             break
         except Exception as e:
             msg = f'sina money flow error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'sina money flow error', msg)
+            email_action.send_message(zvt_config['email_username'], 'sina money flow error', msg)
             time.sleep(60)
 
 

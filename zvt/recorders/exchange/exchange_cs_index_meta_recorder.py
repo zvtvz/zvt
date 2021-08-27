@@ -14,7 +14,7 @@ from zvt.utils.time_utils import to_pd_timestamp
 
 
 # 上证指数 中证指数
-class ExchangeIndexMetaRecorder(Recorder):
+class ExchangeCSIndexMetaRecorder(Recorder):
     original_page_url = 'http://www.csindex.com.cn/zh-CN/indices/index?class_2=2&class_17=17&class_10=10&class_7=7&is_custom_0=1'
 
     data_schema = Index
@@ -124,10 +124,10 @@ class ExchangeCSIndexStockRecorder(TimeSeriesDataRecorder):
         df_to_db(data_schema=self.data_schema, df=df, provider=self.provider, force_update=True)
 
 
-__all__ = ['ExchangeIndexMetaRecorder']
+__all__ = ['ExchangeCSIndexMetaRecorder']
 
 if __name__ == '__main__':
     # ExchangeIndexMetaRecorder().run()
     ExchangeCSIndexStockRecorder(codes=['000001']).run()
 # the __all__ is generated
-__all__ = ['ExchangeIndexMetaRecorder', 'ExchangeCSIndexStockRecorder']
+__all__ = ['ExchangeCSIndexMetaRecorder', 'ExchangeCSIndexStockRecorder']

@@ -4,7 +4,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt import init_log
+from zvt import init_log, zvt_config
 from zvt.domain import *
 from zvt.informer.informer import EmailInformer
 
@@ -24,13 +24,13 @@ def run():
             StockTopTenFreeHolder.record_data(provider='em')
             StockActorSummary.record_data(provider='em')
 
-            email_action.send_message("5533061@qq.com", 'em runner finished', '')
+            email_action.send_message(zvt_config['email_username'], 'em runner finished', '')
             break
         except Exception as e:
             msg = f'eastmoney runner1 error:{e}'
             logger.exception(msg)
 
-            email_action.send_message("5533061@qq.com", 'em runner error', msg)
+            email_action.send_message(zvt_config['email_username'], 'em runner error', msg)
             time.sleep(60)
 
 
