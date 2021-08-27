@@ -4,8 +4,9 @@ from zvt.api.kdata import get_kdata_schema
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Stock, Index, Block
+from zvt.domain import Stock, Index, Block, StockKdataCommon, IndexKdataCommon
 from zvt.recorders.em.em_api import get_kdata
+from zvt.utils import pd_is_not_null
 
 
 class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
@@ -43,23 +44,34 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         df = get_kdata(entity_id=entity.id, limit=size, adjust_type=self.adjust_type)
-        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        if pd_is_not_null(df):
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        else:
+            self.logger.info(f'no kdata for {entity.id}')
+
 
 
 class EMStockKdataRecorder(BaseEMStockKdataRecorder):
     entity_schema = Stock
+    data_schema = StockKdataCommon
 
 
 class EMIndexKdataRecorder(BaseEMStockKdataRecorder):
     entity_provider = 'exchange'
     entity_schema = Index
 
+    data_schema = IndexKdataCommon
+
 
 class EMBlockKdataRecorder(BaseEMStockKdataRecorder):
     entity_provider = 'eastmoney'
     entity_schema = Block
 
+    data_schema = IndexKdataCommon
+
 
 if __name__ == '__main__':
     recorder = EMIndexKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=['000300'])
     recorder.run()
+# the __all__ is generated
+__all__ = ['BaseEMStockKdataRecorder', 'EMStockKdataRecorder', 'EMIndexKdataRecorder', 'EMBlockKdataRecorder']

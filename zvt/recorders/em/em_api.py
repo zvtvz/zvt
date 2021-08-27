@@ -173,12 +173,13 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
     resp = requests.get(url, headers=DEFAULT_HEADER)
     resp.raise_for_status()
     results = resp.json()
+    data = results['data']
 
     kdatas = []
 
-    if results:
-        klines = results['data']['klines']
-        name = results['data']['name']
+    if data:
+        klines = data['klines']
+        name = data['name']
 
         # TODO: ignore the last unfinished kdata now,could control it better if need
         for result in klines[:-1]:
@@ -255,9 +256,7 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    df = get_kdata(entity_id='stock_sz_000001')
+    df = get_kdata(entity_id='stock_sz_L11644')
     print(df)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
-           'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
-           'generate_filters', 'get_em_data']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data', 'get_kdata', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']
