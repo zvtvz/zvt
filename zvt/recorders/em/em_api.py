@@ -5,7 +5,7 @@ import random
 import pandas as pd
 import requests
 
-from zvt.api import generate_kdata_id
+from zvt.api import generate_kdata_id, value_to_pct
 from zvt.contract import ActorType, AdjustType, IntervalLevel
 from zvt.contract.api import decode_entity_id
 from zvt.recorders.consts import DEFAULT_HEADER
@@ -148,7 +148,7 @@ def get_em_data(request_type, fields, filters, sort_by='', sort='asc', pn=1, ps=
 # f51,f52,f53,f54,f55,
 # timestamp,open,close,high,low
 # f56,f57,f58,f59,f60,f61,f62,f63,f64
-# volumn,turnover,震幅,change_pct,change,turnover_rate
+# volume,turnover,震幅,change_pct,change,turnover_rate
 # 深圳
 # secid=0.399001&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
 # secid=0.399001&klt=102&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
@@ -161,7 +161,7 @@ def get_em_data(request_type, fields, filters, sort_by='', sort='asc', pn=1, ps=
 #
 # 上海
 # secid=1.512660&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
-def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.qfq, limit=5000):
+def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.qfq, limit=10000):
     entity_type, exchange, code = decode_entity_id(entity_id)
     level = IntervalLevel(level)
 
@@ -184,11 +184,23 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
         # TODO: ignore the last unfinished kdata now,could control it better if need
         for result in klines[:-1]:
             # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
+            # "2021-08-27,19.39,20.30,20.30,19.25,1688497,3370240912.00,5.48,6.01,1.15,3.98,0,0,0"
             # time,open,close,high,low,volume,turnover
             fields = result.split(',')
             the_timestamp = to_pd_timestamp(fields[0])
 
             the_id = generate_kdata_id(entity_id=entity_id, timestamp=the_timestamp, level=level)
+
+            open = to_float(fields[1])
+            close = to_float(fields[2])
+            high = to_float(fields[3])
+            low = to_float(fields[4])
+            volume = to_float(fields[5])
+            turnover = to_float(fields[6])
+            # 7 振幅
+            change_pct = value_to_pct(to_float(fields[8]))
+            # 9 变动
+            turnover_rate = value_to_pct(to_float(fields[10]))
 
             kdatas.append(dict(id=the_id,
                                timestamp=the_timestamp,
@@ -196,12 +208,14 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
                                code=code,
                                name=name,
                                level=level.value,
-                               open=to_float(fields[1]),
-                               close=to_float(fields[2]),
-                               high=to_float(fields[3]),
-                               low=to_float(fields[4]),
-                               volume=to_float(fields[5]),
-                               turnover=to_float(fields[6])))
+                               open=open,
+                               close=close,
+                               high=high,
+                               low=low,
+                               volume=volume,
+                               turnover=turnover,
+                               turnover_rate=turnover_rate,
+                               change_pct=change_pct))
     if kdatas:
         df = pd.DataFrame.from_records(kdatas)
         return df
@@ -256,7 +270,9 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    df = get_kdata(entity_id='stock_sz_L11644')
+    df = get_kdata(entity_id='stock_sh_000001')
     print(df)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data', 'get_kdata', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
+           'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
+           'generate_filters', 'get_em_data', 'get_kdata', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']

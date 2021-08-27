@@ -24,6 +24,10 @@ class KdataCommon(Mixin):
     volume = Column(Float)
     # 成交金额
     turnover = Column(Float)
+    # 涨跌幅
+    change_pct = Column(Float)
+    # 换手率
+    turnover_rate = Column(Float)
 
 
 class TickCommon(Mixin):
@@ -53,15 +57,9 @@ class EtfKdataCommon(KdataCommon):
 
     # ETF 累计净值（货币 ETF 为七日年化)
     cumulative_net_value = Column(Float)
-    # ETF 净值增长率
-    change_pct = Column(Float)
-
 
 class StockKdataCommon(KdataCommon):
-    # 涨跌幅
-    change_pct = Column(Float)
-    # 换手率
-    turnover_rate = Column(Float)
+    pass
 
 
 # the __all__ is generated
