@@ -129,10 +129,19 @@ class ActorType(Enum):
 
 
 class TradableType(Enum):
+    # A股(中国)
     stock = 'stock'
+    # 美股
+    stockus = 'stockus'
+    # 港股
+    stockhk = 'stockhk'
+    # 期货(中国)
     future = 'future'
+    # 数字货币
     coin = 'coin'
+    # 期权
     option = 'option'
+    # 基金
     fund = 'fund'
 
 
@@ -142,9 +151,17 @@ class Exchange(Enum):
     # 深证交易所
     sz = 'sz'
 
-    # 对于中国的不属于可直接交易的 指数类 标的，可归于cn
-    # 比如上证指数，沪深300等指数
+    # 对于中国的非交易所的 标的
     cn = 'cn'
+
+    # 纳斯达克
+    nasdaq = 'nasdaq'
+
+    # 纽交所
+    nyse = 'nyse'
+
+    # 港交所
+    hk = 'hk'
 
     # 数字货币
     binance = 'binance'
