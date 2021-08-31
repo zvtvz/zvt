@@ -5,9 +5,19 @@ from zvt.contract import IntervalLevel
 
 
 def gen_kdata_schemas():
-    # 股票行情
+    # A股行情
     gen_kdata_schema(pkg='zvt', providers=['joinquant', 'em'], entity_type='stock',
                      levels=[level for level in IntervalLevel if level != IntervalLevel.LEVEL_TICK],
+                     adjust_types=[None, AdjustType.hfq], entity_in_submodule=True)
+
+    # 美股
+    gen_kdata_schema(pkg='zvt', providers=['em'], entity_type='stockus',
+                     levels=[IntervalLevel.LEVEL_1DAY],
+                     adjust_types=[None, AdjustType.hfq], entity_in_submodule=True)
+
+    # 港股
+    gen_kdata_schema(pkg='zvt', providers=['em'], entity_type='stockhk',
+                     levels=[IntervalLevel.LEVEL_1DAY],
                      adjust_types=[None, AdjustType.hfq], entity_in_submodule=True)
 
     # 板块行情

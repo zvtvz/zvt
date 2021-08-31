@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 from typing import List
 
@@ -7,6 +8,8 @@ from zvt.contract import IntervalLevel, AdjustType
 from zvt.utils import now_pd_timestamp
 from zvt.utils.file_utils import list_all_files
 from zvt.utils.git_utils import get_git_user_name, get_git_user_email
+
+logger = logging.getLogger(__name__)
 
 
 def all_sub_modules(dir_path: str):
@@ -140,6 +143,10 @@ def gen_kdata_schema(pkg: str,
         base_path = os.path.join(base_path, kdata_module)
     if entity_in_submodule:
         base_path = os.path.join(base_path, entity_type)
+
+    if not os.path.exists(base_path):
+        logger.info(f'create dir {base_path}')
+        os.makedirs(base_path)
 
     for level in levels:
 

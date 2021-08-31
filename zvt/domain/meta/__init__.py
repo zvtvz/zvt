@@ -5,6 +5,16 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule stockus_meta
+from .stockus_meta import *
+from .stockus_meta import __all__ as _stockus_meta_all
+__all__ += _stockus_meta_all
+
+# import all from submodule stockhk_meta
+from .stockhk_meta import *
+from .stockhk_meta import __all__ as _stockhk_meta_all
+__all__ += _stockhk_meta_all
+
 # import all from submodule index_meta
 from .index_meta import *
 from .index_meta import __all__ as _index_meta_all

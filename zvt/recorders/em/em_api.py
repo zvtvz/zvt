@@ -10,7 +10,7 @@ from zvt.api import generate_kdata_id, value_to_pct
 from zvt.contract import ActorType, AdjustType, IntervalLevel, Exchange
 from zvt.contract.api import decode_entity_id
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import to_pd_timestamp, to_float, json_callback_param
+from zvt.utils import to_pd_timestamp, to_float, json_callback_param, now_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -222,23 +222,34 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
         return df
 
 
-def get_stock_list(exchange: Union[Exchange, str] = 'sz', limit: int = 10000):
+def get_tradable_list(entity_type='stock', exchange: Union[Exchange, str] = 'sz', limit: int = 10000):
     exchange = Exchange(exchange)
     ex_flag = to_em_entity_flag(exchange=exchange)
     entity_flag = f'fs = m:{ex_flag}'
 
     # m为交易所代码，t为交易类型
-    if exchange == Exchange.sh:
-        entity_flag=f'fs=m:1+t:2,m:1+t:23'
-    if exchange == Exchange.sz:
-        entity_flag=f'fs=m:0+t:6,m:0+t:13,m:0+t:80'
-    if exchange == Exchange.hk:
-        entity_flag = f'fs=m:116+t:3,m:116+t:4'
-    if exchange == Exchange.nasdaq:
-        entity_flag = f'fs=m:105'
-    if exchange == Exchange.nyse:
-        entity_flag = f'fs=m:106'
-    url = f'https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields=f1,f2,f3,f4,f12,f13,f14&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_1630075457902&_=1630075457905'
+    if entity_type == 'stock':
+        if exchange == Exchange.sh:
+            # t=2 主板
+            # t=23 科创板
+            entity_flag = f'fs=m:1+t:2,m:1+t:23'
+        if exchange == Exchange.sz:
+            # t=6 主板
+            # t=80 创业板
+            entity_flag = f'fs=m:0+t:6,m:0+t:13,m:0+t:80'
+        if exchange == Exchange.hk:
+            # t=3 主板
+            # t=4 创业板
+            entity_flag = f'fs=m:116+t:3,m:116+t:4'
+        if exchange == Exchange.nasdaq:
+            # t=1
+            # t=3 中概股
+            entity_flag = f'fs=m:105+t:1,m:105+t:3'
+        if exchange == Exchange.nyse:
+            # t=1
+            # t=3 中概股
+            entity_flag = f'fs=m:106+t:1,m:105+t:3'
+    url = f'https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields=f1,f2,f3,f4,f12,f13,f14&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}'
     resp = requests.get(url, headers=DEFAULT_HEADER)
 
     resp.raise_for_status()
@@ -323,10 +334,7 @@ if __name__ == '__main__':
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
     # df = get_kdata(entity_id='stock_sh_000001')
-    df = get_stock_list(exchange='hk')
+    df = get_tradable_list(exchange='hk')
     print(df)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
-           'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
-           'generate_filters', 'get_em_data', 'get_kdata', 'get_stock_list', 'exchange_to_entity_type',
-           'to_em_entity_flag', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data', 'get_kdata', 'get_tradable_list', 'exchange_to_entity_type', 'to_em_entity_flag', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']

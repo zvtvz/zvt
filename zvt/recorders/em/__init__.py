@@ -6,32 +6,22 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule em_stock_top_ten_free_recorder
-from .em_stock_top_ten_free_recorder import *
-from .em_stock_top_ten_free_recorder import __all__ as _em_stock_top_ten_free_recorder_all
-__all__ += _em_stock_top_ten_free_recorder_all
+# import all from submodule quotes
+from .quotes import *
+from .quotes import __all__ as _quotes_all
+__all__ += _quotes_all
+
+# import all from submodule meta
+from .meta import *
+from .meta import __all__ as _meta_all
+__all__ += _meta_all
 
 # import all from submodule em_api
 from .em_api import *
 from .em_api import __all__ as _em_api_all
 __all__ += _em_api_all
 
-# import all from submodule em_stock_actor_summary_recorder
-from .em_stock_actor_summary_recorder import *
-from .em_stock_actor_summary_recorder import __all__ as _em_stock_actor_summary_recorder_all
-__all__ += _em_stock_actor_summary_recorder_all
-
-# import all from submodule em_kdata_recorder
-from .em_kdata_recorder import *
-from .em_kdata_recorder import __all__ as _em_kdata_recorder_all
-__all__ += _em_kdata_recorder_all
-
-# import all from submodule em_stock_top_ten_recorder
-from .em_stock_top_ten_recorder import *
-from .em_stock_top_ten_recorder import __all__ as _em_stock_top_ten_recorder_all
-__all__ += _em_stock_top_ten_recorder_all
-
-# import all from submodule em_stock_ii_recorder
-from .em_stock_ii_recorder import *
-from .em_stock_ii_recorder import __all__ as _em_stock_ii_recorder_all
-__all__ += _em_stock_ii_recorder_all
+# import all from submodule actor
+from .actor import *
+from .actor import __all__ as _actor_all
+__all__ += _actor_all

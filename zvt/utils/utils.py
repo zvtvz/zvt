@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import numbers
-import urllib
 from decimal import *
 from enum import Enum
+from urllib import parse
 
 import pandas as pd
 
@@ -199,8 +199,16 @@ def iterate_with_step(data, sub_size=100):
 
 
 def url_unquote(url):
-    return urllib.parse.unquote(url)
+    return parse.unquote(url)
+
+
+def parse_url_params(url):
+    url = url_unquote(url)
+    return parse.parse_qs(parse.urlsplit(url).query)
 
 
 # the __all__ is generated
-__all__ = ['first_item_to_float', 'second_item_to_float', 'add_func_to_value', 'to_float', 'pct_to_float', 'json_callback_param', 'fill_domain_from_dict', 'read_csv', 'marshal_object_for_ui', 'chrome_copy_header_to_dict', 'to_positive_number', 'multiple_number', 'add_to_map_list', 'iterate_with_step', 'url_unquote']
+__all__ = ['first_item_to_float', 'second_item_to_float', 'add_func_to_value', 'to_float', 'pct_to_float',
+           'json_callback_param', 'fill_domain_from_dict', 'read_csv', 'marshal_object_for_ui',
+           'chrome_copy_header_to_dict', 'to_positive_number', 'multiple_number', 'add_to_map_list',
+           'iterate_with_step', 'url_unquote', 'parse_url_params']
