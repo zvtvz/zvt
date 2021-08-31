@@ -262,6 +262,7 @@ def get_tradable_list(entity_type='stock', exchange: Union[Exchange, str] = 'sz'
     df['exchange'] = exchange.value
     df['entity_type'] = exchange_to_entity_type(exchange)
     df['id'] = df[['entity_type', 'exchange', 'code']].apply(lambda x: '_'.join(x.astype(str)), axis=1)
+    df['entity_id'] = df['id']
 
     return df
 
@@ -337,4 +338,7 @@ if __name__ == '__main__':
     df = get_tradable_list(exchange='hk')
     print(df)
 # the __all__ is generated
-__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder', 'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type', 'generate_filters', 'get_em_data', 'get_kdata', 'get_tradable_list', 'exchange_to_entity_type', 'to_em_entity_flag', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']
+__all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
+           'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
+           'generate_filters', 'get_em_data', 'get_kdata', 'get_tradable_list', 'exchange_to_entity_type',
+           'to_em_entity_flag', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']

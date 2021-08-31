@@ -15,7 +15,7 @@ class EMStockusRecorder(Recorder):
         for exchange in [Exchange.nasdaq, Exchange.nyse]:
             df = em_api.get_tradable_list(entity_type='stock', exchange=exchange)
             self.logger.info(df)
-            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider)
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=True)
 
 
 if __name__ == '__main__':
