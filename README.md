@@ -7,57 +7,6 @@
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 
 **Read this in other languages: [English](README-en.md).**  
-## ZVT是什么
-* 市场，几何结构也。Z：震荡，中枢也；V ：趋势，起落也；T ：K线，级别也。
-* 市场，合力也。知各方之力，而不增不减其力，是谓zero vector trader。
-* 市场，人性也。交易，困于其中，非交易之错，人之错也；人，奶头乐，生而被骗，此困局，唯站立，可破之，zvt logo之意也。
-
-## ZVT世界观
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
-
-* 市场由[ActorEntity(参与者)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L323:7) 和[TradableEntity(交易标的)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L207:7)构成
-
-* 关于它们的[事件(故事)](https://github.com/zvtvz/zvt/blob/master/zvt/contract/schema.py#L14:7)发生了
-
-* 它们之间互相影响
-
-## ZVT操盘法
-从 **zvt是什么** 和 **世界观** 可得如下的三段操盘法：
-* 走势分类
-
-包含技术分析，成交量，资金流，大盘的整体评价
->具体策略:比如只做成交活跃的强势股
-* 参与者
-
-谁是我们的敌人，谁是我们的朋友，永远是首先要回答的问题
->具体策略:比如只做基金重仓的个股
-* 宏观
-
-一个大局观良好的人，即使懒一点，技术差一点，收益还是会不错的，这个世界最厉害的武器其实是大家都"知道"的阳谋
->具体策略：比如只做成长期的行业
-
-
-这里最关键的就是"只做"，把时间放在重要的东西上，才能不被信息淹没；而三者结合便可兼顾安全和效率
-
-## ZVT愿景
-
-追求市场的公开，透明，系统，平民，避免市场的市井化，神秘化，高深化，贵族化。
-
-> zvt虽然可以做小级别的回测和交易，但通过其提供的**原语**构造自己的**世界观**才是最重要的
-
-## 设计哲学
-* 若无必要，勿增实体
-* 统一性
-* 变与不变
-
-## 解决了什么问题
-* 统一完备的数据模型
-* 数据的持久化和增量更新
-* 数据的扩展
-* 统一的数据更新和查询方式
-* 因子的持久化和有状态计算
-* 多级别多标的回测
-
 
 ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编写的量化项目，其包含可扩展的交易标的，数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
 
