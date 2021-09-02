@@ -12,20 +12,23 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 
 相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
 
-编写该系统的初心:
-* 构造统一可扩展的数据schema
-* 能够容易地把各provider的数据适配到系统
-* 相同的算法，只写一次，可以应用到任何市场
-* 适用于低耗能的人脑+个人电脑
-
 ## 详细文档
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
->详细文档有部分已落后代码不少，其实认真看完README并结合代码理解下面的几句话，基本上不需要什么文档了
+zvt将市场抽象为如下的模型
 
-* ### entity抽象了 *交易标的* 不变的东西
-* ### 数据就是entity和entity发生的event，数据即api,数据即策略
-* ### 数据是可插入的，发信号到哪是可插入的
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
+
+* TrableEntity
+
+交易标的
+* ActorEntity
+
+市场的参与者
+
+* EntityEvent
+
+交易标的 和 市场参与者 发生的事件
 
 ### 架构图:
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/arch.png'/></p>
