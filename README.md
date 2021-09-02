@@ -2,7 +2,7 @@
 [![image](https://img.shields.io/pypi/v/zvt.svg)](https://pypi.org/project/zvt/)
 [![image](https://img.shields.io/pypi/l/zvt.svg)](https://pypi.org/project/zvt/)
 [![image](https://img.shields.io/pypi/pyversions/zvt.svg)](https://pypi.org/project/zvt/)
-[![Build Status](https://api.travis-ci.org/zvtvz/zvt.svg?branch=master)](https://travis-ci.org/zvtvz/zvt)
+[![Build Status](https://app.travis-ci.com/zvtvz/zvt.svg?branch=master)](https://app.travis-ci.com/zvtvz/zvt)
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 
