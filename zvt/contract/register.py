@@ -119,3 +119,5 @@ def register_schema(providers: List[str],
                         index = sqlalchemy.schema.Index(index_name, column0,
                                                         column1)
                         index.create(engine)
+# the __all__ is generated
+__all__ = ['register_entity', 'register_schema']

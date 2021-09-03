@@ -19,13 +19,16 @@ class EastmoneyChinaStockDetailRecorder(Recorder):
     provider = 'eastmoney'
     data_schema = StockDetail
 
-    def __init__(self, force_update=False, sleeping_time=5, codes=None) -> None:
+    def __init__(self, force_update=False, sleeping_time=5, code=None, codes=None) -> None:
         super().__init__(force_update, sleeping_time)
 
         # get list at first
         EastmoneyChinaStockListRecorder().run()
 
-        self.codes = codes
+        if codes is None and code is not None:
+            self.codes = [code]
+        else:
+            self.codes = codes
         filters = None
         if not self.force_update:
             filters = [StockDetail.profile.is_(None)]

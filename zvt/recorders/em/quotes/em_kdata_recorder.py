@@ -22,6 +22,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
                  sleeping_time=10,
                  exchanges=None,
                  entity_ids=None,
+                 code=None,
                  codes=None,
                  day_data=False,
                  entity_filters=None,
@@ -40,7 +41,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
 
         self.data_schema = get_kdata_schema(entity_type=self.entity_type, level=level, adjust_type=self.adjust_type)
 
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, code, codes, day_data, entity_filters,
                          ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
                          kdata_use_begin_time, one_day_trading_minutes)
 

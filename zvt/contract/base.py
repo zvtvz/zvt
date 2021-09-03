@@ -46,3 +46,5 @@ class StatefulService(object):
                                                   recoder_name=self.name, state=state_str)
         self.state_session.add(self.state_domain)
         self.state_session.commit()
+# the __all__ is generated
+__all__ = ['StatefulService']

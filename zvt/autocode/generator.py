@@ -84,7 +84,7 @@ def fill_package(dir_path: str):
                     outfile.write(package_template)
 
 
-def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated'):
+def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated', export_from_package=True):
     fill_package_if_not_exist(dir_path=dir_path)
     files = list_all_files(dir_path=dir_path)
     for file in files:
@@ -106,18 +106,19 @@ def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated'):
         lines.append(f'\n__all__ = {exports}')
 
         # the package module
-        basename = os.path.basename(file)
-        if basename == '__init__.py':
-            dir_path = os.path.dirname(file)
-            modules = all_sub_modules(dir_path)
-            if modules:
-                lines.append('''
+        if export_from_package:
+            basename = os.path.basename(file)
+            if basename == '__init__.py':
+                dir_path = os.path.dirname(file)
+                modules = all_sub_modules(dir_path)
+                if modules:
+                    lines.append('''
 
 # __init__.py structure:
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules''')
-                for mod in modules:
-                    lines.append(all_sub_all(mod))
+                    for mod in modules:
+                        lines.append(all_sub_all(mod))
 
         # write with __all__
         with open(file, mode='w') as fp:

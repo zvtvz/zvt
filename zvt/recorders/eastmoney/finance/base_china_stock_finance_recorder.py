@@ -36,10 +36,10 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
     timestamp_list_path_fields = ['CompanyReportDateList']
     timestamp_path_fields = ['ReportDate']
 
-    def __init__(self, exchanges=None, entity_ids=None, codes=None, day_data=False,
+    def __init__(self, exchanges=None, entity_ids=None, code=None, codes=None, day_data=False,
                  force_update=False, sleeping_time=5, real_time=False,
                  fix_duplicate_way='add', start_timestamp=None, end_timestamp=None) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, real_time=real_time,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, code, codes, day_data, real_time=real_time,
                          fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
                          end_timestamp=end_timestamp)
 
@@ -181,5 +181,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                         #                                                                    the_data.report_date))
 
                         self.fill_timestamp_with_jq(entity, the_data)
+
+
 # the __all__ is generated
 __all__ = ['to_jq_report_period', 'BaseChinaStockFinanceRecorder']

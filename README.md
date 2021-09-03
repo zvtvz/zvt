@@ -16,6 +16,8 @@ ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编�
 ## 详细文档
 [https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
 
+### 开始之前
+
 zvt将市场抽象为如下的模型
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
@@ -31,91 +33,41 @@ zvt将市场抽象为如下的模型
 
 交易标的 和 市场参与者 发生的事件
 
-### 架构图:
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/arch.png'/></p>
-
-### 扩展应用例子
-
-[数字货币插件](https://github.com/zvtvz/zvt_coin)
-
-[期货插件](https://github.com/zvtvz/zvt_future)
-
-[定时选股推送](https://github.com/zvtvz/zvt/issues/48)（测试使用，勿据此买卖）
-
-> 目前主干代码提供的标的类型为A股，其他标的可以通过plugin的方式来实现
-
-### 策略例子
-
-[日线策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/macd_day_trader.py.py)
-
-[多级别策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/macd_week_and_day_trader.py)
-
-[分段持续策略](https://github.com/zvtvz/zvt/blob/master/examples/trader/keep_run_trader.py.py)
-
-> 可通过自定义策略中的回调函数来控制策略运行的逻辑
-
-### 运行界面
-
-这里是[入口脚本](https://github.com/zvtvz/zvt/blob/master/zvt/main.py)，可直接源码运行;或者pip安装后直接在命令行下输入zvt，然后打开[http://127.0.0.1:8050/](http://127.0.0.1:8050/)即可。
-
-> 这里展示的例子依赖后面的下载历史数据，数据更新请参考后面文档
-
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-factor.png'/></p>
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-trader.png'/></p>
-
-> 系统的核心概念是可视化的，界面的名称与其一一对应，因此也是统一可扩展的。
-
-> 你可以在你喜欢的ide里编写和运行策略，然后运行界面查看其相关的标的，因子，信号和净值展示。
-
-### 交易接口
-
-> zvt旨在帮你更好的理解市场，理清交易思路，验证想法，实盘交易接口可以通过插件的方式来连接交易信号，并不是zvt核心的东西。
-
-##  1. 🔖5分钟用起来
-
->一个系统，如果5分钟用不起来，那肯定是设计软件的人本身就没想清楚，并且其压根就没打算自己用。
+## 1. 快速开始
 
 ### 1.1 安装
-
-要求python版本>=3.6(建议新建一个干净的virtual env环境)
 ```
-pip install zvt -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
-
-pip show zvt
+python3 -m pip install zvt
 ```
 
-如果不是最新版本
+### 1.2 数据
+
 ```
-pip install --upgrade zvt  -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+>>> from zvt.domain import *
 ```
-
-> 请根据需要决定是否使用豆瓣镜像源
-
-
-###  1.2 进入ipython,体验一把
-
-#### k线数据
+#### A股交易标的
 ```
-In [1]: import os
-
-#这一句会进入测试环境，使用自带的测试数据
-In [2]: os.environ["TESTING_ZVT"] = "1"
-
-In [3]: from zvt.api import *
-
-In [4]: df = get_kdata(entity_id='stock_sz_000338',provider='joinquant')
-
-In [5]: df.tail()
-Out[5]:
-                                    id        entity_id  timestamp   provider    code  name level   open  close   high    low       volume      turnover change_pct turnover_rate
-timestamp
-2019-10-29  stock_sz_000338_2019-10-29  stock_sz_000338 2019-10-29  joinquant  000338  潍柴动力    1d  12.00  11.78  12.02  11.76   28533132.0  3.381845e+08       None          None
-2019-10-30  stock_sz_000338_2019-10-30  stock_sz_000338 2019-10-30  joinquant  000338  潍柴动力    1d  11.74  12.05  12.08  11.61   42652561.0  5.066013e+08       None          None
-2019-10-31  stock_sz_000338_2019-10-31  stock_sz_000338 2019-10-31  joinquant  000338  潍柴动力    1d  12.05  11.56  12.08  11.50   77329380.0  9.010439e+08       None          None
-2019-11-01  stock_sz_000338_2019-11-01  stock_sz_000338 2019-11-01  joinquant  000338  潍柴动力    1d  11.55  12.69  12.70  11.52  160732771.0  1.974125e+09       None          None
-2019-11-04  stock_sz_000338_2019-11-04  stock_sz_000338 2019-11-04  joinquant  000338  潍柴动力    1d  12.77  13.00  13.11  12.77  126673139.0  1.643788e+09       None          None
+>>> Stock.record_data()
+>>> df = Stock.query_data()
+>>> print(df)
 ```
 
+#### 美股交易标的
+```
+>>> Stockus.record_data()
+>>> df = Stockus.query_data()
+>>> print(df)
+```
+
+#### 港股交易标的
+```
+>>> Stockhk.record_data()
+>>> df = Stockhk.query_data()
+>>> print(df)
+```
+
+#### 行情数据
+>>> 
 #### 财务数据
 ```
 In [12]: from zvt.domain import *

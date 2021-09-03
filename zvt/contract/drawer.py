@@ -552,3 +552,5 @@ if __name__ == '__main__':
     #                                   columns=[FinanceFactor.roe, FinanceFactor.entity_id, FinanceFactor.timestamp])
     #
     # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
+# the __all__ is generated
+__all__ = ['Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations', 'distribute']

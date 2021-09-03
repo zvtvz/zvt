@@ -38,3 +38,5 @@ entity_map_schemas = {}
 
 # factor class registry
 factor_cls_registry = {}
+# the __all__ is generated
+__all__ = []

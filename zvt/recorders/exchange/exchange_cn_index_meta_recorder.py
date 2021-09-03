@@ -137,6 +137,7 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
                  sleeping_time=5,
                  exchanges=None,
                  entity_ids=None,
+                 code=None,
                  codes=None,
                  day_data=False,
                  entity_filters=None,
@@ -146,7 +147,7 @@ class ExchangeCNIndexStockRecorder(TimestampsDataRecorder):
                  start_timestamp=None,
                  end_timestamp=None,
                  record_history=False) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, code, codes, day_data, entity_filters,
                          ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp)
         self.record_history = record_history
 

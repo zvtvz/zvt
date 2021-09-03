@@ -274,9 +274,6 @@ class DataReader(Drawable):
     def drawer_main_df(self) -> Optional[pd.DataFrame]:
         return self.data_df
 
-
-__all__ = ['DataListener', 'DataReader']
-
 if __name__ == '__main__':
     from zvt.domain import Stock1dKdata, Stock
 
@@ -285,3 +282,5 @@ if __name__ == '__main__':
                              end_timestamp='2019-06-10')
 
     data_reader.draw(show=True)
+# the __all__ is generated
+__all__ = ['DataListener', 'DataReader']

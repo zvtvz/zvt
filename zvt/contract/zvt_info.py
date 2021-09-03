@@ -19,3 +19,5 @@ class RecorderState(ZvtInfoBase, Mixin):
 
 
 register_schema(providers=['zvt'], db_name='zvt_info', schema_base=ZvtInfoBase)
+# the __all__ is generated
+__all__ = ['RecorderState']

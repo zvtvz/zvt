@@ -19,8 +19,9 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
                  force_update=False, sleeping_time=5, real_time=False,
                  fix_duplicate_way='add', start_timestamp=None, end_timestamp=None,
                  entity_filters=None) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, ['000001'], day_data, entity_filters, True,
-                         real_time=real_time, fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes=['000001'], day_data=day_data,
+                         entity_filters=entity_filters, ignore_failed=True, real_time=real_time,
+                         fix_duplicate_way=fix_duplicate_way, start_timestamp=start_timestamp,
                          end_timestamp=end_timestamp)
 
     def record(self, entity, start, end, size, timestamps):

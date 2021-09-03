@@ -15,7 +15,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
     provider = 'joinquant'
     data_schema = IndexMoneyFlow
 
-    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, codes=None, day_data=False,
+    def __init__(self, force_update=True, sleeping_time=10, exchanges=None, entity_ids=None, code=None,codes=None, day_data=False,
                  entity_filters=None, ignore_failed=True, real_time=False, fix_duplicate_way='ignore',
                  start_timestamp=None, end_timestamp=None, level=IntervalLevel.LEVEL_1DAY, kdata_use_begin_time=False,
                  one_day_trading_minutes=24 * 60) -> None:
@@ -25,7 +25,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
             codes = support_codes
         else:
             codes = list(set(codes) & set(support_codes))
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, codes, day_data, entity_filters,
+        super().__init__(force_update, sleeping_time, exchanges, entity_ids, code, codes, day_data, entity_filters,
                          ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
                          kdata_use_begin_time, one_day_trading_minutes)
 

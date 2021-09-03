@@ -25,7 +25,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         # 310004	港股通（深）
 
         codes = ['310001', '310002', '310003', '310004']
-        super().__init__(force_update, sleeping_time, ['cn'], None, codes, True, real_time=real_time,
+        super().__init__(force_update, sleeping_time, ['cn'], None, codes=codes, day_data=True, real_time=real_time,
                          fix_duplicate_way=fix_duplicate_way)
 
     def init_entities(self):

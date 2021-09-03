@@ -548,5 +548,4 @@ class ScoreFactor(Factor):
 
 
 # the __all__ is generated
-__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'Factor', 'FilterFactor', 'ScoreFactor',
-           'FactorMeta']
+__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'register_class', 'FactorMeta', 'FactorState', 'Factor', 'FilterFactor', 'ScoreFactor']

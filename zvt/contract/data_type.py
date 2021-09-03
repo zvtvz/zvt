@@ -14,3 +14,5 @@ class Bean(object):
         if dct:
             for k in dct:
                 self.__dict__[k] = dct[k]
+# the __all__ is generated
+__all__ = ['Bean']

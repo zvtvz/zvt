@@ -118,6 +118,7 @@ class Mixin(object):
                     sleeping_time=None,
                     exchanges=None,
                     entity_ids=None,
+                    code=None,
                     codes=None,
                     real_time=None,
                     fix_duplicate_way=None,
@@ -413,5 +414,6 @@ class ActorMeetTradable(Mixin):
     tradable_name = Column(String(length=128))
 
 
-__all__ = ['TradableEntity', 'Mixin', 'NormalMixin', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock',
-           'PortfolioStockHistory', 'TradableMeetActor']
+# the __all__ is generated
+__all__ = ['Mixin', 'NormalMixin', 'Entity', 'TradableEntity', 'ActorEntity', 'NormalEntityMixin', 'Portfolio',
+           'PortfolioStock', 'PortfolioStockHistory', 'TradableMeetActor', 'ActorMeetTradable']
