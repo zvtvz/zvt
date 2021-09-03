@@ -376,8 +376,8 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    # df = get_kdata(entity_id='stock_sh_000001')
-    df = get_tradable_list()
+    df = get_kdata(entity_id='stock_sz_000338')
+    # df = get_tradable_list()
     print(df)
 # the __all__ is generated
 __all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',

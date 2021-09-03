@@ -9,38 +9,32 @@
 
 **Read this in other languages: [English](README-en.md).**  
 
-ZVT是对[fooltrader](https://github.com/foolcage/fooltrader)重新思考后编写的量化项目，其包含可扩展的交易标的，数据recorder，api，因子计算，选股，回测，交易,以及统一的可视化，定位为**中低频** **多级别** **多因子** **多标的** 全市场分析和交易框架。
+## 开始之前
 
-相比其他的量化系统，其不依赖任何中间件，**非常轻，可测试，可推断，可扩展**。
-
-## 详细文档
-[https://zvtvz.github.io/zvt](https://zvtvz.github.io/zvt)
-
-### 开始之前
-
-zvt将市场抽象为如下的模型
+zvt将市场抽象为如下的模型:
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
 
-* TrableEntity
+* TradableEntity (交易标的)
+* ActorEntity (市场参与者)
+* EntityEvent (交易标的 和 市场参与者 发生的事件)
 
-交易标的
-* ActorEntity
+基于一些 **简单自然** 的规则，你可以方便的组合，设计，创造自己的世界。比如：
+* 数据是可以 **记录** 和 **查询** 的
+* 数据是可以有多个 **提供商** 的
+* 数据是可以 **增量更新** 的
+* 数据的 **分类** 是明确的
+* **策略** 是容易组合验证的
+* 不同 **空间** 的 **样本** 是容易生成的
 
-市场的参与者
+## 快速开始
 
-* EntityEvent
-
-交易标的 和 市场参与者 发生的事件
-
-## 1. 快速开始
-
-### 1.1 安装
+### 安装
 ```
-python3 -m pip install zvt
+python3 -m pip install -U zvt
 ```
 
-### 1.2 数据
+### 数据
 
 ```
 >>> from zvt.domain import *
@@ -48,54 +42,176 @@ python3 -m pip install zvt
 #### A股交易标的
 ```
 >>> Stock.record_data()
->>> df = Stock.query_data()
+>>> df = Stock.query_data(index='code')
 >>> print(df)
+
+                     id        entity_id  timestamp entity_type exchange    code   name  list_date end_date
+code
+000001  stock_sz_000001  stock_sz_000001 1991-04-03       stock       sz  000001   平安银行 1991-04-03     None
+000002  stock_sz_000002  stock_sz_000002 1991-01-29       stock       sz  000002  万  科Ａ 1991-01-29     None
+000004  stock_sz_000004  stock_sz_000004 1990-12-01       stock       sz  000004   国华网安 1990-12-01     None
+000005  stock_sz_000005  stock_sz_000005 1990-12-10       stock       sz  000005   世纪星源 1990-12-10     None
+000006  stock_sz_000006  stock_sz_000006 1992-04-27       stock       sz  000006   深振业Ａ 1992-04-27     None
+...                 ...              ...        ...         ...      ...     ...    ...        ...      ...
+605507  stock_sh_605507  stock_sh_605507 2021-08-02       stock       sh  605507   国邦医药 2021-08-02     None
+605577  stock_sh_605577  stock_sh_605577 2021-08-24       stock       sh  605577   龙版传媒 2021-08-24     None
+605580  stock_sh_605580  stock_sh_605580 2021-08-19       stock       sh  605580   恒盛能源 2021-08-19     None
+605588  stock_sh_605588  stock_sh_605588 2021-08-12       stock       sh  605588   冠石科技 2021-08-12     None
+605589  stock_sh_605589  stock_sh_605589 2021-08-10       stock       sh  605589   圣泉集团 2021-08-10     None
+
+[4136 rows x 9 columns]
 ```
 
 #### 美股交易标的
 ```
 >>> Stockus.record_data()
->>> df = Stockus.query_data()
+>>> df = Stockus.query_data(index='code')
 >>> print(df)
+
+                       id            entity_id timestamp entity_type exchange  code                         name list_date end_date
+code
+A          stockus_nyse_A       stockus_nyse_A       NaT     stockus     nyse     A                          安捷伦      None     None
+AA        stockus_nyse_AA      stockus_nyse_AA       NaT     stockus     nyse    AA                         美国铝业      None     None
+AAC      stockus_nyse_AAC     stockus_nyse_AAC       NaT     stockus     nyse   AAC      Ares Acquisition Corp-A      None     None
+AACG  stockus_nasdaq_AACG  stockus_nasdaq_AACG       NaT     stockus   nasdaq  AACG    ATA Creativity Global ADR      None     None
+AACG    stockus_nyse_AACG    stockus_nyse_AACG       NaT     stockus     nyse  AACG    ATA Creativity Global ADR      None     None
+...                   ...                  ...       ...         ...      ...   ...                          ...       ...      ...
+ZWRK  stockus_nasdaq_ZWRK  stockus_nasdaq_ZWRK       NaT     stockus   nasdaq  ZWRK    Z-Work Acquisition Corp-A      None     None
+ZY      stockus_nasdaq_ZY    stockus_nasdaq_ZY       NaT     stockus   nasdaq    ZY                 Zymergen Inc      None     None
+ZYME    stockus_nyse_ZYME    stockus_nyse_ZYME       NaT     stockus     nyse  ZYME                Zymeworks Inc      None     None
+ZYNE  stockus_nasdaq_ZYNE  stockus_nasdaq_ZYNE       NaT     stockus   nasdaq  ZYNE  Zynerba Pharmaceuticals Inc      None     None
+ZYXI  stockus_nasdaq_ZYXI  stockus_nasdaq_ZYXI       NaT     stockus   nasdaq  ZYXI                    Zynex Inc      None     None
+
+[5826 rows x 9 columns]
+
+>>> Stockus.query_data(code='AAPL')
+                    id            entity_id timestamp entity_type exchange  code name list_date end_date
+0  stockus_nasdaq_AAPL  stockus_nasdaq_AAPL      None     stockus   nasdaq  AAPL   苹果      None     None
 ```
 
 #### 港股交易标的
 ```
 >>> Stockhk.record_data()
->>> df = Stockhk.query_data()
+>>> df = Stockhk.query_data(index='code')
 >>> print(df)
+
+                     id         entity_id timestamp entity_type exchange   code    name list_date end_date
+code
+00001  stockhk_hk_00001  stockhk_hk_00001       NaT     stockhk       hk  00001      长和      None     None
+00002  stockhk_hk_00002  stockhk_hk_00002       NaT     stockhk       hk  00002    中电控股      None     None
+00003  stockhk_hk_00003  stockhk_hk_00003       NaT     stockhk       hk  00003  香港中华煤气      None     None
+00004  stockhk_hk_00004  stockhk_hk_00004       NaT     stockhk       hk  00004   九龙仓集团      None     None
+00005  stockhk_hk_00005  stockhk_hk_00005       NaT     stockhk       hk  00005    汇丰控股      None     None
+...                 ...               ...       ...         ...      ...    ...     ...       ...      ...
+09996  stockhk_hk_09996  stockhk_hk_09996       NaT     stockhk       hk  09996  沛嘉医疗-B      None     None
+09997  stockhk_hk_09997  stockhk_hk_09997       NaT     stockhk       hk  09997    康基医疗      None     None
+09998  stockhk_hk_09998  stockhk_hk_09998       NaT     stockhk       hk  09998    光荣控股      None     None
+09999  stockhk_hk_09999  stockhk_hk_09999       NaT     stockhk       hk  09999    网易-S      None     None
+80737  stockhk_hk_80737  stockhk_hk_80737       NaT     stockhk       hk  80737  湾区发展-R      None     None
+
+[2597 rows x 9 columns]
+
+>>> df[df.code=='00700']
+
+                    id         entity_id timestamp entity_type exchange   code  name list_date end_date
+2112  stockhk_hk_00700  stockhk_hk_00700      None     stockhk       hk  00700  腾讯控股      None     None
+
 ```
+
 
 #### 行情数据
->>> 
+前复权
+```
+>>> Stock1dKdata.record_data(code='000338', provider='em')
+>>> df = Stock1dKdata.query_data(code='000338', provider='em')
+>>> print(df)
+
+                              id        entity_id  timestamp provider    code  name level   open  close   high    low     volume      turnover  change_pct  turnover_rate
+0     stock_sz_000338_2007-04-30  stock_sz_000338 2007-04-30     None  000338  潍柴动力    1d   2.33   2.00   2.40   1.87   207375.0  1.365189e+09      3.2472         0.1182
+1     stock_sz_000338_2007-05-08  stock_sz_000338 2007-05-08     None  000338  潍柴动力    1d   2.11   1.94   2.20   1.87    86299.0  5.563198e+08     -0.0300         0.0492
+2     stock_sz_000338_2007-05-09  stock_sz_000338 2007-05-09     None  000338  潍柴动力    1d   1.90   1.81   1.94   1.66    93823.0  5.782065e+08     -0.0670         0.0535
+3     stock_sz_000338_2007-05-10  stock_sz_000338 2007-05-10     None  000338  潍柴动力    1d   1.78   1.85   1.98   1.75    47720.0  2.999226e+08      0.0221         0.0272
+4     stock_sz_000338_2007-05-11  stock_sz_000338 2007-05-11     None  000338  潍柴动力    1d   1.81   1.73   1.81   1.66    39273.0  2.373126e+08     -0.0649         0.0224
+...                          ...              ...        ...      ...     ...   ...   ...    ...    ...    ...    ...        ...           ...         ...            ...
+3426  stock_sz_000338_2021-08-27  stock_sz_000338 2021-08-27     None  000338  潍柴动力    1d  19.39  20.30  20.30  19.25  1688497.0  3.370241e+09      0.0601         0.0398
+3427  stock_sz_000338_2021-08-30  stock_sz_000338 2021-08-30     None  000338  潍柴动力    1d  20.30  20.09  20.31  19.78  1187601.0  2.377957e+09     -0.0103         0.0280
+3428  stock_sz_000338_2021-08-31  stock_sz_000338 2021-08-31     None  000338  潍柴动力    1d  20.20  20.07  20.63  19.70  1143985.0  2.295195e+09     -0.0010         0.0270
+3429  stock_sz_000338_2021-09-01  stock_sz_000338 2021-09-01     None  000338  潍柴动力    1d  19.98  19.68  19.98  19.15  1218697.0  2.383841e+09     -0.0194         0.0287
+3430  stock_sz_000338_2021-09-02  stock_sz_000338 2021-09-02     None  000338  潍柴动力    1d  19.71  19.85  19.97  19.24  1023545.0  2.012006e+09      0.0086         0.0241
+
+[3431 rows x 15 columns]
+
+>>> Stockus1dKdata.record_data(code='AAPL', provider='em')
+>>> df = Stockus1dKdata.query_data(code='AAPL', provider='em')
+>>> print(df)
+
+                                  id            entity_id  timestamp provider  code name level    open   close    high     low      volume      turnover  change_pct  turnover_rate
+0     stockus_nasdaq_AAPL_1984-09-07  stockus_nasdaq_AAPL 1984-09-07     None  AAPL   苹果    1d   -5.59   -5.59   -5.58   -5.59   2981600.0  0.000000e+00      0.0000         0.0002
+1     stockus_nasdaq_AAPL_1984-09-10  stockus_nasdaq_AAPL 1984-09-10     None  AAPL   苹果    1d   -5.59   -5.59   -5.58   -5.59   2346400.0  0.000000e+00      0.0000         0.0001
+2     stockus_nasdaq_AAPL_1984-09-11  stockus_nasdaq_AAPL 1984-09-11     None  AAPL   苹果    1d   -5.58   -5.58   -5.58   -5.58   5444000.0  0.000000e+00      0.0018         0.0003
+3     stockus_nasdaq_AAPL_1984-09-12  stockus_nasdaq_AAPL 1984-09-12     None  AAPL   苹果    1d   -5.58   -5.59   -5.58   -5.59   4773600.0  0.000000e+00     -0.0018         0.0003
+4     stockus_nasdaq_AAPL_1984-09-13  stockus_nasdaq_AAPL 1984-09-13     None  AAPL   苹果    1d   -5.58   -5.58   -5.58   -5.58   7429600.0  0.000000e+00      0.0018         0.0004
+...                              ...                  ...        ...      ...   ...  ...   ...     ...     ...     ...     ...         ...           ...         ...            ...
+8765  stockus_nasdaq_AAPL_2021-08-27  stockus_nasdaq_AAPL 2021-08-27     None  AAPL   苹果    1d  147.48  148.60  148.75  146.83  55802388.0  8.265452e+09      0.0072         0.0034
+8766  stockus_nasdaq_AAPL_2021-08-30  stockus_nasdaq_AAPL 2021-08-30     None  AAPL   苹果    1d  149.00  153.12  153.49  148.61  90956723.0  1.383762e+10      0.0304         0.0055
+8767  stockus_nasdaq_AAPL_2021-08-31  stockus_nasdaq_AAPL 2021-08-31     None  AAPL   苹果    1d  152.66  151.83  152.80  151.29  86453117.0  1.314255e+10     -0.0084         0.0052
+8768  stockus_nasdaq_AAPL_2021-09-01  stockus_nasdaq_AAPL 2021-09-01     None  AAPL   苹果    1d  152.83  152.51  154.98  152.34  80313711.0  1.235321e+10      0.0045         0.0049
+8769  stockus_nasdaq_AAPL_2021-09-02  stockus_nasdaq_AAPL 2021-09-02     None  AAPL   苹果    1d  153.87  153.65  154.72  152.40  71171317.0  1.093251e+10      0.0075         0.0043
+
+[8770 rows x 15 columns]
+```
+后复权
+```
+>>> Stock1dHfqKdata.record_data(code='000338', provider='em')
+>>> df = Stock1dHfqKdata.query_data(code='000338', provider='em')
+>>> print(df)
+
+                              id        entity_id  timestamp provider    code  name level    open   close    high     low     volume      turnover  change_pct  turnover_rate
+0     stock_sz_000338_2007-04-30  stock_sz_000338 2007-04-30     None  000338  潍柴动力    1d   70.00   64.93   71.00   62.88   207375.0  1.365189e+09      2.1720         0.1182
+1     stock_sz_000338_2007-05-08  stock_sz_000338 2007-05-08     None  000338  潍柴动力    1d   66.60   64.00   68.00   62.88    86299.0  5.563198e+08     -0.0143         0.0492
+2     stock_sz_000338_2007-05-09  stock_sz_000338 2007-05-09     None  000338  潍柴动力    1d   63.32   62.00   63.88   59.60    93823.0  5.782065e+08     -0.0313         0.0535
+3     stock_sz_000338_2007-05-10  stock_sz_000338 2007-05-10     None  000338  潍柴动力    1d   61.50   62.49   64.48   61.01    47720.0  2.999226e+08      0.0079         0.0272
+4     stock_sz_000338_2007-05-11  stock_sz_000338 2007-05-11     None  000338  潍柴动力    1d   61.90   60.65   61.90   59.70    39273.0  2.373126e+08     -0.0294         0.0224
+...                          ...              ...        ...      ...     ...   ...   ...     ...     ...     ...     ...        ...           ...         ...            ...
+3426  stock_sz_000338_2021-08-27  stock_sz_000338 2021-08-27     None  000338  潍柴动力    1d  331.97  345.95  345.95  329.82  1688497.0  3.370241e+09      0.0540         0.0398
+3427  stock_sz_000338_2021-08-30  stock_sz_000338 2021-08-30     None  000338  潍柴动力    1d  345.95  342.72  346.10  337.96  1187601.0  2.377957e+09     -0.0093         0.0280
+3428  stock_sz_000338_2021-08-31  stock_sz_000338 2021-08-31     None  000338  潍柴动力    1d  344.41  342.41  351.02  336.73  1143985.0  2.295195e+09     -0.0009         0.0270
+3429  stock_sz_000338_2021-09-01  stock_sz_000338 2021-09-01     None  000338  潍柴动力    1d  341.03  336.42  341.03  328.28  1218697.0  2.383841e+09     -0.0175         0.0287
+3430  stock_sz_000338_2021-09-02  stock_sz_000338 2021-09-02     None  000338  潍柴动力    1d  336.88  339.03  340.88  329.67  1023545.0  2.012006e+09      0.0078         0.0241
+
+[3431 rows x 15 columns]
+```
+
 #### 财务数据
 ```
-In [12]: from zvt.domain import *
-In [13]: df = FinanceFactor.query_data(entity_id='stock_sz_000338',columns=FinanceFactor.important_cols())
+>>> FinanceFactor.record_data(code='000338')
+>>> FinanceFactor.query_data(code='000338',columns=FinanceFactor.important_cols(),index='timestamp')
 
-In [14]: df.tail()
-Out[14]:
             basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
 timestamp
-2018-10-31       0.73     1.182000e+11  6.001000e+09                0.0595                 0.3037  0.1647  0.0414               0.2164      0.0681 2018-10-31
-2019-03-26       1.08     1.593000e+11  8.658000e+09                0.0507                 0.2716  0.2273  0.0589               0.2233      0.0730 2019-03-26
-2019-04-29       0.33     4.521000e+10  2.591000e+09                0.1530                 0.3499  0.0637  0.0160               0.2166      0.0746 2019-04-29
-2019-08-30       0.67     9.086000e+10  5.287000e+09                0.1045                 0.2037  0.1249  0.0315               0.2175      0.0759 2019-08-30
-2019-10-31       0.89     1.267000e+11  7.058000e+09                0.0721                 0.1761  0.1720  0.0435               0.2206      0.0736 2019-10-31
+2002-12-31        NaN     1.962000e+07  2.471000e+06                   NaN                    NaN     NaN     NaN               0.2068      0.1259 2002-12-31
+2003-12-31       1.27     3.574000e+09  2.739000e+08              181.2022               109.8778  0.7729  0.1783               0.2551      0.0766 2003-12-31
+2004-12-31       1.75     6.188000e+09  5.369000e+08                0.7313                 0.9598  0.3245  0.1474               0.2489      0.0868 2004-12-31
+2005-12-31       0.93     5.283000e+09  3.065000e+08               -0.1463                -0.4291  0.1327  0.0603               0.2252      0.0583 2005-12-31
+2006-03-31       0.33     1.859000e+09  1.079000e+08                   NaN                    NaN     NaN     NaN                  NaN      0.0598 2006-03-31
+...               ...              ...           ...                   ...                    ...     ...     ...                  ...         ...        ...
+2020-08-28       0.59     9.449000e+10  4.680000e+09                0.0400                -0.1148  0.0983  0.0229               0.1958      0.0603 2020-08-28
+2020-10-31       0.90     1.474000e+11  7.106000e+09                0.1632                 0.0067  0.1502  0.0347               0.1949      0.0590 2020-10-31
+2021-03-31       1.16     1.975000e+11  9.207000e+09                0.1327                 0.0112  0.1919  0.0444               0.1931      0.0571 2021-03-31
+2021-04-30       0.42     6.547000e+10  3.344000e+09                0.6788                 0.6197  0.0622  0.0158               0.1916      0.0667 2021-04-30
+2021-08-31       0.80     1.264000e+11  6.432000e+09                0.3375                 0.3742  0.1125  0.0287               0.1884      0.0653 2021-08-31
 
+[66 rows x 10 columns]
 ```
 
-#### 跑个策略
+### 跑个策略
 ```
-In [15]: from zvt.samples import *
-In [16]: t = MyMaTrader(codes=['000338'], level=IntervalLevel.LEVEL_1DAY, start_timestamp='2018-01-01',
-   ...:                end_timestamp='2019-06-30', trader_name='000338_ma_trader')
-In [17]: t.run()
-
+>>> from zvt.samples import *
+>>> t = MyMaTrader(codes=['000338'], level=IntervalLevel.LEVEL_1DAY, start_timestamp='2018-01-01', end_timestamp='2021-06-30', trader_name='000338_ma_trader',provider='em')
+>>> t.run()
 ```
-测试数据里面包含的SAMPLE_STOCK_CODES = ['000001', '000783', '000778', '603220', '601318', '000338', '002572', '300027']，试一下传入其任意组合，即可看多标的的效果。
 
-## 2. 📝正式环境
+## 2. 📝环境设置
 项目支持多环境切换,默认情况下，不设置环境变量TESTING_ZVT即为正式环境
  ```
 In [1]: from zvt import *
@@ -417,19 +533,6 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pytest.jpg'/></p>
 
 大部分功能使用都可以从tests里面参考
-
-## ✨ 特性
-- **丰富全面开箱即用可扩展可持续增量更新的数据**
-    - A股数据:行情,财务报表,大股东行为,高管交易,分红融资详情,个股板块资金流向,融资融券,龙虎榜等数据
-    - 市场整体pe,pb,资金流，融资融券，外资动向等数据
-    - 数字货币数据
-- 数据的标准化,多数据源(provider)交叉验证,补全
-- **简洁可扩展的数据框架**
-- **统一简洁的API,支持sql查询,支持pandas**
-- 可扩展的factor,对单标的和多标的的运算抽象了一种统一的计算方式
-- **支持多标的,多factor,多级别的回测方式**
-- 支持交易信号和策略使用到的factor的实时可视化
-- 支持多种实盘交易(实现中)
 
 ## 💡贡献
 期待能有更多的开发者参与到 zvt 的开发中来，我会保证尽快 Reivew PR 并且及时回复。但提交 PR 请确保
