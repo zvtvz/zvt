@@ -383,26 +383,27 @@ So, you should be able to answer the following three questions now:
 
 For more advanced usage and extended data, please refer to the data section in the detailed document.
 
-### Write a strategy
-有了 **交易标的** 和 **交易标的发生的事**，就可以写策略了。
+### Write strategy
+Now we could write strategy basing on TradableEntity and EntityEvent.
+The so-called strategy backtesting is nothing but repeating the following process：
 
-所谓策略回测，无非就是，重复以下过程：
-#### 在某时间点，找到符合条件的标的，对其进行买卖，看其表现。
+#### At a certain time, find the targets which matching conditions, buy and sell them, and see the performance.
 
-系统支持两种模式:
-* solo (随意的)
+Two modes to write strategy:
+* solo (free style)
 
-在 某个时间 根据发生的事件 计算条件 并买卖
+At a certain time, calculate conditions according to the events, buy and sell
 
 * formal (正式的)
 
-系统设计的二维索引多标的计算模型
+The calculation model of the two-dimensional index and multi-entity
 
-#### 一个很随便的人(solo)
-嗯，这个策略真的很随便，就像我们大部分时间做的那样。
-> 报表出来的时，我看一下报表，机构加仓超过5%我就买入，机构减仓超过50%我就卖出。
+#### a too simple,sometimes naive person (solo)
+Well, this strategy is really too simple,sometimes naive, as we do most of the time.
+> When the report comes out, I look at the report. 
+> If the institution increases its position by more than 5%, I will buy it, and if the institution reduces its position by more than 50%, I will sell it.
 
-代码如下:
+Show you the code:
 ```
 # -*- coding: utf-8 -*-
 import pandas as pd
@@ -451,23 +452,25 @@ if __name__ == '__main__':
                    provider='em', adjust_type=AdjustType.qfq, profit_threshold=None).run()
 ```
 
-所以，写一个策略其实还是很简单的嘛。
-你可以发挥想象力，社保重仓买买买，外资重仓买买买，董事长跟小姨子跑了卖卖卖......
+So, writing a strategy is not that complicated.
+Just use your imagination, find the relation of the price and the events.
 
-然后，刷新一下[http://127.0.0.1:8050/](http://127.0.0.1:8050/)，看你运行策略的performance
+Then refresh [http://127.0.0.1:8050/](http://127.0.0.1:8050/)，check the performance of your strategy.
 
-更多可参考[策略例子](https://github.com/zvtvz/zvt/tree/master/examples/trader)
+More examples is in [Strategy example](https://github.com/zvtvz/zvt/tree/master/examples/trader)
 
-#### 严肃一点(formal)
-简单的计算可以通过query_data来完成，这里说的是系统设计的二维索引多标的计算模型。
+#### Be serious (formal)
+Simple calculation can be done through query_data.
+Now it's time to introduce the two-dimensional index multi-entity calculation model.
 
-下面以技术因子为例对**计算流程**进行说明:
+Takes technical factors as an example to illustrate the **calculation process**:
 ```
 In [7]: from zvt.factors.technical_factor import *
 In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer())
 ```
 ### data_df
-data_df为factor的原始数据，即通过query_data从数据库读取到的数据,为一个**二维索引**DataFrame
+
+**two-dimensional index** DataFrame read from the schema by query_data.
 ```
 In [11]: factor.data_df
 Out[11]:
@@ -489,8 +492,8 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 ```
 
 ### factor_df
-factor_df为transformer对data_df进行计算后得到的数据，设计因子即对[transformer](https://github.com/zvtvz/zvt/blob/master/zvt/factors/factor.py#L18)进行扩展，例子中用的是MacdTransformer()。
-
+**two-dimensional index** DataFrame which calculating using data_df by [transformer](https://github.com/zvtvz/zvt/blob/master/zvt/factors/factor.py#L18)
+e.g., MacdTransformer.
 ```
 In [12]: factor.factor_df
 Out[12]:
@@ -512,8 +515,10 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 ```
 
 ### result_df
-result_df为可用于选股器的**二维索引**DataFrame，通过对data_df或factor_df计算来实现。
-该例子在计算macd之后，利用factor_df,黄白线在0轴上为True,否则为False，[具体代码](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_factor.py#L56)
+**two-dimensional index** DataFrame which calculating using factor_df or(and) data_df.
+It's used by TargetSelector.
+
+e.g.,[macd](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_factor.py#L56)
 
 ```
 In [14]: factor.result_df
@@ -535,18 +540,18 @@ stock_sz_000338 2019-06-03  False
 [208 rows x 1 columns]
 ```
 
-不同类型Factor的result_df格式如下：
+The  format of result_df with different types of factors is as follows:
 
-* filter类型
+* filter
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/filter_factor.png'/></p>
 
-* score类型
+* score
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/score_factor.png'/></p>
 
-结合选股器和回测，整个流程如下：
+Combining the stock picker and backtesting, the whole process is as follows:
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/flow.png'/></p>
 
-## 环境设置（可选）
+## Env settings（optional）
 ```
 >>> from zvt import *
 >>> zvt_env
