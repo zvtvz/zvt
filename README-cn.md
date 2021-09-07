@@ -7,57 +7,49 @@
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 
-**Read this in other languages: [中文](README-cn.md).**  
+**Read this in other languages: [English](README-cn.md).**  
 
-## Market model
-ZVT abstracts the market into the following model:
+## 市场模型
+ZVT 将市场抽象为如下的模型:
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
 
-* TradableEntity 
+* TradableEntity (交易标的)
+* ActorEntity (市场参与者)
+* EntityEvent (交易标的 和 市场参与者 发生的事件)
 
-the tradable entity e.g., stock,future,coin
+## 快速开始
 
-* ActorEntity 
-
-the actor in market e.g., fund,government,company
-
-* EntityEvent 
-
-the event about them e.g, quotes,finance factor,macro policy
-
-## Quick start
-
-### Install
+### 安装
 ```
 python3 -m pip install -U zvt
 ```
 
-### UI
+### 运行界面
 
-After the installation is complete, enter zvt on the command line
+安装完成后，在命令行下输入 zvt
 ```shell
 zvt
 ```
-open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
+打开 [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
-> The example shown here relies on the history data, please refer to the following document for data update
+> 这里展示的例子依赖后面的下载历史数据，数据更新请参考后面文档
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-factor.png'/></p>
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-trader.png'/></p>
 
-> The core concept of the system is visual, and the name of the interface corresponds to it one-to-one, so it is also uniform and extensible.
+> 系统的核心概念是可视化的，界面的名称与其一一对应，因此也是统一可扩展的。
 
-> You can write and run the strategy in your favorite ide, and then view its related targets, factor, signal and performance on the UI.
+> 你可以在你喜欢的ide里编写和运行策略，然后运行界面查看其相关的标的，因子，信号和净值展示。
 
-### import
+### 导入
 ```
 >>> from zvt.domain import *
 ```
 
-### TradableEntity
+### TradableEntity (交易标的)
 
-#### China stock
+#### A股交易标的
 ```
 >>> Stock.record_data()
 >>> df = Stock.query_data(index='code')
@@ -80,7 +72,7 @@ code
 [4136 rows x 9 columns]
 ```
 
-#### USA stock
+#### 美股交易标的
 ```
 >>> Stockus.record_data()
 >>> df = Stockus.query_data(index='code')
@@ -107,7 +99,7 @@ ZYXI  stockus_nasdaq_ZYXI  stockus_nasdaq_ZYXI       NaT     stockus   nasdaq  Z
 0  stockus_nasdaq_AAPL  stockus_nasdaq_AAPL      None     stockus   nasdaq  AAPL   苹果      None     None
 ```
 
-#### Hong Kong stock
+#### 港股交易标的
 ```
 >>> Stockhk.record_data()
 >>> df = Stockhk.query_data(index='code')
@@ -136,7 +128,7 @@ code
 
 ```
 
-#### And more
+#### 还有更多
 ```
 >>> from zvt.contract import *
 >>> zvt_context.tradable_schema_map
@@ -150,7 +142,7 @@ code
  'fund': zvt.domain.meta.fund_meta.Fund}
 ```
 
-The key is tradable entity type, and the value is the schema. The system provides unified **record (record_data)** and **query (query_data)** methods for the schema.
+其中key为交易标的的类型，value为其schema，系统为schema提供了统一的 **记录(record_data)** 和 **查询(query_data)** 方法。
 
 ```
 >>> Index.record_data()
@@ -173,17 +165,17 @@ The key is tradable entity type, and the value is the schema. The system provide
 
 ```
 
-### EntityEvent
-We have tradable entity and then events about them.
+### EntityEvent (交易标的 发生的事件)
+有了交易标的，才有交易标的 发生的事。
 
-#### Market quotes
-the TradableEntity quote schema follows the following rules:
+#### 行情数据
+交易标的 **行情schema** 遵从如下的规则:
 ```
 {entity_shema}{level}{adjust_type}Kdata
 ```
 * entity_schema
 
-TradableEntity class，e.g., Stock,Stockus.
+就是前面说的TradableEntity，比如Stock,Stockus等。
 
 * level
 ```
@@ -196,10 +188,9 @@ TradableEntity class，e.g., Stock,Stockus.
 >>> for adjust_type in AdjustType:
         print(adjust_type.value)
 ```
+> 注意: 为了兼容历史数据，前复权是个例外，{adjust_type}不填
 
-> Note: In order to be compatible with historical data, the pre-reset is an exception, {adjust_type} is left empty
-
-qfq
+前复权
 ```
 >>> Stock1dKdata.record_data(code='000338', provider='em')
 >>> df = Stock1dKdata.query_data(code='000338', provider='em')
@@ -239,8 +230,7 @@ qfq
 
 [8770 rows x 15 columns]
 ```
-
-hfq
+后复权
 ```
 >>> Stock1dHfqKdata.record_data(code='000338', provider='em')
 >>> df = Stock1dHfqKdata.query_data(code='000338', provider='em')
@@ -262,7 +252,7 @@ hfq
 [3431 rows x 15 columns]
 ```
 
-#### Finance factor
+#### 财务因子
 ```
 >>> FinanceFactor.record_data(code='000338')
 >>> FinanceFactor.query_data(code='000338',columns=FinanceFactor.important_cols(),index='timestamp')
@@ -284,14 +274,17 @@ timestamp
 [66 rows x 10 columns]
 ```
 
-#### Three financial tables
+#### 财务三张表
 ```
+#资产负债表
 >>> BalanceSheet.record_data(code='000338')
+#利润表
 >>> IncomeStatement.record_data(code='000338')
+#现金流量表
 >>> CashFlowStatement.record_data(code='000338')
 ```
 
-#### And more
+#### 还有更多
 ```
 >>> zvt_context.schemas
 [zvt.domain.dividend_financing.DividendFinancing,
@@ -299,28 +292,26 @@ timestamp
  zvt.domain.dividend_financing.SpoDetail...]
 ```
 
-All schemas is registered in zvt_context.schemas, **schema** is table, data structure.
-The fields and meaning could be checked in following ways:
+zvt_context.schemas为系统支持的schema,schema即表结构，即数据，其字段含义的查看方式如下：
 
 * help
 
-type the schema. and press tab to show its fields or .help()
+输入schema.按tab提示其包含的字段，或者.help()
 ```
 >>> FinanceFactor.help()
 ```
 
-* source code
+* 源码
 
-Schemas defined in [domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)
+[domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)里的文件为schema的定义，查看相应字段的注释即可。
 
-From above examples, you should know the unified way of recording data:
+通过以上的例子，你应该掌握了统一的记录数据的方法：
 
 > Schema.record_data(provider='your provider',codes='the codes')
 
-Note the optional parameter provider, which represents the data provider. 
-A schema can have multiple providers, which is the cornerstone of system stability.
+注意可选参数provider，其代表数据提供商，一个schema可以有多个provider，这是系统稳定的基石。
 
-Check the provider has been implemented:
+查看**已实现**的provider
 ```
 >>> Stock.provider_map_recorder
 {'joinquant': zvt.recorders.joinquant.meta.jq_stock_meta_recorder.JqChinaStockRecorder,
@@ -329,9 +320,9 @@ Check the provider has been implemented:
  'eastmoney': zvt.recorders.eastmoney.meta.eastmoney_stock_meta_recorder.EastmoneyChinaStockListRecorder}
 
 ```
-You can use any provider to get the data, the first one is used by default.
+你可以使用任意一个provider来获取数据，默认使用第一个。
 
-One more example, the stock sector data recording:
+再举个例子，股票板块数据获取：
 ```
 >>> Block.provider_map_recorder
 {'eastmoney': zvt.recorders.eastmoney.meta.eastmoney_block_meta_recorder.EastmoneyChinaBlockRecorder,
@@ -343,19 +334,17 @@ Block registered recorders:{'eastmoney': <class 'zvt.recorders.eastmoney.meta.ch
 2020-03-04 23:56:49,450  INFO  MainThread  finish record sina blocks:concept
 ```
 
-Learn more about record_data
+再多了解一点record_data：
+* 参数code[单个]，codes[多个]代表需要抓取的股票代码
+* 不传入code,codes则是全市场抓取
+* 该方法会把数据存储到本地并只做增量更新
 
-* The parameter code[single], codes[multiple] represent the stock codes to be recorded
-* Recording the whole market if not set code, codes
-* This method will store the data locally and only do incremental updates
+定时任务的方式更新可参考[东财数据定时更新](https://github.com/zvtvz/zvt/blob/master/examples/recorders/eastmoney_data_runner1.py)
 
-Refer to the scheduling recoding way[eastmoney runner](https://github.com/zvtvz/zvt/blob/master/examples/recorders/eastmoney_data_runner1.py)
+#### 全市场选股
+查询数据使用的是query_data方法，把全市场的数据记录下来后，就可以在本地快速查询需要的数据了。
 
-#### Market-wide stock selection
-
-After recording the data of the whole market, you can quickly query the required data locally.
-
-An example: the top 20 stocks with roe>8% and revenue growth>8% in the 2018 annual report
+一个例子：2018年年报 roe>8% 营收增长>8% 的前20个股
 ```
 >>> df=FinanceFactor.query_data(filters=[FinanceFactor.roe>0.08,FinanceFactor.report_period=='year',FinanceFactor.op_income_growth_yoy>0.08],start_timestamp='2019-01-01',order=FinanceFactor.roe.desc(),limit=20,columns=["code"]+FinanceFactor.important_cols(),index='code')
 
@@ -376,14 +365,14 @@ code
 [20 rows x 11 columns]
 ```
 
-So, you should be able to answer the following three questions now:
-* What data is there?
-* How to record data?
-* How to query data?
+以上，你应该会回答如下的三个问题了：
+* 有什么数据?
+* 如何记录数据?
+* 如何查询数据?
 
-For more advanced usage and extended data, please refer to the data section in the detailed document.
+更高级的用法以及扩展数据，可以参考详细文档里的数据部分。
 
-### Write a strategy
+### 写个策略
 有了 **交易标的** 和 **交易标的发生的事**，就可以写策略了。
 
 所谓策略回测，无非就是，重复以下过程：
