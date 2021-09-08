@@ -576,82 +576,74 @@ Combining the stock picker and backtesting, the whole process is as follows:
 ```
 >>> init_config(current_config=zvt_config, jq_username='xxx', jq_password='yyy')
 ```
-> 通用的配置方式为: init_config(current_config=zvt_config, **kv)
+>  config others this way: init_config(current_config=zvt_config, **kv)
 
-### 下载历史数据（可选）
-百度网盘: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ 提取码: yb6c
+### History data（optional）
+baidu: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ code: yb6c
 
 google drive: https://drive.google.com/drive/folders/17Bxijq-PHJYrLDpyvFAm5P6QyhKL-ahn?usp=sharing
 
-里面包含joinquant的日/周线后复权数据，个股估值，基金及其持仓数据，eastmoney的财务等数据。
+It contains daily/weekly post-restoration data, stock valuations, fund and its holdings data, financial data and other data.
 
-把下载的数据解压到正式环境的data_path（所有db文件放到该目录下，没有层级结构）
+Unzip the downloaded data to the data_path of the your environment (all db files are placed in this directory, there is no hierarchical structure)
 
-数据的更新是增量的，下载历史数据只是为了节省时间，全部自己更新也是可以的。
+The data could be updated incrementally. Downloading historical data is just to save time. It is also possible to update all by yourself.
 
-#### 注册聚宽(可选)
-项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，交易所等免费数据。
+#### Joinquant(optional)
+the data could be updated from different provider, this make the system stable.
 
-#### 数据的设计上是让provider来适配schema,而不是反过来，这样即使某provider不可用了，换一个即可，不会影响整个系统的使用。
-
-但免费数据的缺点是显而易见的:不稳定，爬取清洗数据耗时耗力，维护代价巨大，且随时可能不可用。  
-个人建议：如果只是学习研究，可以使用免费数据；如果是真正有意投身量化，还是选一家可靠的数据提供商。
-
-项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）  
 https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
 
-> 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
+> add other providers， [Data extension tutorial](https://zvtvz.github.io/zvt/#/data_extending)
 
-> 添加其他数据提供商， 请参考[数据扩展教程](https://zvtvz.github.io/zvt/#/data_extending)
+## Development
 
-## 开发
-
-### clone代码
+### Clone
 
 ```
 git clone https://github.com/zvtvz/zvt.git
 ```
 
-设置项目的virtual env(python>=3.6),安装依赖
+set up virtual env(python>=3.6),install requirements
 ```
 pip3 install -r requirements.txt
 pip3 install pytest
 ```
 
-### 测试案例
-pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试案例
+### Tests
+```shell
+pytest ./tests
+```
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pytest.jpg'/></p>
 
-大部分功能使用都可以从tests里面参考
+Most of the features can be referenced from the tests
 
-## 贡献
-期待能有更多的开发者参与到 zvt 的开发中来，我会保证尽快 Reivew PR 并且及时回复。但提交 PR 请确保
+## Contribution
 
-先看一下[1分钟代码规范](https://github.com/zvtvz/zvt/blob/master/code_of_conduct.md)
+[code of conduct](https://github.com/zvtvz/zvt/blob/master/code_of_conduct.md)
 
-1. 通过所有单元测试，如若是新功能，请为其新增单元测试
-2. 遵守开发规范
-3. 如若需要，请更新相对应的文档
+1. Pass all unit tests, if it is a new feature, please add a new unit test for it
+2. Compliance with development specifications
+3. If necessary, please update the corresponding document
 
-也非常欢迎开发者能为 zvt 提供更多的示例，共同来完善文档。
+Developers are also very welcome to provide more examples for zvt, and work together to improve the documentation.
 
-## 请作者喝杯咖啡
+## Buy me a coffee
 
-如果你觉得项目对你有帮助,可以请作者喝杯咖啡  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/alipay-cn.png" width="25%" alt="Alipay">　　　　　
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat-cn.png" width="25%" alt="Wechat">
 
-## 联系方式  
+## Contact
 
-加微信进群:foolcage 添加暗号:zvt  
+wechat:foolcage  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
 ------
-微信公众号:  
+wechat subscription:  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/gongzhonghao.jpg" width="25%" alt="Wechat">
 
-知乎专栏:  
+zhihu:  
 https://zhuanlan.zhihu.com/automoney
 
 ## Thanks
