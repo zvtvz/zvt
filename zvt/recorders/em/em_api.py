@@ -206,6 +206,7 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
             kdatas.append(dict(id=the_id,
                                timestamp=the_timestamp,
                                entity_id=entity_id,
+                               provider='em',
                                code=code,
                                name=name,
                                level=level.value,
@@ -382,5 +383,5 @@ if __name__ == '__main__':
 # the __all__ is generated
 __all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',
            'get_ii_summary', 'get_free_holders', 'get_holders', 'get_url', 'get_exchange', 'actor_type_to_org_type',
-           'generate_filters', 'get_em_data', 'get_kdata', 'get_tradable_list', 'to_em_entity_flag', 'to_em_fq_flag',
-           'to_em_level_flag', 'to_em_sec_id', 'get_basic_info']
+           'generate_filters', 'get_em_data', 'get_kdata', 'get_basic_info', 'get_tradable_list', 'to_em_fc',
+           'to_em_entity_flag', 'to_em_fq_flag', 'to_em_level_flag', 'to_em_sec_id']

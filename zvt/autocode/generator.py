@@ -133,9 +133,11 @@ def gen_kdata_schema(pkg: str,
                      providers: List[str],
                      entity_type: str,
                      levels: List[IntervalLevel],
-                     adjust_types: List[AdjustType] = [None],
+                     adjust_types=None,
                      entity_in_submodule: bool = False,
                      kdata_module='quotes'):
+    if adjust_types is None:
+        adjust_types = [None]
     tables = []
 
     base_path = './domain'

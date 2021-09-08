@@ -88,5 +88,4 @@ if __name__ == '__main__':
     recorder = EMIndexKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=['000300'])
     recorder.run()
 # the __all__ is generated
-__all__ = ['BaseEMStockKdataRecorder', 'EMStockKdataRecorder', 'EMStockusKdataRecorder', 'EMStockhkKdataRecorder',
-           'EMIndexKdataRecorder', 'EMBlockKdataRecorder']
+__all__ = ['BaseEMStockKdataRecorder', 'EMStockKdataRecorder', 'EMStockusKdataRecorder', 'EMStockhkKdataRecorder', 'EMIndexKdataRecorder', 'EMBlockKdataRecorder']
