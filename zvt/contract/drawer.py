@@ -44,6 +44,10 @@ class Draw(object):
         return self._draw('scatter', mode=mode, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                           show=show, **kwargs)
 
+    def draw_histogram(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+        return self._draw('histogram', width=width, height=height, title=title, keep_ui_state=keep_ui_state,
+                          show=show, **kwargs)
+
     def _draw(self,
               main_chart='kline',
               sub_chart='bar',
@@ -58,6 +62,7 @@ class Draw(object):
         raise NotImplementedError()
 
     def default_layout(self,
+                       main_chart=None,
                        width=None,
                        height=None,
                        title=None,
@@ -67,6 +72,49 @@ class Draw(object):
             uirevision = True
         else:
             uirevision = None
+
+        if main_chart == 'histogram':
+            xaxis = None
+        else:
+            xaxis = dict(
+                linecolor="#BCCCDC",
+                showgrid=False,
+                showspikes=True,  # Show spike line for X-axis
+                # Format spike
+                spikethickness=2,
+                spikedash="dot",
+                spikecolor="#999999",
+                spikemode="across",
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=3,
+                             label="3m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True,
+                ),
+                type="date"
+            )
 
         return dict(showlegend=True,
                     plot_bgcolor="#FFF",
@@ -84,45 +132,7 @@ class Draw(object):
                         linecolor="#BCCCDC",
                         showgrid=False,
                     ),
-                    xaxis=dict(
-                        linecolor="#BCCCDC",
-                        showgrid=False,
-                        showspikes=True,  # Show spike line for X-axis
-                        # Format spike
-                        spikethickness=2,
-                        spikedash="dot",
-                        spikecolor="#999999",
-                        spikemode="across",
-                        rangeselector=dict(
-                            buttons=list([
-                                dict(count=1,
-                                     label="1m",
-                                     step="month",
-                                     stepmode="backward"),
-                                dict(count=3,
-                                     label="3m",
-                                     step="month",
-                                     stepmode="backward"),
-                                dict(count=6,
-                                     label="6m",
-                                     step="month",
-                                     stepmode="backward"),
-                                dict(count=1,
-                                     label="YTD",
-                                     step="year",
-                                     stepmode="todate"),
-                                dict(count=1,
-                                     label="1y",
-                                     step="year",
-                                     stepmode="backward"),
-                                dict(step="all")
-                            ])
-                        ),
-                        rangeslider=dict(
-                            visible=True,
-                        ),
-                        type="date"
-                    ),
+                    xaxis=xaxis,
                     legend_orientation="h",
                     hoverlabel={"namelength": -1},
                     **layout_params)
@@ -256,10 +266,12 @@ class StackedDrawer(Draw):
                                           yref=y)
 
             # annotations
-            stacked_fig.layout['annotations'] = annotations(drawer.annotation_df, yref=y)
+            if pd_is_not_null(drawer.annotation_df):
+                stacked_fig.layout['annotations'] = annotations(drawer.annotation_df, yref=y)
 
         stacked_fig.update_layout(
-            self.default_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state))
+            self.default_layout(main_chart=main_chart, width=width, height=height, title=title,
+                                keep_ui_state=keep_ui_state))
 
         if show:
             stacked_fig.show()
@@ -368,6 +380,26 @@ class Drawer(Draw):
                     trace_name = '{}_{}'.format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis, **kwargs))
+            elif main_chart == 'histogram':
+                for col in df.columns:
+                    trace_name = '{}_{}'.format(code, col)
+                    x = df[col].tolist()
+                    trace = go.Histogram(
+                        x=x,
+                        name=trace_name,
+                        histnorm='probability',
+                        **kwargs
+                    )
+                    traces.append(trace)
+                    annotation = [dict(
+                        entity_id=entity_id,
+                        timestamp=x[-1],
+                        value=0,
+                        flag=f'current:{x[-1]}',
+                    )]
+                    self.annotation_df = pd.DataFrame.from_records(annotation, index=['entity_id', 'timestamp'])
+                # just support one entity
+                break
 
             # 构造主图指标
             if self.factor_data_list:
@@ -454,13 +486,15 @@ class Drawer(Draw):
         # 绘制矩形
         self.add_rects(fig, yaxis=yaxis)
 
-        fig.update_layout(self.default_layout(width=width, height=height, title=title, keep_ui_state=keep_ui_state))
+        fig.update_layout(self.default_layout(main_chart=main_chart, width=width, height=height, title=title,
+                                              keep_ui_state=keep_ui_state))
 
         if sub_traces:
             fig.update_layout(xaxis_rangeslider_visible=False)
             fig.update_layout(xaxis2_rangeslider_visible=True, xaxis2_rangeslider_thickness=0.1)
         # 绘制标志
-        fig.layout['annotations'] = annotations(self.annotation_df, yref=yaxis)
+        if pd_is_not_null(self.annotation_df):
+            fig.layout['annotations'] = annotations(self.annotation_df, yref=yaxis)
 
         if show:
             fig.show()
@@ -534,11 +568,6 @@ def annotations(annotation_df: pd.DataFrame, yref='y'):
     return None
 
 
-def distribute(df, col):
-    import plotly.express as px
-    fig = px.histogram(df, x=col)
-    fig.show()
-
 if __name__ == '__main__':
     from zvt.factors.zen import ZenFactor
 
@@ -553,4 +582,4 @@ if __name__ == '__main__':
     #
     # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
 # the __all__ is generated
-__all__ = ['Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations', 'distribute']
+__all__ = ['Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations']

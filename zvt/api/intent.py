@@ -23,6 +23,12 @@ def compare(entity_ids, props=None):
         drawer.draw_kline(show=True)
 
 
+def distribute(df):
+    print(df)
+    drawer = Drawer(main_df=df)
+    drawer.draw_histogram(show=True)
+
+
 def _group_entity_ids(entity_ids):
     entity_type_map_ids = {}
     for entity_id in entity_ids:
@@ -49,5 +55,14 @@ if __name__ == '__main__':
     # 价值 大 中 小
     entity_ids = ['index_sz_399373', 'index_sz_399375', 'index_sz_399377']
 
-    Index1dKdata.record_data(entity_ids=entity_ids)
-    compare(entity_ids=entity_ids)
+    # Index1dKdata.record_data(entity_ids=entity_ids)
+    # compare(entity_ids=entity_ids)
+
+    df1 = Index1dKdata.query_data(entity_id='index_sz_399370', index=['timestamp'],
+                                  columns=['entity_id', 'timestamp', 'close'])
+    df2 = Index1dKdata.query_data(entity_id='index_sz_399371', index=['timestamp'],
+                                  columns=['entity_id', 'timestamp', 'close'])
+    df = (df1['close'] / df2['close']).to_frame()
+    df['entity_id'] = '399370 / 399371'
+    df = df.reset_index()
+    distribute(df.copy())
