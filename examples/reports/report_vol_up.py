@@ -38,11 +38,10 @@ def report_vol_up():
             my_selector = TargetSelector(start_timestamp=start, end_timestamp=target_date,
                                          select_mode=SelectMode.condition_or)
             # add the factors
-            factor1 = VolumeUpMaFactor(start_timestamp=start, end_timestamp=target_date, windows=['250'])
-            factor2 = VolumeUpMaFactor(start_timestamp=start, end_timestamp=target_date, windows=['120'])
+            factor1 = VolumeUpMaFactor(start_timestamp=start, end_timestamp=target_date, windows=[120, 250],
+                                       over_mode='or')
 
             my_selector.add_filter_factor(factor1)
-            my_selector.add_filter_factor(factor2)
 
             my_selector.run()
 
@@ -67,7 +66,7 @@ def report_vol_up():
                                               'report_vol_up error:{}'.format(e))
 
                 infos = stocks_with_info(stocks)
-                msg = msg + '盈利股:' + '\n'.join(infos) + '\n'
+                msg = '\n'.join(infos) + '\n'
 
             logger.info(msg)
 
