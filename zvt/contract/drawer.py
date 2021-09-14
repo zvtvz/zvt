@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from enum import Enum
 from typing import List, Optional
 
 import numpy as np
@@ -15,6 +16,14 @@ from zvt.utils.pd_utils import pd_is_not_null
 logger = logging.getLogger(__name__)
 
 
+class ChartType(Enum):
+    kline = 'kline'
+    line = 'line'
+    area = 'area'
+    scatter = 'scatter'
+    histogram = 'histogram'
+
+
 class Rect(Bean):
 
     def __init__(self, x0=None, y0=None, x1=None, y1=None) -> None:
@@ -28,8 +37,9 @@ class Rect(Bean):
 
 class Draw(object):
     def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self._draw('kline', width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show,
-                          **kwargs)
+        return self.draw(ChartType.kline, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
+                         show=show,
+                         **kwargs)
 
     def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
         return self.draw_scatter(mode='lines', width=width, height=height, title=title,
@@ -41,23 +51,24 @@ class Draw(object):
 
     def draw_scatter(self, mode='markers', width=None, height=None,
                      title=None, keep_ui_state=True, show=False, **kwargs):
-        return self._draw('scatter', mode=mode, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                          show=show, **kwargs)
+        return self.draw(ChartType.scatter, mode=mode, width=width, height=height, title=title,
+                         keep_ui_state=keep_ui_state,
+                         show=show, **kwargs)
 
     def draw_histogram(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self._draw('histogram', width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                          show=show, **kwargs)
+        return self.draw(ChartType.histogram, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
+                         show=show, **kwargs)
 
-    def _draw(self,
-              main_chart='kline',
-              sub_chart='bar',
-              mode='lines',
-              width=None,
-              height=None,
-              title=None,
-              keep_ui_state=True,
-              show=False,
-              **kwargs):
+    def draw(self,
+             main_chart=ChartType.kline,
+             sub_chart='bar',
+             mode='lines',
+             width=None,
+             height=None,
+             title=None,
+             keep_ui_state=True,
+             show=False,
+             **kwargs):
 
         raise NotImplementedError()
 
@@ -73,7 +84,7 @@ class Draw(object):
         else:
             uirevision = None
 
-        if main_chart == 'histogram':
+        if main_chart == ChartType.histogram:
             xaxis = None
         else:
             xaxis = dict(
@@ -152,11 +163,18 @@ class Drawable(object):
                         rects=self.drawer_rects())
         return drawer
 
-    def draw(self, main_chart='kline', width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.drawer()._draw(main_chart=main_chart, width=width, height=height, title=title,
-                                   keep_ui_state=keep_ui_state,
-                                   show=show,
-                                   **kwargs)
+    def draw(self,
+             main_chart=ChartType.kline,
+             width=None,
+             height=None,
+             title=None,
+             keep_ui_state=True,
+             show=False,
+             **kwargs):
+        return self.drawer().draw(main_chart=main_chart, width=width, height=height, title=title,
+                                  keep_ui_state=keep_ui_state,
+                                  show=show,
+                                  **kwargs)
 
     def drawer_main_df(self) -> Optional[pd.DataFrame]:
         return None
@@ -211,16 +229,16 @@ class StackedDrawer(Draw):
                               domain=[domain_range[0] + part * (index - start_index),
                                       domain_range[0] + part * (index - start_index + 1)])
 
-    def _draw(self,
-              main_chart='kline',
-              sub_chart='bar',
-              mode='lines',
-              width=None,
-              height=None,
-              title=None,
-              keep_ui_state=True,
-              show=False,
-              **kwargs):
+    def draw(self,
+             main_chart=ChartType.kline,
+             sub_chart='bar',
+             mode='lines',
+             width=None,
+             height=None,
+             title=None,
+             keep_ui_state=True,
+             show=False,
+             **kwargs):
         stacked_fig = go.Figure()
 
         total = len(self.drawers)
@@ -353,7 +371,7 @@ class Drawer(Draw):
         return self.sub_data_list is not None and not self.sub_data_list[0].empty()
 
     def make_traces(self,
-                    main_chart='kline',
+                    main_chart=ChartType.kline,
                     sub_chart='bar',
                     mode='lines',
                     yaxis='y',
@@ -370,24 +388,23 @@ class Drawer(Draw):
                 pass
 
             # 构造主图
-            if main_chart == 'kline':
+            if main_chart == ChartType.kline:
                 trace_name = '{}_kdata'.format(code)
                 trace = go.Candlestick(x=df.index, open=df['open'], close=df['close'], low=df['low'], high=df['high'],
                                        name=trace_name, yaxis=yaxis, **kwargs)
                 traces.append(trace)
-            elif main_chart == 'scatter':
+            elif main_chart == ChartType.scatter:
                 for col in df.columns:
                     trace_name = '{}_{}'.format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis, **kwargs))
-            elif main_chart == 'histogram':
+            elif main_chart == ChartType.histogram:
                 for col in df.columns:
                     trace_name = '{}_{}'.format(code, col)
                     x = df[col].tolist()
                     trace = go.Histogram(
                         x=x,
                         name=trace_name,
-                        histnorm='probability',
                         **kwargs
                     )
                     traces.append(trace)
@@ -395,11 +412,15 @@ class Drawer(Draw):
                         entity_id=entity_id,
                         timestamp=x[-1],
                         value=0,
-                        flag=f'current:{x[-1]}',
+                        flag=f'{trace_name}:{x[-1]}',
                     )]
-                    self.annotation_df = pd.DataFrame.from_records(annotation, index=['entity_id', 'timestamp'])
-                # just support one entity
-                break
+                    annotation_df = pd.DataFrame.from_records(annotation, index=['entity_id', 'timestamp'])
+                    if pd_is_not_null(self.annotation_df):
+                        self.annotation_df = pd.concat([self.annotation_df, annotation_df])
+                    else:
+                        self.annotation_df = annotation_df
+            else:
+                assert False
 
             # 构造主图指标
             if self.factor_data_list:
@@ -440,7 +461,7 @@ class Drawer(Draw):
                             if not the_sub_chart:
                                 the_sub_chart = sub_chart
 
-                            if the_sub_chart == 'line':
+                            if the_sub_chart == ChartType.line:
                                 sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
                                                        marker=dict(color=colors))
                             else:
@@ -461,16 +482,16 @@ class Drawer(Draw):
                               )
             fig.update_shapes(dict(xref='x', yref=yaxis))
 
-    def _draw(self,
-              main_chart='kline',
-              sub_chart='bar',
-              mode='lines',
-              width=None,
-              height=None,
-              title=None,
-              keep_ui_state=True,
-              show=False,
-              **kwargs):
+    def draw(self,
+             main_chart=ChartType.kline,
+             sub_chart='bar',
+             mode='lines',
+             width=None,
+             height=None,
+             title=None,
+             keep_ui_state=True,
+             show=False,
+             **kwargs):
         yaxis = 'y'
         traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, mode=mode, yaxis=yaxis,
                                               **kwargs)

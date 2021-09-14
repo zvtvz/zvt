@@ -112,7 +112,8 @@ class VolumeUpMaFactor(TechnicalFactor):
                  only_load_factor: bool = False,
                  adjust_type: Union[AdjustType, str] = None,
                  windows=None,
-                 vol_windows=None) -> None:
+                 vol_windows=None,
+                 turnover_threshold=300000000) -> None:
         if not windows:
             windows = [250]
         if not vol_windows:
@@ -120,6 +121,7 @@ class VolumeUpMaFactor(TechnicalFactor):
 
         self.windows = windows
         self.vol_windows = vol_windows
+        self.turnover_threshold = turnover_threshold
 
         columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume',
                          'turnover']
@@ -148,8 +150,8 @@ class VolumeUpMaFactor(TechnicalFactor):
             for col in vol_cols[1:]:
                 filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[col])
 
-        # 成交额大于1亿️
-        filter_se = filter_se & (self.factor_df['turnover'] > 100000000)
+        # 成交额过滤
+        filter_se = filter_se & (self.factor_df['turnover'] > self.turnover_threshold)
 
         print(self.factor_df[filter_se])
         self.result_df = filter_se.to_frame(name='score')

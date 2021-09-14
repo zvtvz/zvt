@@ -22,15 +22,21 @@ class TargetType(Enum):
     # 其他情况就是保持当前的持仓
 
 
+class SelectMode(Enum):
+    condition_and = 'condition_and'
+    condition_or = 'condition_or'
+
+
 class TargetSelector(object):
     def __init__(self, entity_ids=None, entity_schema=Stock, exchanges=None, codes=None, start_timestamp=None,
                  end_timestamp=None, long_threshold=0.8, short_threshold=0.2, level=IntervalLevel.LEVEL_1DAY,
-                 provider=None) -> None:
+                 provider=None, select_mode: SelectMode = SelectMode.condition_and) -> None:
         self.entity_ids = entity_ids
         self.entity_schema = entity_schema
         self.exchanges = exchanges
         self.codes = codes
         self.provider = provider
+        self.select_mode = select_mode
 
         if start_timestamp:
             self.start_timestamp = to_pd_timestamp(start_timestamp)
@@ -100,8 +106,10 @@ class TargetSelector(object):
                     df.columns = ['score']
                     musts.append(df)
 
-            self.filter_result = list(accumulate(musts, func=operator.__and__))[-1]
-
+            if self.select_mode == SelectMode.condition_and:
+                self.filter_result = list(accumulate(musts, func=operator.__and__))[-1]
+            else:
+                self.filter_result = list(accumulate(musts, func=operator.__or__))[-1]
         if self.score_factors:
             scores = []
             for factor in self.score_factors:

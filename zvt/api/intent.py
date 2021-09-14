@@ -5,14 +5,14 @@ import pandas as pd
 
 from zvt.api import get_kdata_schema
 from zvt.contract.api import decode_entity_id
-from zvt.contract.drawer import Drawer
+from zvt.contract.drawer import Drawer, ChartType
 from zvt.domain import Index1dKdata
 
 
-def compare(entity_ids, props=None):
+def compare(entity_ids, columns=None, chart_type: ChartType = ChartType.line):
     entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
     # compare kdata
-    if props is None:
+    if columns is None:
         dfs = []
         for entity_type in entity_type_map_ids:
             schema = get_kdata_schema(entity_type=entity_type)
@@ -20,13 +20,13 @@ def compare(entity_ids, props=None):
             dfs.append(df)
         all_df = pd.concat(dfs)
         drawer = Drawer(main_df=all_df, sub_df_list=[all_df[['entity_id', 'timestamp', 'turnover']].copy()])
-        drawer.draw_kline(show=True)
+        drawer.draw(main_chart=chart_type, show=True)
 
 
-def distribute(df):
-    print(df)
+def distribute(entity_ids, data_schema, columns, histnorm='percent', nbinsx=20, filters=None):
+    df = data_schema.query_data(entity_ids=entity_ids, columns=columns, filters=filters)
     drawer = Drawer(main_df=df)
-    drawer.draw_histogram(show=True)
+    drawer.draw_histogram(show=True, histnorm=histnorm, nbinsx=nbinsx)
 
 
 def _group_entity_ids(entity_ids):
@@ -58,11 +58,13 @@ if __name__ == '__main__':
     # Index1dKdata.record_data(entity_ids=entity_ids)
     # compare(entity_ids=entity_ids)
 
-    df1 = Index1dKdata.query_data(entity_id='index_sz_399370', index=['timestamp'],
-                                  columns=['entity_id', 'timestamp', 'close'])
-    df2 = Index1dKdata.query_data(entity_id='index_sz_399371', index=['timestamp'],
-                                  columns=['entity_id', 'timestamp', 'close'])
-    df = (df1['close'] / df2['close']).to_frame()
-    df['entity_id'] = '399370 / 399371'
-    df = df.reset_index()
-    distribute(df.copy())
+    # df1 = Index1dKdata.query_data(entity_id='index_sz_399370', index=['timestamp'],
+    #                               columns=['entity_id', 'timestamp', 'close'])
+    # df2 = Index1dKdata.query_data(entity_id='index_sz_399371', index=['timestamp'],
+    #                               columns=['entity_id', 'timestamp', 'close'])
+    # df = (df1['close'] / df2['close']).to_frame()
+    # df['entity_id'] = '399370 / 399371'
+    # df = df.reset_index()
+
+    distribute(entity_ids=['index_sh_000001', 'index_sz_399001'], columns=['entity_id', 'timestamp', 'turnover_rate'],
+               data_schema=Index1dKdata, filters=[Index1dKdata.turnover_rate > 0],nbinsx=10)

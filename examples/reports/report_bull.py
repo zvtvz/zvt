@@ -30,10 +30,11 @@ def report_bull():
             target_date = latest_day[0].timestamp
 
             # 计算均线
-            my_selector = TargetSelector(start_timestamp='2018-10-01', end_timestamp=target_date)
+            start = '2019-01-01'
+            my_selector = TargetSelector(start_timestamp=start, end_timestamp=target_date)
             # add the factors
-            factor1 = BullFactor(start_timestamp='2018-10-01', end_timestamp=target_date)
-            factor2 = CrossMaVolumeFactor(start_timestamp='2018-10-01', end_timestamp=target_date,
+            factor1 = BullFactor(start_timestamp=start, end_timestamp=target_date)
+            factor2 = CrossMaVolumeFactor(start_timestamp=start, end_timestamp=target_date,
                                           windows=[5, 120, 250])
 
             my_selector.add_filter_factor(factor1)
