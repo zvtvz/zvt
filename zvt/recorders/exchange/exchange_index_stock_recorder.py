@@ -48,23 +48,21 @@ class ExchangeIndexStockRecorder(TimestampsDataRecorder):
         else:
             return [last_valid_date]
 
-    def get_resp_data(self, resp: requests.Response):
-        resp.raise_for_status()
-        return resp.json()['data']
-
     def record(self, entity, start, end, size, timestamps):
-        for timestamp in timestamps:
-            df = cn_index_stock_api.get_cn_index_stock(code=entity.code, timestamp=timestamp, name=entity.name)
+        if entity.publisher == 'cnindex':
+            for timestamp in timestamps:
+                df = cn_index_stock_api.get_cn_index_stock(code=entity.code, timestamp=timestamp, name=entity.name)
+                df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
+                         force_update=True)
+        elif entity.publisher == 'csindex':
+            # cs index not support history data
+            df = cs_index_stock_api.get_cs_index_stock(code=entity.code, timestamp=None, name=entity.name)
             df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
                      force_update=True)
-        # cs index not support history data
-        df = cs_index_stock_api.get_cs_index_stock(code=entity.code, timestamp=timestamp, name=entity.name)
-        df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                 force_update=True)
 
 
 if __name__ == '__main__':
     # ExchangeIndexMetaRecorder().run()
-    ExchangeIndexStockRecorder(codes=['000001']).run()
+    ExchangeIndexStockRecorder(codes=['399370']).run()
 # the __all__ is generated
 __all__ = ['ExchangeIndexStockRecorder']

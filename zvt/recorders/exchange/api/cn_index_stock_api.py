@@ -42,7 +42,7 @@ def get_cn_index_stock(code, timestamp, name=None):
         # totalMarketValue: 26666.32
         # trade: "主要消费"
         # weight: 10.01
-        stock_code = result['indexcode']
+        stock_code = result['seccode']
         stock_name = result['secname']
         stock_id = china_stock_code_to_id(stock_code)
 

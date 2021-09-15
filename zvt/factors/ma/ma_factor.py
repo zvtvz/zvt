@@ -114,7 +114,7 @@ class VolumeUpMaFactor(TechnicalFactor):
                  windows=None,
                  vol_windows=None,
                  turnover_threshold=300000000,
-                 over_mode='or') -> None:
+                 over_mode='and') -> None:
         if not windows:
             windows = [250]
         if not vol_windows:
@@ -171,8 +171,7 @@ class CrossMaVolumeFactor(VolumeUpMaFactor):
             filter_se = filter_se & (self.factor_df[current_col] > self.factor_df[col])
             current_col = col
 
-        # 成交额大于5亿️
-        filter_se = filter_se & (self.factor_df['turnover'] > 500000000)
+        filter_se = filter_se & (self.factor_df['turnover'] > self.turnover_threshold)
 
         print(self.factor_df[filter_se])
         self.result_df = filter_se.to_frame(name='score')
