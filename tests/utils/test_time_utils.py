@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
 from zvt.utils.time_utils import evaluate_size_from_timestamp, next_timestamp, to_pd_timestamp, \
-    is_finished_kdata_timestamp, split_time_interval, is_same_date
+    is_finished_kdata_timestamp, split_time_interval, is_same_date, month_start_end_ranges
 
 
 def test_evaluate_size_from_timestamp():
@@ -88,3 +88,25 @@ def test_split_time_interval_month():
 
     assert is_same_date(last[0], '2021-01-01')
     assert is_same_date(last[-1], '2021-01-01')
+
+
+def test_month_start_end_range():
+    start = '2020-01-01'
+    end = '2021-01-01'
+    ranges = month_start_end_ranges(start_date=start, end_date=end)
+    print(ranges)
+    assert is_same_date(ranges[0][0], '2020-01-01')
+    assert is_same_date(ranges[0][1], '2020-01-31')
+
+    assert is_same_date(ranges[-1][0], '2020-12-01')
+    assert is_same_date(ranges[-1][1], '2020-12-31')
+
+    start = '2020-01-01'
+    end = '2021-01-31'
+    ranges = month_start_end_ranges(start_date=start, end_date=end)
+    print(ranges)
+    assert is_same_date(ranges[0][0], '2020-01-01')
+    assert is_same_date(ranges[0][1], '2020-01-31')
+
+    assert is_same_date(ranges[-1][0], '2021-01-01')
+    assert is_same_date(ranges[-1][1], '2021-01-31')

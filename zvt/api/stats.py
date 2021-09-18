@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
 import itertools
+import logging
 from typing import Union
 
 import pandas as pd
@@ -8,9 +9,13 @@ import pandas as pd
 from zvt.api.kdata import get_kdata_schema
 from zvt.api.utils import get_recent_report_date
 from zvt.contract import Mixin, AdjustType
-from zvt.contract.api import decode_entity_id
+from zvt.contract.api import decode_entity_id, get_entity_schema, get_entity_ids
 from zvt.domain import FundStock, StockValuation
+from zvt.factors import TechnicalFactor
 from zvt.utils import now_pd_timestamp, next_date, pd_is_not_null
+from zvt.utils.time_utils import month_start_end_ranges
+
+logger = logging.getLogger(__name__)
 
 
 class WindowMethod(enum.Enum):
@@ -24,12 +29,40 @@ class TopType(enum.Enum):
     negative = 'negative'
 
 
+def got_top_performance_by_month(entity_type='stock',
+                                 start_timestamp='2015-01-01',
+                                 end_timestamp=now_pd_timestamp(),
+                                 list_days=None):
+    ranges = month_start_end_ranges(start_date=start_timestamp, end_date=end_timestamp)
+
+    for month_range in ranges:
+        start_timestamp = month_range[0]
+        end_timestamp = month_range[1]
+        top, _ = get_top_performance_entities(entity_type=entity_type, start_timestamp=start_timestamp,
+                                              end_timestamp=end_timestamp, list_days=list_days)
+
+        yield (end_timestamp, top)
+
+
 def get_top_performance_entities(entity_type='stock', start_timestamp=None, end_timestamp=None, pct=0.1,
                                  return_type=None, adjust_type: Union[AdjustType, str] = None, filters=None,
-                                 show_name=False):
+                                 show_name=False, list_days=None):
     if not adjust_type and entity_type == 'stock':
         adjust_type = AdjustType.hfq
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
+
+    if list_days:
+        entity_schema = get_entity_schema(entity_type=entity_type)
+        list_date = next_date(start_timestamp, -list_days)
+        ignore_entities = get_entity_ids(entity_type=entity_type, filters=[entity_schema.list_date >= list_date])
+        if ignore_entities:
+            logger.info(f'ignore size: {len(ignore_entities)}')
+            logger.info(f'ignore entities: {ignore_entities}')
+            f = [data_schema.entity_id.notin_(ignore_entities)]
+            if filters:
+                filters = filters + f
+            else:
+                filters = f
 
     return get_top_entities(data_schema=data_schema, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                             column='close', pct=pct, method=WindowMethod.change, return_type=return_type,
@@ -140,6 +173,8 @@ def get_top_entities(data_schema: Mixin, column: str, start_timestamp=None, end_
 
     all_df = data_schema.query_data(start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     columns=columns, filters=filters)
+    if not pd_is_not_null(all_df):
+        return None, None
     g = all_df.groupby('entity_id')
     tops = {}
     names = {}
@@ -188,13 +223,15 @@ def get_top_entities(data_schema: Mixin, column: str, start_timestamp=None, end_
 
 
 if __name__ == '__main__':
-    from pprint import pprint
+    dfs = []
+    for timestamp, df in got_top_performance_by_month(start_timestamp='2020-01-01', list_days=250):
+        if pd_is_not_null(df):
+            for entity_id in df.index:
+                from zvt.utils.time_utils import month_end_date, pre_month_start_date
 
-    # tops1, tops2 = get_top_performance_entities(start_timestamp='2020-01-01')
-    #
-    # pprint(tops1)
-    # pprint(tops2)
-    df = get_top_fund_holding_stocks()
-    pprint(df)
+                end_date = month_end_date(pre_month_start_date(timestamp))
+                TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
+
 # the __all__ is generated
-__all__ = ['WindowMethod', 'TopType', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance', 'get_top_volume_entities', 'get_top_entities']
+__all__ = ['WindowMethod', 'TopType', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance',
+           'get_top_volume_entities', 'get_top_entities', 'got_top_performance_by_month']

@@ -9,7 +9,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Index, IndexStock
 from zvt.recorders.exchange.api import cs_index_stock_api, cn_index_stock_api
-from zvt.utils.time_utils import pre_month
+from zvt.utils.time_utils import pre_month_start_date
 from zvt.utils.time_utils import to_pd_timestamp
 
 
@@ -40,7 +40,7 @@ class ExchangeIndexStockRecorder(TimestampsDataRecorder):
         self.record_history = record_history
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
-        last_valid_date = pre_month()
+        last_valid_date = pre_month_start_date()
         if self.record_history:
             # 每个月记录一次
             return [to_pd_timestamp(item) for item in

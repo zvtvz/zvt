@@ -208,7 +208,4 @@ def parse_url_params(url):
 
 
 # the __all__ is generated
-__all__ = ['first_item_to_float', 'second_item_to_float', 'add_func_to_value', 'to_float', 'pct_to_float',
-           'json_callback_param', 'fill_domain_from_dict', 'read_csv', 'marshal_object_for_ui',
-           'chrome_copy_header_to_dict', 'to_positive_number', 'multiple_number', 'add_to_map_list',
-           'iterate_with_step', 'url_unquote', 'parse_url_params']
+__all__ = ['first_item_to_float', 'second_item_to_float', 'add_func_to_value', 'to_float', 'pct_to_float', 'json_callback_param', 'fill_domain_from_dict', 'read_csv', 'marshal_object_for_ui', 'chrome_copy_header_to_dict', 'to_positive_number', 'multiple_number', 'add_to_map_list', 'iterate_with_step', 'url_unquote', 'parse_url_params']

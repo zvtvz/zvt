@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import math
 
@@ -69,9 +70,9 @@ def next_date(the_time, days=1):
     return to_pd_timestamp(the_time) + datetime.timedelta(days=days)
 
 
-def pre_month(t=now_pd_timestamp()):
+def pre_month_start_date(t=now_pd_timestamp()):
     t = to_pd_timestamp(t)
-    t.replace(day=1)
+    t = t.replace(day=1)
     if t.month > 1:
         year = t.year
         month = t.month - 1
@@ -80,6 +81,23 @@ def pre_month(t=now_pd_timestamp()):
         month = 12
     last_valid_date = t.replace(year=year, month=month)
     return last_valid_date
+
+
+def month_start_date(the_date):
+    the_date = to_pd_timestamp(the_date)
+    return the_date.replace(day=1)
+
+
+def month_end_date(the_date):
+    the_date = to_pd_timestamp(the_date)
+
+    _, day = calendar.monthrange(the_date.year, the_date.month)
+    return the_date.replace(day=day)
+
+
+def month_start_end_ranges(start_date, end_date):
+    days = pd.date_range(start=start_date, end=end_date, freq='M')
+    return [(month_start_date(d), month_end_date(d)) for d in days]
 
 
 def is_same_date(one, two):
@@ -197,7 +215,6 @@ def split_time_interval(start, end, method=None, interval=30, freq='D'):
 
     if method == 'month':
         while start <= end:
-            import calendar
             _, day = calendar.monthrange(start.year, start.month)
 
             interval_end = min(to_pd_timestamp(f'{start.year}-{start.month}-{day}'), end)
@@ -208,4 +225,4 @@ def split_time_interval(start, end, method=None, interval=30, freq='D'):
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))
 # the __all__ is generated
-__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str', 'now_time_str', 'next_date', 'pre_month', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']
+__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str', 'now_time_str', 'next_date', 'pre_month_start_date', 'month_start_date', 'month_end_date', 'month_start_end_ranges', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']
