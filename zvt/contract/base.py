@@ -16,6 +16,8 @@ class StatefulService(object):
         self.state_domain = self.state_schema.get_one(id=self.get_state_entity_id())
         if self.state_domain:
             self.state: dict = self.decode_state(self.state_domain.state)
+        else:
+            self.state = None
 
     def get_state_entity_id(self):
         if self.name is not None:
@@ -42,9 +44,11 @@ class StatefulService(object):
     def persist_state(self):
         state_str = self.encode_state(self.state)
         if not self.state_domain:
-            self.state_domain = self.state_schema(id=self.get_state_entity_id(), entity_id=self.get_state_entity_id(),
-                                                  recoder_name=self.name, state=state_str)
+            self.state_domain = self.state_schema(id=self.get_state_entity_id(), entity_id=self.get_state_entity_id())
+        self.state_domain.state = state_str
         self.state_session.add(self.state_domain)
         self.state_session.commit()
+
+
 # the __all__ is generated
 __all__ = ['StatefulService']

@@ -55,6 +55,10 @@ def today() -> pd.Timestamp:
     return pd.Timestamp.today()
 
 
+def current_date() -> pd.Timestamp:
+    return to_pd_timestamp(today().date())
+
+
 def to_time_str(the_time, fmt=TIME_FORMAT_DAY):
     try:
         return arrow.get(to_pd_timestamp(the_time)).format(fmt)
@@ -70,7 +74,7 @@ def next_date(the_time, days=1):
     return to_pd_timestamp(the_time) + datetime.timedelta(days=days)
 
 
-def pre_month_start_date(t=now_pd_timestamp()):
+def pre_month(t=now_pd_timestamp()):
     t = to_pd_timestamp(t)
     t = t.replace(day=1)
     if t.month > 1:
@@ -81,6 +85,14 @@ def pre_month_start_date(t=now_pd_timestamp()):
         month = 12
     last_valid_date = t.replace(year=year, month=month)
     return last_valid_date
+
+
+def pre_month_start_date(t=current_date()):
+    return month_start_date(pre_month(t))
+
+
+def pre_month_end_date(t=current_date()):
+    return month_end_date(pre_month(t))
 
 
 def month_start_date(the_date):
@@ -222,7 +234,18 @@ def split_time_interval(start, end, method=None, interval=30, freq='D'):
             start = next_date(interval_end, 1)
 
 
+def count_interval(start_date, end_date):
+    start_date = to_pd_timestamp(start_date)
+    end_date = to_pd_timestamp(end_date)
+    delta = end_date - start_date
+    return delta.days
+
+
 if __name__ == '__main__':
     print(date_and_time('2019-10-01', '10:00'))
 # the __all__ is generated
-__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str', 'now_time_str', 'next_date', 'pre_month_start_date', 'month_start_date', 'month_end_date', 'month_start_end_ranges', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']
+__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'to_time_str',
+           'now_time_str', 'next_date', 'pre_month_start_date', 'month_start_date', 'month_end_date',
+           'month_start_end_ranges', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today',
+           'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp',
+           'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval']

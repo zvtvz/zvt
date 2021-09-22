@@ -5,7 +5,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log, zvt_config
-from zvt.domain import Index, Index1dKdata
+from zvt.domain import Index, Index1dKdata, IndexStock
 from zvt.informer.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ def run():
 
         try:
             Index.record_data(provider='exchange')
+            IndexStock.record_data(provider='exchange')
             Index1dKdata.record_data(provider='em')
             email_action.send_message(zvt_config['email_username'], 'index runner finished', '')
             break

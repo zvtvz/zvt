@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.factors.algorithm import point_in_range, intersect, intersect_ranges
+from zvt.factors.algorithm import point_in_range, intersect, intersect_ranges, combine
 
 
 def test_point_in_range():
@@ -49,3 +49,20 @@ def test_intersect_ranges():
     assert intersect_ranges([a, b, c]) == (2, 3)
     assert intersect_ranges([b, a, c]) == (2, 3)
     assert intersect_ranges([a, c, b]) == (2, 3)
+
+
+def test_combine():
+    a = (1, 2)
+    b = (1.5, 3)
+    assert combine(a, b) == (1, 3)
+    assert combine(b, a) == (1, 3)
+
+    a = (1, 2)
+    b = (3, 4)
+    assert combine(a, b) == None
+    assert combine(b, a) == None
+
+    a = (1, 4)
+    b = (2, 3)
+    assert combine(a, b) == (1, 4)
+    assert combine(b, a) == (1, 4)

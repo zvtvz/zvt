@@ -20,7 +20,7 @@ def compare(entity_ids, columns=None, chart_type: ChartType = ChartType.line):
             dfs.append(df)
         all_df = pd.concat(dfs)
         drawer = Drawer(main_df=all_df, sub_df_list=[all_df[['entity_id', 'timestamp', 'turnover']].copy()])
-        drawer.draw(main_chart=chart_type, show=True)
+        drawer.draw_kline(main_chart=chart_type, show=True)
 
 
 def distribute(entity_ids, data_schema, columns, histnorm='percent', nbinsx=20, filters=None):
@@ -67,4 +67,4 @@ if __name__ == '__main__':
     # df = df.reset_index()
 
     distribute(entity_ids=['index_sh_000001', 'index_sz_399001'], columns=['entity_id', 'timestamp', 'turnover_rate'],
-               data_schema=Index1dKdata, filters=[Index1dKdata.turnover_rate > 0],nbinsx=10)
+               data_schema=Index1dKdata, filters=[Index1dKdata.turnover_rate > 0], nbinsx=10)

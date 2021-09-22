@@ -461,6 +461,18 @@ class Factor(DataReader, DataListener):
             return [self.result_df]
         return None
 
+    def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
+        def order_type_flag(order_type):
+            if order_type:
+                return 'B'
+
+        if pd_is_not_null(self.result_df):
+            annotation_df = self.result_df.copy()
+            annotation_df = annotation_df[annotation_df['score']]
+            annotation_df['value'] = self.factor_df.loc[annotation_df.index]['close']
+            annotation_df['flag'] = annotation_df['score'].apply(lambda x: order_type_flag(x))
+            return annotation_df
+
     def fill_gap(self):
         # 该操作较慢，只适合做基本面的运算
         idx = pd.date_range(self.start_timestamp, self.end_timestamp)
@@ -548,4 +560,5 @@ class ScoreFactor(Factor):
 
 
 # the __all__ is generated
-__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'register_class', 'FactorMeta', 'FactorState', 'Factor', 'FilterFactor', 'ScoreFactor']
+__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'register_class', 'FactorMeta',
+           'FactorState', 'Factor', 'FilterFactor', 'ScoreFactor']

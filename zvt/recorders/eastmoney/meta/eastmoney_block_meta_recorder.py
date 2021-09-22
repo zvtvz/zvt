@@ -11,7 +11,7 @@ from zvt.utils.time_utils import now_pd_timestamp
 from zvt.utils.utils import json_callback_param
 
 
-class EastmoneyChinaBlockRecorder(Recorder):
+class EastmoneyBlockRecorder(Recorder):
     provider = 'eastmoney'
     data_schema = Block
 
@@ -48,7 +48,7 @@ class EastmoneyChinaBlockRecorder(Recorder):
             self.logger.info(f"finish record sina blocks:{category.value}")
 
 
-class EastmoneyChinaBlockStockRecorder(TimeSeriesDataRecorder):
+class EastmoneyBlockStockRecorder(TimeSeriesDataRecorder):
     entity_provider = 'eastmoney'
     entity_schema = Block
 
@@ -95,9 +95,9 @@ class EastmoneyChinaBlockStockRecorder(TimeSeriesDataRecorder):
 
 if __name__ == '__main__':
     # init_log('china_stock_category.log')
-    EastmoneyChinaBlockRecorder().run()
+    # EastmoneyBlockRecorder().run()
 
-    recorder = EastmoneyChinaBlockStockRecorder(codes=['BK0727'])
+    recorder = EastmoneyBlockStockRecorder()
     recorder.run()
 # the __all__ is generated
-__all__ = ['EastmoneyChinaBlockRecorder', 'EastmoneyChinaBlockStockRecorder']
+__all__ = ['EastmoneyBlockRecorder', 'EastmoneyBlockStockRecorder']

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from typing import Type
 
+from zvt.contract import Mixin
 from zvt.domain import ReportPeriod
+from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 
@@ -64,6 +67,21 @@ def float_to_pct_str(value):
     return f'{round(value * 100, 2)}%'
 
 
+def get_recent_report(data_schema: Type[Mixin], timestamp, entity_id=None, filters=None, max_step=2):
+    i = 0
+    while i < max_step:
+        report_date = get_recent_report_date(the_date=timestamp, step=i)
+        if filters:
+            filters = filters + [data_schema.report_date == to_pd_timestamp(report_date)]
+        else:
+            filters = [data_schema.report_date == to_pd_timestamp(report_date)]
+        df = data_schema.query_data(entity_id=entity_id,
+                                    filters=filters)
+        if pd_is_not_null(df):
+            return df
+        i = i + 1
+
+
 # the __all__ is generated
 __all__ = ['to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'get_china_exchange',
-           'china_stock_code_to_id', 'value_to_pct', 'float_to_pct_str']
+           'china_stock_code_to_id', 'value_to_pct', 'float_to_pct_str', 'get_recent_report']

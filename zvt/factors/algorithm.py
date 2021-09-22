@@ -83,6 +83,12 @@ def intersect_ranges(range_list):
     return result
 
 
+def combine(range_a, range_b):
+    if intersect(range_a, range_b):
+        return min(range_a[0], range_b[0]), max(range_a[1], range_b[1])
+    return None
+
+
 def intersect(range_a, range_b):
     """
     range_a and range_b with format (start,end) in y axis
@@ -284,4 +290,5 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'live_or_dead', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer', 'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
+__all__ = ['ma', 'ema', 'live_or_dead', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer',
+           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

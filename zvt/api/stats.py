@@ -10,10 +10,10 @@ from zvt.api.kdata import get_kdata_schema
 from zvt.api.utils import get_recent_report_date
 from zvt.contract import Mixin, AdjustType
 from zvt.contract.api import decode_entity_id, get_entity_schema, get_entity_ids
-from zvt.domain import FundStock, StockValuation
-from zvt.factors import TechnicalFactor
+from zvt.contract.drawer import Drawer
+from zvt.domain import FundStock, StockValuation, BlockStock, Block
 from zvt.utils import now_pd_timestamp, next_date, pd_is_not_null
-from zvt.utils.time_utils import month_start_end_ranges
+from zvt.utils.time_utils import month_start_end_ranges, pre_month_end_date
 
 logger = logging.getLogger(__name__)
 
@@ -222,15 +222,50 @@ def get_top_entities(data_schema: Mixin, column: str, start_timestamp=None, end_
     return positive_df, negative_df
 
 
-if __name__ == '__main__':
+def show_month_performance():
     dfs = []
-    for timestamp, df in got_top_performance_by_month(start_timestamp='2020-01-01', list_days=250):
+    for timestamp, df in got_top_performance_by_month(start_timestamp='2005-01-01', list_days=250):
         if pd_is_not_null(df):
-            for entity_id in df.index:
-                from zvt.utils.time_utils import month_end_date, pre_month_start_date
+            df = df.reset_index(drop=True)
+            df['entity_id'] = 'stock_cn_performance'
+            df['timestamp'] = timestamp
+            dfs.append(df)
 
-                end_date = month_end_date(pre_month_start_date(timestamp))
-                TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
+    all_df = pd.concat(dfs)
+    print(all_df)
+
+    drawer = Drawer(main_df=all_df)
+    drawer.draw_scatter(show=True)
+
+
+def show_industry_composition(entity_ids, timestamp):
+    block_df = Block.query_data(provider='eastmoney', filters=[Block.category == 'industry'], index='entity_id')
+    block_ids = block_df.index.tolist()
+
+    block_df = BlockStock.query_data(entity_ids=block_ids, filters=[BlockStock.stock_id.in_(entity_ids)])
+
+    s = block_df['name'].value_counts()
+
+    cycle_df = pd.DataFrame(columns=s.index, data=[s.tolist()])
+    cycle_df['entity_id'] = 'stock_cn_industry'
+    cycle_df['timestamp'] = timestamp
+    drawer = Drawer(main_df=cycle_df)
+    drawer.draw_pie(show=True)
+
+
+if __name__ == '__main__':
+    # show_month_performance()
+    # dfs = []
+    for timestamp, df in got_top_performance_by_month(start_timestamp='2012-01-01', list_days=250):
+        if pd_is_not_null(df):
+            entity_ids = df.index.tolist()
+            the_date = pre_month_end_date(timestamp)
+            show_industry_composition(entity_ids=entity_ids, timestamp=timestamp)
+            # for entity_id in df.index:
+            #     from zvt.utils.time_utils import month_end_date, pre_month_start_date
+            #
+            #     end_date = month_end_date(pre_month_start_date(timestamp))
+            #     TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
 
 # the __all__ is generated
 __all__ = ['WindowMethod', 'TopType', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance',
