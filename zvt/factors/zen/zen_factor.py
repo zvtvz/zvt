@@ -429,10 +429,10 @@ class ZenAccumulator(Accumulator):
             acc_df['duan_interval'] = np.NAN
 
             # 记录在确定中枢的最后一个段的终点x1，值为Rect(x0,y0,x1,y1)
-            acc_df['zhongshu'] = np.NAN
+            acc_df['zhongshu'] = None
             acc_df['zhongshu_change'] = np.NAN
 
-            acc_df['bi_zhongshu'] = np.NAN
+            acc_df['bi_zhongshu'] = None
             acc_df['bi_zhongshu_change'] = np.NAN
 
             acc_df = acc_df.reset_index(drop=True)

@@ -358,7 +358,7 @@ class Factor(DataReader, DataListener):
             for col in col_map_object_hook:
                 if col in self.factor_df.columns:
                     self.factor_df[col] = self.factor_df[col].apply(
-                        lambda x: json.loads(x, object_hook=col_map_object_hook.get(col)))
+                        lambda x: json.loads(x, object_hook=col_map_object_hook.get(col)) if x else None)
 
     def factor_col_map_object_hook(self) -> dict:
         """
