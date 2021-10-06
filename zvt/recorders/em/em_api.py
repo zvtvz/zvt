@@ -332,7 +332,10 @@ exchange_map_em_flag = {
     # 纽交所
     Exchange.nyse: 106,
     # 港交所
-    Exchange.hk: 116
+    Exchange.hk: 116,
+
+    # 中国行业/概念板块
+    Exchange.cn: 90
 }
 
 

@@ -15,8 +15,7 @@ from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
-from zvt.contract.normal_data import NormalData
-from zvt.domain import Stock
+from zvt.domain import Stock, Block
 from zvt.factors.algorithm import intersect, combine
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils import pd_is_not_null, to_string
@@ -276,16 +275,20 @@ class ZenState(Bean):
 
         # 目前的merge_zhongshu
         self.merge_zhongshu = state.get('merge_zhongshu')
-        self.merge_zhongshu_change = state.get('merge_zhongshu_change')
+        self.merge_zhongshu_level = state.get('merge_zhongshu_level')
+        self.merge_zhongshu_interval = state.get('merge_zhongshu_interval')
 
 
 def handle_zhongshu(points: list, acc_df, end_index, zhongshu_col='zhongshu', zhongshu_change_col='zhongshu_change'):
     zhongshu = None
     zhongshu_change = None
+    interval = None
 
     if len(points) == 4:
         x1 = points[0][0]
         x2 = points[3][0]
+
+        interval = points[3][2] - points[0][2]
 
         if points[0][1] < points[1][1]:
             # 向下段
@@ -316,7 +319,7 @@ def handle_zhongshu(points: list, acc_df, end_index, zhongshu_col='zhongshu', zh
                 points = points[-1:]
             else:
                 points = points[1:]
-    return points, zhongshu, zhongshu_change
+    return points, zhongshu, zhongshu_change, interval
 
 
 class ZenAccumulator(Accumulator):
@@ -406,6 +409,8 @@ class ZenAccumulator(Accumulator):
             acc_df['current_merge_zhongshu_change'] = np.NAN
             acc_df['current_merge_zhongshu_y0'] = np.NAN
             acc_df['current_merge_zhongshu_y1'] = np.NAN
+            acc_df['current_merge_zhongshu_level'] = np.NAN
+            acc_df['current_merge_zhongshu_interval'] = np.NAN
 
             # 目前走势的临时方向 其跟direction的的关系 确定了下一个分型
             acc_df['tmp_direction'] = None
@@ -435,6 +440,9 @@ class ZenAccumulator(Accumulator):
             acc_df['bi_zhongshu'] = None
             acc_df['bi_zhongshu_change'] = np.NAN
 
+            acc_df['merge_zhongshu'] = None
+            acc_df['merge_zhongshu_change'] = np.NAN
+
             acc_df = acc_df.reset_index(drop=True)
 
             zen_state = ZenState(dict(fenxing_list=[], direction=None, can_fenxing=None, can_fenxing_index=None,
@@ -462,8 +470,10 @@ class ZenAccumulator(Accumulator):
         pre_index = start_index - 1
 
         tmp_direction = zen_state.direction
-        current_merge_zhongshu = zen_state.merge_zhongshu
-        current_merge_zhongshu_change = zen_state.merge_zhongshu_change
+        current_merge_zhongshu = decode_rect(zen_state.merge_zhongshu) if zen_state.merge_zhongshu else None
+        current_merge_zhongshu_change = None
+        current_merge_zhongshu_interval = zen_state.merge_zhongshu_interval
+        current_merge_zhongshu_level = zen_state.merge_zhongshu_level
 
         current_zhongshu = None
         current_zhongshu_change = None
@@ -501,12 +511,18 @@ class ZenAccumulator(Accumulator):
                 acc_df.loc[index, 'current_merge_zhongshu_y0'] = current_merge_zhongshu.y0
                 acc_df.loc[index, 'current_merge_zhongshu_y1'] = current_merge_zhongshu.y1
                 acc_df.loc[index, 'current_merge_zhongshu_change'] = current_merge_zhongshu_change
+                acc_df.loc[index, 'current_merge_zhongshu_level'] = current_merge_zhongshu_level
+                acc_df.loc[index, 'current_merge_zhongshu_interval'] = current_merge_zhongshu_interval
             else:
                 # acc_df.loc[index, 'current_merge_zhongshu'] = acc_df.loc[index - 1, 'current_merge_zhongshu']
                 acc_df.loc[index, 'current_merge_zhongshu_y0'] = acc_df.loc[index - 1, 'current_merge_zhongshu_y0']
                 acc_df.loc[index, 'current_merge_zhongshu_y1'] = acc_df.loc[index - 1, 'current_merge_zhongshu_y1']
                 acc_df.loc[index, 'current_merge_zhongshu_change'] = acc_df.loc[
                     index - 1, 'current_merge_zhongshu_change']
+                acc_df.loc[index, 'current_merge_zhongshu_level'] = acc_df.loc[
+                    index - 1, 'current_merge_zhongshu_level']
+                acc_df.loc[index, 'current_merge_zhongshu_interval'] = acc_df.loc[
+                    index - 1, 'current_merge_zhongshu_interval']
 
             # 处理包含关系
             handle_including(one_df=acc_df, index=index, kdata=kdata, pre_index=pre_index, pre_kdata=pre_kdata,
@@ -587,22 +603,26 @@ class ZenAccumulator(Accumulator):
                             acc_df.loc[zen_state.can_fenxing_index, 'bi_interval'] = interval
 
                         # 记录用于计算笔中枢的笔
-                        zen_state.bis.append((acc_df.loc[zen_state.can_fenxing_index, 'timestamp'], bi_value))
+                        zen_state.bis.append((acc_df.loc[zen_state.can_fenxing_index, 'timestamp'], bi_value,
+                                              zen_state.can_fenxing_index))
 
                         # 计算笔中枢，当下来说这个 中枢 是确定的，并且是不可变的
                         # 但标记的点为 过去，注意在回测时最近的一个中枢可能用到未来函数，前一个才是 已知的
                         # 所以记了一个 current_zhongshu_y0 current_zhongshu_y1 这个是可直接使用的
                         end_index = zen_state.can_fenxing_index
 
-                        zen_state.bis, current_zhongshu, current_zhongshu_change = handle_zhongshu(points=zen_state.bis,
-                                                                                                   acc_df=acc_df,
-                                                                                                   end_index=end_index,
-                                                                                                   zhongshu_col='bi_zhongshu',
-                                                                                                   zhongshu_change_col='bi_zhongshu_change')
+                        zen_state.bis, current_zhongshu, current_zhongshu_change, current_zhongshu_interval = handle_zhongshu(
+                            points=zen_state.bis,
+                            acc_df=acc_df,
+                            end_index=end_index,
+                            zhongshu_col='bi_zhongshu',
+                            zhongshu_change_col='bi_zhongshu_change')
 
                         if not current_merge_zhongshu:
                             current_merge_zhongshu = current_zhongshu
                             current_merge_zhongshu_change = current_zhongshu_change
+                            current_merge_zhongshu_level = 1
+                            current_merge_zhongshu_interval = current_zhongshu_interval
                         else:
                             if current_zhongshu:
                                 range_a = (current_merge_zhongshu.y0, current_merge_zhongshu.y1)
@@ -614,12 +634,22 @@ class ZenAccumulator(Accumulator):
                                     current_merge_zhongshu = Rect(x0=current_merge_zhongshu.x0, x1=current_zhongshu.x1,
                                                                   y0=y0, y1=y1)
                                     current_merge_zhongshu_change = abs(y0 - y1) / y0
+                                    current_merge_zhongshu_level = current_merge_zhongshu_level + 1
+                                    current_merge_zhongshu_interval = current_merge_zhongshu_interval + current_zhongshu_interval
                                 else:
                                     current_merge_zhongshu = current_zhongshu
                                     current_merge_zhongshu_change = current_zhongshu_change
+                                    current_merge_zhongshu_level = 1
+                                    current_merge_zhongshu_interval = current_zhongshu_interval
 
                                 acc_df.loc[end_index, 'merge_zhongshu'] = current_merge_zhongshu
                                 acc_df.loc[end_index, 'merge_zhongshu_change'] = current_merge_zhongshu_change
+                                acc_df.loc[end_index, 'merge_zhongshu_level'] = current_merge_zhongshu_level
+                                acc_df.loc[end_index, 'merge_zhongshu_interval'] = current_merge_zhongshu_interval
+
+                        zen_state.merge_zhongshu = current_merge_zhongshu
+                        zen_state.merge_zhongshu_interval = current_merge_zhongshu_interval
+                        zen_state.merge_zhongshu_level = current_merge_zhongshu_level
 
                         zen_state.pre_bi = (zen_state.can_fenxing_index, bi_value)
 
@@ -673,13 +703,14 @@ class ZenAccumulator(Accumulator):
                                     zen_state.pre_duan = (duan_index, duan_value)
 
                                     # 记录用于计算中枢的段
-                                    zen_state.duans.append((acc_df.loc[duan_index, 'timestamp'], duan_value))
+                                    zen_state.duans.append(
+                                        (acc_df.loc[duan_index, 'timestamp'], duan_value, duan_index))
 
                                     # 计算中枢
-                                    zen_state.duans, _, _ = handle_zhongshu(points=zen_state.duans, acc_df=acc_df,
-                                                                            end_index=duan_index,
-                                                                            zhongshu_col='zhongshu',
-                                                                            zhongshu_change_col='zhongshu_change')
+                                    zen_state.duans, _, _, _ = handle_zhongshu(points=zen_state.duans, acc_df=acc_df,
+                                                                               end_index=duan_index,
+                                                                               zhongshu_col='zhongshu',
+                                                                               zhongshu_change_col='zhongshu_change')
 
                                     # 只留最后一个
                                     zen_state.fenxing_list = zen_state.fenxing_list[-1:]
@@ -698,9 +729,6 @@ class ZenAccumulator(Accumulator):
 
 class ZenFactor(TechnicalFactor):
     accumulator = ZenAccumulator()
-
-    def drawer_main_data(self) -> Optional[NormalData]:
-        return super().drawer_main_data()
 
     def __init__(self,
                  entity_schema: Type[TradableEntity] = Stock,
@@ -739,7 +767,6 @@ class ZenFactor(TechnicalFactor):
     def factor_col_map_object_hook(self) -> dict:
         return {
             'zhongshu': decode_rect,
-            'current_zhongshu': decode_rect,
             'bi_zhongshu': decode_rect,
             'merge_zhongshu': decode_rect
         }
@@ -749,8 +776,8 @@ class ZenFactor(TechnicalFactor):
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
         bi_value = self.factor_df[['bi_value']].dropna()
-        duan_value = self.factor_df[['duan_value']].dropna()
-        return [bi_value, duan_value]
+        # duan_value = self.factor_df[['duan_value']].dropna()
+        return [bi_value]
 
     def drawer_rects(self) -> List[Rect]:
         df1 = self.factor_df[['merge_zhongshu']].dropna()
@@ -762,10 +789,18 @@ class ZenFactor(TechnicalFactor):
         # power = self.factor_df[['fenxing_power']].dropna()
         # zhongshu_change = self.factor_df[['zhongshu_change']].dropna()
         # return [bi_slope, duan_slope, power, zhongshu_change]
-        change1 = self.factor_df[['current_change']].dropna()
-        change2 = self.factor_df[['opposite_change']].dropna()
-        return [change1, change2]
+        change1 = self.factor_df[['current_merge_zhongshu_level']].dropna()
+        # change2 = self.factor_df[['opposite_change']].dropna()
+        return [change1]
 
+
+if __name__ == '__main__':
+    entity_ids = ['block_cn_BK0429']
+    # Stock1dHfqKdata.record_data(entity_ids=entity_ids)
+
+    f = ZenFactor(entity_schema=Block, entity_ids=entity_ids, need_persist=False, provider='em',
+                  entity_provider='eastmoney')
+    f.draw(show=True)
 
 # the __all__ is generated
 __all__ = ['Direction', 'Fenxing', 'KState', 'DuanState', 'fenxing_power', 'a_include_b', 'is_including',

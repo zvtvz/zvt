@@ -4,7 +4,8 @@ from zvt.api.kdata import get_kdata_schema
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Stock, Index, Block, StockKdataCommon, IndexKdataCommon, StockhkKdataCommon, StockusKdataCommon
+from zvt.domain import Stock, Index, Block, StockKdataCommon, IndexKdataCommon, StockhkKdataCommon, StockusKdataCommon, \
+    BlockKdataCommon
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
 from zvt.recorders.em.em_api import get_kdata
@@ -81,11 +82,12 @@ class EMBlockKdataRecorder(BaseEMStockKdataRecorder):
     entity_provider = 'eastmoney'
     entity_schema = Block
 
-    data_schema = IndexKdataCommon
+    data_schema = BlockKdataCommon
 
 
 if __name__ == '__main__':
     recorder = EMIndexKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=['000300'])
     recorder.run()
 # the __all__ is generated
-__all__ = ['BaseEMStockKdataRecorder', 'EMStockKdataRecorder', 'EMStockusKdataRecorder', 'EMStockhkKdataRecorder', 'EMIndexKdataRecorder', 'EMBlockKdataRecorder']
+__all__ = ['BaseEMStockKdataRecorder', 'EMStockKdataRecorder', 'EMStockusKdataRecorder', 'EMStockhkKdataRecorder',
+           'EMIndexKdataRecorder', 'EMBlockKdataRecorder']

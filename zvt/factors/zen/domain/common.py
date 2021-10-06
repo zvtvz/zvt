@@ -52,6 +52,8 @@ class ZenFactorCommon(Mixin):
     current_merge_zhongshu_y0 = Column(Float)
     current_merge_zhongshu_y1 = Column(Float)
     current_merge_zhongshu_change = Column(Float)
+    current_merge_zhongshu_level = Column(Integer)
+    current_merge_zhongshu_interval = Column(Integer)
 
     # 目前走势的临时方向 其跟direction的的关系 确定了下一个分型
     tmp_direction = Column(String(length=16))
