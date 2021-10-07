@@ -10,71 +10,108 @@ from zvt.utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
-original_page_url = 'http://www.csindex.com.cn/zh-CN/indices/index?class_2=2&class_17=17&class_10=10&class_7=7&is_custom_0=1'
+original_page_url = 'https://www.csindex.com.cn/zh-CN#/indices/family/list?index_series=2'
 
-url = 'http://www.csindex.com.cn/zh-CN/indices/index?page=1&page_size=1000&by=asc&order=%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&data_type=json' \
-      '&{}&class_7=7&class_10=10&{}&is_custom_0=1'
+url = 'https://www.csindex.com.cn/csindex-home/index-list/query-index-item'
 
-# 中证指数 抓取 风格指数 行业指数 规模指数
-csi_category_map_url = {
-    IndexCategory.style: url.format('class_1=1', 'class_19=19'),
-    IndexCategory.industry: url.format('class_1=1', 'class_18=18'),
-    IndexCategory.scope: url.format('class_1=1', 'class_17=17'),
-}
-
-# 上证指数 只取规模指数
-sh_category_map_url = {
-    IndexCategory.scope: url.format('class_2=2', 'class_17=17')
+index_category_map = {
+    IndexCategory.scope: "17",
+    IndexCategory.industry: "18",
+    IndexCategory.style: "19"
 }
 
 
 def _get_resp_data(resp: requests.Response):
     resp.raise_for_status()
-    return resp.json()['list']
+    return resp.json()['data']
 
 
-def get_cs_index(index_type='sh', category=IndexCategory.scope):
+def _get_params(index_type, category: IndexCategory):
     if index_type == 'csi':
-        category_map_url = csi_category_map_url
+        index_series = ["1"]
     elif index_type == 'sh':
-        category_map_url = sh_category_map_url
+        index_series = ["2"]
+    else:
+        logger.warning(f'not support index type: {index_type}')
+        assert False
+    index_classify = index_category_map.get(category)
+
+    return {
+        "sorter": {
+            "sortField": "index_classify",
+            "sortOrder": "asc"
+        },
+        "pager": {
+            "pageNum": 1,
+            "pageSize": 10
+        },
+        "indexFilter": {
+            "ifCustomized": None,
+            "ifTracked": None,
+            "ifWeightCapped": None,
+            "indexCompliance": None,
+            "hotSpot": None,
+            "indexClassify": [
+                index_classify
+            ],
+            "currency": None,
+            "region": None,
+            "indexSeries": index_series,
+            "undefined": None
+        }
+    }
+
+
+def get_cs_index(index_type='sh'):
+    if index_type == 'csi':
+        category_list = [IndexCategory.scope,
+                         IndexCategory.industry,
+                         IndexCategory.style]
+    elif index_type == 'sh':
+        category_list = [IndexCategory.scope]
     else:
         logger.warning(f'not support index type: {index_type}')
         assert False
 
-    url = category_map_url.get(category)
-
     requests_session = requests.Session()
 
-    resp = requests_session.get(url, headers=DEFAULT_HEADER)
+    for category in category_list:
+        data = _get_params(index_type=index_type, category=category)
+        print(data)
+        resp = requests_session.post(url, headers=DEFAULT_HEADER, json=data)
 
-    results = _get_resp_data(resp)
-    the_list = []
+        print(resp)
+        results = _get_resp_data(resp)
+        the_list = []
 
-    logger.info(f'category: {category} ')
-    logger.info(f'results: {results} ')
-    for i, result in enumerate(results):
-        logger.info(f'to {i}/{len(results)}')
-        code = result['index_code']
-        name = result['indx_sname']
-        entity_id = f'index_sh_{code}'
-        index_item = {
-            'id': entity_id,
-            'entity_id': entity_id,
-            'timestamp': to_pd_timestamp(result['base_date']),
-            'entity_type': 'index',
-            'exchange': 'sh',
-            'code': code,
-            'name': name,
-            'category': category.value,
-            'list_date': to_pd_timestamp(result['online_date']),
-            'base_point': result['base_point'],
-            'publisher': 'csindex'
-        }
-        logger.info(index_item)
-        the_list.append(index_item)
-    if the_list:
-        return pd.DataFrame.from_records(the_list)
+        logger.info(f'category: {category} ')
+        logger.info(f'results: {results} ')
+        for i, result in enumerate(results):
+            logger.info(f'to {i}/{len(results)}')
+            code = result['indexCode']
+
+            info_url = f'https://www.csindex.com.cn/csindex-home/indexInfo/index-basic-info/{code}'
+            info = _get_resp_data(requests_session.get(info_url))
+
+            name = result['indexName']
+            entity_id = f'index_sh_{code}'
+            index_item = {
+                'id': entity_id,
+                'entity_id': entity_id,
+                'timestamp': to_pd_timestamp(info['basicDate']),
+                'entity_type': 'index',
+                'exchange': 'sh',
+                'code': code,
+                'name': name,
+                'category': category.value,
+                'list_date': to_pd_timestamp(result['publishDate']),
+                'base_point': info['basicIndex'],
+                'publisher': 'csindex'
+            }
+            logger.info(index_item)
+            the_list.append(index_item)
+        if the_list:
+            return pd.DataFrame.from_records(the_list)
 
 
 if __name__ == '__main__':

@@ -23,19 +23,10 @@ class ExchangeIndexRecorder(Recorder):
 
     # 中证，上海
     def record_cs_index(self, index_type):
-        if index_type == 'csi':
-            category_map_url = cs_index_api.csi_category_map_url
-        elif index_type == 'sh':
-            category_map_url = cs_index_api.sh_category_map_url
-        else:
-            self.logger.warning(f'not support index type: {index_type}')
-            assert False
-
-        for category, _ in category_map_url.items():
-            df = cs_index_api.get_cs_index(index_type=index_type, category=category)
-            df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                     force_update=True)
-            self.logger.info(f"finish record {index_type} index:{category.value}")
+        df = cs_index_api.get_cs_index(index_type=index_type)
+        df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
+                 force_update=True)
+        self.logger.info(f"finish record {index_type} index")
 
     # 国证，深圳
     def record_cn_index(self, index_type):
