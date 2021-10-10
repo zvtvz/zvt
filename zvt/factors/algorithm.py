@@ -89,6 +89,18 @@ def combine(range_a, range_b):
     return None
 
 
+def distance(range_a, range_b):
+    if intersect(range_a, range_b):
+        return 0
+    # 上升
+    if range_b[0] >= range_a[1]:
+        return (range_b[1] - range_a[0]) / range_a[0]
+
+    # 下降
+    if range_b[1] <= range_a[0]:
+        return (range_b[0] - range_a[1]) / range_a[1]
+
+
 def intersect(range_a, range_b):
     """
     range_a and range_b with format (start,end) in y axis

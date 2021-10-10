@@ -15,7 +15,7 @@ from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
-from zvt.domain import Stock, Block
+from zvt.domain import Stock, Index, Index1dKdata
 from zvt.factors.algorithm import intersect, combine
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils import pd_is_not_null, to_string
@@ -442,6 +442,8 @@ class ZenAccumulator(Accumulator):
 
             acc_df['merge_zhongshu'] = None
             acc_df['merge_zhongshu_change'] = np.NAN
+            acc_df['merge_zhongshu_level'] = np.NAN
+            acc_df['merge_zhongshu_interval'] = np.NAN
 
             acc_df = acc_df.reset_index(drop=True)
 
@@ -795,11 +797,11 @@ class ZenFactor(TechnicalFactor):
 
 
 if __name__ == '__main__':
-    entity_ids = ['block_cn_BK0429']
-    # Stock1dHfqKdata.record_data(entity_ids=entity_ids)
+    entity_ids = ['index_sz_399001']
+    Index1dKdata.record_data(entity_ids=entity_ids)
 
-    f = ZenFactor(entity_schema=Block, entity_ids=entity_ids, need_persist=False, provider='em',
-                  entity_provider='eastmoney')
+    f = ZenFactor(entity_schema=Index, entity_ids=entity_ids, need_persist=False, provider='em',
+                  entity_provider='exchange')
     f.draw(show=True)
 
 # the __all__ is generated

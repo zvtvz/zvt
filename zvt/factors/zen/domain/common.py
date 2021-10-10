@@ -87,6 +87,8 @@ class ZenFactorCommon(Mixin):
     # 从前往后，合并相邻的有重叠的笔中枢
     merge_zhongshu = Column(String(length=512))
     merge_zhongshu_change = Column(Float)
+    merge_zhongshu_level = Column(Integer)
+    merge_zhongshu_interval = Column(Integer)
 
 
 # the __all__ is generated
