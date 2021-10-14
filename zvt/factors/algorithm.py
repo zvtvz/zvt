@@ -27,6 +27,17 @@ def live_or_dead(x):
         return -1
 
 
+def volume_up(s: pd.Series, window: int = 60):
+    """
+
+    :param s:
+    :param window:
+    :return:
+    """
+    ma_vol = s.rolling(window=window, min_periods=window).mean()
+    return s > ma_vol
+
+
 def macd(s, slow=26, fast=12, n=9, return_type='df', normal=False, count_live_dead=False):
     # 短期均线
     ema_fast = ema(s, window=fast)
@@ -89,16 +100,20 @@ def combine(range_a, range_b):
     return None
 
 
-def distance(range_a, range_b):
-    if intersect(range_a, range_b):
-        return 0
-    # 上升
-    if range_b[0] >= range_a[1]:
-        return (range_b[1] - range_a[0]) / range_a[0]
+def distance(range_a, range_b, use_max=False):
+    if use_max:
+        # 上升
+        if range_b[0] >= range_a[1]:
+            return (range_b[1] - range_a[0]) / range_a[0]
 
-    # 下降
-    if range_b[1] <= range_a[0]:
-        return (range_b[0] - range_a[1]) / range_a[1]
+        # 下降
+        if range_b[1] <= range_a[0]:
+            return (range_b[0] - range_a[1]) / range_a[1]
+    else:
+        middle_start = (range_a[0] + range_a[1]) / 2
+        middle_end = (range_b[0] + range_b[1]) / 2
+
+        return (middle_end - middle_start) / middle_start
 
 
 def intersect(range_a, range_b):
@@ -180,8 +195,12 @@ class IntersectTransformer(Transformer):
 
 
 class MaAndVolumeTransformer(Transformer):
-    def __init__(self, windows=[5, 10], vol_windows=[30], kdata_overlap=0) -> None:
+    def __init__(self, windows=None, vol_windows=None, kdata_overlap=0) -> None:
         super().__init__()
+        if vol_windows is None:
+            vol_windows = [30]
+        if windows is None:
+            windows = [5, 10]
         self.windows = windows
         self.vol_windows = vol_windows
         self.kdata_overlap = kdata_overlap
@@ -302,5 +321,6 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'live_or_dead', 'macd', 'point_in_range', 'intersect_ranges', 'intersect', 'RankScorer',
-           'MaTransformer', 'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']
+__all__ = ['ma', 'ema', 'live_or_dead', 'volume_up', 'macd', 'point_in_range',
+           'intersect_ranges', 'combine', 'distance', 'intersect', 'RankScorer', 'MaTransformer',
+           'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

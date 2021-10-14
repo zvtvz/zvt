@@ -601,10 +601,10 @@ def annotations(annotation_df: pd.DataFrame, yref='y'):
 
 
 if __name__ == '__main__':
-    from zvt.factors.zen import ZenFactor
+    from zvt.factors.z import ZFactor
 
-    data_reader1 = ZenFactor(codes=['000338'], level='1d')
-    data_reader2 = ZenFactor(codes=['000338'], level='1wk')
+    data_reader1 = ZFactor(codes=['000338'], level='1d')
+    data_reader2 = ZFactor(codes=['000338'], level='1wk')
     print(data_reader2.data_df)
 
     stacked = StackedDrawer(data_reader1.drawer(), data_reader2.drawer()).draw_kline(show=True)

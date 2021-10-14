@@ -4,6 +4,10 @@ from typing import List, Union
 import pandas as pd
 
 
+def drop_continue_duplicate(s):
+    return s[s.shift() != s]
+
+
 def pd_is_not_null(df: Union[pd.DataFrame, pd.Series]):
     return df is not None and not df.empty
 
@@ -70,5 +74,8 @@ def fill_with_same_index(df_list: List[pd.DataFrame]):
         df1 = df1.sort_index()
         result.append(df1)
     return result
+
+
 # the __all__ is generated
-__all__ = ['pd_is_not_null', 'index_df', 'normal_index_df', 'is_normal_df', 'df_subset', 'fill_with_same_index']
+__all__ = ['pd_is_not_null', 'index_df', 'normal_index_df', 'is_normal_df', 'df_subset', 'fill_with_same_index',
+           'drop_continue_duplicate']

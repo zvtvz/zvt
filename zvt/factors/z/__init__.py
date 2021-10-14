@@ -5,10 +5,10 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
-# import all from submodule zen_factor
-from .zen_factor import *
-from .zen_factor import __all__ as _zen_factor_all
-__all__ += _zen_factor_all
+# import all from submodule z_factor
+from .z_factor import *
+from .z_factor import __all__ as _z_factor_all
+__all__ += _z_factor_all
 
 # import all from submodule domain
 from .domain import *

@@ -9,7 +9,7 @@ from zvt.contract import TradableEntity
 from zvt.contract.api import get_db_session
 from zvt.contract.base import StatefulService
 from zvt.contract.zvt_info import TaggerState
-from zvt.domain import Stock
+from zvt.domain import Stock, Index
 from zvt.tag.dataset.stock_tags import StockTags
 from zvt.utils import to_time_str, to_pd_timestamp
 from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
@@ -92,6 +92,14 @@ class Tagger(StatefulService):
 class StockTagger(Tagger):
     data_schema = StockTags
     entity_schema = Stock
+
+    def tag(self, timestamp):
+        raise NotImplementedError
+
+
+class IndexTagger(Tagger):
+    data_schema = StockTags
+    entity_schema = Index
 
     def tag(self, timestamp):
         raise NotImplementedError

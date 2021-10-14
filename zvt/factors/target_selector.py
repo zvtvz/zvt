@@ -203,4 +203,4 @@ class TargetSelector(object):
 
 
 # the __all__ is generated
-__all__ = ['TargetType', 'TargetSelector']
+__all__ = ['TargetType', 'SelectMode', 'TargetSelector']

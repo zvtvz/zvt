@@ -71,13 +71,16 @@ def test_combine():
 def test_distance():
     a = (1, 2)
     b = (1.5, 3)
-    assert distance(a, b) == 0
-    assert distance(b, a) == 0
+    assert distance(a, b) == (4.5/2 - 1.5) / 1.5
+    assert distance(b, a) == (1.5 - 4.5/2) / 2.25
 
     a = (1, 2)
     b = (3, 4)
-    assert distance(a, b) == 3
-    assert distance(b, a) == -3 / 4
+    assert distance(a, b) == (3.5 - 1.5) / 1.5
+    assert distance(b, a) == (1.5 - 3.5) / 3.5
+
+    assert distance(a, b, use_max=True) == 3
+    assert distance(b, a, use_max=True) == -3 / 4
 
     a = (1, 4)
     b = (2, 3)

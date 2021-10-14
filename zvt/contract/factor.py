@@ -5,6 +5,7 @@ import logging
 import time
 from typing import List, Union, Optional, Type
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import Column, String, Text
 from sqlalchemy.orm import declarative_base
@@ -15,7 +16,7 @@ from zvt.contract.api import get_data, df_to_db, get_db_session, del_data
 from zvt.contract.reader import DataReader, DataListener
 from zvt.contract.register import register_schema
 from zvt.contract.zvt_context import factor_cls_registry
-from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null, drop_continue_duplicate
 
 
 class Indicator(object):
@@ -463,8 +464,12 @@ class Factor(DataReader, DataListener):
 
     def drawer_annotation_df(self) -> Optional[pd.DataFrame]:
         def order_type_flag(order_type):
+            if order_type is None:
+                return None
             if order_type:
                 return 'B'
+            if not order_type:
+                return 'S'
 
         if pd_is_not_null(self.result_df):
             annotation_df = self.result_df.copy()

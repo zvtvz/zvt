@@ -23,6 +23,10 @@ class ExchangeStockMetaRecorder(Recorder):
         resp = requests.get(url, headers=DEFAULT_SH_HEADER)
         self.download_stock_list(response=resp, exchange='sh')
 
+        url = 'http://query.sse.com.cn/security/stock/downloadStockListFile.do?csrcCode=&stockCode=&areaName=&stockType=8'
+        resp = requests.get(url, headers=DEFAULT_SH_HEADER)
+        self.download_stock_list(response=resp, exchange='sh')
+
         url = 'http://www.szse.cn/api/report/ShowReport?SHOWTYPE=xlsx&CATALOGID=1110&TABKEY=tab1&random=0.20932135244582617'
         resp = requests.get(url, headers=DEFAULT_SZ_HEADER)
         self.download_stock_list(response=resp, exchange='sz')
