@@ -140,27 +140,32 @@ class VolumeUpMaFactor(TechnicalFactor):
 
         # 价格刚上均线
         cols = [f'ma{window}' for window in self.windows]
-        filter_se = (self.factor_df['close'] > self.factor_df[cols[0]]) & (
+        filter_up = (self.factor_df['close'] > self.factor_df[cols[0]]) & (
                 self.factor_df['close'] < 1.1 * self.factor_df[cols[0]])
         for col in cols[1:]:
             if self.over_mode == 'and':
-                filter_se = filter_se & ((self.factor_df['close'] > self.factor_df[col]) & (
+                filter_up = filter_up & ((self.factor_df['close'] > self.factor_df[col]) & (
                         self.factor_df['close'] < 1.1 * self.factor_df[col]))
             else:
-                filter_se = filter_se | ((self.factor_df['close'] > self.factor_df[col]) & (
+                filter_up = filter_up | ((self.factor_df['close'] > self.factor_df[col]) & (
                         self.factor_df['close'] < 1.1 * self.factor_df[col]))
         # 放量
         if self.vol_windows:
             vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
-            filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
+            filter_vol = (self.factor_df['volume'] > 2 * self.factor_df[vol_cols[0]])
             for col in vol_cols[1:]:
-                filter_se = filter_se & (self.factor_df['volume'] > 2 * self.factor_df[col])
+                filter_vol = filter_vol & (self.factor_df['volume'] > 2 * self.factor_df[col])
 
         # 成交额过滤
-        filter_se = filter_se & (self.factor_df['turnover'] > self.turnover_threshold)
+        s = filter_up & filter_vol & (self.factor_df['turnover'] > self.turnover_threshold)
 
-        print(self.factor_df[filter_se])
-        self.result_df = filter_se.to_frame(name='score')
+        s[s == False] = None
+        s = s.groupby(level=0).fillna(method='ffill', limit=40)
+        s[s.isna()] = False
+
+        filter_result = filter_up & s
+
+        self.result_df = filter_result.to_frame(name='score')
 
 
 class CrossMaVolumeFactor(VolumeUpMaFactor):
