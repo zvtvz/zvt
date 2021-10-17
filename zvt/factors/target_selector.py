@@ -19,7 +19,7 @@ class TargetType(Enum):
     open_long = 'open_long'
     # open_short 代表开空，并应该平掉相应标的的多单
     open_short = 'open_short'
-    # 其他情况就是保持当前的持仓
+    keep = 'keep'
 
 
 class SelectMode(Enum):
@@ -56,6 +56,7 @@ class TargetSelector(object):
 
         self.open_long_df: DataFrame = None
         self.open_short_df: DataFrame = None
+        self.keep_df: DataFrame = None
 
         self.init_factors(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
                           start_timestamp=start_timestamp, end_timestamp=end_timestamp, level=self.level)
@@ -91,7 +92,7 @@ class TargetSelector(object):
 
         """
         if self.filter_factors:
-            musts = []
+            filters = []
             for factor in self.filter_factors:
                 df = factor.result_df
 
@@ -101,15 +102,15 @@ class TargetSelector(object):
                 if len(df.columns) > 1:
                     s = df.agg("and", axis="columns")
                     s.name = 'score'
-                    musts.append(s.to_frame(name='score'))
+                    filters.append(s.to_frame(name='score'))
                 else:
                     df.columns = ['score']
-                    musts.append(df)
+                    filters.append(df)
 
             if self.select_mode == SelectMode.condition_and:
-                self.filter_result = list(accumulate(musts, func=operator.__and__))[-1]
+                self.filter_result = list(accumulate(filters, func=operator.__and__))[-1]
             else:
-                self.filter_result = list(accumulate(musts, func=operator.__or__))[-1]
+                self.filter_result = list(accumulate(filters, func=operator.__or__))[-1]
         if self.score_factors:
             scores = []
             for factor in self.score_factors:
@@ -148,22 +149,36 @@ class TargetSelector(object):
 
     # overwrite it to generate targets
     def generate_targets(self):
-        if pd_is_not_null(self.filter_result) and pd_is_not_null(self.score_result):
-            # for long
-            result1 = self.filter_result[self.filter_result.score]
-            result2 = self.score_result[self.score_result.score >= self.long_threshold]
-            long_result = result2.loc[result1.index, :]
-            # for short
-            result1 = self.filter_result[~self.filter_result.score]
-            result2 = self.score_result[self.score_result.score <= self.short_threshold]
-            short_result = result2.loc[result1.index, :]
-        elif pd_is_not_null(self.score_result):
-            long_result = self.score_result[self.score_result.score >= self.long_threshold]
-            short_result = self.score_result[self.score_result.score <= self.short_threshold]
-        else:
-            long_result = self.filter_result[self.filter_result.score == True]
-            short_result = self.filter_result[self.filter_result.score == False]
+        keep_result = pd.DataFrame()
+        long_result = pd.DataFrame()
+        short_result = pd.DataFrame()
 
+        if pd_is_not_null(self.filter_result):
+            keep_result = self.filter_result[self.filter_result['score'].isna()]
+            long_result = self.filter_result[self.filter_result['score'] == True]
+            short_result = self.filter_result[self.filter_result['score'] == False]
+
+        if pd_is_not_null(self.score_result):
+            score_keep_result = self.score_result[(self.score_result['score'] > self.short_threshold) & (
+                    self.score_result['score'] < self.long_threshold)]
+            if pd_is_not_null(keep_result):
+                keep_result = score_keep_result.loc[keep_result.index, :]
+            else:
+                keep_result = score_keep_result
+
+            score_long_result = self.score_result[self.score_result['score'] >= self.long_threshold]
+            if pd_is_not_null(long_result):
+                long_result = score_long_result.loc[long_result.index, :]
+            else:
+                long_result = score_long_result
+
+            score_short_result = self.score_result[self.score_result['score'] <= self.short_threshold]
+            if pd_is_not_null(short_result):
+                short_result = score_short_result.loc[short_result.index, :]
+            else:
+                short_result = score_short_result
+
+        self.keep_df = self.normalize_result_df(keep_result)
         self.open_long_df = self.normalize_result_df(long_result)
         self.open_short_df = self.normalize_result_df(short_result)
 

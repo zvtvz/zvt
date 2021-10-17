@@ -6,7 +6,7 @@ from zvt.contract.factor import Scorer, Transformer
 from zvt.utils.pd_utils import normal_index_df
 
 
-def ma(s: pd.Series, window: int = 5):
+def ma(s: pd.Series, window: int = 5) -> pd.Series:
     """
 
     :param s:
@@ -16,7 +16,7 @@ def ma(s: pd.Series, window: int = 5):
     return s.rolling(window=window, min_periods=window).mean()
 
 
-def ema(s, window=12):
+def ema(s: pd.Series, window: int = 12) -> pd.Series:
     return s.ewm(span=window, adjust=False, min_periods=window).mean()
 
 
@@ -27,30 +27,25 @@ def live_or_dead(x):
         return -1
 
 
-def volume_up(s: pd.Series, window: int = 60):
-    """
-
-    :param s:
-    :param window:
-    :return:
-    """
-    ma_vol = s.rolling(window=window, min_periods=window).mean()
-    return s > ma_vol
-
-
-def macd(s, slow=26, fast=12, n=9, return_type='df', normal=False, count_live_dead=False):
+def macd(s: pd.Series,
+         slow: int = 26,
+         fast: int = 12,
+         n: int = 9,
+         return_type: str = 'df',
+         normal: bool = False,
+         count_live_dead: bool = False):
     # 短期均线
     ema_fast = ema(s, window=fast)
     # 长期均线
     ema_slow = ema(s, window=slow)
 
     # 短期均线 - 长期均线 = 趋势的力度
-    diff = ema_fast - ema_slow
+    diff: pd.Series = ema_fast - ema_slow
     # 力度均线
-    dea = diff.ewm(span=n, adjust=False).mean()
+    dea: pd.Series = diff.ewm(span=n, adjust=False).mean()
 
     # 力度 的变化
-    m = (diff - dea) * 2
+    m: pd.Series = (diff - dea) * 2
 
     # normal it
     if normal:
@@ -150,8 +145,10 @@ class RankScorer(Scorer):
 
 
 class MaTransformer(Transformer):
-    def __init__(self, windows=[5, 10], cal_change_pct=False) -> None:
+    def __init__(self, windows=None, cal_change_pct=False) -> None:
         super().__init__()
+        if windows is None:
+            windows = [5, 10]
         self.windows = windows
         self.cal_change_pct = cal_change_pct
 
@@ -321,6 +318,6 @@ class QuantileScorer(Scorer):
 
 
 # the __all__ is generated
-__all__ = ['ma', 'ema', 'live_or_dead', 'volume_up', 'macd', 'point_in_range',
+__all__ = ['ma', 'ema', 'live_or_dead', 'macd', 'point_in_range',
            'intersect_ranges', 'combine', 'distance', 'intersect', 'RankScorer', 'MaTransformer',
            'IntersectTransformer', 'MaAndVolumeTransformer', 'MacdTransformer', 'QuantileScorer']

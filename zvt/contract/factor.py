@@ -5,7 +5,6 @@ import logging
 import time
 from typing import List, Union, Optional, Type
 
-import numpy as np
 import pandas as pd
 from sqlalchemy import Column, String, Text
 from sqlalchemy.orm import declarative_base
@@ -16,7 +15,7 @@ from zvt.contract.api import get_data, df_to_db, get_db_session, del_data
 from zvt.contract.reader import DataReader, DataListener
 from zvt.contract.register import register_schema
 from zvt.contract.zvt_context import factor_cls_registry
-from zvt.utils.pd_utils import pd_is_not_null, drop_continue_duplicate
+from zvt.utils.pd_utils import pd_is_not_null
 
 
 class Indicator(object):
@@ -56,7 +55,7 @@ class Transformer(Indicator):
         else:
             return g.apply(lambda x: self.transform_one(x.index[0][0], x.reset_index(level=0, drop=True)))
 
-    def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
+    def transform_one(self, entity_id: str, df: pd.DataFrame) -> pd.DataFrame:
         """
         df format:
 
@@ -67,6 +66,7 @@ class Transformer(Indicator):
 
         the return result would change the columns and  keep the format
 
+        :param entity_id:
         :param df:
         :return:
         """
@@ -471,11 +471,18 @@ class Factor(DataReader, DataListener):
             if not order_type:
                 return 'S'
 
+        def order_type_color(order_type):
+            if order_type:
+                return "#ec0000"
+            else:
+                return "#00da3c"
+
         if pd_is_not_null(self.result_df):
             annotation_df = self.result_df.copy()
-            annotation_df = annotation_df[annotation_df['score']]
+            annotation_df = annotation_df[~annotation_df['score'].isna()]
             annotation_df['value'] = self.factor_df.loc[annotation_df.index]['close']
             annotation_df['flag'] = annotation_df['score'].apply(lambda x: order_type_flag(x))
+            annotation_df['color'] = annotation_df['score'].apply(lambda x: order_type_color(x))
             return annotation_df
 
     def fill_gap(self):

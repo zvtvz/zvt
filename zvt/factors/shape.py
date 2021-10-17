@@ -232,5 +232,9 @@ def decode_rect(dct):
 
 def decode_fenxing(dct):
     return Fenxing(state=dct['state'], kdata=dct['kdata'], index=dct['index'])
+
+
 # the __all__ is generated
-__all__ = ['Direction', 'Fenxing', 'fenxing_power', 'a_include_b', 'get_direction', 'is_up', 'is_down', 'handle_first_fenxing', 'handle_zhongshu', 'handle_duan', 'handle_including', 'FactorStateEncoder', 'decode_rect', 'decode_fenxing']
+__all__ = ['Direction', 'Fenxing', 'fenxing_power', 'a_include_b', 'get_direction', 'is_up', 'is_down',
+           'handle_first_fenxing', 'handle_zhongshu', 'handle_duan', 'handle_including', 'FactorStateEncoder',
+           'decode_rect', 'decode_fenxing']

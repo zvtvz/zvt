@@ -144,9 +144,11 @@ class VolumeUpMaFactor(TechnicalFactor):
                 self.factor_df['close'] < 1.1 * self.factor_df[cols[0]])
         for col in cols[1:]:
             if self.over_mode == 'and':
-                filter_se = filter_se & (self.factor_df['close'] > self.factor_df[col])
+                filter_se = filter_se & ((self.factor_df['close'] > self.factor_df[col]) & (
+                        self.factor_df['close'] < 1.1 * self.factor_df[col]))
             else:
-                filter_se = filter_se | (self.factor_df['close'] > self.factor_df[col])
+                filter_se = filter_se | ((self.factor_df['close'] > self.factor_df[col]) & (
+                        self.factor_df['close'] < 1.1 * self.factor_df[col]))
         # 放量
         if self.vol_windows:
             vol_cols = [f'vol_ma{window}' for window in self.vol_windows]
