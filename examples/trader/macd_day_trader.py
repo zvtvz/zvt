@@ -26,7 +26,7 @@ class MacdDayTrader(StockTrader):
                                                 codes=codes, start_timestamp=start_timestamp,
                                                 end_timestamp=end_timestamp,
                                                 provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
-        day_selector.add_filter_factor(day_gold_cross_factor)
+        day_selector.add_factor(day_gold_cross_factor)
 
         self.selectors.append(day_selector)
 

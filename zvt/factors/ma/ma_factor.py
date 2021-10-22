@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
-from typing import List, Union, Type, Optional
+from typing import List, Union, Type
 
 import pandas as pd
 
@@ -65,9 +65,6 @@ class MaFactor(TechnicalFactor):
                          computing_window, keep_all_timestamp, fill_method, effective_number, transformer, None,
                          need_persist, only_compute_factor, factor_name, clear_state, only_load_factor, adjust_type)
 
-    def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
-        return [self.factor_df[self.transformer.indicators]]
-
 
 class CrossMaFactor(MaFactor):
     def compute_result(self):
@@ -80,7 +77,7 @@ class CrossMaFactor(MaFactor):
             current_col = col
 
         print(self.factor_df[s])
-        self.result_df = s.to_frame(name='score')
+        self.result_df = s.to_frame(name='filter_result')
 
 
 class VolumeUpMaFactor(TechnicalFactor):
@@ -165,7 +162,7 @@ class VolumeUpMaFactor(TechnicalFactor):
 
         filter_result = filter_up & s
 
-        self.result_df = filter_result.to_frame(name='score')
+        self.result_df = filter_result.to_frame(name='filter_result')
 
 
 class CrossMaVolumeFactor(VolumeUpMaFactor):
@@ -181,7 +178,7 @@ class CrossMaVolumeFactor(VolumeUpMaFactor):
         filter_se = filter_se & (self.factor_df['turnover'] > self.turnover_threshold)
 
         print(self.factor_df[filter_se])
-        self.result_df = filter_se.to_frame(name='score')
+        self.result_df = filter_se.to_frame(name='filter_result')
 
 
 if __name__ == '__main__':

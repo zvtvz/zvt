@@ -523,7 +523,7 @@ e.g.,[macd](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_facto
 ```
 In [14]: factor.result_df
 Out[14]:
-                            score
+                            filter_result
 entity_id       timestamp
 stock_sh_601318 2019-01-02  False
                 2019-01-03  False
@@ -540,13 +540,11 @@ stock_sz_000338 2019-06-03  False
 [208 rows x 1 columns]
 ```
 
-The  format of result_df with different types of factors is as follows:
+The  format of result_df is as follows:
 
-* filter
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/filter_factor.png'/></p>
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/result_df.png'/></p>
 
-* score
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/score_factor.png'/></p>
+filter_result is True or False, score_result is from 0 to 1
 
 Combining the stock picker and backtesting, the whole process is as follows:
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/flow.png'/></p>

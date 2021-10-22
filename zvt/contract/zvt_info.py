@@ -18,7 +18,7 @@ class RecorderState(ZvtInfoBase, Mixin):
     state = Column(Text())
 
 
-# 用于保存recorder的状态
+# 用于保存tagger的状态
 class TaggerState(ZvtInfoBase, Mixin):
     __tablename__ = 'tagger_state'
     # tagger名字

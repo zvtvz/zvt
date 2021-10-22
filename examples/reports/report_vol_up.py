@@ -51,7 +51,7 @@ def report_vol_up():
             factor1 = VolumeUpMaFactor(entity_ids=current_entity_pool, start_timestamp=start, end_timestamp=target_date,
                                        windows=[120, 250], over_mode='or')
 
-            my_selector.add_filter_factor(factor1)
+            my_selector.add_factor(factor1)
 
             my_selector.run()
 

@@ -14,7 +14,7 @@ class TechnicalSelector(TargetSelector):
                                  codes=codes, start_timestamp=start_timestamp,
                                  end_timestamp=end_timestamp, provider='joinquant', level=level, adjust_type='qfq')
 
-        self.filter_factors = [bull_factor]
+        self.factors = [bull_factor]
 
 
 def test_cross_ma_selector():
@@ -26,14 +26,14 @@ def test_cross_ma_selector():
                                  end_timestamp=end_timestamp)
     # add the factors
     my_selector \
-        .add_filter_factor(CrossMaFactor(entity_ids=entity_ids,
-                                         start_timestamp=start_timestamp,
-                                         end_timestamp=end_timestamp,
-                                         computing_window=10,
-                                         windows=[5, 10],
-                                         need_persist=False,
-                                         level=IntervalLevel.LEVEL_1DAY,
-                                         adjust_type='qfq'))
+        .add_factor(CrossMaFactor(entity_ids=entity_ids,
+                                  start_timestamp=start_timestamp,
+                                  end_timestamp=end_timestamp,
+                                  computing_window=10,
+                                  windows=[5, 10],
+                                  need_persist=False,
+                                  level=IntervalLevel.LEVEL_1DAY,
+                                  adjust_type='qfq'))
     my_selector.run()
     print(my_selector.open_long_df)
     print(my_selector.open_short_df)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import enum
-from typing import Union, Type
+from typing import Union, Type, List
 
 import pandas as pd
+from sklearn import preprocessing
 
 from zvt.api import get_kdata_schema
 from zvt.contract import IntervalLevel, AdjustType
@@ -25,67 +26,23 @@ def cal_change(s):
 
 def cal_performance(s):
     if s >= RelativePerformance.best.value:
-        return RelativePerformance.best.value
+        return RelativePerformance.best
     if s >= RelativePerformance.ordinary.value:
-        return RelativePerformance.ordinary.value
+        return RelativePerformance.ordinary
     if s >= RelativePerformance.poor.value:
-        return RelativePerformance.poor.value
-
-
-def get_performance(x_timestamp,
-                    entity_type='stock',
-                    entity_ids=None,
-                    predict_range=20,
-                    level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
-                    adjust_type: Union[AdjustType, str] = None):
-    kdata_schema = get_kdata_schema(entity_type=entity_type, level=level, adjust_type=adjust_type)
-    y_df = kdata_schema.query_data(start_timestamp=x_timestamp,
-                                   end_timestamp=next_date(x_timestamp, predict_range), entity_ids=entity_ids,
-                                   columns=['entity_id', 'timestamp', 'close'],
-                                   index=['entity_id', 'timestamp'])
-    y_df = y_df.dropna()
-    y_change = y_df.groupby(level=0)['close'].apply(
-        lambda x: cal_change(x)).rename('y_change')
-    y_score = y_change.rank(pct=True).apply(
-        lambda x: cal_performance(x)).rename('y_score')
-
-    df = y_score.to_frame()
-    df['timestamp'] = x_timestamp
-    df.set_index('timestamp', append=True)
-
-    return df
-
-
-def get_samples(data_schema,
-                columns,
-                x_timestamp,
-                entity_type='stock',
-                entity_ids=None,
-                predict_range=20,
-                level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
-                adjust_type: Union[AdjustType, str] = None):
-    # features
-    x_df = data_schema.query_data(start_timestamp=x_timestamp, end_timestamp=x_timestamp, entity_ids=entity_ids,
-                                  columns=columns, index=['entity_id'])
-    x_df = x_df.dropna()
-
-    # Y
-    y = get_performance(x_timestamp=x_timestamp, entity_type=entity_type, entity_ids=entity_ids,
-                        predict_range=predict_range, level=level, adjust_type=adjust_type)
-    index = x_df.index & y.index
-    print(index)
-    return x_df.loc[index].to_numpy(), y.loc[index].to_numpy().tolist()
+        return RelativePerformance.poor
 
 
 class MLMachine(object):
     entity_schema: Type[TradableEntity] = None
 
-    sample_start_timestamp = '2005-01-01'
+    training_start_timestamp = '2005-01-01'
 
-    test_start_timestamp = '2010-01-01'
+    testing_start_timestamp = '2010-01-01'
+    testing_end_timestamp = '2011-01-01'
 
     def __init__(self, entity_ids=None, predict_range=20, level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
-                 adjust_type: Union[AdjustType, str] = None) -> None:
+                 adjust_type: Union[AdjustType, str] = None, relative_performance: bool = False) -> None:
         super().__init__()
         self.entity_ids = entity_ids
         self.predict_range = predict_range
@@ -95,33 +52,82 @@ class MLMachine(object):
         else:
             self.adjust_type = adjust_type
 
-        self.sample_start_timestamp = to_pd_timestamp(self.sample_start_timestamp)
-        self.test_start_timestamp = to_pd_timestamp(self.test_start_timestamp)
+        self.relative_performance = relative_performance
 
-        self.x_timestamps, self.y_timestamps = self.get_x_y_timestamps()
+        self.training_start_timestamp = to_pd_timestamp(self.training_start_timestamp)
+        self.testing_start_timestamp = to_pd_timestamp(self.testing_start_timestamp)
+        self.testing_end_timestamp = to_pd_timestamp(self.testing_end_timestamp)
 
-        self.x_df = self.get_features(self.entity_ids, self.x_timestamps)
-        self.y_df = self.get_labels(self.entity_ids, x_timestamps=self.x_timestamps, y_timestamps=self.y_timestamps)
+        # init training data
+        self.training_x_timestamps, self.training_y_timestamps = self.get_x_y_timestamps(
+            start_timestamp=self.training_start_timestamp,
+            end_timestamp=self.testing_start_timestamp)
+
+        self.training_x_df = self.get_features(self.entity_ids, self.training_x_timestamps)
+        self.training_y_df = self.get_labels(self.entity_ids, x_timestamps=self.training_x_timestamps,
+                                             y_timestamps=self.training_y_timestamps)
+
+        # init test data
+        self.testing_x_timestamps, self.testing_y_timestamps = self.get_x_y_timestamps(
+            start_timestamp=self.testing_start_timestamp,
+            end_timestamp=self.testing_end_timestamp)
+        self.testing_x_df = self.get_features(self.entity_ids, self.testing_x_timestamps)
+        self.testing_y_df = self.get_labels(self.entity_ids, x_timestamps=self.testing_x_timestamps,
+                                            y_timestamps=self.testing_y_timestamps)
+
+    def normalize(self):
+        df = self.training_x_df[self.category_nominal_features()]
+        enc = preprocessing.OneHotEncoder()
+        X = enc.fit_transform(df)
 
     def ml(self):
-        print(self.x_df)
-        print(self.y_df)
+        self.normalize()
+        print(self.training_x_df)
+        print(self.training_y_df)
 
-    def get_x_y_timestamps(self):
+        X = self.training_x_df.to_numpy()
+        y = self.training_y_df.to_numpy().tolist()
+
+        from sklearn.linear_model import SGDClassifier
+        clf = SGDClassifier(loss="hinge", penalty="l2", max_iter=5)
+        clf.fit(X, y)
+        SGDClassifier(max_iter=5)
+
+        clf.predict(self.testing_x_df.to_numpy())
+
+    def get_x_y_timestamps(self, start_timestamp, end_timestamp):
         x_timestamps = []
         y_timestamps = []
-        x_timestamp = self.sample_start_timestamp
+        x_timestamp = start_timestamp
         y_timestamp = next_date(x_timestamp, self.predict_range)
-        while y_timestamp <= self.test_start_timestamp:
+        while y_timestamp <= end_timestamp:
             x_timestamps.append(x_timestamp)
             y_timestamps.append(y_timestamp)
 
             x_timestamp = y_timestamp
             y_timestamp = next_date(x_timestamp, self.predict_range)
 
-        return y_timestamps, y_timestamps
+        return x_timestamps, y_timestamps
 
-    def get_features(self, entity_ids, timestamps):
+    def category_ordinal_features(self):
+        return []
+
+    def category_nominal_features(self):
+        return []
+
+    def get_features(self, entity_ids: List[str], timestamps: List[pd.Timestamp]) -> pd.DataFrame:
+        """
+        result df format:
+
+                                  col1    col2    col3    ...
+        entity_id    timestamp
+                                  1.2     0.5     0.3     ...
+                                  1.0     0.7     0.2     ...
+
+        :param entity_ids: entity id list
+        :param timestamps: timestamp list of the features, (entity_id, timestamp) represents one instance x
+        :rtype: pd.DataFrame
+        """
         raise NotImplementedError
 
     def get_labels(self, entity_ids, x_timestamps, y_timestamps):
@@ -137,18 +143,17 @@ class MLMachine(object):
             y_df = y_df.dropna()
             y_change = y_df.groupby(level=0)['close'].apply(
                 lambda x: cal_change(x)).rename('y_change')
-            y_score = y_change.rank(pct=True).apply(
-                lambda x: cal_performance(x)).rename('y_score')
-
+            if self.relative_performance:
+                y_score = y_change.rank(pct=True).apply(
+                    lambda x: cal_performance(x)).rename('y_score')
+            else:
+                y_score = y_change
             df = y_score.to_frame()
             df['timestamp'] = timestamp
             df.set_index('timestamp', append=True)
             dfs.append(df)
 
         return pd.concat(dfs)
-
-    def make_samples(self):
-        pass
 
 
 class MyMLMachine(MLMachine):

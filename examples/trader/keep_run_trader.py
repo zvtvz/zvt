@@ -27,7 +27,7 @@ class MultipleLevelTrader(StockTrader):
                                       codes=codes, start_timestamp=next_date(start_timestamp, -200),
                                       end_timestamp=end_timestamp,
                                       provider='joinquant', level=IntervalLevel.LEVEL_1WEEK)
-        week_selector.add_filter_factor(week_bull_factor)
+        week_selector.add_factor(week_bull_factor)
 
         # 日线策略
         day_selector = TargetSelector(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
@@ -37,7 +37,7 @@ class MultipleLevelTrader(StockTrader):
                                                 codes=codes, start_timestamp=start_timestamp,
                                                 end_timestamp=end_timestamp,
                                                 provider='joinquant', level=IntervalLevel.LEVEL_1DAY)
-        day_selector.add_filter_factor(day_gold_cross_factor)
+        day_selector.add_factor(day_gold_cross_factor)
 
         # 同时使用日线,周线级别
         self.selectors.append(day_selector)

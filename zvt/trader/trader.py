@@ -68,9 +68,7 @@ class Trader(object):
         self.draw_result = draw_result
         self.rich_mode = rich_mode
 
-        if type(adjust_type) is str:
-            adjust_type = AdjustType(adjust_type)
-        self.adjust_type = adjust_type
+        self.adjust_type = AdjustType(adjust_type)
         self.profit_threshold = profit_threshold
         self.keep_history = keep_history
 

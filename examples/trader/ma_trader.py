@@ -14,7 +14,7 @@ class MyMaTrader(StockTrader):
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider='joinquant')
 
-        myselector.add_filter_factor(
+        myselector.add_factor(
             CrossMaFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                           codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                           windows=[5, 10], need_persist=False))
@@ -29,7 +29,7 @@ class MyBullTrader(StockTrader):
                                     codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
                                     provider='joinquant')
 
-        myselector.add_filter_factor(
+        myselector.add_factor(
             BullFactor(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges,
                        codes=codes, start_timestamp=start_timestamp, end_timestamp=end_timestamp, adjust_type='hfq'))
 

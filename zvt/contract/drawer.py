@@ -24,6 +24,7 @@ class ChartType(Enum):
     scatter = 'scatter'
     histogram = 'histogram'
     pie = 'pie'
+    bar = 'bar'
 
 
 @to_string
@@ -60,6 +61,10 @@ class Draw(object):
 
     def draw_histogram(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
         return self.draw(ChartType.histogram, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
+                         show=show, **kwargs)
+
+    def draw_bar(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+        return self.draw(ChartType.bar, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
                          show=show, **kwargs)
 
     def draw_pie(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
@@ -395,6 +400,11 @@ class Drawer(Draw):
                 pass
 
             # 构造主图
+            if main_chart == ChartType.bar:
+                for col in df.columns:
+                    trace_name = '{}_{}'.format(code, col)
+                    ydata = df[col].values.tolist()
+                    traces.append(go.Bar(x=df.index, y=ydata, name=trace_name, yaxis=yaxis, **kwargs))
             if main_chart == ChartType.kline:
                 trace_name = '{}_kdata'.format(code)
                 trace = go.Candlestick(x=df.index, open=df['open'], close=df['close'], low=df['low'], high=df['high'],

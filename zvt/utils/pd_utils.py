@@ -4,12 +4,44 @@ from typing import List, Union
 import pandas as pd
 
 
-def drop_continue_duplicate(s):
-    return s[s.shift() != s]
+def drop_continue_duplicate(s: Union[pd.Series, pd.DataFrame], col=None):
+    if type(s) == pd.Series:
+        return s[s.shift() != s]
+    if type(s) == pd.DataFrame:
+        ss = s[col]
+        selected = ss[ss.shift() != ss]
+        return s.loc[selected.index, :]
+
+
+def is_filter_result_df(df: pd.DataFrame):
+    return pd_is_not_null(df) and 'filter_result' in df.columns
+
+
+def is_score_result_df(df: pd.DataFrame):
+    return pd_is_not_null(df) and 'score_result' in df.columns
 
 
 def pd_is_not_null(df: Union[pd.DataFrame, pd.Series]):
     return df is not None and not df.empty
+
+
+def group_by_entity_id(input_df: pd.DataFrame):
+    return input_df.groupby(level=0)
+
+
+def normalize_group_compute_result(group_result):
+    if group_result.index.nlevels == 3:
+        return group_result.reset_index(level=0, drop=True)
+    return group_result
+
+
+def merge_filter_result(input_df: pd.DataFrame, filter_result: pd.Series):
+    if is_filter_result_df(input_df):
+        input_df['filter_result'] = input_df['filter_result'] & filter_result
+    else:
+        input_df['filter_result'] = filter_result
+
+    return input_df
 
 
 def index_df(df, index='timestamp', inplace=True, drop=False, time_field='timestamp'):

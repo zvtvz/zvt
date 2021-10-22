@@ -37,8 +37,8 @@ def report_bull():
             factor2 = CrossMaVolumeFactor(start_timestamp=start, end_timestamp=target_date,
                                           windows=[5, 120, 250])
 
-            my_selector.add_filter_factor(factor1)
-            my_selector.add_filter_factor(factor2)
+            my_selector.add_factor(factor1)
+            my_selector.add_factor(factor2)
 
             my_selector.run()
 

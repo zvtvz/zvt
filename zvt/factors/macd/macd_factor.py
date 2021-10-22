@@ -26,7 +26,7 @@ class MacdFactor(TechnicalFactor):
 class BullFactor(MacdFactor):
     def compute_result(self):
         super().compute_result()
-        self.result_df = self.factor_df['bull'].to_frame(name='score')
+        self.result_df = self.factor_df['bull'].to_frame(name='filter_result')
 
 
 class KeepBullFactor(BullFactor):
@@ -34,11 +34,11 @@ class KeepBullFactor(BullFactor):
 
     def compute_result(self):
         super().compute_result()
-        df = self.result_df['score'].groupby(level=0).rolling(window=self.keep_window,
+        df = self.result_df['filter_result'].groupby(level=0).rolling(window=self.keep_window,
                                                               min_periods=self.keep_window).apply(
             lambda x: np.logical_and.reduce(x))
         df = df.reset_index(level=0, drop=True)
-        self.result_df['score'] = df
+        self.result_df['filter_result'] = df
 
 
 # 金叉 死叉 持续时间 切换点
@@ -49,14 +49,14 @@ class LiveOrDeadFactor(MacdFactor):
         super().compute_result()
         self.factor_df['pre'] = self.factor_df['live_count'].shift()
         s = (self.factor_df['pre'] <= self.pattern[0]) & (self.factor_df['live_count'] >= self.pattern[1])
-        self.result_df = s.to_frame(name='score')
+        self.result_df = s.to_frame(name='filter_result')
 
 
 class GoldCrossFactor(MacdFactor):
     def compute_result(self):
         super().compute_result()
         s = self.factor_df['live'] == 1
-        self.result_df = s.to_frame(name='score')
+        self.result_df = s.to_frame(name='filter_result')
 
 
 # the __all__ is generated

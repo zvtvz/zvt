@@ -3,7 +3,7 @@
 import pandas as pd
 
 from zvt.contract.factor import Scorer, Transformer
-from zvt.utils.pd_utils import normal_index_df
+from zvt.utils.pd_utils import normal_index_df, group_by_entity_id, normalize_group_compute_result
 
 
 def ma(s: pd.Series, window: int = 5) -> pd.Series:
@@ -152,7 +152,29 @@ class MaTransformer(Transformer):
         self.windows = windows
         self.cal_change_pct = cal_change_pct
 
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        if self.cal_change_pct:
+            group_pct = group_by_entity_id(input_df['close']).pct_change()
+            input_df['change_pct'] = normalize_group_compute_result(group_pct)
+
+        for window in self.windows:
+            col = 'ma{}'.format(window)
+            self.indicators.append(col)
+
+            group_ma = group_by_entity_id(input_df['close']).rolling(window=window, min_periods=window).mean()
+            input_df[col] = normalize_group_compute_result(group_ma)
+
+        return input_df
+
     def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        transform_one would not take effects if transform was implemented.
+        Just show how to implement it here, most of time you should overwrite transform directly for performance.
+
+        :param entity_id:
+        :param df:
+        :return:
+        """
         if self.cal_change_pct:
             df['change_pct'] = df['close'].pct_change()
 
@@ -271,7 +293,7 @@ class QuantileScorer(Scorer):
         self.score_levels.sort(reverse=True)
 
         quantile_df = input_df.groupby(level=1).quantile(self.score_levels)
-        quantile_df.index.names = [self.time_field, 'score']
+        quantile_df.index.names = [self.time_field, 'score_result']
 
         self.logger.info('factor:{},quantile:\n{}'.format(self.factor_name, quantile_df))
 

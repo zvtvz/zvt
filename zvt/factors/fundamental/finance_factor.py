@@ -6,7 +6,7 @@ from typing import List, Union, Type
 import pandas as pd
 
 from zvt.contract import IntervalLevel, Mixin, TradableEntity
-from zvt.contract.factor import Factor, Transformer, Accumulator, FilterFactor
+from zvt.contract.factor import Factor, Transformer, Accumulator
 from zvt.domain import FinanceFactor, BalanceSheet, Stock
 
 
@@ -30,7 +30,7 @@ class FinanceBaseFactor(Factor):
                          accumulator, need_persist, only_compute_factor, factor_name, clear_state, only_load_factor)
 
 
-class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
+class GoodCompanyFactor(FinanceBaseFactor):
     def __init__(self,
                  data_schema: Type[Mixin] = FinanceFactor,
                  entity_schema: TradableEntity = Stock,
@@ -131,6 +131,7 @@ class GoodCompanyFactor(FinanceBaseFactor, FilterFactor):
 
     def compute_result(self):
         self.result_df = self.factor_df.apply(lambda x: x >= self.count)
+        self.result_df.columns = ['filter_score']
 
         self.logger.info('factor:{},result_df:\n{}'.format(self.factor_name, self.result_df))
 

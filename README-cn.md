@@ -524,13 +524,13 @@ stock_sz_000338 2019-06-03  False
 [208 rows x 1 columns]
 ```
 
-不同类型Factor的result_df格式如下：
+result_df的格式如下：
 
-* filter类型
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/filter_factor.png'/></p>
 
-* score类型
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/score_factor.png'/></p>
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/result_df.png'/></p>
+
+filter_result 为 True 或 False, score_result 取值为 0 到 1。
+
 
 结合选股器和回测，整个流程如下：
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/flow.png'/></p>

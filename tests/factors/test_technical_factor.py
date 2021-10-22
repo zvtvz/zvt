@@ -72,7 +72,7 @@ def test_cross_ma():
     print(factor.factor_df.tail())
     print(factor.result_df.tail())
 
-    score = factor.result_df['score']
+    score = factor.result_df['filter_result']
 
     assert score[('stock_sz_000338', '2019-06-03')] == True
     assert score[('stock_sz_000338', '2019-06-04')] == True
@@ -81,5 +81,5 @@ def test_cross_ma():
     assert ('stock_sz_000338', '2019-06-10') not in score or score[('stock_sz_000338', '2019-06-10')] == False
 
     factor.move_on()
-    score = factor.result_df['score']
+    score = factor.result_df['filter_result']
     assert score[('stock_sz_000338', '2019-06-17')] == True

@@ -71,15 +71,33 @@ class MaStatsAccumulator(Accumulator):
 
 class MaStatsFactor(TechnicalFactor):
 
-    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
-                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 filters: List = None, order: object = None, limit: int = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY, category_field: str = 'entity_id',
-                 time_field: str = 'timestamp', computing_window: int = None, keep_all_timestamp: bool = False,
-                 fill_method: str = 'ffill', effective_number: int = None, need_persist: bool = True,
-                 only_compute_factor: bool = False, factor_name: str = None, clear_state: bool = False, only_load_factor: bool = False,
-                 adjust_type: Union[AdjustType, str] = None, windows=None, vol_windows=None) -> None:
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
+                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 need_persist: bool = True,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = False,
+                 adjust_type: Union[AdjustType, str] = None,
+                 windows=None,
+                 vol_windows=None) -> None:
         if need_persist:
             self.factor_schema = get_ma_stats_factor_schema(entity_type=entity_schema.__name__, level=level)
 
@@ -98,24 +116,43 @@ class MaStatsFactor(TechnicalFactor):
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
                          end_timestamp, columns, filters, order, limit, level, category_field,
                          time_field, computing_window, keep_all_timestamp, fill_method, effective_number, None,
-                         accumulator, need_persist, only_compute_factor, factor_name, clear_state, only_load_factor, adjust_type)
+                         accumulator, need_persist, only_compute_factor, factor_name, clear_state, only_load_factor,
+                         adjust_type)
 
 
 class TFactor(MaStatsFactor):
 
-    def __init__(self, entity_schema: Type[TradableEntity] = Stock, provider: str = None, entity_provider: str = None,
-                 entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 filters: List = None, order: object = None, limit: int = None,
+    def __init__(self,
+                 entity_schema: Type[TradableEntity] = Stock,
+                 provider: str = None,
+                 entity_provider: str = None,
+                 entity_ids: List[str] = None,
+                 exchanges: List[str] = None,
+                 codes: List[str] = None,
+                 start_timestamp: Union[str, pd.Timestamp] = None,
+                 end_timestamp: Union[str, pd.Timestamp] = None,
+                 filters: List = None,
+                 order: object = None,
+                 limit: int = None,
                  level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 category_field: str = 'entity_id', time_field: str = 'timestamp', computing_window: int = None,
-                 keep_all_timestamp: bool = False, fill_method: str = 'ffill', effective_number: int = None,
-                 need_persist: bool = True, only_compute_factor: bool = False, factor_name: str = None, clear_state: bool = False,
-                 only_load_factor: bool = True, adjust_type: Union[AdjustType, str] = None, windows=None,
+                 category_field: str = 'entity_id',
+                 time_field: str = 'timestamp',
+                 computing_window: int = None,
+                 keep_all_timestamp: bool = False,
+                 fill_method: str = 'ffill',
+                 effective_number: int = None,
+                 need_persist: bool = True,
+                 only_compute_factor: bool = False,
+                 factor_name: str = None,
+                 clear_state: bool = False,
+                 only_load_factor: bool = True,
+                 adjust_type: Union[AdjustType, str] = None,
+                 windows=None,
                  vol_windows=None) -> None:
         super().__init__(entity_schema, provider, entity_provider, entity_ids, exchanges, codes, start_timestamp,
                          end_timestamp, filters, order, limit, level, category_field, time_field, computing_window,
-                         keep_all_timestamp, fill_method, effective_number, need_persist, only_compute_factor, factor_name,
+                         keep_all_timestamp, fill_method, effective_number, need_persist, only_compute_factor,
+                         factor_name,
                          clear_state, only_load_factor, adjust_type, windows, vol_windows)
 
     def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
@@ -126,7 +163,6 @@ class TFactor(MaStatsFactor):
 
 
 if __name__ == '__main__':
-    from zvt.factors.ma.domain import *
     codes = ['000338']
 
     f = TFactor(codes=codes, only_load_factor=False)
