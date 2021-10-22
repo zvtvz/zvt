@@ -166,3 +166,5 @@ class MyMLMachine(MLMachine):
 
 if __name__ == '__main__':
     MyMLMachine().ml()
+# the __all__ is generated
+__all__ = ['RelativePerformance', 'cal_change', 'cal_performance', 'MLMachine', 'MyMLMachine']

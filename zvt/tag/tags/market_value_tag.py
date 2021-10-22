@@ -50,3 +50,5 @@ class MarketValueTagger(StockTagger):
 
 if __name__ == '__main__':
     MarketValueTagger().run()
+# the __all__ is generated
+__all__ = ['MarketValueTag', 'MarketValueTagger']

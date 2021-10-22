@@ -44,3 +44,5 @@ class ActorTagger(StockTagger):
 if __name__ == '__main__':
     # ActorTagger().run()
     print(StockTags.query_data(start_timestamp='2021-08-31', filters=[StockTags.actor_tag != None]))
+# the __all__ is generated
+__all__ = ['ActorTag', 'ActorTagger']

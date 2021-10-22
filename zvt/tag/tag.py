@@ -103,3 +103,5 @@ class IndexTagger(Tagger):
 
     def tag(self, timestamp):
         raise NotImplementedError
+# the __all__ is generated
+__all__ = ['Tagger', 'StockTagger', 'IndexTagger']

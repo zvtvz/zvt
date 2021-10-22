@@ -19,3 +19,5 @@ class StockTags(StockTagsBase, Mixin):
 
 register_schema(providers=['zvt'], db_name='stock_tags',
                 schema_base=StockTagsBase)
+# the __all__ is generated
+__all__ = ['StockTags']

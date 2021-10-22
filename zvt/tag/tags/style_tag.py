@@ -48,3 +48,5 @@ class StyleTagger(StockTagger):
 
 if __name__ == '__main__':
     StyleTagger().run()
+# the __all__ is generated
+__all__ = ['StyleTag', 'StyleTagger']
