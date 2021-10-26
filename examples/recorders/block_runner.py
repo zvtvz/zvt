@@ -22,7 +22,7 @@ def record_block():
         email_action = EmailInformer()
 
         try:
-            Block.record_data(provider='eastmoney')
+            Block.record_data(provider='eastmoney', force_update=False)
 
             # 只抓取概念行情
             df = Block.query_data(filters=[Block.category == BlockCategory.concept.value], index='entity_id')
