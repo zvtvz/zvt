@@ -19,12 +19,23 @@ logger = logging.getLogger(__name__)
 
 class ChartType(Enum):
     kline = 'kline'
+    # scatter mode
     line = 'line'
     area = 'area'
     scatter = 'scatter'
+    # distribute
     histogram = 'histogram'
+    # composite
     pie = 'pie'
+    # compare
     bar = 'bar'
+
+
+_zvt_chart_type_map_scatter_mode = {
+    ChartType.line: 'lines',
+    ChartType.area: 'none',
+    ChartType.scatter: 'markers'
+}
 
 
 @to_string
@@ -41,21 +52,21 @@ class Rect(Bean):
 
 class Draw(object):
     def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(ChartType.kline, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                         show=show,
-                         **kwargs)
+        return self.draw(main_chart=ChartType.kline, width=width, height=height, title=title,
+                         keep_ui_state=keep_ui_state,
+                         show=show, **kwargs)
 
     def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw_scatter(mode='lines', width=width, height=height, title=title,
-                                 keep_ui_state=keep_ui_state, show=show, **kwargs)
+        return self.draw(main_chart=ChartType.line, width=width, height=height, title=title,
+                         keep_ui_state=keep_ui_state,
+                         show=show, **kwargs)
 
     def draw_area(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw_scatter(mode='none', width=width, height=height, title=title,
-                                 keep_ui_state=keep_ui_state, show=show, **kwargs)
+        return self.draw(main_chart=ChartType.area, width=width, height=height, title=title,
+                         keep_ui_state=keep_ui_state, show=show, **kwargs)
 
-    def draw_scatter(self, mode='markers', width=None, height=None,
-                     title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(ChartType.scatter, mode=mode, width=width, height=height, title=title,
+    def draw_scatter(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+        return self.draw(main_chart=ChartType.scatter, width=width, height=height, title=title,
                          keep_ui_state=keep_ui_state,
                          show=show, **kwargs)
 
@@ -74,7 +85,6 @@ class Draw(object):
     def draw(self,
              main_chart=ChartType.kline,
              sub_chart='bar',
-             mode='lines',
              width=None,
              height=None,
              title=None,
@@ -244,7 +254,6 @@ class StackedDrawer(Draw):
     def draw(self,
              main_chart=ChartType.kline,
              sub_chart='bar',
-             mode='lines',
              width=None,
              height=None,
              title=None,
@@ -262,7 +271,7 @@ class StackedDrawer(Draw):
                 start = 2
                 break
         for index, drawer in enumerate(self.drawers, start=start):
-            traces, sub_traces = drawer.make_traces(main_chart=main_chart, sub_chart=sub_chart, mode=mode, **kwargs)
+            traces, sub_traces = drawer.make_traces(main_chart=main_chart, sub_chart=sub_chart, **kwargs)
 
             # fix sub traces as the bottom
             if sub_traces:
@@ -385,7 +394,6 @@ class Drawer(Draw):
     def make_traces(self,
                     main_chart=ChartType.kline,
                     sub_chart='bar',
-                    mode='lines',
                     yaxis='y',
                     **kwargs):
         traces = []
@@ -405,12 +413,13 @@ class Drawer(Draw):
                     trace_name = '{}_{}'.format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Bar(x=df.index, y=ydata, name=trace_name, yaxis=yaxis, **kwargs))
-            if main_chart == ChartType.kline:
+            elif main_chart == ChartType.kline:
                 trace_name = '{}_kdata'.format(code)
                 trace = go.Candlestick(x=df.index, open=df['open'], close=df['close'], low=df['low'], high=df['high'],
                                        name=trace_name, yaxis=yaxis, **kwargs)
                 traces.append(trace)
-            elif main_chart == ChartType.scatter:
+            elif main_chart in [ChartType.scatter, ChartType.line, ChartType.area]:
+                mode = _zvt_chart_type_map_scatter_mode.get(main_chart)
                 for col in df.columns:
                     trace_name = '{}_{}'.format(code, col)
                     ydata = df[col].values.tolist()
@@ -439,7 +448,6 @@ class Drawer(Draw):
             elif main_chart == ChartType.pie:
                 for _, row in df.iterrows():
                     traces.append(go.Pie(name=entity_id, labels=df.columns.tolist(), values=row.tolist(), **kwargs))
-                    break
             else:
                 assert False
 
@@ -454,7 +462,7 @@ class Drawer(Draw):
                                 trace_name = '{}_{}'.format(code, col)
                                 ydata = factor_df[col].values.tolist()
 
-                                line = go.Scatter(x=factor_df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis,
+                                line = go.Scatter(x=factor_df.index, y=ydata, mode='lines', name=trace_name, yaxis=yaxis,
                                                   **kwargs)
                                 traces.append(line)
 
@@ -506,7 +514,6 @@ class Drawer(Draw):
     def draw(self,
              main_chart=ChartType.kline,
              sub_chart='bar',
-             mode='lines',
              width=None,
              height=None,
              title=None,
@@ -514,7 +521,7 @@ class Drawer(Draw):
              show=False,
              **kwargs):
         yaxis = 'y'
-        traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, mode=mode, yaxis=yaxis,
+        traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, yaxis=yaxis,
                                               **kwargs)
 
         if sub_traces:

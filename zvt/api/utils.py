@@ -83,5 +83,4 @@ def get_recent_report(data_schema: Type[Mixin], timestamp, entity_id=None, filte
 
 
 # the __all__ is generated
-__all__ = ['to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'get_china_exchange',
-           'china_stock_code_to_id', 'value_to_pct', 'float_to_pct_str', 'get_recent_report']
+__all__ = ['to_report_period_type', 'get_recent_report_date', 'get_recent_report_period', 'get_china_exchange', 'china_stock_code_to_id', 'value_to_pct', 'value_multiply', 'float_to_pct_str', 'get_recent_report']

@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # gen_exports('recorders')
     # gen_exports('domain')
     # gen_exports('informer')
-    gen_exports('tag')
+    gen_exports('api')
     # gen_exports('trader')
     # gen_exports('autocode')
     gen_exports('ml')

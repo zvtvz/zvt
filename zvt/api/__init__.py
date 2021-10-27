@@ -6,6 +6,11 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule intent
+from .intent import *
+from .intent import __all__ as _intent_all
+__all__ += _intent_all
+
 # import all from submodule kdata
 from .kdata import *
 from .kdata import __all__ as _kdata_all

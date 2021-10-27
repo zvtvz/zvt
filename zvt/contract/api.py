@@ -307,8 +307,10 @@ def get_data(data_schema: Mixin,
         if type(columns[0]) == str:
             columns_ = []
             for col in columns:
-                assert isinstance(col, str)
-                columns_.append(eval('data_schema.{}'.format(col)))
+                if isinstance(col, str):
+                    columns_.append(eval('data_schema.{}'.format(col)))
+                else:
+                    columns_.append(col)
             columns = columns_
 
         # make sure get timestamp

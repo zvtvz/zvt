@@ -461,7 +461,8 @@ class Factor(DataReader, DataListener):
         return self.data_df
 
     def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
-        if pd_is_not_null(self.factor_df):
+        if (self.transformer is not None or self.accumulator is not None) and pd_is_not_null(self.factor_df):
+            indicators = None
             if self.transformer is not None:
                 indicators = self.transformer.indicators
             elif self.accumulator is not None:
@@ -470,7 +471,7 @@ class Factor(DataReader, DataListener):
             if indicators:
                 return [self.factor_df[indicators]]
             else:
-                return self.factor_df
+                return [self.factor_df]
         return None
 
     def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:

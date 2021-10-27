@@ -268,5 +268,4 @@ if __name__ == '__main__':
             #     TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
 
 # the __all__ is generated
-__all__ = ['WindowMethod', 'TopType', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance',
-           'get_top_volume_entities', 'get_top_entities', 'got_top_performance_by_month']
+__all__ = ['WindowMethod', 'TopType', 'got_top_performance_by_month', 'get_top_performance_entities', 'get_top_fund_holding_stocks', 'get_performance', 'get_top_volume_entities', 'get_top_entities', 'show_month_performance', 'show_industry_composition']
