@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import demjson
+import demjson3
 import pandas as pd
 import requests
 
@@ -59,7 +59,7 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
             url = query_url.format(security_item.code, page, to_time_str(start), to_time_str(end))
 
             response = requests.get(url, headers=EASTMONEY_ETF_NET_VALUE_HEADER)
-            response_json = demjson.decode(response.text)
+            response_json = demjson3.decode(response.text)
             response_df = pd.DataFrame(response_json['Data']['LSJZList'])
 
             # 最后一页
@@ -96,7 +96,7 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         url = ChinaETFDayKdataRecorder.url.format(security_item.exchange, security_item.code, size)
 
         response = requests.get(url)
-        response_json = demjson.decode(response.text)
+        response_json = demjson3.decode(response.text)
 
         if response_json is None or len(response_json) == 0:
             return []

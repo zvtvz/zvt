@@ -415,5 +415,4 @@ class ActorMeetTradable(Mixin):
 
 
 # the __all__ is generated
-__all__ = ['Mixin', 'NormalMixin', 'Entity', 'TradableEntity', 'ActorEntity', 'NormalEntityMixin', 'Portfolio',
-           'PortfolioStock', 'PortfolioStockHistory', 'TradableMeetActor', 'ActorMeetTradable']
+__all__ = ['Mixin', 'NormalMixin', 'Entity', 'TradableEntity', 'ActorEntity', 'NormalEntityMixin', 'Portfolio', 'PortfolioStock', 'PortfolioStockHistory', 'TradableMeetActor', 'ActorMeetTradable']

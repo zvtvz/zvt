@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 from tabulate import tabulate
 
+from examples.utils import add_to_eastmoney
 from zvt import init_log, zvt_config
 from zvt.api import get_top_performance_entities, get_top_volume_entities
 from zvt.contract.api import get_entity_ids, decode_entity_id
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=18, minute=30, day_of_week='mon-fri')
+@sched.scheduled_job('cron', hour=19, minute=30, day_of_week='mon-fri')
 def report_top_stats(periods=[7, 30, 180, 365], ignore_new_stock=True):
     latest_day: Stock1dHfqKdata = Stock1dHfqKdata.query_data(order=Stock1dHfqKdata.timestamp.desc(), limit=1,
                                                              return_type='domain')
@@ -50,14 +50,8 @@ def report_top_stats(periods=[7, 30, 180, 365], ignore_new_stock=True):
         if period == 30:
             # add them to eastmoney
             try:
-                try:
-                    eastmoneypy.del_group('最靓仔')
-                except:
-                    pass
-                eastmoneypy.create_group('最靓仔')
-                for entity_id in df.index[:50]:
-                    _, _, code = decode_entity_id(entity_id)
-                    eastmoneypy.add_to_group(code=code, group_name='最靓仔')
+                codes = [decode_entity_id(entity_id)[2] for entity_id in df.index[:50]]
+                add_to_eastmoney(codes=codes, entity_type='stock', group='最靓仔')
             except Exception as e:
                 logger.exception(e)
                 email_action.send_message(zvt_config['email_username'], f'report_top_stats error',
@@ -70,14 +64,8 @@ def report_top_stats(periods=[7, 30, 180, 365], ignore_new_stock=True):
 
             # add them to eastmoney
             try:
-                try:
-                    eastmoneypy.del_group('躺尸一年')
-                except:
-                    pass
-                eastmoneypy.create_group('躺尸一年')
-                for entity_id in vol_df.index[:50]:
-                    _, _, code = decode_entity_id(entity_id)
-                    eastmoneypy.add_to_group(code=code, group_name='躺尸一年')
+                codes = [decode_entity_id(entity_id)[2] for entity_id in vol_df.index[:50]]
+                # add_to_eastmoney(codes=codes, entity_type='stock', group='躺尸一年')
             except Exception as e:
                 logger.exception(e)
                 email_action.send_message(zvt_config['email_username'], f'report_top_stats error',

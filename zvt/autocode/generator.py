@@ -54,6 +54,19 @@ def _get_interface_name(line: str):
         return _remove_start_end(line, "def ", "(")
 
 
+def _get_var_name(line: str):
+    """
+    get var name of the line
+
+    :param line: the line of the source
+    :return:
+    """
+    if not _get_interface_name(line):
+        words = line.split(" ")
+        if len(words) >= 2 and words[1] == '=':
+            return words[0]
+
+
 def all_sub_all(sub_module):
     return '''
 
@@ -84,7 +97,13 @@ def fill_package(dir_path: str):
                     outfile.write(package_template)
 
 
-def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated', export_from_package=True):
+def gen_exports(dir_path='./domain',
+                gen_flag='# the __all__ is generated',
+                export_from_package=True,
+                export_modules=None,
+                exludes=None):
+    if not exludes:
+        exludes = ['logger']
     fill_package_if_not_exist(dir_path=dir_path)
     files = list_all_files(dir_path=dir_path)
     for file in files:
@@ -98,7 +117,9 @@ def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated', expo
                     break
                 lines.append(line)
                 export = _get_interface_name(line)
-                if export and export[0].isalpha():
+                if not export:
+                    export = _get_var_name(line)
+                if export and export[0].isalpha() and export not in exludes:
                     exports.append(export)
                 line = fp.readline()
         print(f'{file}:{exports}')
@@ -112,6 +133,8 @@ def gen_exports(dir_path='./domain', gen_flag='# the __all__ is generated', expo
                 dir_path = os.path.dirname(file)
                 modules = all_sub_modules(dir_path)
                 if modules:
+                    if export_modules:
+                        modules = set(modules) & set(export_modules)
                     lines.append('''
 
 # __init__.py structure:

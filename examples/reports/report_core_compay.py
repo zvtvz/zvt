@@ -2,11 +2,11 @@
 import logging
 import time
 
-import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
 from examples.reports import get_subscriber_emails, stocks_with_info
+from examples.utils import add_to_eastmoney
 from zvt import init_log, zvt_config
 from zvt.contract.api import get_entities
 from zvt.domain import Stock
@@ -44,13 +44,8 @@ def report_core_company():
 
                 # add them to eastmoney
                 try:
-                    try:
-                        eastmoneypy.del_group('core')
-                    except:
-                        pass
-                    eastmoneypy.create_group('core')
-                    for stock in stocks:
-                        eastmoneypy.add_to_group(stock.code, group_name='core')
+                    codes = [stock.code for stock in stocks]
+                    add_to_eastmoney(codes=codes, entity_type='stock', group='core')
                 except Exception as e:
                     email_action.send_message(zvt_config['email_username'], f'report_core_company error',
                                               'report_core_company error:{}'.format(e))

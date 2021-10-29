@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Text
 from sqlalchemy.orm import declarative_base
 
-from zvt.contract import Mixin
+from zvt.contract.schema import Mixin
 from zvt.contract.register import register_schema
 
 ZvtInfoBase = declarative_base()
@@ -30,4 +30,4 @@ class TaggerState(ZvtInfoBase, Mixin):
 
 register_schema(providers=['zvt'], db_name='zvt_info', schema_base=ZvtInfoBase)
 # the __all__ is generated
-__all__ = ['RecorderState', 'TaggerState']
+__all__ = ['ZvtInfoBase', 'RecorderState', 'TaggerState']

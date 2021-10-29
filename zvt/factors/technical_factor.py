@@ -20,7 +20,7 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
                  factor_name: str = None, clear_state: bool = False, only_load_factor: bool = False,
                  adjust_type: Union[AdjustType, str] = None) -> None:
         if columns is None:
-            columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume']
+            columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume', 'turnover']
 
         # 股票默认使用后复权
         if entity_schema == Stock and not adjust_type:

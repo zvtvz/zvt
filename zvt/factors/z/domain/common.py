@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, Float, String, Boolean, Integer
 
-from zvt.contract import Mixin
+from zvt.contract.schema import Mixin
 
 
 class ZFactorCommon(Mixin):

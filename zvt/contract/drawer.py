@@ -631,4 +631,4 @@ if __name__ == '__main__':
     #
     # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
 # the __all__ is generated
-__all__ = ['Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations']
+__all__ = ['ChartType', 'Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations']

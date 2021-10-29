@@ -195,11 +195,16 @@ def get_entity_exchanges(entity_type):
 
 from . import zvt_context
 
+zvt_context = zvt_context
+
 # the __all__ is generated
-__all__ = ['IntervalLevel', 'AdjustType', 'ActorType', 'TradableType', 'Exchange', 'zvt_context']
+__all__ = ['IntervalLevel', 'AdjustType', 'ActorType', 'TradableType', 'Exchange', 'tradable_type_map_exchanges', 'get_entity_exchanges', 'zvt_context']
+
+# __init__.py structure:
+# common code of the package
+# export interface in __all__ which contains __all__ of its sub modules
 
 # import all from submodule schema
 from .schema import *
 from .schema import __all__ as _schema_all
-
 __all__ += _schema_all

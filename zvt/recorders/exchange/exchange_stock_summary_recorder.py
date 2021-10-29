@@ -1,4 +1,4 @@
-import demjson
+import demjson3
 import pandas as pd
 import requests
 
@@ -39,7 +39,7 @@ class ExchangeStockSummaryRecorder(TimestampsDataRecorder):
             url = self.url.format(timestamp_str)
             response = requests.get(url=url, headers=DEFAULT_SH_SUMMARY_HEADER)
 
-            results = demjson.decode(response.text[response.text.index("(") + 1:response.text.index(")")])['result']
+            results = demjson3.decode(response.text[response.text.index("(") + 1:response.text.index(")")])['result']
             result = [result for result in results if result['productType'] == '1']
             if result and len(result) == 1:
                 result_json = result[0]

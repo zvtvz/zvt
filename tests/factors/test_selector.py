@@ -33,7 +33,7 @@ def test_cross_ma_selector():
                                   windows=[5, 10],
                                   need_persist=False,
                                   level=IntervalLevel.LEVEL_1DAY,
-                                  adjust_type='qfq'))
+                                  adjust_type='hfq'))
     my_selector.run()
     print(my_selector.open_long_df)
     print(my_selector.open_short_df)

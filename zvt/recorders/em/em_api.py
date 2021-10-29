@@ -182,8 +182,7 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
         klines = data['klines']
         name = data['name']
 
-        # TODO: ignore the last unfinished kdata now,could control it better if need
-        for result in klines[:-1]:
+        for result in klines:
             # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
             # "2021-08-27,19.39,20.30,20.30,19.25,1688497,3370240912.00,5.48,6.01,1.15,3.98,0,0,0"
             # time,open,close,high,low,volume,turnover

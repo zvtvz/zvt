@@ -1,2 +1,7 @@
 [run]
-omit = zvt/recorders/*
+omit =
+        zvt/recorders/*
+        zvt/autocode/*
+        zvt/samples/*
+        zvt/ui/*
+        *__init__*

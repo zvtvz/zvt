@@ -34,4 +34,8 @@ jobs:
         run: |
           pip install pytest
           pip install pytest-cov
-          pytest ./tests --cov-config=.coveragerc --cov-report term --cov=./zvt --ignore=tests/recorders/ --ignore=tests/domain/
+          pytest ./tests --cov-config=.coveragerc --cov-report=xml --cov=./zvt --ignore=tests/recorders/ --ignore=tests/domain/
+      - name: Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          verbose: true

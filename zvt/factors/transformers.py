@@ -4,6 +4,7 @@ import pandas as pd
 
 from zvt.contract.factor import Transformer
 from zvt.domain import Stock1dHfqKdata
+from zvt.factors import MaTransformer
 from zvt.utils.pd_utils import group_by_entity_id, normalize_group_compute_result, merge_filter_result
 
 
@@ -19,6 +20,22 @@ def _cal_state(s, df, pre, interval, col):
     if pre_result and recent_result:
         return True
     return np.nan
+
+
+class CrossMaTransformer(MaTransformer):
+    def __init__(self, windows=None, cal_change_pct=False) -> None:
+        super().__init__(windows, cal_change_pct)
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        input_df = super().transform(input_df)
+        cols = [f'ma{window}' for window in self.windows]
+        s = input_df[cols[0]] > input_df[cols[1]]
+        current_col = cols[1]
+        for col in cols[2:]:
+            s = s & (input_df[current_col] > input_df[col])
+            current_col = col
+        input_df['filter_result'] = s
+        return input_df
 
 
 class FallBelowTransformer(Transformer):

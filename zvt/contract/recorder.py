@@ -7,10 +7,11 @@ from typing import List
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from zvt.contract import IntervalLevel, Mixin, TradableEntity
+from zvt.contract import IntervalLevel
 from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
 from zvt.contract.base import StatefulService
+from zvt.contract.schema import Mixin, TradableEntity
 from zvt.contract.zvt_info import RecorderState
 from zvt.utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, TIME_FORMAT_DAY, to_time_str, \
@@ -628,5 +629,4 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
 
 
 # the __all__ is generated
-__all__ = ['Meta', 'Recorder', 'EntityEventRecorder', 'TimeSeriesDataRecorder', 'FixedCycleDataRecorder',
-           'TimestampsDataRecorder']
+__all__ = ['Meta', 'Recorder', 'EntityEventRecorder', 'TimeSeriesDataRecorder', 'FixedCycleDataRecorder', 'TimestampsDataRecorder']

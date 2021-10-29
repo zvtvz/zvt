@@ -39,4 +39,4 @@ entity_map_schemas = {}
 # factor class registry
 factor_cls_registry = {}
 # the __all__ is generated
-__all__ = []
+__all__ = ['providers', 'tradable_entity_types', 'entity_schemas', 'schemas', 'tradable_schema_map', 'sessions', 'db_engine_map', 'db_session_map', 'provider_map_dbnames', 'dbname_map_base', 'dbname_map_schemas', 'entity_map_schemas', 'factor_cls_registry']

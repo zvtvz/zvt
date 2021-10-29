@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-import demjson
+import demjson3
 import pandas as pd
 import requests
 
@@ -71,7 +71,7 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
             try:
                 if resp.text == 'null' or resp.text is None:
                     break
-                category_jsons = demjson.decode(resp.text)
+                category_jsons = demjson3.decode(resp.text)
                 the_list = []
                 for category in category_jsons:
                     stock_code = category['code']
@@ -104,7 +104,7 @@ class SinaChinaBlockStockRecorder(TimeSeriesDataRecorder):
 
 if __name__ == '__main__':
     # init_log('sina_china_stock_category.log')
-
+    SinaBlockRecorder().run()
     recorder = SinaChinaBlockStockRecorder(codes=['new_cbzz'])
     recorder.run()
 # the __all__ is generated

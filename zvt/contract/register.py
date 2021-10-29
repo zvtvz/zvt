@@ -5,7 +5,8 @@ from typing import List
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from zvt.contract import TradableEntity, zvt_context, Mixin
+from zvt.contract import zvt_context
+from zvt.contract.schema import TradableEntity, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
 from zvt.utils.utils import add_to_map_list
 

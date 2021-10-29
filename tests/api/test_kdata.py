@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.api import get_kdata
-from zvt.contract import IntervalLevel
+from zvt.api.kdata import get_latest_kdata_date
+from zvt.contract import IntervalLevel, AdjustType
 
 
 def test_jq_1mon_kdata():
@@ -38,3 +39,8 @@ def test_jq_1d_hfq_kdata():
     assert round(se['high'], 2) == 273.68
     assert round(se['low'], 2) == 249.29
     assert round(se['close'], 2) == 272.18
+
+
+def test_get_latest_kdata_date():
+    date = get_latest_kdata_date(entity_type='stock', adjust_type=AdjustType.hfq)
+    assert date is not None

@@ -3,7 +3,7 @@
 import io
 import re
 
-import demjson
+import demjson3
 import pandas as pd
 import requests
 
@@ -26,7 +26,7 @@ class ChinaETFListSpider(Recorder):
         # 抓取沪市 ETF 列表
         url = 'http://query.sse.com.cn/commonQuery.do?sqlId=COMMON_SSE_ZQPZ_ETFLB_L_NEW'
         response = requests.get(url, headers=DEFAULT_SH_ETF_LIST_HEADER)
-        response_dict = demjson.decode(response.text)
+        response_dict = demjson3.decode(response.text)
 
         df = pd.DataFrame(response_dict.get('result', []))
         self.persist_etf_list(df, exchange='sh')
@@ -86,7 +86,7 @@ class ChinaETFListSpider(Recorder):
         for _, etf in etf_df.iterrows():
             url = query_url.format(etf['ETF_TYPE'], etf['ETF_CLASS'])
             response = requests.get(url, headers=DEFAULT_SH_ETF_LIST_HEADER)
-            response_dict = demjson.decode(response.text)
+            response_dict = demjson3.decode(response.text)
             response_df = pd.DataFrame(response_dict.get('result', []))
 
             etf_code = etf['FUND_ID']
@@ -173,7 +173,7 @@ class ChinaETFListSpider(Recorder):
         for etf_class in [1, 2]:
             url = query_url.format(etf_class)
             response = requests.get(url, headers=DEFAULT_SH_ETF_LIST_HEADER)
-            response_dict = demjson.decode(response.text)
+            response_dict = demjson3.decode(response.text)
             response_df = pd.DataFrame(response_dict.get('result', []))
             response_df = response_df[['fundid1', 'etftype']]
 

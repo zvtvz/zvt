@@ -45,7 +45,7 @@ class EastmoneyBlockRecorder(Recorder):
                 df = pd.DataFrame.from_records(the_list)
                 df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
                          force_update=self.force_update)
-            self.logger.info(f"finish record sina blocks:{category.value}")
+            self.logger.info(f"finish record eastmoney blocks:{category.value}")
 
 
 class EastmoneyBlockStockRecorder(TimeSeriesDataRecorder):

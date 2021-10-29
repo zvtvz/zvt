@@ -9,11 +9,11 @@ import pandas as pd
 from sqlalchemy import Column, String, Text
 from sqlalchemy.orm import declarative_base
 
-from zvt.contract import IntervalLevel, TradableEntity
-from zvt.contract import Mixin
+from zvt.contract import IntervalLevel
 from zvt.contract.api import get_data, df_to_db, get_db_session, del_data
 from zvt.contract.reader import DataReader, DataListener
 from zvt.contract.register import register_schema
+from zvt.contract.schema import Mixin, TradableEntity
 from zvt.contract.zvt_context import factor_cls_registry
 from zvt.utils.pd_utils import pd_is_not_null, drop_continue_duplicate, is_filter_result_df, is_score_result_df
 
@@ -585,5 +585,4 @@ class ScoreFactor(Factor):
 
 
 # the __all__ is generated
-__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'FactorMeta',
-           'FactorState', 'Factor', 'ScoreFactor']
+__all__ = ['Indicator', 'Transformer', 'Accumulator', 'Scorer', 'FactorType', 'FactorMeta', 'FactorBase', 'FactorState', 'Factor', 'ScoreFactor']

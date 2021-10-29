@@ -111,6 +111,7 @@ class VolumeUpMaFactor(TechnicalFactor):
                  windows=None,
                  vol_windows=None,
                  turnover_threshold=300000000,
+                 up_intervals=40,
                  over_mode='and') -> None:
         if not windows:
             windows = [250]
@@ -120,6 +121,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         self.windows = windows
         self.vol_windows = vol_windows
         self.turnover_threshold = turnover_threshold
+        self.up_intervals = up_intervals
         self.over_mode = over_mode
 
         columns: List = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume',
@@ -156,11 +158,15 @@ class VolumeUpMaFactor(TechnicalFactor):
         # 成交额过滤
         s = filter_up & filter_vol & (self.factor_df['turnover'] > self.turnover_threshold)
 
+        # 突破后的时间周期 up_intervals
         s[s == False] = None
-        s = s.groupby(level=0).fillna(method='ffill', limit=40)
+        s = s.groupby(level=0).fillna(method='ffill', limit=self.up_intervals)
         s[s.isna()] = False
 
-        filter_result = filter_up & s
+        # 还在均线附近
+        # 1)刚突破
+        # 2)突破后，回调到附近
+        filter_result = filter_up & s & (self.factor_df['turnover'] > self.turnover_threshold)
 
         self.result_df = filter_result.to_frame(name='filter_result')
 
