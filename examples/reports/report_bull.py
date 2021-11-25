@@ -29,8 +29,12 @@ def report_bull():
                    title='bull股票', entity_type='stock', em_group='bull股票', em_group_over_write=True,
                    filter_by_volume=True, adjust_type=AdjustType.hfq, start_timestamp='2019-01-01')
     report_targets(factor_cls=BullAndUpFactor, entity_provider='eastmoney', data_provider='em',
-                   title='bull板块', entity_type='block', em_group='bull板块', em_group_over_write=False,
+                   title='bull板块', entity_type='block', em_group='bull板块', em_group_over_write=True,
                    filter_by_volume=False, adjust_type=AdjustType.qfq, start_timestamp='2019-01-01')
+    report_targets(factor_cls=BullAndUpFactor, entity_provider='em', data_provider='em', em_group='自选股',
+                   title='bull港股', entity_type='stockhk', em_group_over_write=False, filter_by_volume=False,
+                   adjust_type=AdjustType.hfq, start_timestamp='2019-01-01')
+
 
 
 if __name__ == '__main__':

@@ -58,6 +58,15 @@ def get_kdata(entity_id=None, entity_ids=None, level=IntervalLevel.LEVEL_1DAY.va
                                   index=index)
 
 
+def default_adjust_type(entity_type: str) -> AdjustType:
+    """
+    :type entity_type: entity type, e.g stock, stockhk, stockus
+    """
+    if entity_type.startswith('stock'):
+        return AdjustType.hfq
+    return AdjustType.qfq
+
+
 def generate_kdata_id(entity_id, timestamp, level):
     if level >= IntervalLevel.LEVEL_1DAY:
         return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))

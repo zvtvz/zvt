@@ -43,7 +43,6 @@ class TopBottomFactor(TechnicalFactor):
                  accumulator: Accumulator = None, need_persist: bool = False, only_compute_factor: bool = False,
                  factor_name: str = None, clear_state: bool = False, only_load_factor: bool = False,
                  adjust_type: Union[AdjustType, str] = None, window=30) -> None:
-        self.adjust_type = adjust_type
 
         transformer = TopBottomTransformer(window=window)
 

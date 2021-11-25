@@ -6,9 +6,11 @@ import pandas as pd
 from sklearn import preprocessing
 
 from zvt.api import get_kdata_schema
+from zvt.api.kdata import default_adjust_type
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract import TradableEntity
 from zvt.domain import Stock
+from zvt.factors import Stock1dMaStatsFactor
 from zvt.tag.dataset.stock_tags import StockTags
 from zvt.utils import next_date, to_pd_timestamp
 
@@ -47,10 +49,9 @@ class MLMachine(object):
         self.entity_ids = entity_ids
         self.predict_range = predict_range
         self.level = level
-        if not adjust_type and self.entity_schema == Stock:
-            self.adjust_type = AdjustType.hfq
-        else:
-            self.adjust_type = adjust_type
+        if not adjust_type:
+            adjust_type = default_adjust_type(entity_type=self.entity_schema.__name__)
+        self.adjust_type=adjust_type
 
         self.relative_performance = relative_performance
 
@@ -76,9 +77,10 @@ class MLMachine(object):
                                             y_timestamps=self.testing_y_timestamps)
 
     def normalize(self):
-        df = self.training_x_df[self.category_nominal_features()]
-        enc = preprocessing.OneHotEncoder()
-        X = enc.fit_transform(df)
+        if self.category_nominal_features():
+            df = self.training_x_df[self.category_nominal_features()]
+            enc = preprocessing.OneHotEncoder()
+            X = enc.fit_transform(df)
 
     def ml(self):
         self.normalize()
@@ -160,8 +162,8 @@ class MyMLMachine(MLMachine):
     entity_schema = Stock
 
     def get_features(self, entity_ids, timestamps):
-        return StockTags.query_data(columns=['entity_id', 'timestamp', 'cycle_tag'],
-                                    filters=[StockTags.timestamp.in_(timestamps)])
+        return Stock1dMaStatsFactor.query_data(columns=['entity_id', 'timestamp', 'cycle_tag'],
+                                               filters=[StockTags.timestamp.in_(timestamps)])
 
 
 if __name__ == '__main__':

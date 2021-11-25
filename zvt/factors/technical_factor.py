@@ -2,7 +2,7 @@ from typing import List, Union, Type, Optional
 
 import pandas as pd
 
-from zvt.api.kdata import get_kdata_schema
+from zvt.api.kdata import get_kdata_schema, default_adjust_type
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.factor import Factor, Transformer, Accumulator, FactorMeta
 from zvt.domain import Stock
@@ -23,8 +23,8 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
             columns = ['id', 'entity_id', 'timestamp', 'level', 'open', 'close', 'high', 'low', 'volume', 'turnover']
 
         # 股票默认使用后复权
-        if entity_schema == Stock and not adjust_type:
-            adjust_type = AdjustType.hfq
+        if not adjust_type:
+            adjust_type = default_adjust_type(entity_type=entity_schema.__name__)
 
         self.adjust_type = adjust_type
         self.data_schema = get_kdata_schema(entity_schema.__name__, level=level, adjust_type=adjust_type)

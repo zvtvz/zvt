@@ -3,6 +3,9 @@ from enum import Enum
 
 
 class IntervalLevel(Enum):
+    """
+
+    """
     LEVEL_TICK = 'tick'
     LEVEL_1MIN = '1m'
     LEVEL_5MIN = '5m'

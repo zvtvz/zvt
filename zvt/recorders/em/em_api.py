@@ -246,7 +246,8 @@ def get_basic_info(entity_id):
 
 def get_tradable_list(entity_type: Union[TradableType, str] = 'stock',
                       exchange: Union[Exchange, str] = None,
-                      limit: int = 10000):
+                      limit: int = 10000,
+                      hk_south=False):
     entity_type = TradableType(entity_type)
     exchanges = get_entity_exchanges(entity_type=entity_type)
 
@@ -271,9 +272,13 @@ def get_tradable_list(entity_type: Union[TradableType, str] = 'stock',
                 # t=80 创业板
                 entity_flag = f'fs=m:0+t:6,m:0+t:13,m:0+t:80'
             if exchange == Exchange.hk:
-                # t=3 主板
-                # t=4 创业板
-                entity_flag = f'fs=m:116+t:3,m:116+t:4'
+                if hk_south:
+                    # 港股通
+                    entity_flag = 'fs=b:DLMK0144,b:DLMK0146'
+                else:
+                    # t=3 主板
+                    # t=4 创业板
+                    entity_flag = f'fs=m:116+t:3,m:116+t:4'
             if exchange == Exchange.nasdaq:
                 # t=1
                 # t=3 中概股
@@ -379,8 +384,8 @@ if __name__ == '__main__':
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    df = get_kdata(entity_id='stock_sz_000338')
-    # df = get_tradable_list()
+    # df = get_kdata(entity_id='stock_sz_000338')
+    df = get_tradable_list(entity_type='stockhk')
     print(df)
 # the __all__ is generated
 __all__ = ['get_ii_holder_report_dates', 'get_holder_report_dates', 'get_free_holder_report_dates', 'get_ii_holder',

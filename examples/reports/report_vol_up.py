@@ -22,10 +22,16 @@ def report_vol_up():
                    windows=[120, 250], over_mode='or', up_intervals=50, turnover_threshold=400000000)
 
     report_targets(factor_cls=VolumeUpMaFactor, entity_provider='eastmoney', data_provider='em', em_group='年线板块',
-                   title='放量突破(半)年线板块', entity_type='block', em_group_over_write=False, filter_by_volume=False,
+                   title='放量突破(半)年线板块', entity_type='block', em_group_over_write=True, filter_by_volume=False,
                    adjust_type=AdjustType.qfq, start_timestamp='2019-01-01',
                    # factor args
                    windows=[120, 250], over_mode='or', up_intervals=50, turnover_threshold=400000000)
+
+    report_targets(factor_cls=VolumeUpMaFactor, entity_provider='em', data_provider='em', em_group='自选股',
+                   title='放量突破(半)年线港股', entity_type='stockhk', em_group_over_write=False, filter_by_volume=False,
+                   adjust_type=AdjustType.hfq, start_timestamp='2019-01-01',
+                   # factor args
+                   windows=[120, 250], over_mode='or', up_intervals=5, turnover_threshold=100000000)
 
 
 if __name__ == '__main__':
