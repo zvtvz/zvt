@@ -10,9 +10,9 @@ IndexMetaBase = declarative_base()
 
 
 # 指数
-@register_entity(entity_type='index')
+@register_entity(entity_type="index")
 class Index(IndexMetaBase, Portfolio):
-    __tablename__ = 'index'
+    __tablename__ = "index"
 
     # 发布商
     publisher = Column(String(length=64))
@@ -24,9 +24,9 @@ class Index(IndexMetaBase, Portfolio):
 
 
 class IndexStock(IndexMetaBase, PortfolioStockHistory):
-    __tablename__ = 'index_stock'
+    __tablename__ = "index_stock"
 
 
-register_schema(providers=['exchange'], db_name='index_meta', schema_base=IndexMetaBase)
+register_schema(providers=["exchange"], db_name="index_meta", schema_base=IndexMetaBase)
 # the __all__ is generated
-__all__ = ['Index', 'IndexStock']
+__all__ = ["Index", "IndexStock"]

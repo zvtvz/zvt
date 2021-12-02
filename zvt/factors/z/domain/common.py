@@ -80,4 +80,4 @@ class ZFactorCommon(Mixin):
 
 
 # the __all__ is generated
-__all__ = ['ZFactorCommon']
+__all__ = ["ZFactorCommon"]

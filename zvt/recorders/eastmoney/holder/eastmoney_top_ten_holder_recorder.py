@@ -7,15 +7,15 @@ from zvt.utils.utils import to_float
 
 
 class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
-    provider = 'eastmoney'
+    provider = "eastmoney"
     data_schema = TopTenHolder
 
-    url = 'https://emh5.eastmoney.com/api/GuBenGuDong/GetShiDaGuDong'
-    path_fields = ['ShiDaGuDongList']
+    url = "https://emh5.eastmoney.com/api/GuBenGuDong/GetShiDaGuDong"
+    path_fields = ["ShiDaGuDongList"]
 
-    timestamps_fetching_url = 'https://emh5.eastmoney.com/api/GuBenGuDong/GetFirstRequest2Data'
-    timestamp_list_path_fields = ['SDGDBGQ', 'ShiDaGuDongBaoGaoQiList']
-    timestamp_path_fields = ['BaoGaoQi']
+    timestamps_fetching_url = "https://emh5.eastmoney.com/api/GuBenGuDong/GetFirstRequest2Data"
+    timestamp_list_path_fields = ["SDGDBGQ", "ShiDaGuDongBaoGaoQiList"]
+    timestamp_path_fields = ["BaoGaoQi"]
 
     def get_data_map(self):
         return {
@@ -36,10 +36,7 @@ class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
         }
 
     def generate_request_param(self, security_item, start, end, size, timestamp):
-        return {"color": "w",
-                "fc": get_fc(security_item),
-                "BaoGaoQi": to_time_str(timestamp)
-                }
+        return {"color": "w", "fc": get_fc(security_item), "BaoGaoQi": to_time_str(timestamp)}
 
     def generate_domain_id(self, entity, original_data):
         the_name = original_data.get("GuDongMingCheng")
@@ -48,9 +45,9 @@ class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
         return the_id
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init_log('top_ten_holder.log')
 
-    TopTenHolderRecorder(codes=['002572']).run()
+    TopTenHolderRecorder(codes=["002572"]).run()
 # the __all__ is generated
-__all__ = ['TopTenHolderRecorder']
+__all__ = ["TopTenHolderRecorder"]

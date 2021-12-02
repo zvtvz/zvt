@@ -11,35 +11,35 @@ from zvt.utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
-original_page_url = 'http://www.cnindex.com.cn/zh_indices/sese/index.html?act_menu=1&index_type=-1'
-url = 'http://www.cnindex.net.cn/index/indexList?channelCode={}&rows=1000&pageNum=1'
+original_page_url = "http://www.cnindex.com.cn/zh_indices/sese/index.html?act_menu=1&index_type=-1"
+url = "http://www.cnindex.net.cn/index/indexList?channelCode={}&rows=1000&pageNum=1"
 
 # 中证指数 抓取 风格指数 行业指数 规模指数 基金指数
 cni_category_map_url = {
-    IndexCategory.style: url.format('202'),
-    IndexCategory.industry: url.format('201'),
-    IndexCategory.scope: url.format('200'),
-    IndexCategory.fund: url.format('207'),
+    IndexCategory.style: url.format("202"),
+    IndexCategory.industry: url.format("201"),
+    IndexCategory.scope: url.format("200"),
+    IndexCategory.fund: url.format("207"),
 }
 
 # 深证指数 只取规模指数
 sz_category_map_url = {
-    IndexCategory.scope: url.format('100'),
+    IndexCategory.scope: url.format("100"),
 }
 
 
 def _get_resp_data(resp: requests.Response):
     resp.raise_for_status()
-    return resp.json()['data']
+    return resp.json()["data"]
 
 
-def get_cn_index(index_type='cni', category=IndexCategory.style):
-    if index_type == 'cni':
+def get_cn_index(index_type="cni", category=IndexCategory.style):
+    if index_type == "cni":
         category_map_url = cni_category_map_url
-    elif index_type == 'sz':
+    elif index_type == "sz":
         category_map_url = sz_category_map_url
     else:
-        logger.error(f'not support index_type: {index_type}')
+        logger.error(f"not support index_type: {index_type}")
         assert False
 
     requests_session = requests.Session()
@@ -48,7 +48,7 @@ def get_cn_index(index_type='cni', category=IndexCategory.style):
 
     resp = requests_session.get(url, headers=DEFAULT_HEADER)
 
-    results = _get_resp_data(resp)['rows']
+    results = _get_resp_data(resp)["rows"]
     # e.g
     # amount: 277743699997.9
     # closeingPoint: 6104.7592
@@ -75,12 +75,12 @@ def get_cn_index(index_type='cni', category=IndexCategory.style):
     # totalMarketValue: 23113641352198.32
     the_list = []
 
-    logger.info(f'category: {category} ')
-    logger.info(f'results: {results} ')
+    logger.info(f"category: {category} ")
+    logger.info(f"results: {results} ")
     for i, result in enumerate(results):
-        logger.info(f'to {i}/{len(results)}')
-        code = result['indexcode']
-        info_resp = requests_session.get(f'http://www.cnindex.net.cn/index-intro?indexcode={code}')
+        logger.info(f"to {i}/{len(results)}")
+        code = result["indexcode"]
+        info_resp = requests_session.get(f"http://www.cnindex.net.cn/index-intro?indexcode={code}")
         # fbrq: "2010-01-04"
         # jd: 1000
         # jr: "2002-12-31"
@@ -91,20 +91,20 @@ def get_cn_index(index_type='cni', category=IndexCategory.style):
         # xyfw: "沪深A股"
         # xygz: "在国证1000指数样本股中，选取主营业务收入增长率、净利润增长率和净资产收益率综合排名前332只"
         index_info = _get_resp_data(info_resp)
-        name = result['indexname']
-        entity_id = f'index_sz_{code}'
+        name = result["indexname"]
+        entity_id = f"index_sz_{code}"
         index_item = {
-            'id': entity_id,
-            'entity_id': entity_id,
-            'timestamp': to_pd_timestamp(index_info['jr']),
-            'entity_type': 'index',
-            'exchange': 'sz',
-            'code': code,
-            'name': name,
-            'category': category.value,
-            'list_date': to_pd_timestamp(index_info['fbrq']),
-            'base_point': index_info['jd'],
-            'publisher': 'cnindex'
+            "id": entity_id,
+            "entity_id": entity_id,
+            "timestamp": to_pd_timestamp(index_info["jr"]),
+            "entity_type": "index",
+            "exchange": "sz",
+            "code": code,
+            "name": name,
+            "category": category.value,
+            "list_date": to_pd_timestamp(index_info["fbrq"]),
+            "base_point": index_info["jd"],
+            "publisher": "cnindex",
         }
         logger.info(index_item)
         the_list.append(index_item)
@@ -113,8 +113,8 @@ def get_cn_index(index_type='cni', category=IndexCategory.style):
         return pd.DataFrame.from_records(the_list)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     df = get_cn_index()
     print(df)
 # the __all__ is generated
-__all__ = ['get_cn_index']
+__all__ = ["get_cn_index"]

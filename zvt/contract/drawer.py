@@ -18,29 +18,24 @@ logger = logging.getLogger(__name__)
 
 
 class ChartType(Enum):
-    kline = 'kline'
+    kline = "kline"
     # scatter mode
-    line = 'line'
-    area = 'area'
-    scatter = 'scatter'
+    line = "line"
+    area = "area"
+    scatter = "scatter"
     # distribute
-    histogram = 'histogram'
+    histogram = "histogram"
     # composite
-    pie = 'pie'
+    pie = "pie"
     # compare
-    bar = 'bar'
+    bar = "bar"
 
 
-_zvt_chart_type_map_scatter_mode = {
-    ChartType.line: 'lines',
-    ChartType.area: 'none',
-    ChartType.scatter: 'markers'
-}
+_zvt_chart_type_map_scatter_mode = {ChartType.line: "lines", ChartType.area: "none", ChartType.scatter: "markers"}
 
 
 @to_string
 class Rect(Bean):
-
     def __init__(self, x0=None, y0=None, x1=None, y1=None) -> None:
         # left-bottom
         self.x0 = x0
@@ -52,55 +47,85 @@ class Rect(Bean):
 
 class Draw(object):
     def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(main_chart=ChartType.kline, width=width, height=height, title=title,
-                         keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            main_chart=ChartType.kline,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(main_chart=ChartType.line, width=width, height=height, title=title,
-                         keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            main_chart=ChartType.line,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def draw_area(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(main_chart=ChartType.area, width=width, height=height, title=title,
-                         keep_ui_state=keep_ui_state, show=show, **kwargs)
+        return self.draw(
+            main_chart=ChartType.area,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def draw_scatter(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(main_chart=ChartType.scatter, width=width, height=height, title=title,
-                         keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            main_chart=ChartType.scatter,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def draw_histogram(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(ChartType.histogram, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            ChartType.histogram,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def draw_bar(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(ChartType.bar, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            ChartType.bar, width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show, **kwargs
+        )
 
     def draw_pie(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
-        return self.draw(ChartType.pie, width=width, height=height, title=title, keep_ui_state=keep_ui_state,
-                         show=show, **kwargs)
+        return self.draw(
+            ChartType.pie, width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show, **kwargs
+        )
 
-    def draw(self,
-             main_chart=ChartType.kline,
-             sub_chart='bar',
-             width=None,
-             height=None,
-             title=None,
-             keep_ui_state=True,
-             show=False,
-             **kwargs):
+    def draw(
+        self,
+        main_chart=ChartType.kline,
+        sub_chart="bar",
+        width=None,
+        height=None,
+        title=None,
+        keep_ui_state=True,
+        show=False,
+        **kwargs,
+    ):
 
         raise NotImplementedError()
 
-    def default_layout(self,
-                       main_chart=None,
-                       width=None,
-                       height=None,
-                       title=None,
-                       keep_ui_state=True,
-                       **layout_params):
+    def default_layout(self, main_chart=None, width=None, height=None, title=None, keep_ui_state=True, **layout_params):
         if keep_ui_state:
             uirevision = True
         else:
@@ -119,84 +144,74 @@ class Draw(object):
                 spikecolor="#999999",
                 spikemode="across",
                 rangeselector=dict(
-                    buttons=list([
-                        dict(count=1,
-                             label="1m",
-                             step="month",
-                             stepmode="backward"),
-                        dict(count=3,
-                             label="3m",
-                             step="month",
-                             stepmode="backward"),
-                        dict(count=6,
-                             label="6m",
-                             step="month",
-                             stepmode="backward"),
-                        dict(count=1,
-                             label="YTD",
-                             step="year",
-                             stepmode="todate"),
-                        dict(count=1,
-                             label="1y",
-                             step="year",
-                             stepmode="backward"),
-                        dict(step="all")
-                    ])
+                    buttons=list(
+                        [
+                            dict(count=1, label="1m", step="month", stepmode="backward"),
+                            dict(count=3, label="3m", step="month", stepmode="backward"),
+                            dict(count=6, label="6m", step="month", stepmode="backward"),
+                            dict(count=1, label="YTD", step="year", stepmode="todate"),
+                            dict(count=1, label="1y", step="year", stepmode="backward"),
+                            dict(step="all"),
+                        ]
+                    )
                 ),
                 rangeslider=dict(
                     visible=True,
                 ),
-                type="date"
+                type="date",
             )
 
-        return dict(showlegend=True,
-                    plot_bgcolor="#FFF",
-                    hovermode="x",
-                    hoverdistance=100,  # Distance to show hover label of data point
-                    spikedistance=1000,  # Distance to show spike
-                    uirevision=uirevision,
-                    height=height,
-                    width=width,
-                    title=title,
-                    yaxis=dict(
-                        autorange=True,
-                        fixedrange=False,
-                        zeroline=False,
-                        linecolor="#BCCCDC",
-                        showgrid=False,
-                    ),
-                    xaxis=xaxis,
-                    legend_orientation="h",
-                    hoverlabel={"namelength": -1},
-                    **layout_params)
+        return dict(
+            showlegend=True,
+            plot_bgcolor="#FFF",
+            hovermode="x",
+            hoverdistance=100,  # Distance to show hover label of data point
+            spikedistance=1000,  # Distance to show spike
+            uirevision=uirevision,
+            height=height,
+            width=width,
+            title=title,
+            yaxis=dict(
+                autorange=True,
+                fixedrange=False,
+                zeroline=False,
+                linecolor="#BCCCDC",
+                showgrid=False,
+            ),
+            xaxis=xaxis,
+            legend_orientation="h",
+            hoverlabel={"namelength": -1},
+            **layout_params,
+        )
 
 
 class Drawable(object):
-
     def drawer(self):
-        drawer = Drawer(main_df=self.drawer_main_df(),
-                        main_data=self.drawer_main_data(),
-                        factor_df_list=self.drawer_factor_df_list(),
-                        factor_data_list=self.drawer_factor_data_list(),
-                        sub_df_list=self.drawer_sub_df_list(),
-                        sub_data_list=self.drawer_sub_data_list(),
-                        sub_col_chart=self.drawer_sub_col_chart(),
-                        annotation_df=self.drawer_annotation_df(),
-                        rects=self.drawer_rects())
+        drawer = Drawer(
+            main_df=self.drawer_main_df(),
+            main_data=self.drawer_main_data(),
+            factor_df_list=self.drawer_factor_df_list(),
+            factor_data_list=self.drawer_factor_data_list(),
+            sub_df_list=self.drawer_sub_df_list(),
+            sub_data_list=self.drawer_sub_data_list(),
+            sub_col_chart=self.drawer_sub_col_chart(),
+            annotation_df=self.drawer_annotation_df(),
+            rects=self.drawer_rects(),
+        )
         return drawer
 
-    def draw(self,
-             main_chart=ChartType.kline,
-             width=None,
-             height=None,
-             title=None,
-             keep_ui_state=True,
-             show=False,
-             **kwargs):
-        return self.drawer().draw(main_chart=main_chart, width=width, height=height, title=title,
-                                  keep_ui_state=keep_ui_state,
-                                  show=show,
-                                  **kwargs)
+    def draw(
+        self, main_chart=ChartType.kline, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs
+    ):
+        return self.drawer().draw(
+            main_chart=main_chart,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            **kwargs,
+        )
 
     def drawer_main_df(self) -> Optional[pd.DataFrame]:
         return None
@@ -236,30 +251,40 @@ class StackedDrawer(Draw):
         part = (domain_range[1] - domain_range[0]) / total
 
         if index == 1:
-            yaxis = 'yaxis'
-            y = 'y'
+            yaxis = "yaxis"
+            y = "y"
         else:
-            yaxis = f'yaxis{index}'
-            y = f'y{index}'
+            yaxis = f"yaxis{index}"
+            y = f"y{index}"
 
-        return yaxis, y, dict(anchor="x",
-                              autorange=True,
-                              fixedrange=False,
-                              zeroline=False,
-                              linecolor="#BCCCDC",
-                              showgrid=False,
-                              domain=[domain_range[0] + part * (index - start_index),
-                                      domain_range[0] + part * (index - start_index + 1)])
+        return (
+            yaxis,
+            y,
+            dict(
+                anchor="x",
+                autorange=True,
+                fixedrange=False,
+                zeroline=False,
+                linecolor="#BCCCDC",
+                showgrid=False,
+                domain=[
+                    domain_range[0] + part * (index - start_index),
+                    domain_range[0] + part * (index - start_index + 1),
+                ],
+            ),
+        )
 
-    def draw(self,
-             main_chart=ChartType.kline,
-             sub_chart='bar',
-             width=None,
-             height=None,
-             title=None,
-             keep_ui_state=True,
-             show=False,
-             **kwargs):
+    def draw(
+        self,
+        main_chart=ChartType.kline,
+        sub_chart="bar",
+        width=None,
+        height=None,
+        title=None,
+        keep_ui_state=True,
+        show=False,
+        **kwargs,
+    ):
         stacked_fig = go.Figure()
 
         total = len(self.drawers)
@@ -283,8 +308,9 @@ class StackedDrawer(Draw):
                 stacked_fig.layout[yaxis] = layout
 
             # make y layouts
-            yaxis, y, layout = self.make_y_layout(index=index, total=total, start_index=start,
-                                                  domain_range=domain_range)
+            yaxis, y, layout = self.make_y_layout(
+                index=index, total=total, start_index=start, domain_range=domain_range
+            )
 
             stacked_fig.layout[yaxis] = layout
 
@@ -296,21 +322,26 @@ class StackedDrawer(Draw):
             # update shapes with yaxis
             if drawer.rects:
                 for rect in drawer.rects:
-                    stacked_fig.add_shape(type="rect",
-                                          x0=rect.x0, y0=rect.y0, x1=rect.x1, y1=rect.y1,
-                                          line=dict(
-                                              color="RoyalBlue",
-                                              width=1),
-                                          # fillcolor="LightSkyBlue",
-                                          yref=y)
+                    stacked_fig.add_shape(
+                        type="rect",
+                        x0=rect.x0,
+                        y0=rect.y0,
+                        x1=rect.x1,
+                        y1=rect.y1,
+                        line=dict(color="RoyalBlue", width=1),
+                        # fillcolor="LightSkyBlue",
+                        yref=y,
+                    )
 
             # annotations
             if pd_is_not_null(drawer.annotation_df):
-                stacked_fig.layout['annotations'] = annotations(drawer.annotation_df, yref=y)
+                stacked_fig.layout["annotations"] = annotations(drawer.annotation_df, yref=y)
 
         stacked_fig.update_layout(
-            self.default_layout(main_chart=main_chart, width=width, height=height, title=title,
-                                keep_ui_state=keep_ui_state))
+            self.default_layout(
+                main_chart=main_chart, width=width, height=height, title=title, keep_ui_state=keep_ui_state
+            )
+        )
 
         if show:
             stacked_fig.show()
@@ -319,16 +350,18 @@ class StackedDrawer(Draw):
 
 
 class Drawer(Draw):
-    def __init__(self,
-                 main_df: pd.DataFrame = None,
-                 factor_df_list: List[pd.DataFrame] = None,
-                 sub_df_list: pd.DataFrame = None,
-                 main_data: NormalData = None,
-                 factor_data_list: List[NormalData] = None,
-                 sub_data_list: NormalData = None,
-                 sub_col_chart: Optional[dict] = None,
-                 rects: List[Rect] = None,
-                 annotation_df: pd.DataFrame = None) -> None:
+    def __init__(
+        self,
+        main_df: pd.DataFrame = None,
+        factor_df_list: List[pd.DataFrame] = None,
+        sub_df_list: pd.DataFrame = None,
+        main_data: NormalData = None,
+        factor_data_list: List[NormalData] = None,
+        sub_data_list: NormalData = None,
+        sub_col_chart: Optional[dict] = None,
+        rects: List[Rect] = None,
+        annotation_df: pd.DataFrame = None,
+    ) -> None:
         """
 
         :param main_df: df for main chart
@@ -391,11 +424,7 @@ class Drawer(Draw):
     def has_sub_plot(self):
         return self.sub_data_list is not None and not self.sub_data_list[0].empty()
 
-    def make_traces(self,
-                    main_chart=ChartType.kline,
-                    sub_chart='bar',
-                    yaxis='y',
-                    **kwargs):
+    def make_traces(self, main_chart=ChartType.kline, sub_chart="bar", yaxis="y", **kwargs):
         traces = []
         sub_traces = []
 
@@ -410,37 +439,43 @@ class Drawer(Draw):
             # 构造主图
             if main_chart == ChartType.bar:
                 for col in df.columns:
-                    trace_name = '{}_{}'.format(code, col)
+                    trace_name = "{}_{}".format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Bar(x=df.index, y=ydata, name=trace_name, yaxis=yaxis, **kwargs))
             elif main_chart == ChartType.kline:
-                trace_name = '{}_kdata'.format(code)
-                trace = go.Candlestick(x=df.index, open=df['open'], close=df['close'], low=df['low'], high=df['high'],
-                                       name=trace_name, yaxis=yaxis, **kwargs)
+                trace_name = "{}_kdata".format(code)
+                trace = go.Candlestick(
+                    x=df.index,
+                    open=df["open"],
+                    close=df["close"],
+                    low=df["low"],
+                    high=df["high"],
+                    name=trace_name,
+                    yaxis=yaxis,
+                    **kwargs,
+                )
                 traces.append(trace)
             elif main_chart in [ChartType.scatter, ChartType.line, ChartType.area]:
                 mode = _zvt_chart_type_map_scatter_mode.get(main_chart)
                 for col in df.columns:
-                    trace_name = '{}_{}'.format(code, col)
+                    trace_name = "{}_{}".format(code, col)
                     ydata = df[col].values.tolist()
                     traces.append(go.Scatter(x=df.index, y=ydata, mode=mode, name=trace_name, yaxis=yaxis, **kwargs))
             elif main_chart == ChartType.histogram:
                 for col in df.columns:
-                    trace_name = '{}_{}'.format(code, col)
+                    trace_name = "{}_{}".format(code, col)
                     x = df[col].tolist()
-                    trace = go.Histogram(
-                        x=x,
-                        name=trace_name,
-                        **kwargs
-                    )
+                    trace = go.Histogram(x=x, name=trace_name, **kwargs)
                     traces.append(trace)
-                    annotation = [dict(
-                        entity_id=entity_id,
-                        timestamp=x[-1],
-                        value=0,
-                        flag=f'{trace_name}:{x[-1]}',
-                    )]
-                    annotation_df = pd.DataFrame.from_records(annotation, index=['entity_id', 'timestamp'])
+                    annotation = [
+                        dict(
+                            entity_id=entity_id,
+                            timestamp=x[-1],
+                            value=0,
+                            flag=f"{trace_name}:{x[-1]}",
+                        )
+                    ]
+                    annotation_df = pd.DataFrame.from_records(annotation, index=["entity_id", "timestamp"])
                     if pd_is_not_null(self.annotation_df):
                         self.annotation_df = pd.concat([self.annotation_df, annotation_df])
                     else:
@@ -459,11 +494,12 @@ class Drawer(Draw):
                         factor_df = factor_df.select_dtypes(np.number)
                         if pd_is_not_null(factor_df):
                             for col in factor_df.columns:
-                                trace_name = '{}_{}'.format(code, col)
+                                trace_name = "{}_{}".format(code, col)
                                 ydata = factor_df[col].values.tolist()
 
-                                line = go.Scatter(x=factor_df.index, y=ydata, mode='lines', name=trace_name, yaxis=yaxis,
-                                                  **kwargs)
+                                line = go.Scatter(
+                                    x=factor_df.index, y=ydata, mode="lines", name=trace_name, yaxis=yaxis, **kwargs
+                                )
                                 traces.append(line)
 
             # 构造幅图
@@ -473,14 +509,14 @@ class Drawer(Draw):
                     if pd_is_not_null(sub_df):
                         sub_df = sub_df.select_dtypes(np.number)
                         for col in sub_df.columns:
-                            trace_name = '{}_{}'.format(code, col)
+                            trace_name = "{}_{}".format(code, col)
                             ydata = sub_df[col].values.tolist()
 
                             def color(i):
                                 if i > 0:
-                                    return 'red'
+                                    return "red"
                                 else:
-                                    return 'green'
+                                    return "green"
 
                             colors = [color(i) for i in ydata]
 
@@ -491,38 +527,44 @@ class Drawer(Draw):
                                 the_sub_chart = sub_chart
 
                             if the_sub_chart == ChartType.line:
-                                sub_trace = go.Scatter(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
-                                                       marker=dict(color=colors))
+                                sub_trace = go.Scatter(
+                                    x=sub_df.index, y=ydata, name=trace_name, yaxis="y2", marker=dict(color=colors)
+                                )
                             else:
-                                sub_trace = go.Bar(x=sub_df.index, y=ydata, name=trace_name, yaxis='y2',
-                                                   marker=dict(color=colors))
+                                sub_trace = go.Bar(
+                                    x=sub_df.index, y=ydata, name=trace_name, yaxis="y2", marker=dict(color=colors)
+                                )
                             sub_traces.append(sub_trace)
 
         return traces, sub_traces
 
-    def add_rects(self, fig, yaxis='y'):
+    def add_rects(self, fig, yaxis="y"):
         if self.rects:
             for rect in self.rects:
-                fig.add_shape(type="rect",
-                              x0=rect.x0, y0=rect.y0, x1=rect.x1, y1=rect.y1,
-                              line=dict(color="RoyalBlue",
-                                        width=1),
-                              # fillcolor="LightSkyBlue"
-                              )
-            fig.update_shapes(dict(xref='x', yref=yaxis))
+                fig.add_shape(
+                    type="rect",
+                    x0=rect.x0,
+                    y0=rect.y0,
+                    x1=rect.x1,
+                    y1=rect.y1,
+                    line=dict(color="RoyalBlue", width=1),
+                    # fillcolor="LightSkyBlue"
+                )
+            fig.update_shapes(dict(xref="x", yref=yaxis))
 
-    def draw(self,
-             main_chart=ChartType.kline,
-             sub_chart='bar',
-             width=None,
-             height=None,
-             title=None,
-             keep_ui_state=True,
-             show=False,
-             **kwargs):
-        yaxis = 'y'
-        traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, yaxis=yaxis,
-                                              **kwargs)
+    def draw(
+        self,
+        main_chart=ChartType.kline,
+        sub_chart="bar",
+        width=None,
+        height=None,
+        title=None,
+        keep_ui_state=True,
+        show=False,
+        **kwargs,
+    ):
+        yaxis = "y"
+        traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, yaxis=yaxis, **kwargs)
 
         if sub_traces:
             fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], vertical_spacing=0.08, shared_xaxes=True)
@@ -535,15 +577,18 @@ class Drawer(Draw):
         # 绘制矩形
         self.add_rects(fig, yaxis=yaxis)
 
-        fig.update_layout(self.default_layout(main_chart=main_chart, width=width, height=height, title=title,
-                                              keep_ui_state=keep_ui_state))
+        fig.update_layout(
+            self.default_layout(
+                main_chart=main_chart, width=width, height=height, title=title, keep_ui_state=keep_ui_state
+            )
+        )
 
         if sub_traces:
             fig.update_layout(xaxis_rangeslider_visible=False)
             fig.update_layout(xaxis2_rangeslider_visible=True, xaxis2_rangeslider_thickness=0.1)
         # 绘制标志
         if pd_is_not_null(self.annotation_df):
-            fig.layout['annotations'] = annotations(self.annotation_df, yref=yaxis)
+            fig.layout["annotations"] = annotations(self.annotation_df, yref=yaxis)
 
         if show:
             fig.show()
@@ -558,11 +603,15 @@ class Drawer(Draw):
         values = [index1] + [index2] + [self.main_data.data_df[col] for col in self.main_data.data_df.columns]
 
         data = go.Table(
-            header=dict(values=cols,
-                        fill_color=['#000080', '#000080'] + ['#0066cc'] * len(self.main_data.data_df.columns),
-                        align='left',
-                        font=dict(color='white', size=13)),
-            cells=dict(values=values, fill=dict(color='#F5F8FF'), align='left'), **kwargs)
+            header=dict(
+                values=cols,
+                fill_color=["#000080", "#000080"] + ["#0066cc"] * len(self.main_data.data_df.columns),
+                align="left",
+                font=dict(color="white", size=13),
+            ),
+            cells=dict(values=values, fill=dict(color="#F5F8FF"), align="left"),
+            **kwargs,
+        )
 
         fig = go.Figure()
         fig.add_traces([data])
@@ -571,7 +620,7 @@ class Drawer(Draw):
         fig.show()
 
 
-def annotations(annotation_df: pd.DataFrame, yref='y'):
+def annotations(annotation_df: pd.DataFrame, yref="y"):
     """
     annotation_df format:
                                     value    flag    color
@@ -588,40 +637,42 @@ def annotations(annotation_df: pd.DataFrame, yref='y'):
         for trace_name, df in annotation_df.groupby(level=0):
             if pd_is_not_null(df):
                 for (_, timestamp), item in df.iterrows():
-                    if 'color' in item:
-                        color = item['color']
+                    if "color" in item:
+                        color = item["color"]
                     else:
-                        color = '#ec0000'
+                        color = "#ec0000"
 
-                    value = round(item['value'], 2)
-                    annotations.append(dict(
-                        x=timestamp,
-                        y=value,
-                        xref='x',
-                        yref=yref,
-                        text=item['flag'],
-                        showarrow=True,
-                        align='center',
-                        arrowhead=2,
-                        arrowsize=1,
-                        arrowwidth=2,
-                        # arrowcolor='#030813',
-                        ax=-10,
-                        ay=-30,
-                        bordercolor='#c7c7c7',
-                        borderwidth=1,
-                        bgcolor=color,
-                        opacity=0.8
-                    ))
+                    value = round(item["value"], 2)
+                    annotations.append(
+                        dict(
+                            x=timestamp,
+                            y=value,
+                            xref="x",
+                            yref=yref,
+                            text=item["flag"],
+                            showarrow=True,
+                            align="center",
+                            arrowhead=2,
+                            arrowsize=1,
+                            arrowwidth=2,
+                            # arrowcolor='#030813',
+                            ax=-10,
+                            ay=-30,
+                            bordercolor="#c7c7c7",
+                            borderwidth=1,
+                            bgcolor=color,
+                            opacity=0.8,
+                        )
+                    )
         return annotations
     return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from zvt.factors.z import ZFactor
 
-    data_reader1 = ZFactor(codes=['000338'], level='1d')
-    data_reader2 = ZFactor(codes=['000338'], level='1wk')
+    data_reader1 = ZFactor(codes=["000338"], level="1d")
+    data_reader2 = ZFactor(codes=["000338"], level="1wk")
     print(data_reader2.data_df)
 
     stacked = StackedDrawer(data_reader1.drawer(), data_reader2.drawer()).draw_kline(show=True)
@@ -631,4 +682,4 @@ if __name__ == '__main__':
     #
     # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
 # the __all__ is generated
-__all__ = ['ChartType', 'Rect', 'Draw', 'Drawable', 'StackedDrawer', 'Drawer', 'annotations']
+__all__ = ["ChartType", "Rect", "Draw", "Drawable", "StackedDrawer", "Drawer", "annotations"]

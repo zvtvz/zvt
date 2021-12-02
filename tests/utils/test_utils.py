@@ -20,7 +20,7 @@ def test_iterate_with_step():
 
 
 def test_iterate_entities():
-    data = get_entities(entity_type='stock')
+    data = get_entities(entity_type="stock")
     first = None
     last = None
     for sub_data in iterate_with_step(data):

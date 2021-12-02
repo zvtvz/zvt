@@ -1,0 +1,3 @@
+# dev tools
+pytest == 6.2.0
+pre-commit == 2.15.0

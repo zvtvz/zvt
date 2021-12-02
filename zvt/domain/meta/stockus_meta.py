@@ -9,12 +9,11 @@ StockusMetaBase = declarative_base()
 
 
 # 美股
-@register_entity(entity_type='stockus')
+@register_entity(entity_type="stockus")
 class Stockus(StockusMetaBase, TradableEntity):
-    __tablename__ = 'stockus'
+    __tablename__ = "stockus"
 
 
-register_schema(providers=['em'], db_name='stockus_meta',
-                schema_base=StockusMetaBase)
+register_schema(providers=["em"], db_name="stockus_meta", schema_base=StockusMetaBase)
 # the __all__ is generated
-__all__ = ['Stockus']
+__all__ = ["Stockus"]

@@ -10,9 +10,9 @@ FundMetaBase = declarative_base()
 
 
 # 个股
-@register_entity(entity_type='fund')
+@register_entity(entity_type="fund")
 class Fund(FundMetaBase, Portfolio):
-    __tablename__ = 'fund'
+    __tablename__ = "fund"
     # 基金管理人
     advisor = Column(String(length=100))
     # 基金托管人
@@ -46,13 +46,14 @@ class Fund(FundMetaBase, Portfolio):
     @classmethod
     def get_stocks(cls, code=None, codes=None, ids=None, timestamp=now_pd_timestamp(), provider=None):
         from zvt.api.portfolio import get_fund_stocks
+
         return get_fund_stocks(code=code, codes=codes, ids=ids, timestamp=timestamp, provider=provider)
 
 
 class FundStock(FundMetaBase, PortfolioStockHistory):
-    __tablename__ = 'fund_stock'
+    __tablename__ = "fund_stock"
 
 
-register_schema(providers=['joinquant'], db_name='fund_meta', schema_base=FundMetaBase)
+register_schema(providers=["joinquant"], db_name="fund_meta", schema_base=FundMetaBase)
 # the __all__ is generated
-__all__ = ['Fund', 'FundStock']
+__all__ = ["Fund", "FundStock"]

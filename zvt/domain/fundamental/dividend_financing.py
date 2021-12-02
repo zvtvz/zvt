@@ -9,7 +9,7 @@ DividendFinancingBase = declarative_base()
 
 
 class DividendFinancing(DividendFinancingBase, Mixin):
-    __tablename__ = 'dividend_financing'
+    __tablename__ = "dividend_financing"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -69,7 +69,9 @@ class RightsIssueDetail(DividendFinancingBase, Mixin):
     rights_raising_fund = Column(Float)
 
 
-register_schema(providers=['eastmoney'], db_name='dividend_financing', schema_base=DividendFinancingBase, entity_type='stock')
+register_schema(
+    providers=["eastmoney"], db_name="dividend_financing", schema_base=DividendFinancingBase, entity_type="stock"
+)
 
 # the __all__ is generated
-__all__ = ['DividendFinancing', 'DividendDetail', 'SpoDetail', 'RightsIssueDetail']
+__all__ = ["DividendFinancing", "DividendDetail", "SpoDetail", "RightsIssueDetail"]

@@ -13,45 +13,45 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=15, minute=30, day_of_week=3)
+@sched.scheduled_job("cron", hour=15, minute=30, day_of_week=3)
 def record_block():
     while True:
         email_action = EmailInformer()
 
         try:
-            Block.record_data(provider='sina')
-            BlockStock.record_data(provider='sina')
+            Block.record_data(provider="sina")
+            BlockStock.record_data(provider="sina")
 
-            email_action.send_message(zvt_config['email_username'], 'sina block finished', '')
+            email_action.send_message(zvt_config["email_username"], "sina block finished", "")
             break
         except Exception as e:
-            msg = f'sina block error:{e}'
+            msg = f"sina block error:{e}"
             logger.exception(msg)
 
-            email_action.send_message(zvt_config['email_username'], 'sina block error', msg)
+            email_action.send_message(zvt_config["email_username"], "sina block error", msg)
             time.sleep(60)
 
 
-@sched.scheduled_job('cron', hour=15, minute=30)
+@sched.scheduled_job("cron", hour=15, minute=30)
 def record_money_flow():
     while True:
         email_action = EmailInformer()
 
         try:
-            BlockMoneyFlow.record_data(provider='sina')
+            BlockMoneyFlow.record_data(provider="sina")
 
-            email_action.send_message(zvt_config['email_username'], 'sina money flow finished', '')
+            email_action.send_message(zvt_config["email_username"], "sina money flow finished", "")
             break
         except Exception as e:
-            msg = f'sina money flow error:{e}'
+            msg = f"sina money flow error:{e}"
             logger.exception(msg)
 
-            email_action.send_message(zvt_config['email_username'], 'sina money flow error', msg)
+            email_action.send_message(zvt_config["email_username"], "sina money flow error", msg)
             time.sleep(60)
 
 
-if __name__ == '__main__':
-    init_log('sina_data_runner.log')
+if __name__ == "__main__":
+    init_log("sina_data_runner.log")
 
     record_block()
     record_money_flow()

@@ -10,16 +10,12 @@ cash_flow_map = {
     #
     # 销售商品、提供劳务收到的现金
     "cash_from_selling": "Salegoodsservicerec",
-
     # 收到的税费返还
     "tax_refund": "Taxreturnrec",
-
     # 收到其他与经营活动有关的现金
     "cash_from_other_op": "Otheroperaterec",
-
     # 经营活动现金流入小计
     "total_op_cash_inflows": "Sumoperateflowin",
-
     # 购买商品、接受劳务支付的现金
     "cash_to_goods_services": "Buygoodsservicepay",
     # 支付给职工以及为职工支付的现金
@@ -30,12 +26,9 @@ cash_flow_map = {
     "cash_to_other_related_op": "Otheroperatepay",
     # 经营活动现金流出小计
     "total_op_cash_outflows": "Sumoperateflowout",
-
     # 经营活动产生的现金流量净额
     "net_op_cash_flows": "Netoperatecashflow",
-
     # 投资活动产生的现金流量
-
     # 收回投资收到的现金
     "cash_from_disposal_of_investments": "Disposalinvrec",
     # 取得投资收益收到的现金
@@ -44,61 +37,46 @@ cash_flow_map = {
     "cash_from_disposal_fixed_intangible_assets": "Dispfilassetrec",
     # 处置子公司及其他营业单位收到的现金净额
     "cash_from_disposal_subsidiaries": "Dispsubsidiaryrec",
-
     # 收到其他与投资活动有关的现金
     "cash_from_other_investing": "Otherinvrec",
-
     # 投资活动现金流入小计
     "total_investing_cash_inflows": "Suminvflowin",
-
     # 购建固定资产、无形资产和其他长期资产支付的现金
     "cash_to_acquire_fixed_intangible_assets": "Buyfilassetpay",
     # 投资支付的现金
     "cash_to_investments": "Invpay",
-
     # 取得子公司及其他营业单位支付的现金净额
     "cash_to_acquire_subsidiaries": "Getsubsidiarypay",
-
     # 支付其他与投资活动有关的现金
     "cash_to_other_investing": "Otherinvpay",
-
     # 投资活动现金流出小计
     "total_investing_cash_outflows": "Suminvflowout",
-
     # 投资活动产生的现金流量净额
     "net_investing_cash_flows": "Netinvcashflow",
-
     # 筹资活动产生的现金流量
     #
     # 吸收投资收到的现金
     "cash_from_accepting_investment": "Acceptinvrec",
     # 子公司吸收少数股东投资收到的现金
     "cash_from_subsidiaries_accepting_minority_interest": "Subsidiaryaccept",
-
     # 取得借款收到的现金
     "cash_from_borrowings": "Loanrec",
     # 发行债券收到的现金
     "cash_from_issuing_bonds": "Issuebondrec",
     # 收到其他与筹资活动有关的现金
     "cash_from_other_financing": "Otherfinarec",
-
     # 筹资活动现金流入小计
     "total_financing_cash_inflows": "Sumfinaflowin",
-
     # 偿还债务支付的现金
     "cash_to_repay_borrowings": "Repaydebtpay",
-
     # 分配股利、利润或偿付利息支付的现金
     "cash_to_pay_interest_dividend": "Diviprofitorintpay",
-
     # 子公司支付给少数股东的股利、利润
     "cash_to_pay_subsidiaries_minority_interest": "Subsidiarypay",
-
     # 支付其他与筹资活动有关的现金
     "cash_to_other_financing": "Otherfinapay",
     # 筹资活动现金流出小计
     "total_financing_cash_outflows": "Sumfinaflowout",
-
     # 筹资活动产生的现金流量净额
     "net_financing_cash_flows": "Netfinacashflow",
     # 汇率变动对现金及现金等价物的影响
@@ -109,7 +87,6 @@ cash_flow_map = {
     "cash_at_beginning": "Cashequibeginning",
     # 期末现金及现金等价物余额
     "cash": "Cashequiending",
-
     # 银行相关
     # 客户存款和同业及其他金融机构存放款项净增加额
     "fi_deposit_increase": "Nideposit",
@@ -149,7 +126,6 @@ cash_flow_map = {
     "fi_account_receivable_increase": "Niaccountrec",
     # 偿付债券利息支付的现金
     "fi_cash_to_pay_interest": "Bondintpay",
-
     # 保险相关
     # 收到原保险合同保费取得的现金
     "fi_cash_from_premium_of_original": "Premiumrec",
@@ -177,7 +153,6 @@ cash_flow_map = {
     "fi_cash_to_disposal_subsidiaries": "Dispsubsidiarypay",
     # 支付卖出回购金融资产款现金净额
     "fi_cash_to_sell_repurchase": "Netsellbuybackfassetpay",
-
     # 券商相关
     # 拆入资金净增加额
     "fi_borrowing_increase": "Niborrowfund",
@@ -201,17 +176,17 @@ cash_flow_map["report_date"] = ("ReportDate", to_pd_timestamp)
 class ChinaStockCashFlowRecorder(BaseChinaStockFinanceRecorder):
     data_schema = CashFlowStatement
 
-    url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetXianJinLiuLiangBiaoList'
-    finance_report_type = 'XianJinLiuLiangBiaoList'
+    url = "https://emh5.eastmoney.com/api/CaiWuFenXi/GetXianJinLiuLiangBiaoList"
+    finance_report_type = "XianJinLiuLiangBiaoList"
     data_type = 4
 
     def get_data_map(self):
         return cash_flow_map
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init_log('cash_flow.log')
-    recorder = ChinaStockCashFlowRecorder(codes=['002572'])
+    recorder = ChinaStockCashFlowRecorder(codes=["002572"])
     recorder.run()
 # the __all__ is generated
-__all__ = ['ChinaStockCashFlowRecorder']
+__all__ = ["ChinaStockCashFlowRecorder"]

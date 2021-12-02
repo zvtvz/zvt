@@ -7,11 +7,11 @@ from zvt.utils.utils import to_float
 class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
     data_schema = ManagerTrading
 
-    url = 'https://emh5.eastmoney.com/api/JiaoYiShuJu/GetGaoGuanZengJian'
-    path_fields = ['GaoGuanZengJianList']
+    url = "https://emh5.eastmoney.com/api/JiaoYiShuJu/GetGaoGuanZengJian"
+    path_fields = ["GaoGuanZengJianList"]
 
     def get_original_time_field(self):
-        return 'RiQi'
+        return "RiQi"
 
     def get_data_map(self):
         return {
@@ -32,10 +32,10 @@ class ManagerTradingRecorder(EastmoneyMoreDataRecorder):
         return the_id
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init_log('manager_trading.log')
 
-    recorder = ManagerTradingRecorder(codes=['002572'])
+    recorder = ManagerTradingRecorder(codes=["002572"])
     recorder.run()
 # the __all__ is generated
-__all__ = ['ManagerTradingRecorder']
+__all__ = ["ManagerTradingRecorder"]

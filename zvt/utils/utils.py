@@ -13,8 +13,8 @@ getcontext().prec = 16
 
 logger = logging.getLogger(__name__)
 
-none_values = ['不变', '--', '-', '新进']
-zero_values = ['不变', '--', '-', '新进']
+none_values = ["不变", "--", "-", "新进"]
+zero_values = ["不变", "--", "-", "新进"]
 
 
 def first_item_to_float(the_list):
@@ -37,24 +37,24 @@ def to_float(the_str, default=None):
     if the_str in none_values:
         return None
 
-    if '%' in the_str:
+    if "%" in the_str:
         return pct_to_float(the_str)
     try:
         scale = 1.0
-        if the_str[-2:] == '万亿':
+        if the_str[-2:] == "万亿":
             the_str = the_str[0:-2]
             scale = 1000000000000
-        elif the_str[-1] == '亿':
+        elif the_str[-1] == "亿":
             the_str = the_str[0:-1]
             scale = 100000000
-        elif the_str[-1] == '万':
+        elif the_str[-1] == "万":
             the_str = the_str[0:-1]
             scale = 10000
         if not the_str:
             return default
-        return float(Decimal(the_str.replace(',', '')) * Decimal(scale))
+        return float(Decimal(the_str.replace(",", "")) * Decimal(scale))
     except Exception as e:
-        logger.error('the_str:{}'.format(the_str))
+        logger.error("the_str:{}".format(the_str))
         logger.exception(e)
         return default
 
@@ -64,14 +64,14 @@ def pct_to_float(the_str, default=None):
         return None
 
     try:
-        return float(Decimal(the_str.replace('%', '')) / Decimal(100))
+        return float(Decimal(the_str.replace("%", "")) / Decimal(100))
     except Exception as e:
         logger.exception(e)
         return default
 
 
 def json_callback_param(the_str):
-    json_str = the_str[the_str.index("(") + 1:the_str.rindex(")")].replace('null', 'None')
+    json_str = the_str[the_str.index("(") + 1 : the_str.rindex(")")].replace("null", "None")
     return eval(json_str)
 
 
@@ -110,10 +110,10 @@ def fill_domain_from_dict(the_domain, the_dict: dict, the_map: dict = None, defa
             else:
                 result_value = the_func(to_value)
                 setattr(the_domain, k, result_value)
-                exec('the_domain.{}=result_value'.format(k))
+                exec("the_domain.{}=result_value".format(k))
 
 
-SUPPORT_ENCODINGS = ['GB2312', 'GBK', 'GB18030', 'UTF-8']
+SUPPORT_ENCODINGS = ["GB2312", "GBK", "GB18030", "UTF-8"]
 
 
 def read_csv(f, encoding, sep=None, na_values=None):
@@ -125,7 +125,7 @@ def read_csv(f, encoding, sep=None, na_values=None):
             else:
                 return pd.read_csv(f, encoding=encoding, na_values=na_values)
         except UnicodeDecodeError as e:
-            logger.warning('read_csv failed by using encoding:{}'.format(encoding), e)
+            logger.warning("read_csv failed by using encoding:{}".format(encoding), e)
             f.seek(0)
             continue
     return None
@@ -142,14 +142,14 @@ def marshal_object_for_ui(object):
 
 
 def chrome_copy_header_to_dict(src):
-    lines = src.split('\n')
+    lines = src.split("\n")
     header = {}
     if lines:
         for line in lines:
             try:
-                index = line.index(':')
+                index = line.index(":")
                 key = line[:index]
-                value = line[index + 1:]
+                value = line[index + 1 :]
                 if key and value:
                     header.setdefault(key.strip(), value.strip())
             except Exception:
@@ -193,9 +193,9 @@ def iterate_with_step(data, sub_size=100):
 
     for step in range(step_count):
         if type(data) == pd.DataFrame or type(data) == pd.Series:
-            yield data.iloc[sub_size * step:sub_size * (step + 1)]
+            yield data.iloc[sub_size * step : sub_size * (step + 1)]
         else:
-            yield data[sub_size * step:sub_size * (step + 1)]
+            yield data[sub_size * step : sub_size * (step + 1)]
 
 
 def url_unquote(url):
@@ -208,4 +208,21 @@ def parse_url_params(url):
 
 
 # the __all__ is generated
-__all__ = ['first_item_to_float', 'second_item_to_float', 'add_func_to_value', 'to_float', 'pct_to_float', 'json_callback_param', 'fill_domain_from_dict', 'read_csv', 'marshal_object_for_ui', 'chrome_copy_header_to_dict', 'to_positive_number', 'multiple_number', 'add_to_map_list', 'iterate_with_step', 'url_unquote', 'parse_url_params']
+__all__ = [
+    "first_item_to_float",
+    "second_item_to_float",
+    "add_func_to_value",
+    "to_float",
+    "pct_to_float",
+    "json_callback_param",
+    "fill_domain_from_dict",
+    "read_csv",
+    "marshal_object_for_ui",
+    "chrome_copy_header_to_dict",
+    "to_positive_number",
+    "multiple_number",
+    "add_to_map_list",
+    "iterate_with_step",
+    "url_unquote",
+    "parse_url_params",
+]

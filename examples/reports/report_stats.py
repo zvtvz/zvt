@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job('cron', hour=19, minute=30, day_of_week='mon-fri')
+@sched.scheduled_job("cron", hour=19, minute=30, day_of_week="mon-fri")
 def report_stats():
-    report_top_stats(entity_type='stock', entity_provider='joinquant', data_provider='joinquant')
-    report_top_stats(entity_type='stockhk', entity_provider='em', data_provider='em')
+    report_top_stats(entity_type="stock", entity_provider="joinquant", data_provider="joinquant")
+    report_top_stats(entity_type="stockhk", entity_provider="em", data_provider="em", top_count=20)
 
 
-if __name__ == '__main__':
-    init_log('report_stats.log')
+if __name__ == "__main__":
+    init_log("report_stats.log")
 
     report_stats()
 

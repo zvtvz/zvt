@@ -31,4 +31,4 @@ class MaStatsFactorCommon(Mixin):
 
 
 # the __all__ is generated
-__all__ = ['MaStatsFactorCommon']
+__all__ = ["MaStatsFactorCommon"]

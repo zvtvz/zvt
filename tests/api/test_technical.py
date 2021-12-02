@@ -6,7 +6,7 @@ init_test_context()
 
 
 def test_basic_get_securities():
-    items = get_entities(entity_type='stock', provider='eastmoney')
+    items = get_entities(entity_type="stock", provider="eastmoney")
     print(items)
-    items = get_entities(entity_type='index', provider='exchange')
+    items = get_entities(entity_type="index", provider="exchange")
     print(items)

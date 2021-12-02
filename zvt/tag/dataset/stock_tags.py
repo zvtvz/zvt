@@ -9,7 +9,7 @@ StockTagsBase = declarative_base()
 
 
 class StockTags(StockTagsBase, Mixin):
-    __tablename__ = 'stock_tags'
+    __tablename__ = "stock_tags"
 
     actor_tag = Column(String(length=64))
     style_tag = Column(String(length=64))
@@ -17,7 +17,6 @@ class StockTags(StockTagsBase, Mixin):
     market_value_tag = Column(String(length=64))
 
 
-register_schema(providers=['zvt'], db_name='stock_tags',
-                schema_base=StockTagsBase)
+register_schema(providers=["zvt"], db_name="stock_tags", schema_base=StockTagsBase)
 # the __all__ is generated
-__all__ = ['StockTags']
+__all__ = ["StockTags"]

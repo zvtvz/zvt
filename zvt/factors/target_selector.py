@@ -16,22 +16,33 @@ from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 class TargetType(Enum):
     # open_long 代表开多，并应该平掉相应标的的空单
-    open_long = 'open_long'
+    open_long = "open_long"
     # open_short 代表开空，并应该平掉相应标的的多单
-    open_short = 'open_short'
+    open_short = "open_short"
     # keep 代表保持现状，跟主动开仓有区别，有时有仓位是可以保持的，但不适合开新的仓
-    keep = 'keep'
+    keep = "keep"
 
 
 class SelectMode(Enum):
-    condition_and = 'condition_and'
-    condition_or = 'condition_or'
+    condition_and = "condition_and"
+    condition_or = "condition_or"
 
 
 class TargetSelector(object):
-    def __init__(self, entity_ids=None, entity_schema=Stock, exchanges=None, codes=None, start_timestamp=None,
-                 end_timestamp=None, long_threshold=0.8, short_threshold=0.2, level=IntervalLevel.LEVEL_1DAY,
-                 provider=None, select_mode: SelectMode = SelectMode.condition_and) -> None:
+    def __init__(
+        self,
+        entity_ids=None,
+        entity_schema=Stock,
+        exchanges=None,
+        codes=None,
+        start_timestamp=None,
+        end_timestamp=None,
+        long_threshold=0.8,
+        short_threshold=0.2,
+        level=IntervalLevel.LEVEL_1DAY,
+        provider=None,
+        select_mode: SelectMode = SelectMode.condition_and,
+    ) -> None:
         self.entity_ids = entity_ids
         self.entity_schema = entity_schema
         self.exchanges = exchanges
@@ -58,8 +69,15 @@ class TargetSelector(object):
         self.open_short_df: Optional[DataFrame] = None
         self.keep_df: Optional[DataFrame] = None
 
-        self.init_factors(entity_ids=entity_ids, entity_schema=entity_schema, exchanges=exchanges, codes=codes,
-                          start_timestamp=start_timestamp, end_timestamp=end_timestamp, level=self.level)
+        self.init_factors(
+            entity_ids=entity_ids,
+            entity_schema=entity_schema,
+            exchanges=exchanges,
+            codes=codes,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            level=self.level,
+        )
 
     def init_factors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, level):
         pass
@@ -80,27 +98,25 @@ class TargetSelector(object):
         self.run()
 
     def run(self):
-        """
-
-        """
+        """ """
         if self.factors:
             filters = []
             scores = []
             for factor in self.factors:
                 if is_filter_result_df(factor.result_df):
-                    df = factor.result_df[['filter_result']]
+                    df = factor.result_df[["filter_result"]]
                     if pd_is_not_null(df):
-                        df.columns = ['score']
+                        df.columns = ["score"]
                         filters.append(df)
                     else:
-                        raise Exception('no data for factor:{},{}'.format(factor.factor_name, factor))
+                        raise Exception("no data for factor:{},{}".format(factor.factor_name, factor))
                 if is_score_result_df(factor.result_df):
-                    df = factor.result_df[['score_result']]
+                    df = factor.result_df[["score_result"]]
                     if pd_is_not_null(df):
-                        df.columns = ['score']
+                        df.columns = ["score"]
                         scores.append(df)
                     else:
-                        raise Exception('no data for factor:{},{}'.format(factor.factor_name, factor))
+                        raise Exception("no data for factor:{},{}".format(factor.factor_name, factor))
 
             if filters:
                 if self.select_mode == SelectMode.condition_and:
@@ -126,7 +142,7 @@ class TargetSelector(object):
         if pd_is_not_null(df):
             if timestamp in df.index:
                 target_df = df.loc[[to_pd_timestamp(timestamp)], :]
-                return target_df['entity_id'].tolist()
+                return target_df["entity_id"].tolist()
         return []
 
     def get_open_long_targets(self, timestamp):
@@ -142,25 +158,26 @@ class TargetSelector(object):
         short_result = pd.DataFrame()
 
         if pd_is_not_null(self.filter_result):
-            keep_result = self.filter_result[self.filter_result['score'].isna()]
-            long_result = self.filter_result[self.filter_result['score'] == True]
-            short_result = self.filter_result[self.filter_result['score'] == False]
+            keep_result = self.filter_result[self.filter_result["score"].isna()]
+            long_result = self.filter_result[self.filter_result["score"] == True]
+            short_result = self.filter_result[self.filter_result["score"] == False]
 
         if pd_is_not_null(self.score_result):
-            score_keep_result = self.score_result[(self.score_result['score'] > self.short_threshold) & (
-                    self.score_result['score'] < self.long_threshold)]
+            score_keep_result = self.score_result[
+                (self.score_result["score"] > self.short_threshold) & (self.score_result["score"] < self.long_threshold)
+            ]
             if pd_is_not_null(keep_result):
                 keep_result = score_keep_result.loc[keep_result.index, :]
             else:
                 keep_result = score_keep_result
 
-            score_long_result = self.score_result[self.score_result['score'] >= self.long_threshold]
+            score_long_result = self.score_result[self.score_result["score"] >= self.long_threshold]
             if pd_is_not_null(long_result):
                 long_result = score_long_result.loc[long_result.index, :]
             else:
                 long_result = score_long_result
 
-            score_short_result = self.score_result[self.score_result['score'] <= self.short_threshold]
+            score_short_result = self.score_result[self.score_result["score"] <= self.short_threshold]
             if pd_is_not_null(short_result):
                 short_result = score_short_result.loc[short_result.index, :]
             else:
@@ -177,33 +194,34 @@ class TargetSelector(object):
         if pd_is_not_null(df):
             df = df.reset_index()
             df = index_df(df)
-            df = df.sort_values(by=['score', 'entity_id'])
+            df = df.sort_values(by=["score", "entity_id"])
         return df
 
-    def draw(self,
-             render='html',
-             file_name=None,
-             width=None,
-             height=None,
-             title=None,
-             keep_ui_state=True,
-             annotation_df=None,
-             target_type: TargetType = TargetType.open_long):
+    def draw(
+        self,
+        render="html",
+        file_name=None,
+        width=None,
+        height=None,
+        title=None,
+        keep_ui_state=True,
+        annotation_df=None,
+        target_type: TargetType = TargetType.open_long,
+    ):
 
         if target_type == TargetType.open_long:
             df = self.open_long_df.copy()
         elif target_type == TargetType.open_short:
             df = self.open_short_df.copy()
 
-        df['target_type'] = target_type.value
+        df["target_type"] = target_type.value
 
         if pd_is_not_null(df):
             df = df.reset_index(drop=False)
             drawer = Drawer(df)
 
-            drawer.draw_table(width=width, height=height, title=title,
-                              keep_ui_state=keep_ui_state)
+            drawer.draw_table(width=width, height=height, title=title, keep_ui_state=keep_ui_state)
 
 
 # the __all__ is generated
-__all__ = ['TargetType', 'SelectMode', 'TargetSelector']
+__all__ = ["TargetType", "SelectMode", "TargetSelector"]

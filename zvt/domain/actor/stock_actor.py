@@ -9,7 +9,7 @@ StockActorBase = declarative_base()
 
 
 class StockTopTenFreeHolder(StockActorBase, TradableMeetActor):
-    __tablename__ = 'stock_top_ten_free_holder'
+    __tablename__ = "stock_top_ten_free_holder"
 
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
@@ -23,7 +23,7 @@ class StockTopTenFreeHolder(StockActorBase, TradableMeetActor):
 
 
 class StockTopTenHolder(StockActorBase, TradableMeetActor):
-    __tablename__ = 'stock_top_ten_holder'
+    __tablename__ = "stock_top_ten_holder"
 
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
@@ -37,7 +37,7 @@ class StockTopTenHolder(StockActorBase, TradableMeetActor):
 
 
 class StockInstitutionalInvestorHolder(StockActorBase, TradableMeetActor):
-    __tablename__ = 'stock_institutional_investor_holder'
+    __tablename__ = "stock_institutional_investor_holder"
 
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
@@ -51,7 +51,7 @@ class StockInstitutionalInvestorHolder(StockActorBase, TradableMeetActor):
 
 
 class StockActorSummary(StockActorBase, TradableMeetActor):
-    __tablename__ = 'stock_actor_summary'
+    __tablename__ = "stock_actor_summary"
     # tradable code
     code = Column(String(length=64))
     # tradable name
@@ -76,7 +76,7 @@ class StockActorSummary(StockActorBase, TradableMeetActor):
     holding_values = Column(Float)
 
 
-register_schema(providers=['em'], db_name='stock_actor', schema_base=StockActorBase, entity_type='stock')
+register_schema(providers=["em"], db_name="stock_actor", schema_base=StockActorBase, entity_type="stock")
 
 # the __all__ is generated
-__all__ = ['StockTopTenFreeHolder', 'StockTopTenHolder', 'StockInstitutionalInvestorHolder', 'StockActorSummary']
+__all__ = ["StockTopTenFreeHolder", "StockTopTenHolder", "StockInstitutionalInvestorHolder", "StockActorSummary"]

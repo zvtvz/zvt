@@ -9,10 +9,10 @@ KdataBase = declarative_base()
 
 
 class Block1monKdata(KdataBase, BlockKdataCommon):
-    __tablename__ = 'block_1mon_kdata'
+    __tablename__ = "block_1mon_kdata"
 
 
-register_schema(providers=['em'], db_name='block_1mon_kdata', schema_base=KdataBase, entity_type='block')
+register_schema(providers=["em"], db_name="block_1mon_kdata", schema_base=KdataBase, entity_type="block")
 
 # the __all__ is generated
-__all__ = ['Block1monKdata']
+__all__ = ["Block1monKdata"]

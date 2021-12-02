@@ -15,7 +15,7 @@ sched = BackgroundScheduler()
 
 # 自行更改定定时运行时间
 # 这些数据都是些低频分散的数据，每天更新一次即可
-@sched.scheduled_job('cron', hour=2, minute=00, day_of_week=4)
+@sched.scheduled_job("cron", hour=2, minute=00, day_of_week=4)
 def run():
     while True:
         email_action = EmailInformer()
@@ -24,21 +24,21 @@ def run():
             # DividendFinancing.record_data(provider='eastmoney')
             # HolderTrading.record_data(provider='eastmoney')
             # ManagerTrading.record_data(provider='eastmoney')
-            TopTenHolder.record_data(provider='eastmoney')
-            TopTenTradableHolder.record_data(provider='eastmoney')
+            TopTenHolder.record_data(provider="eastmoney")
+            TopTenTradableHolder.record_data(provider="eastmoney")
 
-            email_action.send_message(zvt_config['email_username'], 'eastmoney runner2 finished', '')
+            email_action.send_message(zvt_config["email_username"], "eastmoney runner2 finished", "")
             break
         except Exception as e:
-            msg = f'eastmoney runner2 error:{e}'
+            msg = f"eastmoney runner2 error:{e}"
             logger.exception(msg)
 
-            email_action.send_message(zvt_config['email_username'], 'eastmoney runner2 error', msg)
+            email_action.send_message(zvt_config["email_username"], "eastmoney runner2 error", msg)
             time.sleep(60)
 
 
-if __name__ == '__main__':
-    init_log('eastmoney_data_runner2.log')
+if __name__ == "__main__":
+    init_log("eastmoney_data_runner2.log")
 
     run()
 

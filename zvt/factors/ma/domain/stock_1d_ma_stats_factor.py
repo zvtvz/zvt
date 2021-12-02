@@ -8,9 +8,9 @@ Stock1dMaStatsFactorBase = declarative_base()
 
 
 class Stock1dMaStatsFactor(Stock1dMaStatsFactorBase, MaStatsFactorCommon):
-    __tablename__ = 'stock_1d_ma_stats_factor'
+    __tablename__ = "stock_1d_ma_stats_factor"
 
 
-register_schema(providers=['zvt'], db_name='stock_1d_ma_stats_factor', schema_base=Stock1dMaStatsFactorBase)
+register_schema(providers=["zvt"], db_name="stock_1d_ma_stats_factor", schema_base=Stock1dMaStatsFactorBase)
 # the __all__ is generated
-__all__ = ['Stock1dMaStatsFactor']
+__all__ = ["Stock1dMaStatsFactor"]

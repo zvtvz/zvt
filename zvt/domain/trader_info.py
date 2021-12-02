@@ -12,7 +12,7 @@ TraderBase = declarative_base()
 
 # trader信息
 class TraderInfo(TraderBase, Mixin):
-    __tablename__ = 'trader_info'
+    __tablename__ = "trader_info"
     # 机器人名字
     trader_name = Column(String(length=128))
 
@@ -29,7 +29,7 @@ class TraderInfo(TraderBase, Mixin):
 # account stats of every day
 @to_string
 class AccountStats(TraderBase, Mixin):
-    __tablename__ = 'account_stats'
+    __tablename__ = "account_stats"
 
     input_money = Column(Float)
 
@@ -55,12 +55,12 @@ class AccountStats(TraderBase, Mixin):
 
 # the position for specific entity of every day
 class Position(TraderBase, Mixin):
-    __tablename__ = 'position'
+    __tablename__ = "position"
 
     # 机器人名字
     trader_name = Column(String(length=128))
     # 账户id
-    account_stats_id = Column(Integer, ForeignKey('account_stats.id'))
+    account_stats_id = Column(Integer, ForeignKey("account_stats.id"))
     account_stats = relationship("AccountStats", back_populates="positions")
 
     # 做多数量
@@ -89,7 +89,7 @@ class Position(TraderBase, Mixin):
 
 # 委托单
 class Order(TraderBase, Mixin):
-    __tablename__ = 'order'
+    __tablename__ = "order"
 
     # 机器人名字
     trader_name = Column(String(length=128))
@@ -106,7 +106,7 @@ class Order(TraderBase, Mixin):
     level = Column(String(length=32))
 
 
-register_schema(providers=['zvt'], db_name='trader_info', schema_base=TraderBase)
+register_schema(providers=["zvt"], db_name="trader_info", schema_base=TraderBase)
 
 # the __all__ is generated
-__all__ = ['TraderInfo', 'AccountStats', 'Position', 'Order']
+__all__ = ["TraderInfo", "AccountStats", "Position", "Order"]

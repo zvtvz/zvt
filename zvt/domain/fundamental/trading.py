@@ -9,7 +9,7 @@ TradingBase = declarative_base()
 
 
 class ManagerTrading(TradingBase, Mixin):
-    __tablename__ = 'manager_trading'
+    __tablename__ = "manager_trading"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -35,7 +35,7 @@ class ManagerTrading(TradingBase, Mixin):
 
 
 class HolderTrading(TradingBase, Mixin):
-    __tablename__ = 'holder_trading'
+    __tablename__ = "holder_trading"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -51,7 +51,7 @@ class HolderTrading(TradingBase, Mixin):
 
 
 class BigDealTrading(TradingBase, Mixin):
-    __tablename__ = 'big_deal_trading'
+    __tablename__ = "big_deal_trading"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -69,7 +69,7 @@ class BigDealTrading(TradingBase, Mixin):
 
 
 class MarginTrading(TradingBase, Mixin):
-    __tablename__ = 'margin_trading'
+    __tablename__ = "margin_trading"
     code = Column(String(length=32))
 
     # 融资余额(元）
@@ -89,7 +89,7 @@ class MarginTrading(TradingBase, Mixin):
 
 
 class DragonAndTiger(TradingBase, Mixin):
-    __tablename__ = 'dragon_and_tiger'
+    __tablename__ = "dragon_and_tiger"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -156,7 +156,7 @@ class DragonAndTiger(TradingBase, Mixin):
     net_out_dep5_rate = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'joinquant'], db_name='trading', schema_base=TradingBase, entity_type='stock')
+register_schema(providers=["eastmoney", "joinquant"], db_name="trading", schema_base=TradingBase, entity_type="stock")
 
 # the __all__ is generated
-__all__ = ['ManagerTrading', 'HolderTrading', 'BigDealTrading', 'MarginTrading', 'DragonAndTiger']
+__all__ = ["ManagerTrading", "HolderTrading", "BigDealTrading", "MarginTrading", "DragonAndTiger"]

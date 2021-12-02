@@ -12,7 +12,7 @@ class StatefulService(object):
 
     def __init__(self) -> None:
         assert self.state_schema is not None
-        self.state_session = get_db_session(data_schema=self.state_schema, provider='zvt')
+        self.state_session = get_db_session(data_schema=self.state_schema, provider="zvt")
         self.state_domain = self.state_schema.get_one(id=self.get_state_entity_id())
         if self.state_domain:
             self.state: dict = self.decode_state(self.state_domain.state)
@@ -51,4 +51,4 @@ class StatefulService(object):
 
 
 # the __all__ is generated
-__all__ = ['StatefulService']
+__all__ = ["StatefulService"]

@@ -10,8 +10,9 @@ from zvt.recorders.joinquant.quotes.jq_stock_kdata_recorder import JqChinaStockK
 
 
 def test_1wk_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1WEEK,
-                                         real_time=False)
+    recorder = JqChinaStockKdataRecorder(
+        codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1WEEK, real_time=False
+    )
     try:
         recorder.run()
     except:
@@ -19,8 +20,9 @@ def test_1wk_kdata_recorder():
 
 
 def test_1mon_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1MON,
-                                         real_time=False)
+    recorder = JqChinaStockKdataRecorder(
+        codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1MON, real_time=False
+    )
     try:
         recorder.run()
     except:
@@ -28,8 +30,9 @@ def test_1mon_kdata_recorder():
 
 
 def test_1d_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1DAY,
-                                         real_time=False)
+    recorder = JqChinaStockKdataRecorder(
+        codes=SAMPLE_STOCK_CODES, sleeping_time=0, level=IntervalLevel.LEVEL_1DAY, real_time=False
+    )
     try:
         recorder.run()
     except:
@@ -37,8 +40,9 @@ def test_1d_kdata_recorder():
 
 
 def test_1d_hfq_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=['000338'], sleeping_time=0, level=IntervalLevel.LEVEL_1DAY,
-                                         real_time=False, adjust_type='hfq')
+    recorder = JqChinaStockKdataRecorder(
+        codes=["000338"], sleeping_time=0, level=IntervalLevel.LEVEL_1DAY, real_time=False, adjust_type="hfq"
+    )
     try:
         recorder.run()
     except:
@@ -46,8 +50,13 @@ def test_1d_hfq_kdata_recorder():
 
 
 def test_1h_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=['000338'], sleeping_time=0, level=IntervalLevel.LEVEL_1HOUR,
-                                         real_time=False, start_timestamp='2019-01-01')
+    recorder = JqChinaStockKdataRecorder(
+        codes=["000338"],
+        sleeping_time=0,
+        level=IntervalLevel.LEVEL_1HOUR,
+        real_time=False,
+        start_timestamp="2019-01-01",
+    )
     try:
         recorder.run()
     except:
@@ -55,8 +64,9 @@ def test_1h_kdata_recorder():
 
 
 def test_5m_kdata_recorder():
-    recorder = JqChinaStockKdataRecorder(codes=['000338'], sleeping_time=0, level=IntervalLevel.LEVEL_5MIN,
-                                         real_time=False, start_timestamp='2019-01-01')
+    recorder = JqChinaStockKdataRecorder(
+        codes=["000338"], sleeping_time=0, level=IntervalLevel.LEVEL_5MIN, real_time=False, start_timestamp="2019-01-01"
+    )
     try:
         recorder.run()
     except:

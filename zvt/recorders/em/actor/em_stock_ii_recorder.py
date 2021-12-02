@@ -37,63 +37,75 @@ from zvt.utils import to_pd_timestamp, to_time_str
 
 
 class EMStockIIRecorder(TimestampsDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = "joinquant"
     entity_schema = Stock
 
-    provider = 'em'
+    provider = "em"
     data_schema = StockInstitutionalInvestorHolder
 
     def init_timestamps(self, entity_item) -> List[pd.Timestamp]:
         result = get_ii_holder_report_dates(code=entity_item.code)
         if result:
-            return [to_pd_timestamp(item['REPORT_DATE']) for item in result]
+            return [to_pd_timestamp(item["REPORT_DATE"]) for item in result]
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             the_date = to_time_str(timestamp)
-            self.logger.info(f'to {entity.code} {the_date}')
+            self.logger.info(f"to {entity.code} {the_date}")
             for actor_type in ActorType:
                 if actor_type == ActorType.private_equity or actor_type == ActorType.individual:
                     continue
-                result = get_ii_holder(code=entity.code, report_date=the_date,
-                                       org_type=actor_type_to_org_type(actor_type))
+                result = get_ii_holder(
+                    code=entity.code, report_date=the_date, org_type=actor_type_to_org_type(actor_type)
+                )
                 if result:
-                    holders = [{'id': f'{entity.entity_id}_{the_date}_{actor_type.value}_cn_{item["HOLDER_CODE"]}',
-                                'entity_id': entity.entity_id,
-                                'timestamp': timestamp,
-                                'code': entity.code,
-                                'name': entity.name,
-
-                                'actor_id': f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
-                                'actor_type': actor_type.value,
-                                'actor_code': item["HOLDER_CODE"],
-                                'actor_name': f'{item["HOLDER_NAME"]}',
-
-                                'report_date': timestamp,
-                                'report_period': to_report_period_type(timestamp),
-
-                                'holding_numbers': item['TOTAL_SHARES'],
-                                'holding_ratio': value_to_pct(item['FREESHARES_RATIO'],0),
-                                'holding_values': item['HOLD_VALUE']
-                                } for item in result]
+                    holders = [
+                        {
+                            "id": f'{entity.entity_id}_{the_date}_{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                            "entity_id": entity.entity_id,
+                            "timestamp": timestamp,
+                            "code": entity.code,
+                            "name": entity.name,
+                            "actor_id": f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                            "actor_type": actor_type.value,
+                            "actor_code": item["HOLDER_CODE"],
+                            "actor_name": f'{item["HOLDER_NAME"]}',
+                            "report_date": timestamp,
+                            "report_period": to_report_period_type(timestamp),
+                            "holding_numbers": item["TOTAL_SHARES"],
+                            "holding_ratio": value_to_pct(item["FREESHARES_RATIO"], 0),
+                            "holding_values": item["HOLD_VALUE"],
+                        }
+                        for item in result
+                    ]
                     df = pd.DataFrame.from_records(holders)
-                    df_to_db(data_schema=self.data_schema, df=df, provider=self.provider,
-                             force_update=True, drop_duplicates=True)
+                    df_to_db(
+                        data_schema=self.data_schema,
+                        df=df,
+                        provider=self.provider,
+                        force_update=True,
+                        drop_duplicates=True,
+                    )
 
                     # save the actors
-                    actors = [{'id': f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
-                               'entity_id': f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
-                               'entity_type': actor_type.value,
-                               'exchange': 'cn',
-                               'code': item["HOLDER_CODE"],
-                               'name': f'{item["HOLDER_NAME"]}'
-                               } for item in result]
+                    actors = [
+                        {
+                            "id": f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                            "entity_id": f'{actor_type.value}_cn_{item["HOLDER_CODE"]}',
+                            "entity_type": actor_type.value,
+                            "exchange": "cn",
+                            "code": item["HOLDER_CODE"],
+                            "name": f'{item["HOLDER_NAME"]}',
+                        }
+                        for item in result
+                    ]
                     df1 = pd.DataFrame.from_records(actors)
-                    df_to_db(data_schema=ActorMeta, df=df1, provider=self.provider, force_update=False,
-                             drop_duplicates=True)
+                    df_to_db(
+                        data_schema=ActorMeta, df=df1, provider=self.provider, force_update=False, drop_duplicates=True
+                    )
 
 
-if __name__ == '__main__':
-    EMStockIIRecorder(codes=['000562']).run()
+if __name__ == "__main__":
+    EMStockIIRecorder(codes=["000562"]).run()
 # the __all__ is generated
-__all__ = ['EMStockIIRecorder']
+__all__ = ["EMStockIIRecorder"]

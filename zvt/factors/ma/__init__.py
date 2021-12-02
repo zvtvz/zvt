@@ -9,19 +9,23 @@ __all__ = []
 # import all from submodule ma_stats_factor
 from .ma_stats_factor import *
 from .ma_stats_factor import __all__ as _ma_stats_factor_all
+
 __all__ += _ma_stats_factor_all
 
 # import all from submodule top_bottom_factor
 from .top_bottom_factor import *
 from .top_bottom_factor import __all__ as _top_bottom_factor_all
+
 __all__ += _top_bottom_factor_all
 
 # import all from submodule ma_factor
 from .ma_factor import *
 from .ma_factor import __all__ as _ma_factor_all
+
 __all__ += _ma_factor_all
 
 # import all from submodule domain
 from .domain import *
 from .domain import __all__ as _domain_all
+
 __all__ += _domain_all

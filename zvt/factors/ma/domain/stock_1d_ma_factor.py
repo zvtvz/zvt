@@ -9,7 +9,7 @@ Stock1dMaFactorBase = declarative_base()
 
 
 class Stock1dMaFactor(Stock1dMaFactorBase, Mixin):
-    __tablename__ = 'Stock1dMaFactor'
+    __tablename__ = "Stock1dMaFactor"
 
     level = Column(String(length=32))
     code = Column(String(length=32))
@@ -32,6 +32,6 @@ class Stock1dMaFactor(Stock1dMaFactorBase, Mixin):
     ma250 = Column(Float)
 
 
-register_schema(providers=['zvt'], db_name='stock_1d_ma_factor', schema_base=Stock1dMaFactorBase)
+register_schema(providers=["zvt"], db_name="stock_1d_ma_factor", schema_base=Stock1dMaFactorBase)
 # the __all__ is generated
-__all__ = ['Stock1dMaFactor']
+__all__ = ["Stock1dMaFactor"]

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from zvt.utils.utils import chrome_copy_header_to_dict
 
-SSE_KDATA_HEADER = chrome_copy_header_to_dict('''
+SSE_KDATA_HEADER = chrome_copy_header_to_dict(
+    """
 Host: yunhq.sse.com.cn:32041
 Connection: keep-alive
 Pragma: no-cache
@@ -12,9 +13,11 @@ Referer: http://www.sse.com.cn/market/price/trends/
 Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.8,en;q=0.6
 Cookie: yfx_c_g_u_id_10000042=_ck17072000172016360411059933357; yfx_f_l_v_t_10000042=f_t_1500481040618__r_t_1507560823182__v_t_1507561607501__r_c_1; VISITED_MENU=%5B%228451%22%2C%228453%22%5D
-''')
+"""
+)
 
-DEFAULT_SH_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_SH_HEADER = chrome_copy_header_to_dict(
+    """
 Accept: */*
 Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
@@ -23,9 +26,11 @@ Cookie: yfx_c_g_u_id_10000042=_ck21052517524516575117884257529; yfx_f_l_v_t_1000
 Host: query.sse.com.cn
 Referer: http://www.sse.com.cn/
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36
-''')
+"""
+)
 
-DEFAULT_SZ_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_SZ_HEADER = chrome_copy_header_to_dict(
+    """
 Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding:gzip, deflate, sdch
 Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
@@ -34,9 +39,11 @@ Host:www.szse.cn
 Referer:http://www.szse.cn/main/marketdata/jypz/colist/
 Upgrade-Insecure-Requests:1
 User-Agent:Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36
-''')
+"""
+)
 
-DEFAULT_TICK_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_TICK_HEADER = chrome_copy_header_to_dict(
+    """
 Host: market.finance.sina.com.cn
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate, sdch
@@ -45,9 +52,11 @@ Cookie: U_TRS1=000000b3.fffc2f53.566f784b.2900c0a6; UOR=www.baidu.com,blog.sina.
 Referer:market.finance.sina.com.cn
 Upgrade-Insecure-Requests: 1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36
-''')
+"""
+)
 
-DEFAULT_KDATA_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_KDATA_HEADER = chrome_copy_header_to_dict(
+    """
 Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding:gzip, deflate, sdch
 Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
@@ -57,9 +66,11 @@ Host:vip.stock.finance.sina.com.cn
 Referer:vip.stock.finance.sina.com.cn
 Upgrade-Insecure-Requests:1
 User-Agent:Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36
-''')
+"""
+)
 
-TONGHUASHUN_GN_HEADER = chrome_copy_header_to_dict('''
+TONGHUASHUN_GN_HEADER = chrome_copy_header_to_dict(
+    """
 Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding:gzip, deflate, sdch
 Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
@@ -69,9 +80,11 @@ Cookie:Hm_lvt_ab89213e83c551bf095446c08bf64988=1477116434; Hm_lpvt_ab89213e83c55
 Host:q.10jqka.com.cn
 Upgrade-Insecure-Requests:1
 User-Agent:Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36
-''')
+"""
+)
 
-TONGHUASHUN_KDATA_HEADER = chrome_copy_header_to_dict('''
+TONGHUASHUN_KDATA_HEADER = chrome_copy_header_to_dict(
+    """
 Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.8,en;q=0.6
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
@@ -79,9 +92,11 @@ Accept: */*
 Referer: http://stockpage.10jqka.com.cn/HQ_v4.html
 Cookie: __utma=156575163.1843700306.1488352720.1499234323.1502172029.4; __utmc=156575163; __utmz=156575163.1488352720.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); spversion=20130314; Hm_lvt_78c58f01938e4d85eaf619eae71b4ed1=1507300869; Hm_lpvt_78c58f01938e4d85eaf619eae71b4ed1=1508464591; historystock=603189%7C*%7C300295%7C*%7C600839%7C*%7C000338%7C*%7C002194; log=; v=AREjaxfGLPcJoUDd5wHRp1QiKRaufoSAL_MpD_OlDDL35T_CO86VwL9CPa2D
 Connection: keep-alive
-''')
+"""
+)
 
-DEFAULT_BALANCE_SHEET_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_BALANCE_SHEET_HEADER = chrome_copy_header_to_dict(
+    """
 Host: money.finance.sina.com.cn
 User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
@@ -91,9 +106,11 @@ Referer: http://vip.stock.finance.sina.com.cn/corp/go.php/vFD_CashFlow/stockid/0
 Cookie: U_TRS1=000000be.c95848c3.59817e10.a54886e2; U_TRS2=000000be.c96a48c3.59817e10.a91795e2; UOR=,vip.stock.finance.sina.com.cn,; ULV=1501658645426:2:2:2:182.148.114.190_1501658642.469995:1501658642409; SINAGLOBAL=182.148.114.190_1501658642.469991; Apache=182.148.114.190_1501658642.469995; _s_upa=1; SUB=_2A250hQ5nDeRhGedL4lQQ8ivPzziIHXVX83ivrDV_PUNbm9BeLXigkW8-niaOks2yNkw8lYo-TvoqGk6nRA..; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5J7vXaOMNYJQ0d27EZPWIF5NHD95QpSK.ceKzfe0BXWs4Dqcj.i--fi-zRiKnEi--fiKLhi-iWi--Xi-isi-88i--Ri-2piKyh; SCF=At4whqZZyjTBTvcLfR0tyqIpfHUX2VOK-qvBVHkbyahiCVcr4-8NjJQGHwCaTtkQJ0SPmrzvZARwtEkL1I_46z8.; ALF=1533194679; sso_info=v02m6alo5qztbaYloWum6akpp2WpaSPk4S1jpOYsYyjlLONg5DA; FINANCE2=f7634b1d12920e2763ffc0dc463ef6bb
 Connection: keep-alive
 Upgrade-Insecure-Requests: 1
-''')
+"""
+)
 
-DEFAULT_SH_SUMMARY_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_SH_SUMMARY_HEADER = chrome_copy_header_to_dict(
+    """
 Host: query.sse.com.cn
 Connection: keep-alive
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
@@ -102,9 +119,11 @@ Referer: http://www.sse.com.cn/market/stockdata/overview/day/
 Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.8,en;q=0.6
 Cookie: yfx_c_g_u_id_10000042=_ck17122009304714819234313401740; VISITED_COMPANY_CODE=%5B%22000016%22%5D; VISITED_INDEX_CODE=%5B%22000016%22%5D; yfx_f_l_v_t_10000042=f_t_1513733447386__r_t_1515716891222__v_t_1515721033042__r_c_3; VISITED_MENU=%5B%228464%22%2C%229666%22%2C%229668%22%2C%229669%22%2C%228454%22%2C%228460%22%2C%229665%22%2C%228459%22%2C%229692%22%2C%228451%22%2C%228466%22%5D
-''')
+"""
+)
 
-DEFAULT_SH_ETF_LIST_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_SH_ETF_LIST_HEADER = chrome_copy_header_to_dict(
+    """
 Host: query.sse.com.cn
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
 Accept: */*
@@ -113,15 +132,20 @@ Accept-Encoding: gzip, deflate
 Accept-Language: zh-CN,zh;q=0.9
 Cookie: yfx_c_g_u_id_10000042=_ck19062609443812815766114343798; VISITED_COMPANY_CODE=%5B%22510300%22%5D; VISITED_FUND_CODE=%5B%22510300%22%5D; VISITED_MENU=%5B%228307%22%2C%228823%22%2C%228547%22%2C%228556%22%2C%228549%22%2C%2210848%22%2C%228550%22%5D; yfx_f_l_v_t_10000042=f_t_1561513478278__r_t_1561692626758__v_t_1561695738302__r_c_1
 Connection: keep-alive
-''')
+"""
+)
 
-EASTMONEY_ETF_NET_VALUE_HEADER = chrome_copy_header_to_dict('''
+EASTMONEY_ETF_NET_VALUE_HEADER = chrome_copy_header_to_dict(
+    """
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
 Referer: http://fund.eastmoney.com/
-''')
+"""
+)
 
-DEFAULT_HEADER = chrome_copy_header_to_dict('''
+DEFAULT_HEADER = chrome_copy_header_to_dict(
+    """
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36
-''')
+"""
+)
 # the __all__ is generated
 __all__ = []

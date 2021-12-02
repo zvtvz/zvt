@@ -19,22 +19,24 @@ from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str,
 class Trader(object):
     entity_schema: Type[TradableEntity] = None
 
-    def __init__(self,
-                 entity_ids: List[str] = None,
-                 exchanges: List[str] = None,
-                 codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None,
-                 end_timestamp: Union[str, pd.Timestamp] = None,
-                 provider: str = None,
-                 level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 trader_name: str = None,
-                 real_time: bool = False,
-                 kdata_use_begin_time: bool = False,
-                 draw_result: bool = True,
-                 rich_mode: bool = False,
-                 adjust_type: AdjustType = None,
-                 profit_threshold=(3, -0.3),
-                 keep_history=False) -> None:
+    def __init__(
+        self,
+        entity_ids: List[str] = None,
+        exchanges: List[str] = None,
+        codes: List[str] = None,
+        start_timestamp: Union[str, pd.Timestamp] = None,
+        end_timestamp: Union[str, pd.Timestamp] = None,
+        provider: str = None,
+        level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+        trader_name: str = None,
+        real_time: bool = False,
+        kdata_use_begin_time: bool = False,
+        draw_result: bool = True,
+        rich_mode: bool = False,
+        adjust_type: AdjustType = None,
+        profit_threshold=(3, -0.3),
+        keep_history=False,
+    ) -> None:
         assert self.entity_schema is not None
         assert start_timestamp is not None
         assert end_timestamp is not None
@@ -56,12 +58,14 @@ class Trader(object):
         self.start_timestamp = to_pd_timestamp(start_timestamp)
         self.end_timestamp = to_pd_timestamp(end_timestamp)
 
-        self.trading_dates = self.entity_schema.get_trading_dates(start_date=self.start_timestamp,
-                                                                  end_date=self.end_timestamp)
+        self.trading_dates = self.entity_schema.get_trading_dates(
+            start_date=self.start_timestamp, end_date=self.end_timestamp
+        )
 
         if real_time:
             self.logger.info(
-                'real_time mode, end_timestamp should be future,you could set it big enough for running forever')
+                "real_time mode, end_timestamp should be future,you could set it big enough for running forever"
+            )
             assert self.end_timestamp >= now_pd_timestamp()
 
         self.kdata_use_begin_time = kdata_use_begin_time
@@ -78,26 +82,34 @@ class Trader(object):
         self.trading_signal_listeners: List[TradingListener] = []
         self.selectors: List[TargetSelector] = []
 
-        self.account_service = SimAccountService(entity_schema=self.entity_schema,
-                                                 trader_name=self.trader_name,
-                                                 timestamp=self.start_timestamp,
-                                                 provider=self.provider,
-                                                 level=self.level,
-                                                 rich_mode=self.rich_mode,
-                                                 adjust_type=self.adjust_type,
-                                                 keep_history=self.keep_history)
+        self.account_service = SimAccountService(
+            entity_schema=self.entity_schema,
+            trader_name=self.trader_name,
+            timestamp=self.start_timestamp,
+            provider=self.provider,
+            level=self.level,
+            rich_mode=self.rich_mode,
+            adjust_type=self.adjust_type,
+            keep_history=self.keep_history,
+        )
 
         self.register_trading_signal_listener(self.account_service)
 
-        self.init_selectors(entity_ids=self.entity_ids, entity_schema=self.entity_schema, exchanges=self.exchanges,
-                            codes=self.codes, start_timestamp=self.start_timestamp, end_timestamp=self.end_timestamp,
-                            adjust_type=self.adjust_type)
+        self.init_selectors(
+            entity_ids=self.entity_ids,
+            entity_schema=self.entity_schema,
+            exchanges=self.exchanges,
+            codes=self.codes,
+            start_timestamp=self.start_timestamp,
+            end_timestamp=self.end_timestamp,
+            adjust_type=self.adjust_type,
+        )
 
         if self.selectors:
             self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.selectors]))
             self.trading_level_asc.sort()
 
-            self.logger.info(f'trader level:{self.level},selectors level:{self.trading_level_asc}')
+            self.logger.info(f"trader level:{self.level},selectors level:{self.trading_level_asc}")
 
             if self.level != self.trading_level_asc[0]:
                 raise Exception("trader level should be the min of the selectors")
@@ -112,10 +124,11 @@ class Trader(object):
         self.on_start()
 
     def on_start(self):
-        self.logger.info(f'trader:{self.trader_name} on_start')
+        self.logger.info(f"trader:{self.trader_name} on_start")
 
-    def init_selectors(self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp,
-                       adjust_type=None):
+    def init_selectors(
+        self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, adjust_type=None
+    ):
         """
         overwrite it to init selectors if you want to use selector/factor computing model
         :param adjust_type:
@@ -123,8 +136,12 @@ class Trader(object):
         """
         pass
 
-    def update_targets_by_level(self, level: IntervalLevel, long_targets: List[str],
-                                short_targets: List[str], ) -> None:
+    def update_targets_by_level(
+        self,
+        level: IntervalLevel,
+        long_targets: List[str],
+        short_targets: List[str],
+    ) -> None:
         """
         the trading signals is generated in min level,before that,we should cache targets of all levels
 
@@ -133,11 +150,13 @@ class Trader(object):
         :param short_targets:
         """
         self.logger.debug(
-            f'level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{long_targets}')
+            f"level:{level},old long targets:{self.level_map_long_targets.get(level)},new long targets:{long_targets}"
+        )
         self.level_map_long_targets[level] = long_targets
 
         self.logger.debug(
-            f'level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{short_targets}')
+            f"level:{level},old short targets:{self.level_map_short_targets.get(level)},new short targets:{short_targets}"
+        )
         self.level_map_short_targets[level] = short_targets
 
     def get_long_targets_by_level(self, level: IntervalLevel) -> List[str]:
@@ -217,11 +236,11 @@ class Trader(object):
                     # 止盈
                     if position.profit_rate >= positive:
                         close_long_entity_ids.append(position.entity_id)
-                        self.logger.info(f'close profit {position.profit_rate} for {position.entity_id}')
+                        self.logger.info(f"close profit {position.profit_rate} for {position.entity_id}")
                     # 止损
                     if position.profit_rate <= negative:
                         close_long_entity_ids.append(position.entity_id)
-                        self.logger.info(f'cut lost {position.profit_rate} for {position.entity_id}')
+                        self.logger.info(f"cut lost {position.profit_rate} for {position.entity_id}")
 
             return close_long_entity_ids, None
         return None, None
@@ -231,8 +250,11 @@ class Trader(object):
             account = self.get_current_account()
             current_holdings = []
             if account.positions:
-                current_holdings = [position.entity_id for position in account.positions if position != None and
-                                    position.available_long > 0]
+                current_holdings = [
+                    position.entity_id
+                    for position in account.positions
+                    if position != None and position.available_long > 0
+                ]
 
             entity_ids = set(entity_ids) - set(current_holdings)
 
@@ -241,12 +263,14 @@ class Trader(object):
             position_pct = (1.0 / len(entity_ids)) * position_pct
 
             for entity_id in entity_ids:
-                trading_signal = TradingSignal(entity_id=entity_id,
-                                               due_timestamp=due_timestamp,
-                                               happen_timestamp=happen_timestamp,
-                                               trading_signal_type=TradingSignalType.open_long,
-                                               trading_level=self.level,
-                                               position_pct=position_pct)
+                trading_signal = TradingSignal(
+                    entity_id=entity_id,
+                    due_timestamp=due_timestamp,
+                    happen_timestamp=happen_timestamp,
+                    trading_signal_type=TradingSignalType.open_long,
+                    trading_level=self.level,
+                    position_pct=position_pct,
+                )
                 self.trading_signals.append(trading_signal)
 
     def sell(self, due_timestamp, happen_timestamp, entity_ids):
@@ -254,8 +278,9 @@ class Trader(object):
         account = self.get_current_account()
         current_holdings = []
         if account.positions:
-            current_holdings = [position.entity_id for position in account.positions if position != None and
-                                position.available_long > 0]
+            current_holdings = [
+                position.entity_id for position in account.positions if position != None and position.available_long > 0
+            ]
 
         shorted = set(current_holdings) & set(entity_ids)
 
@@ -263,12 +288,14 @@ class Trader(object):
             position_pct = self.short_position_control()
 
             for entity_id in shorted:
-                trading_signal = TradingSignal(entity_id=entity_id,
-                                               due_timestamp=due_timestamp,
-                                               happen_timestamp=happen_timestamp,
-                                               trading_signal_type=TradingSignalType.close_long,
-                                               trading_level=self.level,
-                                               position_pct=position_pct)
+                trading_signal = TradingSignal(
+                    entity_id=entity_id,
+                    due_timestamp=due_timestamp,
+                    happen_timestamp=happen_timestamp,
+                    trading_signal_type=TradingSignalType.close_long,
+                    trading_level=self.level,
+                    position_pct=position_pct,
+                )
                 self.trading_signals.append(trading_signal)
 
     def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected):
@@ -282,15 +309,18 @@ class Trader(object):
         # show the result
         if self.draw_result:
             import plotly.io as pio
+
             pio.renderers.default = "browser"
             reader = AccountStatsReader(trader_names=[self.trader_name])
             df = reader.data_df
-            drawer = Drawer(main_data=NormalData(df.copy()[['trader_name', 'timestamp', 'all_value']],
-                                                 category_field='trader_name'))
+            drawer = Drawer(
+                main_data=NormalData(df.copy()[["trader_name", "timestamp", "all_value"]], category_field="trader_name")
+            )
             drawer.draw_line(show=True)
 
-    def on_targets_filtered(self, timestamp, level, selector: TargetSelector, long_targets: List[str],
-                            short_targets: List[str]) -> Tuple[List[str], List[str]]:
+    def on_targets_filtered(
+        self, timestamp, level, selector: TargetSelector, long_targets: List[str], short_targets: List[str]
+    ) -> Tuple[List[str], List[str]]:
         """
         overwrite it to filter the targets from selector
 
@@ -301,11 +331,11 @@ class Trader(object):
         :param short_targets: the short targets from the selector
         :return: filtered long targets, filtered short targets
         """
-        self.logger.info(f'on_targets_filtered {level} long:{long_targets}')
+        self.logger.info(f"on_targets_filtered {level} long:{long_targets}")
 
         if len(long_targets) > 10:
             long_targets = long_targets[0:10]
-        self.logger.info(f'on_targets_filtered {level} filtered long:{long_targets}')
+        self.logger.info(f"on_targets_filtered {level} filtered long:{long_targets}")
 
         return long_targets, short_targets
 
@@ -318,7 +348,7 @@ class Trader(object):
 
         :param timestamp: event time
         """
-        self.logger.debug(f'current timestamp:{timestamp}')
+        self.logger.debug(f"current timestamp:{timestamp}")
 
     def on_trading_signals(self, trading_signals: List[TradingSignal]):
         for l in self.trading_signal_listeners:
@@ -351,8 +381,9 @@ class Trader(object):
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
         # timestamp represents the timestamp in kdata
-        for timestamp in self.entity_schema.get_interval_timestamps(start_date=self.start_timestamp,
-                                                                    end_date=self.end_timestamp, level=self.level):
+        for timestamp in self.entity_schema.get_interval_timestamps(
+            start_date=self.start_timestamp, end_date=self.end_timestamp, level=self.level
+        ):
 
             if not self.in_trading_date(timestamp=timestamp):
                 continue
@@ -362,7 +393,7 @@ class Trader(object):
             if self.level == IntervalLevel.LEVEL_1DAY:
                 if is_same_date(timestamp, now_pd_timestamp()):
                     while True:
-                        self.logger.info(f'time is:{now_pd_timestamp()},just smoke for minutes')
+                        self.logger.info(f"time is:{now_pd_timestamp()},just smoke for minutes")
                         time.sleep(60)
                         current = now_pd_timestamp()
                         if current.hour >= 19:
@@ -390,7 +421,8 @@ class Trader(object):
 
             # on_trading_open to setup the account
             if self.level >= IntervalLevel.LEVEL_1DAY or (
-                    self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)):
+                self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)
+            ):
                 self.on_trading_open(timestamp)
 
             self.on_time(timestamp=timestamp)
@@ -416,11 +448,13 @@ class Trader(object):
                                 short_targets = selector.get_open_short_targets(timestamp=timestamp)
 
                                 if long_targets or short_targets:
-                                    long_targets, short_targets = self.on_targets_filtered(timestamp=timestamp,
-                                                                                           level=level,
-                                                                                           selector=selector,
-                                                                                           long_targets=long_targets,
-                                                                                           short_targets=short_targets)
+                                    long_targets, short_targets = self.on_targets_filtered(
+                                        timestamp=timestamp,
+                                        level=level,
+                                        selector=selector,
+                                        long_targets=long_targets,
+                                        short_targets=short_targets,
+                                    )
 
                                 if long_targets:
                                     all_long_targets += long_targets
@@ -449,12 +483,16 @@ class Trader(object):
                                 else:
                                     short_selected = list(set(short_selected) | set(passive_short))
 
-                            self.logger.debug('timestamp:{},long_selected:{}'.format(due_timestamp, long_selected))
-                            self.logger.debug('timestamp:{},short_selected:{}'.format(due_timestamp, short_selected))
+                            self.logger.debug("timestamp:{},long_selected:{}".format(due_timestamp, long_selected))
+                            self.logger.debug("timestamp:{},short_selected:{}".format(due_timestamp, short_selected))
 
                             if long_selected or short_selected:
-                                self.trade_the_targets(due_timestamp=due_timestamp, happen_timestamp=timestamp,
-                                                       long_selected=long_selected, short_selected=short_selected)
+                                self.trade_the_targets(
+                                    due_timestamp=due_timestamp,
+                                    happen_timestamp=timestamp,
+                                    long_selected=long_selected,
+                                    short_selected=short_selected,
+                                )
 
             if self.trading_signals:
                 self.on_trading_signals(self.trading_signals)
@@ -463,7 +501,8 @@ class Trader(object):
 
             # on_trading_close to calculate date account
             if self.level >= IntervalLevel.LEVEL_1DAY or (
-                    self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_close_timestamp(timestamp)):
+                self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_close_timestamp(timestamp)
+            ):
                 self.on_trading_close(timestamp)
 
         self.on_finish(timestamp)
@@ -480,16 +519,42 @@ class Trader(object):
 class StockTrader(Trader):
     entity_schema = Stock
 
-    def __init__(self, entity_ids: List[str] = None, exchanges: List[str] = None, codes: List[str] = None,
-                 start_timestamp: Union[str, pd.Timestamp] = None, end_timestamp: Union[str, pd.Timestamp] = None,
-                 provider: str = None, level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
-                 trader_name: str = None, real_time: bool = False, kdata_use_begin_time: bool = False,
-                 draw_result: bool = True, rich_mode: bool = False, adjust_type: AdjustType = AdjustType.hfq,
-                 profit_threshold=(3, -0.3), keep_history=False) -> None:
-        super().__init__(entity_ids, exchanges, codes, start_timestamp, end_timestamp, provider, level, trader_name,
-                         real_time, kdata_use_begin_time, draw_result, rich_mode, adjust_type, profit_threshold,
-                         keep_history)
+    def __init__(
+        self,
+        entity_ids: List[str] = None,
+        exchanges: List[str] = None,
+        codes: List[str] = None,
+        start_timestamp: Union[str, pd.Timestamp] = None,
+        end_timestamp: Union[str, pd.Timestamp] = None,
+        provider: str = None,
+        level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
+        trader_name: str = None,
+        real_time: bool = False,
+        kdata_use_begin_time: bool = False,
+        draw_result: bool = True,
+        rich_mode: bool = False,
+        adjust_type: AdjustType = AdjustType.hfq,
+        profit_threshold=(3, -0.3),
+        keep_history=False,
+    ) -> None:
+        super().__init__(
+            entity_ids,
+            exchanges,
+            codes,
+            start_timestamp,
+            end_timestamp,
+            provider,
+            level,
+            trader_name,
+            real_time,
+            kdata_use_begin_time,
+            draw_result,
+            rich_mode,
+            adjust_type,
+            profit_threshold,
+            keep_history,
+        )
 
 
 # the __all__ is generated
-__all__ = ['Trader', 'StockTrader']
+__all__ = ["Trader", "StockTrader"]

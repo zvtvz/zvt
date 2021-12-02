@@ -9,27 +9,27 @@ from zvt.consts import SAMPLE_STOCK_CODES
 
 def test_dividend_detail():
     try:
-        DividendDetail.record_data(provider='eastmoney', codes=SAMPLE_STOCK_CODES)
+        DividendDetail.record_data(provider="eastmoney", codes=SAMPLE_STOCK_CODES)
     except:
         assert False
 
 
 def test_rights_issue_detail():
     try:
-        RightsIssueDetail.record_data(provider='eastmoney', codes=SAMPLE_STOCK_CODES)
+        RightsIssueDetail.record_data(provider="eastmoney", codes=SAMPLE_STOCK_CODES)
     except:
         assert False
 
 
 def test_spo_detail():
     try:
-        SpoDetail.record_data(provider='eastmoney', codes=SAMPLE_STOCK_CODES)
+        SpoDetail.record_data(provider="eastmoney", codes=SAMPLE_STOCK_CODES)
     except:
         assert False
 
 
 def test_dividend_financing():
     try:
-        DividendFinancing.record_data(provider='eastmoney', codes=SAMPLE_STOCK_CODES)
+        DividendFinancing.record_data(provider="eastmoney", codes=SAMPLE_STOCK_CODES)
     except:
         assert False

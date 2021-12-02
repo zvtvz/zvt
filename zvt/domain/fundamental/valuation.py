@@ -9,7 +9,7 @@ ValuationBase = declarative_base()
 
 
 class StockValuation(ValuationBase, Mixin):
-    __tablename__ = 'stock_valuation'
+    __tablename__ = "stock_valuation"
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -36,7 +36,7 @@ class StockValuation(ValuationBase, Mixin):
 
 
 class EtfValuation(ValuationBase, Mixin):
-    __tablename__ = 'etf_valuation'
+    __tablename__ = "etf_valuation"
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -62,7 +62,7 @@ class EtfValuation(ValuationBase, Mixin):
     pcf1 = Column(Float)
 
 
-register_schema(providers=['joinquant'], db_name='valuation', schema_base=ValuationBase, entity_type='stock')
+register_schema(providers=["joinquant"], db_name="valuation", schema_base=ValuationBase, entity_type="stock")
 
 # the __all__ is generated
-__all__ = ['StockValuation', 'EtfValuation']
+__all__ = ["StockValuation", "EtfValuation"]

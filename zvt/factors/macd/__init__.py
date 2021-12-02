@@ -9,4 +9,5 @@ __all__ = []
 # import all from submodule macd_factor
 from .macd_factor import *
 from .macd_factor import __all__ as _macd_factor_all
+
 __all__ += _macd_factor_all

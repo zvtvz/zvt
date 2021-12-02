@@ -9,9 +9,11 @@ __all__ = []
 # import all from submodule stock_actor
 from .stock_actor import *
 from .stock_actor import __all__ as _stock_actor_all
+
 __all__ += _stock_actor_all
 
 # import all from submodule actor_meta
 from .actor_meta import *
 from .actor_meta import __all__ as _actor_meta_all
+
 __all__ += _actor_meta_all

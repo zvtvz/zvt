@@ -9,7 +9,7 @@ HolderBase = declarative_base()
 
 
 class HkHolder(HolderBase, Mixin):
-    __tablename__ = 'hk_holder'
+    __tablename__ = "hk_holder"
     # 股票代码
     code = Column(String(length=32))
     # 股票名称
@@ -27,7 +27,7 @@ class HkHolder(HolderBase, Mixin):
 
 
 class TopTenTradableHolder(HolderBase, Mixin):
-    __tablename__ = 'top_ten_tradable_holder'
+    __tablename__ = "top_ten_tradable_holder"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -50,7 +50,7 @@ class TopTenTradableHolder(HolderBase, Mixin):
 
 
 class TopTenHolder(HolderBase, Mixin):
-    __tablename__ = 'top_ten_holder'
+    __tablename__ = "top_ten_holder"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -73,7 +73,7 @@ class TopTenHolder(HolderBase, Mixin):
 
 
 class InstitutionalInvestorHolder(HolderBase, Mixin):
-    __tablename__ = 'institutional_investor_holder'
+    __tablename__ = "institutional_investor_holder"
 
     provider = Column(String(length=32))
     code = Column(String(length=32))
@@ -93,7 +93,7 @@ class InstitutionalInvestorHolder(HolderBase, Mixin):
     shareholding_ratio = Column(Float)
 
 
-register_schema(providers=['eastmoney', 'joinquant'], db_name='holder', schema_base=HolderBase, entity_type='stock')
+register_schema(providers=["eastmoney", "joinquant"], db_name="holder", schema_base=HolderBase, entity_type="stock")
 
 # the __all__ is generated
-__all__ = ['HkHolder', 'TopTenTradableHolder', 'TopTenHolder', 'InstitutionalInvestorHolder']
+__all__ = ["HkHolder", "TopTenTradableHolder", "TopTenHolder", "InstitutionalInvestorHolder"]

@@ -15,38 +15,55 @@ from zvt.utils.time_utils import TIME_FORMAT_DAY
 
 
 class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
-    entity_provider = 'joinquant'
+    entity_provider = "joinquant"
     entity_schema = Stock
 
-    provider = 'joinquant'
+    provider = "joinquant"
     data_schema = StockMoneyFlow
 
-    def __init__(self,
-                 force_update=True,
-                 sleeping_time=10,
-                 exchanges=None,
-                 entity_ids=None,
-                 code=None,
-                 codes=None,
-                 day_data=False,
-                 entity_filters=None,
-                 ignore_failed=True,
-                 real_time=False,
-                 fix_duplicate_way='ignore',
-                 start_timestamp=None,
-                 end_timestamp=None,
-                 level=IntervalLevel.LEVEL_1DAY,
-                 kdata_use_begin_time=False,
-                 one_day_trading_minutes=24 * 60,
-                 compute_index_money_flow=False) -> None:
-        super().__init__(force_update, sleeping_time, exchanges, entity_ids, code, codes, day_data, entity_filters,
-                         ignore_failed, real_time, fix_duplicate_way, start_timestamp, end_timestamp, level,
-                         kdata_use_begin_time, one_day_trading_minutes)
+    def __init__(
+        self,
+        force_update=True,
+        sleeping_time=10,
+        exchanges=None,
+        entity_ids=None,
+        code=None,
+        codes=None,
+        day_data=False,
+        entity_filters=None,
+        ignore_failed=True,
+        real_time=False,
+        fix_duplicate_way="ignore",
+        start_timestamp=None,
+        end_timestamp=None,
+        level=IntervalLevel.LEVEL_1DAY,
+        kdata_use_begin_time=False,
+        one_day_trading_minutes=24 * 60,
+        compute_index_money_flow=False,
+    ) -> None:
+        super().__init__(
+            force_update,
+            sleeping_time,
+            exchanges,
+            entity_ids,
+            code,
+            codes,
+            day_data,
+            entity_filters,
+            ignore_failed,
+            real_time,
+            fix_duplicate_way,
+            start_timestamp,
+            end_timestamp,
+            level,
+            kdata_use_begin_time,
+            one_day_trading_minutes,
+        )
         self.compute_index_money_flow = compute_index_money_flow
-        get_token(zvt_config['jq_username'], zvt_config['jq_password'], force=True)
+        get_token(zvt_config["jq_username"], zvt_config["jq_password"], force=True)
 
     def generate_domain_id(self, entity, original_data):
-        return generate_kdata_id(entity_id=entity.id, timestamp=original_data['timestamp'], level=self.level)
+        return generate_kdata_id(entity_id=entity.id, timestamp=original_data["timestamp"], level=self.level)
 
     def on_finish(self):
         # 根据 个股资金流 计算 大盘资金流
@@ -55,38 +72,41 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         if not self.end_timestamp:
-            df = get_money_flow(code=to_jq_entity_id(entity),
-                                date=to_time_str(start))
+            df = get_money_flow(code=to_jq_entity_id(entity), date=to_time_str(start))
         else:
-            df = get_money_flow(code=to_jq_entity_id(entity),
-                                date=start, end_date=to_time_str(self.end_timestamp))
+            df = get_money_flow(code=to_jq_entity_id(entity), date=start, end_date=to_time_str(self.end_timestamp))
 
         df = df.dropna()
 
         if pd_is_not_null(df):
-            df['name'] = entity.name
-            df.rename(columns={'date': 'timestamp',
-                               'net_amount_main': 'net_main_inflows',
-                               'net_pct_main': 'net_main_inflow_rate',
-
-                               'net_amount_xl': 'net_huge_inflows',
-                               'net_pct_xl': 'net_huge_inflow_rate',
-
-                               'net_amount_l': 'net_big_inflows',
-                               'net_pct_l': 'net_big_inflow_rate',
-
-                               'net_amount_m': 'net_medium_inflows',
-                               'net_pct_m': 'net_medium_inflow_rate',
-
-                               'net_amount_s': 'net_small_inflows',
-                               'net_pct_s': 'net_small_inflow_rate'
-                               }, inplace=True)
+            df["name"] = entity.name
+            df.rename(
+                columns={
+                    "date": "timestamp",
+                    "net_amount_main": "net_main_inflows",
+                    "net_pct_main": "net_main_inflow_rate",
+                    "net_amount_xl": "net_huge_inflows",
+                    "net_pct_xl": "net_huge_inflow_rate",
+                    "net_amount_l": "net_big_inflows",
+                    "net_pct_l": "net_big_inflow_rate",
+                    "net_amount_m": "net_medium_inflows",
+                    "net_pct_m": "net_medium_inflow_rate",
+                    "net_amount_s": "net_small_inflows",
+                    "net_pct_s": "net_small_inflow_rate",
+                },
+                inplace=True,
+            )
 
             # 转换到标准float
-            inflows_cols = ['net_main_inflows', 'net_huge_inflows', 'net_big_inflows', 'net_medium_inflows',
-                            'net_small_inflows']
+            inflows_cols = [
+                "net_main_inflows",
+                "net_huge_inflows",
+                "net_big_inflows",
+                "net_medium_inflows",
+                "net_small_inflows",
+            ]
             for col in inflows_cols:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
+                df[col] = pd.to_numeric(df[col], errors="coerce")
             df = df.dropna()
 
             if not pd_is_not_null(df):
@@ -94,10 +114,15 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
             df[inflows_cols] = df[inflows_cols].apply(lambda x: x * 10000)
 
-            inflow_rate_cols = ['net_main_inflow_rate', 'net_huge_inflow_rate', 'net_big_inflow_rate',
-                                'net_medium_inflow_rate', 'net_small_inflow_rate']
+            inflow_rate_cols = [
+                "net_main_inflow_rate",
+                "net_huge_inflow_rate",
+                "net_big_inflow_rate",
+                "net_medium_inflow_rate",
+                "net_small_inflow_rate",
+            ]
             for col in inflow_rate_cols:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
+                df[col] = pd.to_numeric(df[col], errors="coerce")
             df = df.dropna()
             if not pd_is_not_null(df):
                 return None
@@ -105,30 +130,31 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
             df[inflow_rate_cols] = df[inflow_rate_cols].apply(lambda x: x / 100)
 
             # 计算总流入
-            df['net_inflows'] = df['net_huge_inflows'] + df['net_big_inflows'] + df['net_medium_inflows'] + df[
-                'net_small_inflows']
+            df["net_inflows"] = (
+                df["net_huge_inflows"] + df["net_big_inflows"] + df["net_medium_inflows"] + df["net_small_inflows"]
+            )
             # 计算总流入率
-            amount = df['net_main_inflows'] / df['net_main_inflow_rate']
-            df['net_inflow_rate'] = df['net_inflows'] / amount
+            amount = df["net_main_inflows"] / df["net_main_inflow_rate"]
+            df["net_inflow_rate"] = df["net_inflows"] / amount
 
-            df['entity_id'] = entity.id
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df['provider'] = 'joinquant'
-            df['code'] = entity.code
+            df["entity_id"] = entity.id
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df["provider"] = "joinquant"
+            df["code"] = entity.code
 
             def generate_kdata_id(se):
-                return "{}_{}".format(se['entity_id'], to_time_str(se['timestamp'], fmt=TIME_FORMAT_DAY))
+                return "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY))
 
-            df['id'] = df[['entity_id', 'timestamp']].apply(generate_kdata_id, axis=1)
+            df["id"] = df[["entity_id", "timestamp"]].apply(generate_kdata_id, axis=1)
 
-            df = df.drop_duplicates(subset='id', keep='last')
+            df = df.drop_duplicates(subset="id", keep="last")
 
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 
         return None
 
 
-if __name__ == '__main__':
-    JoinquantStockMoneyFlowRecorder(codes=['000578']).run()
+if __name__ == "__main__":
+    JoinquantStockMoneyFlowRecorder(codes=["000578"]).run()
 # the __all__ is generated
-__all__ = ['JoinquantStockMoneyFlowRecorder']
+__all__ = ["JoinquantStockMoneyFlowRecorder"]

@@ -10,8 +10,9 @@ MoneyFlowBase = declarative_base()
 
 # 板块资金流向
 
+
 class BlockMoneyFlow(MoneyFlowBase, Mixin):
-    __tablename__ = 'block_money_flow'
+    __tablename__ = "block_money_flow"
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -45,7 +46,7 @@ class BlockMoneyFlow(MoneyFlowBase, Mixin):
 
 
 class StockMoneyFlow(MoneyFlowBase, Mixin):
-    __tablename__ = 'stock_money_flow'
+    __tablename__ = "stock_money_flow"
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -79,7 +80,7 @@ class StockMoneyFlow(MoneyFlowBase, Mixin):
 
 
 class IndexMoneyFlow(MoneyFlowBase, Mixin):
-    __tablename__ = 'index_money_flow'
+    __tablename__ = "index_money_flow"
 
     code = Column(String(length=32))
     name = Column(String(length=32))
@@ -107,7 +108,7 @@ class IndexMoneyFlow(MoneyFlowBase, Mixin):
     net_small_inflow_rate = Column(Float)
 
 
-register_schema(providers=['joinquant', 'sina'], db_name='money_flow', schema_base=MoneyFlowBase, entity_type='stock')
+register_schema(providers=["joinquant", "sina"], db_name="money_flow", schema_base=MoneyFlowBase, entity_type="stock")
 
 # the __all__ is generated
-__all__ = ['BlockMoneyFlow', 'StockMoneyFlow', 'IndexMoneyFlow']
+__all__ = ["BlockMoneyFlow", "StockMoneyFlow", "IndexMoneyFlow"]

@@ -9,19 +9,19 @@ import tzlocal
 
 from zvt.contract import IntervalLevel
 
-CHINA_TZ = 'Asia/Shanghai'
+CHINA_TZ = "Asia/Shanghai"
 
 TIME_FORMAT_ISO8601 = "YYYY-MM-DDTHH:mm:ss.SSS"
 
-TIME_FORMAT_MON = 'YYYY-MM'
+TIME_FORMAT_MON = "YYYY-MM"
 
-TIME_FORMAT_DAY = 'YYYY-MM-DD'
+TIME_FORMAT_DAY = "YYYY-MM-DD"
 
-TIME_FORMAT_DAY1 = 'YYYYMMDD'
+TIME_FORMAT_DAY1 = "YYYYMMDD"
 
-TIME_FORMAT_MINUTE = 'YYYYMMDDHHmm'
+TIME_FORMAT_MINUTE = "YYYYMMDDHHmm"
 
-TIME_FORMAT_MINUTE1 = 'HH:mm'
+TIME_FORMAT_MINUTE1 = "HH:mm"
 
 TIME_FORMAT_MINUTE2 = "YYYY-MM-DD HH:mm:ss"
 
@@ -108,7 +108,7 @@ def month_end_date(the_date):
 
 
 def month_start_end_ranges(start_date, end_date):
-    days = pd.date_range(start=start_date, end=end_date, freq='M')
+    days = pd.date_range(start=start_date, end=end_date, freq="M")
     return [(month_start_date(d), month_end_date(d)) for d in days]
 
 
@@ -135,18 +135,21 @@ def get_year_quarters(start, end=pd.Timestamp.now()):
     if current_year_quarter[0] == start_year_quarter[0]:
         return [(current_year_quarter[0], x) for x in range(start_year_quarter[1], current_year_quarter[1] + 1)]
     elif current_year_quarter[0] - start_year_quarter[0] == 1:
-        return [(start_year_quarter[0], x) for x in range(start_year_quarter[1], 5)] + \
-               [(current_year_quarter[0], x) for x in range(1, current_year_quarter[1] + 1)]
+        return [(start_year_quarter[0], x) for x in range(start_year_quarter[1], 5)] + [
+            (current_year_quarter[0], x) for x in range(1, current_year_quarter[1] + 1)
+        ]
     elif current_year_quarter[0] - start_year_quarter[0] > 1:
-        return [(start_year_quarter[0], x) for x in range(start_year_quarter[1], 5)] + \
-               [(x, y) for x in range(start_year_quarter[0] + 1, current_year_quarter[0]) for y in range(1, 5)] + \
-               [(current_year_quarter[0], x) for x in range(1, current_year_quarter[1] + 1)]
+        return (
+            [(start_year_quarter[0], x) for x in range(start_year_quarter[1], 5)]
+            + [(x, y) for x in range(start_year_quarter[0] + 1, current_year_quarter[0]) for y in range(1, 5)]
+            + [(current_year_quarter[0], x) for x in range(1, current_year_quarter[1] + 1)]
+        )
     else:
         raise Exception("wrong start time:{}".format(start))
 
 
 def date_and_time(the_date, the_time):
-    time_str = '{}T{}:00.000'.format(to_time_str(the_date), the_time)
+    time_str = "{}T{}:00.000".format(to_time_str(the_date), the_time)
 
     return to_pd_timestamp(time_str)
 
@@ -156,10 +159,9 @@ def next_timestamp(current_timestamp: pd.Timestamp, level: IntervalLevel) -> pd.
     return current_timestamp + pd.Timedelta(seconds=level.to_second())
 
 
-def evaluate_size_from_timestamp(start_timestamp,
-                                 level: IntervalLevel,
-                                 one_day_trading_minutes,
-                                 end_timestamp: pd.Timestamp = None):
+def evaluate_size_from_timestamp(
+    start_timestamp, level: IntervalLevel, one_day_trading_minutes, end_timestamp: pd.Timestamp = None
+):
     """
     given from timestamp,level,one_day_trading_minutes,this func evaluate size of kdata to current.
     it maybe a little bigger than the real size for fetching all the kdata.
@@ -194,8 +196,7 @@ def evaluate_size_from_timestamp(start_timestamp,
         return int(math.ceil(seconds / level.to_second())) + 1
     else:
         seconds = time_delta.total_seconds()
-        return min(int(math.ceil(seconds / level.to_second())) + 1,
-                   one_day_trading_seconds / level.to_second() + 1)
+        return min(int(math.ceil(seconds / level.to_second())) + 1, one_day_trading_seconds / level.to_second() + 1)
 
 
 def is_finished_kdata_timestamp(timestamp, level: IntervalLevel):
@@ -216,7 +217,7 @@ def is_in_same_interval(t1: pd.Timestamp, t2: pd.Timestamp, level: IntervalLevel
     return level.floor_timestamp(t1) == level.floor_timestamp(t2)
 
 
-def split_time_interval(start, end, method=None, interval=30, freq='D'):
+def split_time_interval(start, end, method=None, interval=30, freq="D"):
     start = to_pd_timestamp(start)
     end = to_pd_timestamp(end)
     if not method:
@@ -225,11 +226,11 @@ def split_time_interval(start, end, method=None, interval=30, freq='D'):
             yield pd.date_range(start=start, end=interval_end, freq=freq)
             start = next_date(interval_end, 1)
 
-    if method == 'month':
+    if method == "month":
         while start <= end:
             _, day = calendar.monthrange(start.year, start.month)
 
-            interval_end = min(to_pd_timestamp(f'{start.year}-{start.month}-{day}'), end)
+            interval_end = min(to_pd_timestamp(f"{start.year}-{start.month}-{day}"), end)
             yield pd.date_range(start=start, end=interval_end, freq=freq)
             start = next_date(interval_end, 1)
 
@@ -241,7 +242,35 @@ def count_interval(start_date, end_date):
     return delta.days
 
 
-if __name__ == '__main__':
-    print(date_and_time('2019-10-01', '10:00'))
+if __name__ == "__main__":
+    print(date_and_time("2019-10-01", "10:00"))
 # the __all__ is generated
-__all__ = ['to_pd_timestamp', 'to_timestamp', 'now_timestamp', 'now_pd_timestamp', 'today', 'current_date', 'to_time_str', 'now_time_str', 'next_date', 'pre_month', 'pre_month_start_date', 'pre_month_end_date', 'month_start_date', 'month_end_date', 'month_start_end_ranges', 'is_same_date', 'is_same_time', 'get_year_quarter', 'day_offset_today', 'get_year_quarters', 'date_and_time', 'next_timestamp', 'evaluate_size_from_timestamp', 'is_finished_kdata_timestamp', 'is_in_same_interval', 'split_time_interval', 'count_interval']
+__all__ = [
+    "to_pd_timestamp",
+    "to_timestamp",
+    "now_timestamp",
+    "now_pd_timestamp",
+    "today",
+    "current_date",
+    "to_time_str",
+    "now_time_str",
+    "next_date",
+    "pre_month",
+    "pre_month_start_date",
+    "pre_month_end_date",
+    "month_start_date",
+    "month_end_date",
+    "month_start_end_ranges",
+    "is_same_date",
+    "is_same_time",
+    "get_year_quarter",
+    "day_offset_today",
+    "get_year_quarters",
+    "date_and_time",
+    "next_timestamp",
+    "evaluate_size_from_timestamp",
+    "is_finished_kdata_timestamp",
+    "is_in_same_interval",
+    "split_time_interval",
+    "count_interval",
+]

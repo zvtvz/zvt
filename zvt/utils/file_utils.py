@@ -3,11 +3,9 @@ import os
 from typing import List
 
 
-def list_all_files(dir_path: str = './domain',
-                   ext: str = '.py',
-                   excludes=None,
-                   includes=None,
-                   return_base_name=False) -> List[str]:
+def list_all_files(
+    dir_path: str = "./domain", ext: str = ".py", excludes=None, includes=None, return_base_name=False
+) -> List[str]:
     """
     list all files with extension in specific directory recursively
 
@@ -38,4 +36,4 @@ def list_all_files(dir_path: str = './domain',
 
 
 # the __all__ is generated
-__all__ = ['list_all_files']
+__all__ = ["list_all_files"]

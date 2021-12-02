@@ -8,4 +8,5 @@ __all__ = []
 # import all from submodule sina_block_recorder
 from .sina_block_recorder import *
 from .sina_block_recorder import __all__ as _sina_block_recorder_all
+
 __all__ += _sina_block_recorder_all

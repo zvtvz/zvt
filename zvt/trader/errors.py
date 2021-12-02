@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 class TraderError(Exception):
     """Base class for exceptions in this module."""
+
     pass
 
 
@@ -27,5 +28,14 @@ class InvalidOrderError(TraderError):
 class WrongKdataError(TraderError):
     def __init__(self, message="wrong kdata"):
         self.message = message
+
+
 # the __all__ is generated
-__all__ = ['TraderError', 'InvalidOrderParamError', 'NotEnoughMoneyError', 'NotEnoughPositionError', 'InvalidOrderError', 'WrongKdataError']
+__all__ = [
+    "TraderError",
+    "InvalidOrderParamError",
+    "NotEnoughMoneyError",
+    "NotEnoughPositionError",
+    "InvalidOrderError",
+    "WrongKdataError",
+]

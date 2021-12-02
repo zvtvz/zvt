@@ -6,11 +6,7 @@ from zvt.utils.pd_utils import pd_is_not_null, fill_with_same_index, normal_inde
 class NormalData(object):
     table_type_sample = None
 
-    def __init__(self,
-                 df,
-                 category_field='entity_id',
-                 time_field='timestamp',
-                 fill_index: bool = False) -> None:
+    def __init__(self, df, category_field="entity_id", time_field="timestamp", fill_index: bool = False) -> None:
         self.data_df = df
         self.category_field = category_field
         self.time_field = time_field
@@ -46,5 +42,6 @@ class NormalData(object):
     def empty(self):
         return not pd_is_not_null(self.data_df)
 
+
 # the __all__ is generated
-__all__ = ['NormalData']
+__all__ = ["NormalData"]

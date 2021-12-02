@@ -58,6 +58,7 @@ class EtfKdataCommon(KdataCommon):
     # ETF 累计净值（货币 ETF 为七日年化)
     cumulative_net_value = Column(Float)
 
+
 class StockKdataCommon(KdataCommon):
     pass
 
@@ -71,7 +72,16 @@ class StockhkKdataCommon(KdataCommon):
 
 
 # the __all__ is generated
-__all__ = ['KdataCommon', 'TickCommon', 'BlockKdataCommon', 'IndexKdataCommon', 'EtfKdataCommon', 'StockKdataCommon', 'StockusKdataCommon', 'StockhkKdataCommon']
+__all__ = [
+    "KdataCommon",
+    "TickCommon",
+    "BlockKdataCommon",
+    "IndexKdataCommon",
+    "EtfKdataCommon",
+    "StockKdataCommon",
+    "StockusKdataCommon",
+    "StockhkKdataCommon",
+]
 
 # __init__.py structure:
 # common code of the package
@@ -80,34 +90,41 @@ __all__ = ['KdataCommon', 'TickCommon', 'BlockKdataCommon', 'IndexKdataCommon', 
 # import all from submodule trade_day
 from .trade_day import *
 from .trade_day import __all__ as _trade_day_all
+
 __all__ += _trade_day_all
 
 # import all from submodule stockhk
 from .stockhk import *
 from .stockhk import __all__ as _stockhk_all
+
 __all__ += _stockhk_all
 
 # import all from submodule stockus
 from .stockus import *
 from .stockus import __all__ as _stockus_all
+
 __all__ += _stockus_all
 
 # import all from submodule index
 from .index import *
 from .index import __all__ as _index_all
+
 __all__ += _index_all
 
 # import all from submodule etf
 from .etf import *
 from .etf import __all__ as _etf_all
+
 __all__ += _etf_all
 
 # import all from submodule stock
 from .stock import *
 from .stock import __all__ as _stock_all
+
 __all__ += _stock_all
 
 # import all from submodule block
 from .block import *
 from .block import __all__ as _block_all
+
 __all__ += _block_all

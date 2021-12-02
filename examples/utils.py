@@ -6,7 +6,7 @@ import eastmoneypy
 logger = logging.getLogger(__name__)
 
 
-def add_to_eastmoney(codes, group, entity_type='stock', over_write=True):
+def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
     if over_write:
         try:
             eastmoneypy.del_group(group_name=group)

@@ -42,7 +42,6 @@ income_statement_map = {
     "non_operating_costs": "Nonoperateexp",
     # 其中: 非流动资产处置净损失
     "loss_on_disposal_non_current_asset": "Nonlassetnetloss",
-
     # 利润总额
     "total_profits": "Sumprofit",
     # 减: 所得税费用
@@ -72,7 +71,6 @@ income_statement_map = {
     "total_comprehensive_income_as_parent": "Parentcincome",
     # 归属于少数股东的综合收益总额
     "total_comprehensive_income_as_minority_interest": "Minoritycincome",
-
     # 银行相关
     # 利息净收入
     "fi_net_interest_income": "Intnreve",
@@ -94,7 +92,6 @@ income_statement_map = {
     "fi_other_income": "Otherreve",
     # 业务及管理费
     "fi_operate_and_manage_expenses": "Operatemanageexp",
-
     # 保险相关
     # 已赚保费
     "fi_net_income_from_premium": "Premiumearned",
@@ -136,7 +133,6 @@ income_statement_map = {
     "fi_amortized_reinsurance_expenses": "Amortiseriexp",
     # 其他业务成本
     "fi_other_op_expenses": "Otherexp",
-
     # 券商相关
     # 手续费及佣金净收入
     #
@@ -162,8 +158,8 @@ income_statement_map["report_date"] = ("ReportDate", to_pd_timestamp)
 class ChinaStockIncomeStatementRecorder(BaseChinaStockFinanceRecorder):
     data_schema = IncomeStatement
 
-    url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetLiRunBiaoList'
-    finance_report_type = 'LiRunBiaoList'
+    url = "https://emh5.eastmoney.com/api/CaiWuFenXi/GetLiRunBiaoList"
+    finance_report_type = "LiRunBiaoList"
 
     data_type = 2
 
@@ -171,9 +167,9 @@ class ChinaStockIncomeStatementRecorder(BaseChinaStockFinanceRecorder):
         return income_statement_map
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init_log('income_statement.log')
-    recorder = ChinaStockIncomeStatementRecorder(codes=['002572'])
+    recorder = ChinaStockIncomeStatementRecorder(codes=["002572"])
     recorder.run()
 # the __all__ is generated
-__all__ = ['ChinaStockIncomeStatementRecorder']
+__all__ = ["ChinaStockIncomeStatementRecorder"]

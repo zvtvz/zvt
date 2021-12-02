@@ -9,14 +9,17 @@ __all__ = []
 # import all from submodule jq_margin_trading_recorder
 from .jq_margin_trading_recorder import *
 from .jq_margin_trading_recorder import __all__ as _jq_margin_trading_recorder_all
+
 __all__ += _jq_margin_trading_recorder_all
 
 # import all from submodule jq_stock_summary_recorder
 from .jq_stock_summary_recorder import *
 from .jq_stock_summary_recorder import __all__ as _jq_stock_summary_recorder_all
+
 __all__ += _jq_stock_summary_recorder_all
 
 # import all from submodule jq_cross_market_recorder
 from .jq_cross_market_recorder import *
 from .jq_cross_market_recorder import __all__ as _jq_cross_market_recorder_all
+
 __all__ += _jq_cross_market_recorder_all

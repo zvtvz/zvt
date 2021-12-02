@@ -9,10 +9,10 @@ KdataBase = declarative_base()
 
 
 class Stockus1dKdata(KdataBase, StockusKdataCommon):
-    __tablename__ = 'stockus_1d_kdata'
+    __tablename__ = "stockus_1d_kdata"
 
 
-register_schema(providers=['em'], db_name='stockus_1d_kdata', schema_base=KdataBase, entity_type='stockus')
+register_schema(providers=["em"], db_name="stockus_1d_kdata", schema_base=KdataBase, entity_type="stockus")
 
 # the __all__ is generated
-__all__ = ['Stockus1dKdata']
+__all__ = ["Stockus1dKdata"]

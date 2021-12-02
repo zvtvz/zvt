@@ -9,10 +9,10 @@ KdataBase = declarative_base()
 
 
 class Index1wkKdata(KdataBase, IndexKdataCommon):
-    __tablename__ = 'index_1wk_kdata'
+    __tablename__ = "index_1wk_kdata"
 
 
-register_schema(providers=['em', 'sina'], db_name='index_1wk_kdata', schema_base=KdataBase, entity_type='index')
+register_schema(providers=["em", "sina"], db_name="index_1wk_kdata", schema_base=KdataBase, entity_type="index")
 
 # the __all__ is generated
-__all__ = ['Index1wkKdata']
+__all__ = ["Index1wkKdata"]

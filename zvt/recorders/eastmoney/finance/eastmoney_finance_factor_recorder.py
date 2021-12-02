@@ -92,7 +92,6 @@ finance_factor_map = {
     "inventory_turnover": "Inventoryrate",
     # 应收账款周转率(次)
     "receivables_turnover": "Accountsreceiveablerate",
-
     # 专项指标(银行)
     #
     # 存款总额
@@ -143,8 +142,8 @@ finance_factor_map["report_date"] = ("ReportDate", to_pd_timestamp)
 
 
 class ChinaStockFinanceFactorRecorder(BaseChinaStockFinanceRecorder):
-    url = 'https://emh5.eastmoney.com/api/CaiWuFenXi/GetZhuYaoZhiBiaoList'
-    finance_report_type = 'ZhuYaoZhiBiaoList'
+    url = "https://emh5.eastmoney.com/api/CaiWuFenXi/GetZhuYaoZhiBiaoList"
+    finance_report_type = "ZhuYaoZhiBiaoList"
 
     data_schema = FinanceFactor
     data_type = 1
@@ -153,9 +152,9 @@ class ChinaStockFinanceFactorRecorder(BaseChinaStockFinanceRecorder):
         return finance_factor_map
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # init_log('finance_factor.log')
-    recorder = ChinaStockFinanceFactorRecorder(codes=['000001'])
+    recorder = ChinaStockFinanceFactorRecorder(codes=["000001"])
     recorder.run()
 # the __all__ is generated
-__all__ = ['ChinaStockFinanceFactorRecorder']
+__all__ = ["ChinaStockFinanceFactorRecorder"]

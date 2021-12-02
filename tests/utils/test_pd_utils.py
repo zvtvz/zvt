@@ -12,10 +12,10 @@ def test_drop_continue_duplicate():
 
     data2 = [1, 2, 2, 2, 4, 4, 5]
 
-    df = pd.DataFrame(data={'A': data1, 'B': data2})
+    df = pd.DataFrame(data={"A": data1, "B": data2})
     print(df)
-    df1 = drop_continue_duplicate(s=df, col='A')
-    assert df1['A'].tolist() == [1, 2, 3, 4, 5]
+    df1 = drop_continue_duplicate(s=df, col="A")
+    assert df1["A"].tolist() == [1, 2, 3, 4, 5]
 
-    df2 = drop_continue_duplicate(s=df, col='B')
-    assert df2['A'].tolist() == [1, 2, 4, 5]
+    df2 = drop_continue_duplicate(s=df, col="B")
+    assert df2["A"].tolist() == [1, 2, 4, 5]
