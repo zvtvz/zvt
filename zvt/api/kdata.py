@@ -13,12 +13,15 @@ from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO86
 
 def get_latest_kdata_date(
     entity_type: str,
+    provider: str = None,
     level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
     adjust_type: Union[AdjustType, str] = None,
 ):
     data_schema: Mixin = get_kdata_schema(entity_type, level=level, adjust_type=adjust_type)
 
-    latest_data = data_schema.query_data(order=data_schema.timestamp.desc(), limit=1, return_type="domain")
+    latest_data = data_schema.query_data(
+        provider=provider, order=data_schema.timestamp.desc(), limit=1, return_type="domain"
+    )
     return latest_data[0].timestamp
 
 

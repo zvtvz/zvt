@@ -44,7 +44,9 @@ def report_targets(
             if entity_type == "stock" and not adjust_type:
                 adjust_type = AdjustType.hfq
 
-            target_date = get_latest_kdata_date(entity_type=entity_type, adjust_type=adjust_type)
+            target_date = get_latest_kdata_date(
+                provider=data_provider, entity_type=entity_type, adjust_type=adjust_type
+            )
             logger.info(f"target_date :{target_date}")
 
             current_entity_pool = None
@@ -128,6 +130,9 @@ def report_top_stats(
     entity_type="stock",
     adjust_type=None,
     top_count=30,
+    turnover_threshold=100000000,
+    turnover_rate_threshold=0.02,
+    em_group_over_write=True,
 ):
     if not adjust_type:
         adjust_type = default_adjust_type(entity_type=entity_type)
@@ -140,14 +145,44 @@ def report_top_stats(
     email_action = EmailInformer()
 
     # 至少上市一年
-    filters = None
+    filter_entity_ids = []
     if ignore_new_stock:
         pre_year = next_date(current_timestamp, -365)
 
         entity_ids = get_entity_ids(
             provider=entity_provider, entity_schema=entity_schema, filters=[entity_schema.timestamp <= pre_year]
         )
-        filters = [kdata_schema.entity_id.in_(entity_ids)]
+
+        if not entity_ids:
+            msg = "no entity_ids listed one year"
+            logger.error(msg)
+            email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+            return
+        filter_entity_ids = entity_ids
+
+    filter_turnover_df = kdata_schema.query_data(
+        filters=[
+            kdata_schema.turnover >= turnover_threshold,
+            kdata_schema.turnover_rate >= turnover_rate_threshold,
+        ],
+        provider=data_provider,
+        start_timestamp=current_timestamp,
+        index="entity_id",
+        columns=["entity_id", "code"],
+    )
+    if filter_entity_ids:
+        filter_entity_ids = set(filter_entity_ids) & set(filter_turnover_df.index.tolist())
+    else:
+        filter_entity_ids = filter_turnover_df.index.tolist()
+
+    if not filter_entity_ids:
+        msg = "no entity_ids selected"
+        logger.error(msg)
+        email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+        return
+
+    logger.info(f"filter_entity_ids size: {len(filter_entity_ids)}")
+    filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
 
     stats = []
     ups = []
@@ -172,30 +207,20 @@ def report_top_stats(
 
         # 最近一个月和一周最靓仔的
         if period == 7 or period == 30:
-            # add them to eastmoney
             try:
                 codes = [decode_entity_id(entity_id)[2] for entity_id in df.index[:top_count]]
-                add_to_eastmoney(codes=codes, entity_type=entity_type, group="最靓仔", over_write=False)
+                add_to_eastmoney(codes=codes, entity_type=entity_type, group="最靓仔", over_write=em_group_over_write)
             except Exception as e:
                 logger.exception(e)
                 email_action.send_message(
                     zvt_config["email_username"], f"report_top_stats error", "report_top_stats error:{}".format(e)
                 )
 
-        # 一年内没怎么动的
-        if period == 365 and False:
-            stable_df = df[(df["score_365"] > -0.1) & (df["score_365"] < 0.1)]
-            vol_df = get_top_volume_entities(
-                entity_type=entity_type,
-                entity_ids=stable_df.index.tolist(),
-                start_timestamp=start,
-                data_provider=data_provider,
-            )
-
-            # add them to eastmoney
+        # 一年内跌幅最大的
+        if period == 365:
             try:
-                codes = [decode_entity_id(entity_id)[2] for entity_id in vol_df.index[:top_count]]
-                add_to_eastmoney(codes=codes, entity_type="stock", group="躺尸一年")
+                codes = [decode_entity_id(entity_id)[2] for entity_id in df.index[-top_count:]]
+                add_to_eastmoney(codes=codes, entity_type=entity_type, group="谁有我惨", over_write=em_group_over_write)
             except Exception as e:
                 logger.exception(e)
                 email_action.send_message(
@@ -220,13 +245,7 @@ def report_top_stats(
 
 
 if __name__ == "__main__":
-    # from zvt.factors import VolumeUpMaFactor
-    #
-    # report_targets(factor_cls=VolumeUpMaFactor, entity_provider='joinquant', data_provider='joinquant', em_group='年线股票',
-    #                title='放量突破(半)年线股票', entity_type='stock', em_group_over_write=True, filter_by_volume=True,
-    #                adjust_type=AdjustType.hfq, start_timestamp='2019-01-01',
-    #                # factor args
-    #                windows=[120, 250], over_mode='or', up_intervals=50, turnover_threshold=400000000)
     report_top_stats(entity_type="stockhk", entity_provider="em", data_provider="em")
+
 # the __all__ is generated
-__all__ = ["report_targets"]
+__all__ = ["report_targets", "report_top_stats"]

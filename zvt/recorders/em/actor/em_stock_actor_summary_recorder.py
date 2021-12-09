@@ -26,7 +26,7 @@ from zvt.utils import to_pd_timestamp, to_time_str
 
 
 class EMStockActorSummaryRecorder(TimestampsDataRecorder):
-    entity_provider = "joinquant"
+    entity_provider = "em"
     entity_schema = Stock
 
     provider = "em"

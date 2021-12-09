@@ -22,7 +22,7 @@ from zvt.utils import pd_is_not_null
 
 class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
     default_size = 50000
-    entity_provider: str = "eastmoney"
+    entity_provider: str = "em"
 
     provider = "em"
 

@@ -1,14 +1,17 @@
-from typing import List, Union, Type, Optional
+# -*- coding: utf-8 -*-
+
+from typing import Type, List, Union
 
 import pandas as pd
 
-from zvt.api.kdata import get_kdata_schema, default_adjust_type
-from zvt.contract import IntervalLevel, TradableEntity, AdjustType
-from zvt.contract.factor import Factor, Transformer, Accumulator, FactorMeta
+from zvt.contract import AdjustType, TradableEntity, IntervalLevel
+from zvt.contract.factor import Transformer, Accumulator
 from zvt.domain import Stock
+from zvt.factors import MacdFactor
+from zvt.factors.transformers import CrossMaTransformer
 
 
-class TechnicalFactor(Factor, metaclass=FactorMeta):
+class BullAndUpFactor(MacdFactor):
     def __init__(
         self,
         entity_schema: Type[TradableEntity] = Stock,
@@ -38,37 +41,13 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
         clear_state: bool = False,
         only_load_factor: bool = False,
         adjust_type: Union[AdjustType, str] = None,
+        turnover_threshold=400000000,
+        turnover_rate_threshold=0.02,
     ) -> None:
-        if columns is None:
-            columns = [
-                "id",
-                "entity_id",
-                "timestamp",
-                "level",
-                "open",
-                "close",
-                "high",
-                "low",
-                "volume",
-                "turnover",
-                "turnover_rate",
-            ]
-
-        # 股票默认使用后复权
-        if not adjust_type:
-            adjust_type = default_adjust_type(entity_type=entity_schema.__name__)
-
-        self.adjust_type = adjust_type
-        self.data_schema = get_kdata_schema(entity_schema.__name__, level=level, adjust_type=adjust_type)
-
-        if not factor_name:
-            if type(level) == str:
-                factor_name = f"{type(self).__name__.lower()}_{level}"
-            else:
-                factor_name = f"{type(self).__name__.lower()}_{level.value}"
+        self.turnover_threshold = turnover_threshold
+        self.turnover_rate_threshold = turnover_rate_threshold
 
         super().__init__(
-            self.data_schema,
             entity_schema,
             provider,
             entity_provider,
@@ -95,11 +74,14 @@ class TechnicalFactor(Factor, metaclass=FactorMeta):
             factor_name,
             clear_state,
             only_load_factor,
+            adjust_type,
         )
 
-    def drawer_sub_df_list(self) -> Optional[List[pd.DataFrame]]:
-        return [self.factor_df[["volume"]]]
-
-
-# the __all__ is generated
-__all__ = ["TechnicalFactor"]
+    def compute_result(self):
+        super().compute_result()
+        t = CrossMaTransformer(windows=[5, 120, 250])
+        self.factor_df = t.transform(self.factor_df)
+        s = (self.factor_df["turnover"] > self.turnover_threshold) & (
+            self.factor_df["turnover_rate"] > self.turnover_rate_threshold
+        )
+        self.result_df = (self.factor_df["filter_result"] & self.factor_df["bull"] & s).to_frame(name="filter_result")

@@ -117,6 +117,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         codes: List[str] = None,
         start_timestamp: Union[str, pd.Timestamp] = None,
         end_timestamp: Union[str, pd.Timestamp] = None,
+        columns: List = None,
         filters: List = None,
         order: object = None,
         limit: int = None,
@@ -137,6 +138,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         windows=None,
         vol_windows=None,
         turnover_threshold=300000000,
+        turnover_rate_threshold=0.02,
         up_intervals=40,
         over_mode="and",
     ) -> None:
@@ -148,10 +150,9 @@ class VolumeUpMaFactor(TechnicalFactor):
         self.windows = windows
         self.vol_windows = vol_windows
         self.turnover_threshold = turnover_threshold
+        self.turnover_rate_threshold = turnover_rate_threshold
         self.up_intervals = up_intervals
         self.over_mode = over_mode
-
-        columns: List = ["id", "entity_id", "timestamp", "level", "open", "close", "high", "low", "volume", "turnover"]
 
         transformer: Transformer = MaAndVolumeTransformer(windows=windows, vol_windows=vol_windows)
 
@@ -211,8 +212,11 @@ class VolumeUpMaFactor(TechnicalFactor):
             for col in vol_cols[1:]:
                 filter_vol = filter_vol & (self.factor_df["volume"] > 2 * self.factor_df[col])
 
-        # 成交额过滤
-        s = filter_up & filter_vol & (self.factor_df["turnover"] > self.turnover_threshold)
+        # 成交额，换手率过滤
+        filter_turnover = (self.factor_df["turnover"] > self.turnover_threshold) & (
+            self.factor_df["turnover_rate"] > self.turnover_rate_threshold
+        )
+        s = filter_up & filter_vol & filter_turnover
 
         # 突破后的时间周期 up_intervals
         s[s == False] = None
@@ -222,7 +226,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         # 还在均线附近
         # 1)刚突破
         # 2)突破后，回调到附近
-        filter_result = filter_up & s & (self.factor_df["turnover"] > self.turnover_threshold)
+        filter_result = filter_up & s & filter_turnover
 
         self.result_df = filter_result.to_frame(name="filter_result")
 
