@@ -34,7 +34,7 @@ def report_stats():
         ignore_new_stock=True,
         adjust_type=None,
         turnover_threshold=100000000,
-        turnover_rate_threshold=0.02,
+        turnover_rate_threshold=0.005,
         em_group_over_write=False,
     )
 

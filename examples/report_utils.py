@@ -154,7 +154,7 @@ def report_top_stats(
         )
 
         if not entity_ids:
-            msg = "no entity_ids listed one year"
+            msg = f"{entity_type} no entity_ids listed one year"
             logger.error(msg)
             email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
             return
@@ -176,12 +176,12 @@ def report_top_stats(
         filter_entity_ids = filter_turnover_df.index.tolist()
 
     if not filter_entity_ids:
-        msg = "no entity_ids selected"
+        msg = f"{entity_type} no entity_ids selected"
         logger.error(msg)
         email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
         return
 
-    logger.info(f"filter_entity_ids size: {len(filter_entity_ids)}")
+    logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
     filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
 
     stats = []

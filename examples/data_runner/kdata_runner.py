@@ -16,18 +16,22 @@ sched = BackgroundScheduler()
 
 
 @sched.scheduled_job("cron", hour=15, minute=30)
-def record_stock_data(data_provider="em", entity_provider="em"):
+def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2):
     # A股标的
     run_data_recorder(domain=Stock, data_provider=data_provider, force_update=False)
     # A股后复权行情
     run_data_recorder(
-        domain=Stock1dHfqKdata, data_provider=data_provider, entity_provider=entity_provider, day_data=True
+        domain=Stock1dHfqKdata,
+        data_provider=data_provider,
+        entity_provider=entity_provider,
+        day_data=True,
+        sleeping_time=sleeping_time,
     )
 
     # 板块(概念，行业)
     run_data_recorder(domain=Block, data_provider="eastmoney", force_update=False)
     # 板块行情(概念，行业)
-    run_data_recorder(domain=Block1dKdata, data_provider="em", day_data=True)
+    run_data_recorder(domain=Block1dKdata, data_provider="em", day_data=True, sleeping_time=sleeping_time)
 
     # 报告新概念和行业
     email_action = EmailInformer()
@@ -46,7 +50,7 @@ def record_stock_data(data_provider="em", entity_provider="em"):
 
 
 @sched.scheduled_job("cron", hour=16, minute=30)
-def record_stockhk_data(data_provider="em", entity_provider="em"):
+def record_stockhk_data(data_provider="em", entity_provider="em", sleeping_time=2):
     # 港股标的
     run_data_recorder(domain=Stockhk, data_provider=data_provider, force_update=False)
     # 港股后复权行情
@@ -57,6 +61,7 @@ def record_stockhk_data(data_provider="em", entity_provider="em"):
         data_provider=data_provider,
         entity_provider=entity_provider,
         day_data=True,
+        sleeping_time=sleeping_time,
     )
 
 
