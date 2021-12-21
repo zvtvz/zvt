@@ -288,6 +288,7 @@ def get_data(
     order=None,
     limit: int = None,
     index: Union[str, list] = None,
+    drop_index_col=False,
     time_field: str = "timestamp",
 ):
     if "providers" not in data_schema.__dict__:
@@ -365,7 +366,7 @@ def get_data(
         df = pd.read_sql(query.statement, query.session.bind)
         if pd_is_not_null(df):
             if index:
-                df = index_df(df, index=index, time_field=time_field)
+                df = index_df(df, index=index, drop=drop_index_col, time_field=time_field)
         return df
     elif return_type == "domain":
         return query.all()

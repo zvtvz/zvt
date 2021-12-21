@@ -62,7 +62,7 @@ def gen_kdata_schemas():
 if __name__ == "__main__":
     # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
     # gen_exports('contract',export_modules=['schema'])
-    gen_exports("informer")
+    gen_exports("ml")
     # gen_exports('recorders')
     # gen_exports('domain')
     # gen_exports('informer')

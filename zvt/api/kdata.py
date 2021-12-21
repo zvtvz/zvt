@@ -62,6 +62,7 @@ def get_kdata(
     order=None,
     limit=None,
     index="timestamp",
+    drop_index_col=False,
     adjust_type: AdjustType = None,
 ):
     assert not entity_id or not entity_ids
@@ -86,6 +87,7 @@ def get_kdata(
         order=order,
         limit=limit,
         index=index,
+        drop_index_col=drop_index_col,
     )
 
 
@@ -93,7 +95,7 @@ def default_adjust_type(entity_type: str) -> AdjustType:
     """
     :type entity_type: entity type, e.g stock, stockhk, stockus
     """
-    if entity_type.startswith("stock"):
+    if entity_type.lower().startswith("stock"):
         return AdjustType.hfq
     return AdjustType.qfq
 

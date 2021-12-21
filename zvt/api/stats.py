@@ -13,7 +13,7 @@ from zvt.contract.api import decode_entity_id, get_entity_schema, get_entity_ids
 from zvt.contract.drawer import Drawer
 from zvt.domain import FundStock, StockValuation, BlockStock, Block
 from zvt.utils import now_pd_timestamp, next_date, pd_is_not_null
-from zvt.utils.time_utils import month_start_end_ranges, pre_month_end_date
+from zvt.utils.time_utils import month_start_end_ranges, to_time_str
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class TopType(enum.Enum):
     negative = "negative"
 
 
-def got_top_performance_by_month(
+def get_top_performance_by_month(
     entity_type="stock",
     start_timestamp="2015-01-01",
     end_timestamp=now_pd_timestamp(),
@@ -179,6 +179,67 @@ def get_performance(
     return result
 
 
+def get_performance_stats_by_month(
+    entity_type="stock",
+    start_timestamp="2015-01-01",
+    end_timestamp=now_pd_timestamp(),
+    adjust_type: Union[AdjustType, str] = None,
+    data_provider=None,
+):
+    ranges = month_start_end_ranges(start_date=start_timestamp, end_date=end_timestamp)
+
+    month_stats = {}
+    for month_range in ranges:
+        start_timestamp = month_range[0]
+        end_timestamp = month_range[1]
+        logger.info(f"calculate range [{start_timestamp}, {end_timestamp}]")
+        stats = get_performance_stats(
+            entity_type=entity_type,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            adjust_type=adjust_type,
+            data_provider=data_provider,
+        )
+        if stats:
+            month_stats[f"{to_time_str(start_timestamp)}"] = stats
+
+    return pd.DataFrame.from_dict(data=month_stats, orient="index")
+
+
+def get_performance_stats(
+    entity_type="stock",
+    start_timestamp=None,
+    end_timestamp=None,
+    adjust_type: Union[AdjustType, str] = None,
+    data_provider=None,
+    changes=((-1, -0.5), (-0.5, -0.2), (-0.2, 0), (0, 0.2), (0.2, 0.5), (0.5, 1), (1, 1000)),
+):
+    if not adjust_type:
+        adjust_type = default_adjust_type(entity_type=entity_type)
+    data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
+
+    score_df, _ = get_top_entities(
+        data_schema=data_schema,
+        column="close",
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        pct=1,
+        method=WindowMethod.change,
+        return_type=TopType.positive,
+        data_provider=data_provider,
+    )
+
+    if pd_is_not_null(score_df):
+        result = {}
+        for change in changes:
+            range_start = change[0]
+            range_end = change[1]
+            key = f"pct_{range_start}_{range_end}"
+            df = score_df[(score_df["score"] >= range_start) & (score_df["score"] < range_end)]
+            result[key] = len(df)
+        return result
+
+
 def get_top_volume_entities(
     entity_type="stock",
     entity_ids=None,
@@ -266,7 +327,10 @@ def get_top_entities(
         if method == WindowMethod.change:
             start = df[column].iloc[0]
             end = df[column].iloc[-1]
-            change = (end - start) / start
+            if start != 0:
+                change = (end - start) / start
+            else:
+                change = 0
             tops[entity_id] = change
         elif method == WindowMethod.avg:
             tops[entity_id] = df[column].mean()
@@ -308,7 +372,7 @@ def get_top_entities(
 
 def show_month_performance():
     dfs = []
-    for timestamp, df in got_top_performance_by_month(start_timestamp="2005-01-01", list_days=250):
+    for timestamp, df in get_top_performance_by_month(start_timestamp="2005-01-01", list_days=250):
         if pd_is_not_null(df):
             df = df.reset_index(drop=True)
             df["entity_id"] = "stock_cn_performance"
@@ -338,24 +402,25 @@ def show_industry_composition(entity_ids, timestamp):
 
 
 if __name__ == "__main__":
-    # show_month_performance()
+    df = get_performance_stats_by_month()
+    print(df)
     # dfs = []
-    for timestamp, df in got_top_performance_by_month(start_timestamp="2012-01-01", list_days=250):
-        if pd_is_not_null(df):
-            entity_ids = df.index.tolist()
-            the_date = pre_month_end_date(timestamp)
-            show_industry_composition(entity_ids=entity_ids, timestamp=timestamp)
-            # for entity_id in df.index:
-            #     from zvt.utils.time_utils import month_end_date, pre_month_start_date
-            #
-            #     end_date = month_end_date(pre_month_start_date(timestamp))
-            #     TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
+    # for timestamp, df in got_top_performance_by_month(start_timestamp="2012-01-01", list_days=250):
+    #     if pd_is_not_null(df):
+    #         entity_ids = df.index.tolist()
+    #         the_date = pre_month_end_date(timestamp)
+    #         show_industry_composition(entity_ids=entity_ids, timestamp=timestamp)
+    # for entity_id in df.index:
+    #     from zvt.utils.time_utils import month_end_date, pre_month_start_date
+    #
+    #     end_date = month_end_date(pre_month_start_date(timestamp))
+    #     TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
 
 # the __all__ is generated
 __all__ = [
     "WindowMethod",
     "TopType",
-    "got_top_performance_by_month",
+    "get_top_performance_by_month",
     "get_top_performance_entities",
     "get_top_fund_holding_stocks",
     "get_performance",

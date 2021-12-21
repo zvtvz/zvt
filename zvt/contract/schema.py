@@ -103,6 +103,7 @@ class Mixin(object):
         order=None,
         limit: int = None,
         index: Union[str, list] = None,
+        drop_index_col=False,
         time_field: str = "timestamp",
     ):
         from .api import get_data
@@ -128,6 +129,7 @@ class Mixin(object):
             order=order,
             limit=limit,
             index=index,
+            drop_index_col=drop_index_col,
             time_field=time_field,
         )
 
