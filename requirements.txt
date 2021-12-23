@@ -1,8 +1,7 @@
 requests == 2.20.1
 SQLAlchemy == 1.4.20
 pandas == 1.1.4
-arrow == 0.11.0
-tzlocal == 1.5.1
+arrow == 1.2.1
 xlrd == 1.2.0
 demjson3 == 3.0.5
 marshmallow-sqlalchemy == 0.23.1

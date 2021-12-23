@@ -3,8 +3,8 @@ from sklearn.linear_model import SGDClassifier, SGDRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from ml.ml import MaStockMLMachine
 from zvt.contract import AdjustType
+from zvt.ml import MaStockMLMachine
 
 start_timestamp = "2015-01-01"
 end_timestamp = "2019-01-01"

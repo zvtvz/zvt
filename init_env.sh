@@ -41,7 +41,7 @@ fi
 
 source $BASEDIR/ve/bin/activate
 cd $BASEDIR
-export PYTHONPATH=$PYTHONPATH:.
+export PYTHONPATH=$PYTHONPATH:./src
 
 if [ ! -f "$BASEDIR/ve/updated" -o $BASEDIR/requirements.txt -nt $BASEDIR/ve/updated ]; then
     pip install -r $BASEDIR/requirements.txt $pip_opt
