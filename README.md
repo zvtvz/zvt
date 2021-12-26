@@ -368,7 +368,7 @@ Learn more about record_data
 * Recording the whole market if not set code, codes
 * This method will store the data locally and only do incremental updates
 
-Refer to the scheduling recoding way[eastmoney runner](https://github.com/zvtvz/zvt/blob/master/examples/recorders/eastmoney_data_runner1.py)
+Refer to the scheduling recoding way[data runner](https://github.com/zvtvz/zvt/blob/master/examples/recorders/data_runner)
 
 #### Market-wide stock selection
 

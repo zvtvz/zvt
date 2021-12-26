@@ -1,4 +1,4 @@
 include *.md
 include *.txt
 include LICENSE
-recursive-include zvt/* *
+recursive-include src/zvt/* *
