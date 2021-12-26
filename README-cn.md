@@ -25,8 +25,9 @@ ZVT 将市场抽象为如下的模型:
 python3 -m pip install -U zvt
 ```
 
-### 运行界面
+### 使用展示
 
+#### 主界面
 安装完成后，在命令行下输入 zvt
 ```shell
 zvt
@@ -42,7 +43,24 @@ zvt
 
 > 你可以在你喜欢的ide里编写和运行策略，然后运行界面查看其相关的标的，因子，信号和净值展示。
 
-### 导入
+#### 见证奇迹的时刻
+```
+>>> from zvt.domain import Stock, Stock1dHfqKdata
+>>> from zvt.ml import MaStockMLMachine
+>>> Stock.record_data(provider="em")
+>>> entity_ids = ["stock_sz_000001", "stock_sz_000338", "stock_sh_601318"]
+>>> Stock1dHfqKdata.record_data(provider="em", entity_ids=entity_ids, sleeping_time=1)
+>>> machine = MaStockMLMachine(entity_ids=["stock_sz_000001"])
+>>> machine.train()
+>>> machine.predict()
+>>> machine.draw_result(entity_id="stock_sz_000001")
+```
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pred_close.png'/></p>
+
+> 以上几行代码实现了：数据的抓取，持久化，增量更新，机器学习，预测，展示结果。
+> 熟悉系统的核心概念后，可以应用到市场中的任何标的。
+
+### 核心概念
 ```
 >>> from zvt.domain import *
 ```

@@ -33,7 +33,9 @@ the event about them e.g, quotes,finance factor,macro policy
 python3 -m pip install -U zvt
 ```
 
-### UI
+### Show
+
+#### Main ui
 
 After the installation is complete, enter zvt on the command line
 ```shell
@@ -50,7 +52,24 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
 > You can write and run the strategy in your favorite ide, and then view its related targets, factor, signal and performance on the UI.
 
-### import
+#### Behold, the power of zvt:
+```
+>>> from zvt.domain import Stock, Stock1dHfqKdata
+>>> from zvt.ml import MaStockMLMachine
+>>> Stock.record_data(provider="em")
+>>> entity_ids = ["stock_sz_000001", "stock_sz_000338", "stock_sh_601318"]
+>>> Stock1dHfqKdata.record_data(provider="em", entity_ids=entity_ids, sleeping_time=1)
+>>> machine = MaStockMLMachine(entity_ids=["stock_sz_000001"])
+>>> machine.train()
+>>> machine.predict()
+>>> machine.draw_result(entity_id="stock_sz_000001")
+```
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pred_close.png'/></p>
+
+> The few lines of code above has done: data capture, persistence, incremental update, machine learning, prediction, and display results.
+> Once you are familiar with the core concepts of the system, you can apply it to any target in the market.
+
+### Core concepts
 ```
 >>> from zvt.domain import *
 ```
