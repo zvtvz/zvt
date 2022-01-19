@@ -19,15 +19,15 @@ logger = logging.getLogger(__name__)
 
 class ChartType(Enum):
     kline = "kline"
-    # scatter mode
+    #: scatter mode
     line = "line"
     area = "area"
     scatter = "scatter"
-    # distribute
+    #: distribute
     histogram = "histogram"
-    # composite
+    #: composite
     pie = "pie"
-    # compare
+    #: compare
     bar = "bar"
 
 
@@ -37,10 +37,10 @@ _zvt_chart_type_map_scatter_mode = {ChartType.line: "lines", ChartType.area: "no
 @to_string
 class Rect(Bean):
     def __init__(self, x0=None, y0=None, x1=None, y1=None) -> None:
-        # left-bottom
+        #: left-bottom
         self.x0 = x0
         self.y0 = y0
-        # right-top
+        #: right-top
         self.x1 = x1
         self.y1 = y1
 
@@ -373,36 +373,36 @@ class Drawer(Draw):
         :param annotation_df:
         """
 
-        # 主图数据
+        #: 主图数据
         if main_data is None:
             main_data = NormalData(main_df)
         self.main_data: NormalData = main_data
 
-        # 主图因子
+        #: 主图因子
         if not factor_data_list and factor_df_list:
             factor_data_list = []
             for df in factor_df_list:
                 factor_data_list.append(NormalData(df))
-        # 每一个df可能有多个column, 代表多个指标，对于连续型的，可以放在一个df里面
-        # 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
+        #: 每一个df可能有多个column, 代表多个指标，对于连续型的，可以放在一个df里面
+        #: 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
         self.factor_data_list: List[NormalData] = factor_data_list
 
-        # 副图数据
+        #: 副图数据
         if not sub_data_list and sub_df_list:
             sub_data_list = []
             for df in sub_df_list:
                 sub_data_list.append(NormalData(df))
-        # 每一个df可能有多个column, 代表多个指标，对于连续型的，可以放在一个df里面
-        # 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
+        #: 每一个df可能有多个column, 代表多个指标，对于连续型的，可以放在一个df里面
+        #: 对于离散型的，比如一些特定模式的连线，放在多个df里面较好，因为index不同
         self.sub_data_list: List[NormalData] = sub_data_list
 
-        # 幅图col对应的图形，line or bar
+        #: 幅图col对应的图形，line or bar
         self.sub_col_chart = sub_col_chart
 
-        # 主图的标记数据
+        #: 主图的标记数据
         self.annotation_df = annotation_df
 
-        # list of rect
+        #: list of rect
         self.rects = rects
 
     def add_factor_df(self, df: pd.DataFrame):

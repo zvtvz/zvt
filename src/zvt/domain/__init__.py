@@ -3,46 +3,46 @@ import enum
 
 
 class BlockCategory(enum.Enum):
-    # 行业版块
+    #: 行业版块
     industry = "industry"
-    # 概念版块
+    #: 概念版块
     concept = "concept"
-    # 区域版块
+    #: 区域版块
     area = "area"
 
 
 class IndexCategory(enum.Enum):
-    # 中国指数提供商：
-    # 中证指数公司 http://www.csindex.com.cn/zh-CN
-    # 上证指数(上交所标的) 中证指数(沪深)
+    #: 中国指数提供商：
+    #: 中证指数公司 http://www.csindex.com.cn/zh-CN
+    #: 上证指数(上交所标的) 中证指数(沪深)
 
-    # 国证指数公司 http://www.cnindex.com.cn/index.html
-    # 深证指数(深交所标的) 国证指数(沪深)
+    #: 国证指数公司 http://www.cnindex.com.cn/index.html
+    #: 深证指数(深交所标的) 国证指数(沪深)
 
-    # 规模指数
-    # 常见的上证指数，深证指数等
+    #: 规模指数
+    #: 常见的上证指数，深证指数等
     scope = "scope"
-    # 行业指数
+    #: 行业指数
     industry = "industry"
-    # 风格指数
+    #: 风格指数
     style = "style"
-    # 主题指数
+    #: 主题指数
     #
-    # 策略指数
+    #: 策略指数
     #
-    # 综合指数
+    #: 综合指数
     #
-    # 债券指数
+    #: 债券指数
     #
-    # 基金指数
+    #: 基金指数
     fund = "fund"
-    # 定制指数
+    #: 定制指数
     #
-    # 人民币指数
+    #: 人民币指数
     #
-    # 跨境指数
+    #: 跨境指数
     #
-    # 其他指数
+    #: 其他指数
 
 
 class ReportPeriod(enum.Enum):

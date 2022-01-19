@@ -9,17 +9,17 @@ from zvt.contract.register import register_schema, register_entity
 IndexMetaBase = declarative_base()
 
 
-# 指数
+#: 指数
 @register_entity(entity_type="index")
 class Index(IndexMetaBase, Portfolio):
     __tablename__ = "index"
 
-    # 发布商
+    #: 发布商
     publisher = Column(String(length=64))
-    # 类别
-    # see IndexCategory
+    #: 类别
+    #: see IndexCategory
     category = Column(String(length=64))
-    # 基准点数
+    #: 基准点数
     base_point = Column(Float)
 
 

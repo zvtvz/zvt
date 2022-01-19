@@ -3,7 +3,9 @@ from enum import Enum
 
 
 class IntervalLevel(Enum):
-    """ """
+    """
+    repeated fixed time interval, e.g, 5m, 1d.
+    """
 
     LEVEL_TICK = "tick"
     LEVEL_1MIN = "1m"
@@ -55,7 +57,7 @@ class IntervalLevel(Enum):
         return int(self.to_ms() / 1000)
 
     def to_ms(self):
-        # we treat tick intervals is 5s, you could change it
+        #: we treat tick intervals is 5s, you could change it
         if self == IntervalLevel.LEVEL_TICK:
             return 5 * 1000
         if self == IntervalLevel.LEVEL_1MIN:
@@ -100,82 +102,82 @@ class IntervalLevel(Enum):
 
 
 class AdjustType(Enum):
-    # 这里用拼音，因为英文不直观 split-adjusted？wtf?
-    # 不复权
+    #: 这里用拼音，因为英文不直观 split-adjusted？wtf?
+    #: 不复权
     bfq = "bfq"
-    # 前复权
+    #: 前复权
     qfq = "qfq"
-    # 后复权
+    #: 后复权
     hfq = "hfq"
 
 
 class ActorType(Enum):
-    # 个人
+    #: 个人
     individual = "individual"
-    # 公募基金
+    #: 公募基金
     raised_fund = "raised_fund"
-    # 社保
+    #: 社保
     social_security = "social_security"
-    # 保险
+    #: 保险
     insurance = "insurance"
-    # 外资
+    #: 外资
     qfii = "qfii"
-    # 信托
+    #: 信托
     trust = "trust"
-    # 券商
+    #: 券商
     broker = "broker"
-    # 私募
+    #: 私募
     private_equity = "private_equity"
-    # 公司(可能包括私募)
+    #: 公司(可能包括私募)
     corporation = "corporation"
 
 
 class TradableType(Enum):
-    # A股(中国)
+    #: A股(中国)
     stock = "stock"
-    # 美股
+    #: 美股
     stockus = "stockus"
-    # 港股
+    #: 港股
     stockhk = "stockhk"
-    # 期货(中国)
+    #: 期货(中国)
     future = "future"
-    # 数字货币
+    #: 数字货币
     coin = "coin"
-    # 期权
+    #: 期权
     option = "option"
-    # 基金
+    #: 基金
     fund = "fund"
 
 
 class Exchange(Enum):
-    # 上证交易所
+    #: 上证交易所
     sh = "sh"
-    # 深证交易所
+    #: 深证交易所
     sz = "sz"
 
-    # 对于中国的非交易所的 标的
+    #: 对于中国的非交易所的 标的
     cn = "cn"
 
-    # 纳斯达克
+    #: 纳斯达克
     nasdaq = "nasdaq"
 
-    # 纽交所
+    #: 纽交所
     nyse = "nyse"
 
-    # 港交所
+    #: 港交所
     hk = "hk"
 
-    # 数字货币
+    #: 数字货币
     binance = "binance"
     huobipro = "huobipro"
 
-    # 上海期货交易所
+    #: 上海期货交易所
     shfe = "shfe"
-    # 大连商品交易所
+    #: 大连商品交易所
     dce = "dce"
-    # 郑州商品交易所
+    #: 郑州商品交易所
     czce = "czce"
-    # 中国金融期货交易所
+    #: 中国金融期货交易所
     cffex = "cffex"
 
 

@@ -5,9 +5,10 @@ Contents
 --------
 
 .. toctree::
+    :maxdepth: 2
 
     user_guide/index
-    api
+    api/index
 
 Indices and tables
 ==================

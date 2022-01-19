@@ -122,7 +122,7 @@ class DataReader(Drawable):
 
         # we store the data in a multiple index(category_column,timestamp) Dataframe
         if self.columns:
-            # support str
+            #: support str
             if type(columns[0]) == str:
                 self.columns = []
                 for col in columns:
@@ -214,7 +214,7 @@ class DataReader(Drawable):
 
         start_time = time.time()
 
-        # FIXME:we suppose history data should be there at first
+        #: FIXME:we suppose history data should be there at first
         has_got = []
         dfs = []
         changed = False
@@ -225,7 +225,7 @@ class DataReader(Drawable):
 
                 recorded_timestamp = df.index.levels[1].max()
 
-                # move_on读取数据，表明之前的数据已经处理完毕，只需要保留computing_window的数据
+                #: move_on读取数据，表明之前的数据已经处理完毕，只需要保留computing_window的数据
                 if self.computing_window:
                     df = df.iloc[-self.computing_window :]
 
@@ -249,7 +249,7 @@ class DataReader(Drawable):
 
                     for listener in self.data_listeners:
                         listener.on_entity_data_changed(entity=entity_id, added_data=added_df)
-                    # if got data,just move to another entity_id
+                    #: if got data,just move to another entity_id
                     changed = True
                     has_got.append(entity_id)
                     df = df.append(added_df, sort=False)
@@ -257,7 +257,7 @@ class DataReader(Drawable):
                 else:
                     cost_time = time.time() - start_time
                     if cost_time > timeout:
-                        # if timeout,just add the old data
+                        #: if timeout,just add the old data
                         has_got.append(entity_id)
                         dfs.append(df)
                         self.logger.warning(
@@ -282,7 +282,7 @@ class DataReader(Drawable):
         if listener not in self.data_listeners:
             self.data_listeners.append(listener)
 
-        # notify it once after registered
+        #: notify it once after registered
         if pd_is_not_null(self.data_df):
             listener.on_data_loaded(self.data_df)
 

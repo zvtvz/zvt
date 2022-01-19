@@ -24,11 +24,11 @@ class StatefulService(object):
         del_data(self.state_schema, filters=filters)
 
     def decode_state(self, state: str):
-        # 反序列化
+        #: 反序列化
         return json.loads(state, object_hook=self.state_object_hook())
 
     def encode_state(self, state: object):
-        # 序列化
+        #: 序列化
         return json.dumps(state, cls=self.state_encoder())
 
     def state_object_hook(self):
@@ -64,7 +64,7 @@ class EntityStateService(StatefulService):
             filters=[self.state_schema.state_name == self.name], entity_ids=self.entity_ids, return_type="domain"
         )
 
-        # entity_id:state
+        #: entity_id:state
         self.states: dict = {}
         if state_domains:
             for state in state_domains:

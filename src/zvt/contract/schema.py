@@ -13,10 +13,10 @@ from zvt.utils.time_utils import date_and_time, is_same_time, now_pd_timestamp
 
 class Mixin(object):
     id = Column(String, primary_key=True)
-    # entity id for this model
+    #: entity id for this model
     entity_id = Column(String)
 
-    # the meaning could be different for different case,most of time it means 'happen time'
+    #: the meaning could be different for different case,most of time it means 'happen time'
     timestamp = Column(DateTime)
 
     # unix epoch,same meaning with timestamp
@@ -134,6 +134,22 @@ class Mixin(object):
         )
 
     @classmethod
+    def get_storages(
+        cls,
+        provider: str = None,
+    ):
+        if not provider:
+            providers = cls.get_providers()
+        else:
+            providers = [provider]
+        from zvt.contract.api import get_db_engine
+
+        engines = []
+        for p in providers:
+            engines.append(get_db_engine(provider=p, data_schema=cls))
+        return engines
+
+    @classmethod
     def record_data(
         cls,
         provider_index: int = 0,
@@ -171,20 +187,20 @@ class Mixin(object):
             else:
                 args = ["force_update", "sleeping_time"]
 
-            # just fill the None arg to kw,so we could use the recorder_class default args
+            #: just fill the None arg to kw,so we could use the recorder_class default args
             kw = {}
             for arg in args:
                 tmp = eval(arg)
                 if tmp is not None:
                     kw[arg] = tmp
 
-            # FixedCycleDataRecorder
+            #: FixedCycleDataRecorder
             from zvt.contract.recorder import FixedCycleDataRecorder
 
             if issubclass(recorder_class, FixedCycleDataRecorder):
-                # contract:
-                # 1)use FixedCycleDataRecorder to record the data with IntervalLevel
-                # 2)the table of schema with IntervalLevel format is {entity}_{level}_[adjust_type]_{event}
+                #: contract:
+                #: 1)use FixedCycleDataRecorder to record the data with IntervalLevel
+                #: 2)the table of schema with IntervalLevel format is {entity}_{level}_[adjust_type]_{event}
                 table: str = cls.__tablename__
                 try:
                     items = table.split("_")
@@ -193,12 +209,12 @@ class Mixin(object):
                         kw["adjust_type"] = adjust_type
                     level = IntervalLevel(items[1])
                 except:
-                    # for other schema not with normal format,but need to calculate size for remaining days
+                    #: for other schema not with normal format,but need to calculate size for remaining days
                     level = IntervalLevel.LEVEL_1DAY
 
                 kw["level"] = level
 
-                # add other custom args
+                #: add other custom args
                 for k in kwargs:
                     kw[k] = kwargs[k]
 
@@ -214,24 +230,24 @@ class Mixin(object):
 
 
 class NormalMixin(Mixin):
-    # the record created time in db
+    #: the record created time in db
     created_timestamp = Column(DateTime, default=pd.Timestamp.now())
-    # the record updated time in db, some recorder would check it for whether need to refresh
+    #: the record updated time in db, some recorder would check it for whether need to refresh
     updated_timestamp = Column(DateTime)
 
 
 class Entity(Mixin):
-    # 标的类型
+    #: 标的类型
     entity_type = Column(String(length=64))
-    # 所属交易所
+    #: 所属交易所
     exchange = Column(String(length=32))
-    # 编码
+    #: 编码
     code = Column(String(length=64))
-    # 名字
+    #: 名字
     name = Column(String(length=128))
-    # 上市日
+    #: 上市日
     list_date = Column(DateTime)
-    # 退市日
+    #: 退市日
     end_date = Column(DateTime)
 
 
@@ -360,9 +376,9 @@ class ActorEntity(Entity):
 
 
 class NormalEntityMixin(TradableEntity):
-    # the record created time in db
+    #: the record created time in db
     created_timestamp = Column(DateTime, default=pd.Timestamp.now())
-    # the record updated time in db, some recorder would check it for whether need to refresh
+    #: the record updated time in db, some recorder would check it for whether need to refresh
     updated_timestamp = Column(DateTime)
 
 
@@ -394,17 +410,17 @@ class Portfolio(TradableEntity):
         return portfolio_stock.query_data(provider=provider, code=code, codes=codes, timestamp=timestamp, ids=ids)
 
 
-# 组合(Fund,Etf,Index,Block等)和个股(Stock)的关系 应该继承自该类
-# 该基础类可以这样理解:
-# entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
+#: 组合(Fund,Etf,Index,Block等)和个股(Stock)的关系 应该继承自该类
+#: 该基础类可以这样理解:
+#: entity为组合本身,其包含了stock这种entity,timestamp为持仓日期,从py的"你知道你在干啥"的哲学出发，不加任何约束
 class PortfolioStock(Mixin):
-    # portfolio标的类型
+    #: portfolio标的类型
     entity_type = Column(String(length=64))
-    # portfolio所属交易所
+    #: portfolio所属交易所
     exchange = Column(String(length=32))
-    # portfolio编码
+    #: portfolio编码
     code = Column(String(length=64))
-    # portfolio名字
+    #: portfolio名字
     name = Column(String(length=128))
 
     stock_id = Column(String)
@@ -412,28 +428,28 @@ class PortfolioStock(Mixin):
     stock_name = Column(String(length=128))
 
 
-# 支持时间变化,报告期标的调整
+#: 支持时间变化,报告期标的调整
 class PortfolioStockHistory(PortfolioStock):
-    # 报告期,season1,half_year,season3,year
+    #: 报告期,season1,half_year,season3,year
     report_period = Column(String(length=32))
-    # 3-31,6-30,9-30,12-31
+    #: 3-31,6-30,9-30,12-31
     report_date = Column(DateTime)
 
-    # 占净值比例
+    #: 占净值比例
     proportion = Column(Float)
-    # 持有股票的数量
+    #: 持有股票的数量
     shares = Column(Float)
-    # 持有股票的市值
+    #: 持有股票的市值
     market_cap = Column(Float)
 
 
-# 交易标的和参与者的关系应该继承自该类, meet,遇见,恰如其分的诠释参与者和交易标的的关系
-# 市场就是参与者与交易标的的关系，类的命名规范为{Entity}{relation}{Entity}，entity_id代表"所"为的entity,"受"者entity以具体类别的id命名
-# 比如StockTopTenHolder:TradableMeetActor中entity_id和actor_id,分别代表股票和股东
+#: 交易标的和参与者的关系应该继承自该类, meet,遇见,恰如其分的诠释参与者和交易标的的关系
+#: 市场就是参与者与交易标的的关系，类的命名规范为{Entity}{relation}{Entity}，entity_id代表"所"为的entity,"受"者entity以具体类别的id命名
+#: 比如StockTopTenHolder:TradableMeetActor中entity_id和actor_id,分别代表股票和股东
 class TradableMeetActor(Mixin):
-    # tradable code
+    #: tradable code
     code = Column(String(length=64))
-    # tradable name
+    #: tradable name
     name = Column(String(length=128))
 
     actor_id = Column(String)
@@ -442,11 +458,11 @@ class TradableMeetActor(Mixin):
     actor_name = Column(String(length=128))
 
 
-# 也可以"所"为参与者，"受"为标的
+#: 也可以"所"为参与者，"受"为标的
 class ActorMeetTradable(Mixin):
-    # actor code
+    #: actor code
     code = Column(String(length=64))
-    # actor name
+    #: actor name
     name = Column(String(length=128))
 
     tradable_id = Column(String)

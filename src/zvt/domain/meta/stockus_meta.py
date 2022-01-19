@@ -8,7 +8,7 @@ from zvt.contract.register import register_schema, register_entity
 StockusMetaBase = declarative_base()
 
 
-# 美股
+#: 美股
 @register_entity(entity_type="stockus")
 class Stockus(StockusMetaBase, TradableEntity):
     __tablename__ = "stockus"

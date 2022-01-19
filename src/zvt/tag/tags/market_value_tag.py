@@ -31,6 +31,9 @@ index_map_market_value = {
 
 
 class MarketValueTagger(StockTagger):
+    #: a is a number
+    a = 1
+
     def tag(self, timestamp):
         for index_id in index_map_market_value:
             df = IndexStock.query_data(
@@ -51,6 +54,7 @@ class MarketValueTagger(StockTagger):
 
 
 if __name__ == "__main__":
-    MarketValueTagger().run()
+    print(MarketValueTagger.__doc__)
+    # MarketValueTagger().run()
 # the __all__ is generated
 __all__ = ["MarketValueTag", "MarketValueTagger"]

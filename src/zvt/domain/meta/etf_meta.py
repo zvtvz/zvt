@@ -10,7 +10,7 @@ from zvt.utils.time_utils import now_pd_timestamp
 EtfMetaBase = declarative_base()
 
 
-# etf
+#: etf
 @register_entity(entity_type="etf")
 class Etf(EtfMetaBase, Portfolio):
     __tablename__ = "etf"

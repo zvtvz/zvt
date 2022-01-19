@@ -9,40 +9,40 @@ from zvt.contract.register import register_schema, register_entity
 StockMetaBase = declarative_base()
 
 
-# 个股
+#: 个股
 @register_entity(entity_type="stock")
 class Stock(StockMetaBase, TradableEntity):
     __tablename__ = "stock"
 
 
-# 个股详情
+#: 个股详情
 class StockDetail(StockMetaBase, TradableEntity):
     __tablename__ = "stock_detail"
 
-    # 所属行业
+    #: 所属行业
     industries = Column(String)
-    # 行业指数
+    #: 行业指数
     industry_indices = Column(String)
-    # 所属板块
+    #: 所属板块
     concept_indices = Column(String)
-    # 所属区域
+    #: 所属区域
     area_indices = Column(String)
 
-    # 成立日期
+    #: 成立日期
     date_of_establishment = Column(DateTime)
-    # 公司简介
+    #: 公司简介
     profile = Column(String(length=1024))
-    # 主营业务
+    #: 主营业务
     main_business = Column(String(length=512))
-    # 发行量(股)
+    #: 发行量(股)
     issues = Column(BigInteger)
-    # 发行价格
+    #: 发行价格
     price = Column(Float)
-    # 募资净额(元)
+    #: 募资净额(元)
     raising_fund = Column(Float)
-    # 发行市盈率
+    #: 发行市盈率
     issue_pe = Column(Float)
-    # 网上中签率
+    #: 网上中签率
     net_winning_rate = Column(Float)
 
 

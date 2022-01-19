@@ -38,13 +38,13 @@ class Meta(type):
 
 
 class Recorder(OneStateService, metaclass=Meta):
-    # overwrite them to set up the data you want to record
+    #: overwrite them to set up the data you want to record
     provider: str = None
     data_schema: Mixin = None
 
-    # original page url
+    #: original page url
     original_page_url = None
-    # request url
+    #: request url
     url = None
 
     state_schema = RecorderState
@@ -64,7 +64,7 @@ class Recorder(OneStateService, metaclass=Meta):
         self.force_update = force_update
         self.sleeping_time = sleeping_time
 
-        # using to do db operations
+        #: using to do db operations
         self.session = get_db_session(provider=self.provider, data_schema=self.data_schema)
 
     def run(self):
@@ -82,7 +82,7 @@ class Recorder(OneStateService, metaclass=Meta):
 
 
 class EntityEventRecorder(Recorder):
-    # overwrite them to fetch the entity list
+    #: overwrite them to fetch the entity list
     entity_provider: str = None
     entity_schema: TradableEntity = None
 
@@ -114,7 +114,7 @@ class EntityEventRecorder(Recorder):
         assert self.entity_provider is not None
         assert self.entity_schema is not None
 
-        # setup the entities you want to record
+        #: setup the entities you want to record
         self.exchanges = exchanges
         if codes is None and code is not None:
             self.codes = [code]
@@ -122,7 +122,7 @@ class EntityEventRecorder(Recorder):
             self.codes = codes
         self.day_data = day_data
 
-        # set entity_ids or (entity_type,exchanges,codes)
+        #: set entity_ids or (entity_type,exchanges,codes)
         self.entity_ids = entity_ids
         self.entity_filters = entity_filters
         self.ignore_failed = ignore_failed
@@ -153,7 +153,7 @@ class EntityEventRecorder(Recorder):
                 else:
                     self.entity_filters = [self.entity_schema.entity_id.notin_(entity_ids)]
 
-        # init the entity list
+        #: init the entity list
         self.entities = get_entities(
             session=self.entity_session,
             entity_schema=self.entity_schema,
@@ -220,7 +220,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         return None
 
     def evaluate_start_end_size_timestamps(self, entity):
-        # not to list date yet
+        #: not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
             self.logger.info("ignore entity: {} list date: {}", entity.id, entity.timestamp)
             return entity.timestamp, None, 0, None
@@ -305,15 +305,15 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
 
         got_new_data = False
 
-        # if the domain is directly generated in record method, we just return it
+        #: if the domain is directly generated in record method, we just return it
         if isinstance(original_data, self.data_schema):
             got_new_data = True
             return got_new_data, original_data
 
         the_id = self.generate_domain_id(entity, original_data)
 
-        # optional way
-        # item = self.session.query(self.data_schema).get(the_id)
+        #: optional way
+        #: item = self.session.query(self.data_schema).get(the_id)
 
         items = get_data(
             data_schema=self.data_schema,
@@ -418,7 +418,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                             )
                         )
 
-                    # no more to record
+                    #: no more to record
                     if size == 0:
                         finished_items.append(entity_item)
                         self.logger.info(
@@ -429,7 +429,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                         self.on_finish_entity(entity_item)
                         continue
 
-                    # sleep for a while to next entity
+                    #: sleep for a while to next entity
                     if index != 0:
                         self.sleep()
 
@@ -447,14 +447,14 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                             if got_new_data:
                                 all_duplicated = False
 
-                            # handle the case  generate_domain_id generate duplicate id
+                            #: handle the case  generate_domain_id generate duplicate id
                             if domain_item:
                                 duplicate = [item for item in domain_list if item.id == domain_item.id]
                                 if duplicate:
-                                    # regenerate the id
+                                    #: regenerate the id
                                     if self.fix_duplicate_way == "add":
                                         domain_item.id = "{}_{}".format(domain_item.id, uuid.uuid1())
-                                    # ignore
+                                    #: ignore
                                     else:
                                         self.logger.info(f"ignore original duplicate item:{domain_item.id}")
                                         continue
@@ -466,14 +466,14 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                         else:
                             self.logger.info("just got {} duplicated data in this cycle".format(len(original_list)))
 
-                    # could not get more data
+                    #: could not get more data
                     entity_finished = False
                     if not original_list or all_duplicated:
-                        # not realtime
+                        #: not realtime
                         if not self.real_time:
                             entity_finished = True
 
-                        # realtime and to the close time
+                        #: realtime and to the close time
                         if self.real_time and (self.close_hour is not None) and (self.close_minute is not None):
                             current_timestamp = pd.Timestamp.now()
                             if current_timestamp.hour >= self.close_hour:
@@ -484,7 +484,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
 
                                     entity_finished = True
 
-                    # add finished entity to finished_items
+                    #: add finished entity to finished_items
                     if entity_finished:
                         finished_items.append(entity_item)
 
@@ -562,8 +562,8 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
     def get_latest_saved_record(self, entity):
         order = eval("self.data_schema.{}.desc()".format(self.get_evaluated_time_field()))
 
-        # 对于k线这种数据，最后一个记录有可能是没完成的，所以取两个
-        # 同一周期内只保留最新的一个数据
+        #: 对于k线这种数据，最后一个记录有可能是没完成的，所以取两个
+        #: 同一周期内只保留最新的一个数据
         records = get_data(
             entity_id=entity.id,
             provider=self.provider,
@@ -575,7 +575,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
             level=self.level,
         )
         if records:
-            # delete unfinished kdata
+            #: delete unfinished kdata
             if len(records) == 2:
                 if is_in_same_interval(t1=records[0].timestamp, t2=records[1].timestamp, level=self.level):
                     self.session.delete(records[1])
@@ -584,18 +584,18 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         return None
 
     def evaluate_start_end_size_timestamps(self, entity):
-        # not to list date yet
+        #: not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
             return entity.timestamp, None, 0, None
 
-        # get latest record
+        #: get latest record
         latest_saved_record = self.get_latest_saved_record(entity=entity)
 
         if latest_saved_record:
-            # the latest saved timestamp
+            #: the latest saved timestamp
             latest_saved_timestamp = latest_saved_record.timestamp
         else:
-            # the list date
+            #: the list date
             latest_saved_timestamp = entity.timestamp
 
         if not latest_saved_timestamp:

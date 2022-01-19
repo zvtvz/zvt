@@ -14,11 +14,11 @@ class StockTopTenFreeHolder(StockActorBase, TradableMeetActor):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    # 持股数
+    #: 持股数
     holding_numbers = Column(Float)
-    # 持股比例
+    #: 持股比例
     holding_ratio = Column(Float)
-    # 持股市值
+    #: 持股市值
     holding_values = Column(Float)
 
 
@@ -28,11 +28,11 @@ class StockTopTenHolder(StockActorBase, TradableMeetActor):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    # 持股数
+    #: 持股数
     holding_numbers = Column(Float)
-    # 持股比例
+    #: 持股比例
     holding_ratio = Column(Float)
-    # 持股市值
+    #: 持股市值
     holding_values = Column(Float)
 
 
@@ -42,37 +42,37 @@ class StockInstitutionalInvestorHolder(StockActorBase, TradableMeetActor):
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    # 持股数
+    #: 持股数
     holding_numbers = Column(Float)
-    # 持股比例
+    #: 持股比例
     holding_ratio = Column(Float)
-    # 持股市值
+    #: 持股市值
     holding_values = Column(Float)
 
 
 class StockActorSummary(StockActorBase, TradableMeetActor):
     __tablename__ = "stock_actor_summary"
-    # tradable code
+    #: tradable code
     code = Column(String(length=64))
-    # tradable name
+    #: tradable name
     name = Column(String(length=128))
 
     report_period = Column(String(length=32))
     report_date = Column(DateTime)
 
-    # 变动比例
+    #: 变动比例
     change_ratio = Column(Float)
-    # 是否完成
+    #: 是否完成
     is_complete = Column(Boolean)
-    # 持股市值
+    #: 持股市值
     actor_type = Column(String)
     actor_count = Column(Integer)
 
-    # 持股数
+    #: 持股数
     holding_numbers = Column(Float)
-    # 持股比例
+    #: 持股比例
     holding_ratio = Column(Float)
-    # 持股市值
+    #: 持股市值
     holding_values = Column(Float)
 
 

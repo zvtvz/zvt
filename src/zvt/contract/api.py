@@ -308,7 +308,7 @@ def get_data(
     # we always store different level in different schema,the level param is not useful now
     if level:
         try:
-            # some schema has no level,just ignore it
+            #: some schema has no level,just ignore it
             data_schema.level
             if type(level) == IntervalLevel:
                 level = level.value
