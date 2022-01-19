@@ -1,0 +1,4 @@
+sphinx==4.4.0
+sphinx_autodoc_typehints==1.15.3
+rst2pdf==0.99
+ipython==7.31.1

@@ -262,7 +262,7 @@ pre adjusted(qfq), post adjusted(hfq), or not adjusted(bfq).
 .. note:
     In order to be compatible with historical data, the qfq is an exception, {adjust_type} is left empty
 
-The pre defined kdata schema could be in :module:`~.zvt.domain.quotes`, it's seperated by
+The pre defined kdata schema could be in :py:mod:`~.zvt.domain.quotes`, it's seperated by
 entity_schema, level, and adjust type.
 
 Normal data

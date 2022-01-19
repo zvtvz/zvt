@@ -191,8 +191,7 @@ class MLMachine(object):
         self, entity_ids: List[str], start_timestamp: pd.Timestamp, end_timestamp: pd.Timestamp
     ) -> pd.DataFrame:
         """
-        result df format:
-
+        result df format
                                   col1    col2    col3    ...
         entity_id    timestamp
                                   1.2     0.5     0.3     ...
@@ -214,6 +213,13 @@ class MaStockMLMachine(StockMLMachine):
     def build_feature(
         self, entity_ids: List[str], start_timestamp: pd.Timestamp, end_timestamp: pd.Timestamp
     ) -> pd.DataFrame:
+        """
+
+        :param entity_ids:
+        :param start_timestamp:
+        :param end_timestamp:
+        :return:
+        """
         t = MaTransformer(windows=[5, 10, 120, 250])
         df = t.transform(self.kdata_df)
         return df
