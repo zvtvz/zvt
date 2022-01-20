@@ -622,14 +622,14 @@ class Drawer(Draw):
 
 def annotations(annotation_df: pd.DataFrame, yref="y"):
     """
-    annotation_df format:
-                                    value    flag    color
-    entity_id    timestamp
+    annotation_df format::
+
+                                        value    flag    color
+        entity_id    timestamp
 
     :param annotation_df:
     :param yref: specific yaxis e.g, y,y2,y3
     :return:
-
     """
 
     if pd_is_not_null(annotation_df):

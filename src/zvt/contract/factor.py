@@ -29,12 +29,12 @@ class Transformer(Indicator):
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
-        input_df format:
+        input_df format::
 
-                                  col1    col2    col3    ...
-        entity_id    timestamp
-                                  1.2     0.5     0.3     ...
-                                  1.0     0.7     0.2     ...
+                                      col1    col2    col3    ...
+            entity_id    timestamp
+                                      1.2     0.5     0.3     ...
+                                      1.0     0.7     0.2     ...
 
         the return result would change the columns and  keep the format
 
@@ -55,12 +55,12 @@ class Transformer(Indicator):
 
     def transform_one(self, entity_id: str, df: pd.DataFrame) -> pd.DataFrame:
         """
-        df format:
+        df format::
 
-                     col1    col2    col3    ...
-        timestamp
-                     1.2     0.5     0.3     ...
-                     1.0     0.7     0.2     ...
+                         col1    col2    col3    ...
+            timestamp
+                         1.2     0.5     0.3     ...
+                         1.0     0.7     0.2     ...
 
         the return result would change the columns and  keep the format
 
@@ -134,12 +134,12 @@ class Accumulator(Indicator):
 
     def acc_one(self, entity_id, df: pd.DataFrame, acc_df: pd.DataFrame, state: dict) -> (pd.DataFrame, dict):
         """
-        df format:
+        df format::
 
-                     col1    col2    col3    ...
-        timestamp
-                     1.2     0.5     0.3     ...
-                     1.0     0.7     0.2     ...
+                         col1    col2    col3    ...
+            timestamp
+                         1.2     0.5     0.3     ...
+                         1.0     0.7     0.2     ...
 
         the new result and state
 
@@ -499,9 +499,7 @@ class Factor(DataReader, EntityStateService, DataListener):
         """
         overwrite it for computing after data added
 
-        Parameters
-        ----------
-        data :
+        :param data:
         """
         self.compute()
 
@@ -509,10 +507,8 @@ class Factor(DataReader, EntityStateService, DataListener):
         """
         overwrite it for computing after entity data added
 
-        Parameters
-        ----------
-        entity :
-        added_data :
+        :param entity:
+        :param added_data:
         """
         pass
 

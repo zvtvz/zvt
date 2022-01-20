@@ -18,28 +18,22 @@ class DataListener(object):
     def on_data_loaded(self, data: pd.DataFrame) -> object:
         """
 
-        Parameters
-        ----------
-        data : the data loaded at first time
+        :param data:
         """
         raise NotImplementedError
 
     def on_data_changed(self, data: pd.DataFrame) -> object:
         """
 
-        Parameters
-        ----------
-        data : the data added
+        :param data:
         """
         raise NotImplementedError
 
     def on_entity_data_changed(self, entity: str, added_data: pd.DataFrame) -> object:
         """
 
-        Parameters
-        ----------
-        entity : the entity
-        added_data : the data added for the entity
+        :param entity: the entity
+        :param added_data: the data added for the entity
         """
         pass
 

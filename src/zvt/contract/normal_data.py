@@ -20,9 +20,10 @@ class NormalData(object):
 
     def normalize(self):
         """
-        normalize data_df to
-                                    col1    col2    col3
-        entity_id    timestamp
+        normalize data_df to::
+
+                                        col1    col2    col3
+            entity_id    timestamp
 
         """
         if pd_is_not_null(self.data_df):

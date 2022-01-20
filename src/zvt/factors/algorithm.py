@@ -196,6 +196,11 @@ class IntersectTransformer(Transformer):
         self.kdata_overlap = kdata_overlap
 
     def transform(self, input_df) -> pd.DataFrame:
+        """
+
+        :param input_df:
+        :return:
+        """
         if self.kdata_overlap > 0:
             # 没有重叠，区间就是(0,0)
             input_df["overlap"] = [(0, 0)] * len(input_df.index)

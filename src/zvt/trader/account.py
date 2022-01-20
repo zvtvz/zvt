@@ -527,33 +527,16 @@ class SimAccountService(AccountService):
         order_money=0,
     ):
         """
-        下单
 
-        Parameters
-        ----------
-        entity_id : str
-            交易标的id
-
-        current_price : float
-            当前价格
-
-        current_timestamp: timestamp
-            下单的时间
-
-        order_amount : int
-            数量
-
-        order_pct : float
-            使用可用现金(仓位)的百分比,0.0-1.0
-
-        order_price : float
-            用于限价交易
-
-        order_type : {ORDER_TYPE_LONG,ORDER_TYPE_SHORT,ORDER_TYPE_CLOSE_LONG,ORDER_TYPE_CLOSE_SHORT}
-            交易类型
-
-        Returns
-
+        :param entity_id:
+        :param current_price:
+        :param current_timestamp:
+        :param order_amount:
+        :param order_pct:
+        :param order_price:
+        :param order_type:
+        :param order_money:
+        :return:
         """
 
         # 市价交易,就是买卖是"当时"并"一定"能成交的

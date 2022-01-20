@@ -23,20 +23,19 @@ Core concepts building zvt
 Technologies come and technologies go, but market insight is forever.
 The core concepts is about market insight.Below would introduce them by usage.
 
-entity
+Entity
 ------------------------------
 The existence described by itself, classification of existential concepts.
 
 In the world of zvt, there are two kinds of entities, one is :ref:`tradable entity <intro.tradable_entity>`,
-and the other is :ref:`actor entity <intro.tradable_entity>`. Data is the event happened on them.
+the other is :ref:`actor entity <intro.tradable_entity>`. Data is the event happened on them.
 
 .. _intro.tradable_entity:
 
-tradable entity
+TradableEntity
 ------------------------------
 :class:`~.zvt.contract.schema.TradableEntity` is anything could be traded, it could be :class:`~.zvt.domain.meta.stock_meta.Stock`,
-:class:`~.zvt.domain.meta.stock_meta.Etf`, :class:`~.zvt.domain.meta.stock_meta.Index`, future,
-or any valuable thing.
+:class:`~.zvt.domain.meta.etf_meta.Etf`, :class:`~.zvt.domain.meta.index_meta.Index`, future, or any valuable thing.
 
 record and query stock:
 ::
@@ -124,7 +123,7 @@ From intuition, stockhk should be stock of hongkong:
 
 From intuition, other tradable entities could be added to the system and used in the same way.
 
-Below is current registered entity_type and its schema.
+Below is current registered tradable entity type and its schema.
 ::
 
     >>> from zvt.contract import *
@@ -139,7 +138,7 @@ Below is current registered entity_type and its schema.
 
 .. _intro.actor_entity:
 
-actor entity
+ActorEntity
 ------------------------------
 :class:`~.zvt.contract.schema.ActorEntity` is the beings acting in the market, it could be government,
 company, fund or individual.
@@ -166,17 +165,21 @@ company, fund or individual.
 
     [22468 rows x 14 columns]
 
-schema
+Schema
 ------------------------------
 Data structure describing :class:`~.zvt.contract.schema.TradableEntity`, :class:`~.zvt.contract.schema.ActorEntity` or events happen on them.
 Physically it's table with columns in sql database. One schema could have multiple storage
 with different providers.
 
+.. _intro.schema_usage:
+
 From specific to general, all zvt schema usage is in the same way.
 
-* import
-* record_data
-* query_data
+* from zvt.domain import {Schema}
+* {Schema}.record_data
+* {Schema}.query_data
+
+explore :py:mod:`~.zvt.domain` to check current schemas.
 
 ::
 
@@ -204,17 +207,23 @@ From specific to general, all zvt schema usage is in the same way.
 The data of the schema is recorded in local database by default and could be updated incrementally.
 
 Find them in this way:
+
+::
+
+    {Schema}.get_storages()
+
+e.g.
+
 ::
 
     >>> Stock1dHfqKdata.get_storages()
     [Engine(sqlite:////Users/foolcage/zvt-home/data/joinquant_stock_1d_hfq_kdata.db?check_same_thread=False),
      Engine(sqlite:////Users/foolcage/zvt-home/data/em_stock_1d_hfq_kdata.db?check_same_thread=False)]
 
-level
+IntervalLevel
 ------------------------------
 :class:`~.zvt.contract.IntervalLevel` is repeated fixed time interval, e.g, 5m, 1d.
 It's used in candlestick for describing time window.
-
 
 ::
 
@@ -264,6 +273,67 @@ pre adjusted(qfq), post adjusted(hfq), or not adjusted(bfq).
 
 The pre defined kdata schema could be in :py:mod:`~.zvt.domain.quotes`, it's seperated by
 entity_schema, level, and adjust type.
+
+e.g. Stock1dHfqKdata means China Stock daily hfq quotes.
+
+::
+
+    >>> from zvt.domain import Stock1dHfqKdata
+    >>> Stock1dHfqKdata.record_data(code='000338', provider='em')
+    >>> df = Stock1dHfqKdata.query_data(code='000338', provider='em')
+    >>> print(df)
+
+                                  id        entity_id  timestamp provider    code  name level    open   close    high     low     volume      turnover  change_pct  turnover_rate
+    0     stock_sz_000338_2007-04-30  stock_sz_000338 2007-04-30     None  000338  潍柴动力    1d   70.00   64.93   71.00   62.88   207375.0  1.365189e+09      2.1720         0.1182
+    1     stock_sz_000338_2007-05-08  stock_sz_000338 2007-05-08     None  000338  潍柴动力    1d   66.60   64.00   68.00   62.88    86299.0  5.563198e+08     -0.0143         0.0492
+    2     stock_sz_000338_2007-05-09  stock_sz_000338 2007-05-09     None  000338  潍柴动力    1d   63.32   62.00   63.88   59.60    93823.0  5.782065e+08     -0.0313         0.0535
+    3     stock_sz_000338_2007-05-10  stock_sz_000338 2007-05-10     None  000338  潍柴动力    1d   61.50   62.49   64.48   61.01    47720.0  2.999226e+08      0.0079         0.0272
+    4     stock_sz_000338_2007-05-11  stock_sz_000338 2007-05-11     None  000338  潍柴动力    1d   61.90   60.65   61.90   59.70    39273.0  2.373126e+08     -0.0294         0.0224
+    ...                          ...              ...        ...      ...     ...   ...   ...     ...     ...     ...     ...        ...           ...         ...            ...
+    3426  stock_sz_000338_2021-08-27  stock_sz_000338 2021-08-27     None  000338  潍柴动力    1d  331.97  345.95  345.95  329.82  1688497.0  3.370241e+09      0.0540         0.0398
+    3427  stock_sz_000338_2021-08-30  stock_sz_000338 2021-08-30     None  000338  潍柴动力    1d  345.95  342.72  346.10  337.96  1187601.0  2.377957e+09     -0.0093         0.0280
+    3428  stock_sz_000338_2021-08-31  stock_sz_000338 2021-08-31     None  000338  潍柴动力    1d  344.41  342.41  351.02  336.73  1143985.0  2.295195e+09     -0.0009         0.0270
+    3429  stock_sz_000338_2021-09-01  stock_sz_000338 2021-09-01     None  000338  潍柴动力    1d  341.03  336.42  341.03  328.28  1218697.0  2.383841e+09     -0.0175         0.0287
+    3430  stock_sz_000338_2021-09-02  stock_sz_000338 2021-09-02     None  000338  潍柴动力    1d  336.88  339.03  340.88  329.67  1023545.0  2.012006e+09      0.0078         0.0241
+
+    [3431 rows x 15 columns]
+
+FinanceFactor
+------------------------------
+The usage is same as other entity events.
+
+::
+
+    >>> from zvt.domain import FinanceFactor
+    >>> FinanceFactor.record_data(code='000338')
+    >>> FinanceFactor.query_data(code='000338',columns=FinanceFactor.important_cols(),index='timestamp')
+
+                basic_eps  total_op_income    net_profit  op_income_growth_yoy  net_profit_growth_yoy     roe    rota  gross_profit_margin  net_margin  timestamp
+    timestamp
+    2002-12-31        NaN     1.962000e+07  2.471000e+06                   NaN                    NaN     NaN     NaN               0.2068      0.1259 2002-12-31
+    2003-12-31       1.27     3.574000e+09  2.739000e+08              181.2022               109.8778  0.7729  0.1783               0.2551      0.0766 2003-12-31
+    2004-12-31       1.75     6.188000e+09  5.369000e+08                0.7313                 0.9598  0.3245  0.1474               0.2489      0.0868 2004-12-31
+    2005-12-31       0.93     5.283000e+09  3.065000e+08               -0.1463                -0.4291  0.1327  0.0603               0.2252      0.0583 2005-12-31
+    2006-03-31       0.33     1.859000e+09  1.079000e+08                   NaN                    NaN     NaN     NaN                  NaN      0.0598 2006-03-31
+    ...               ...              ...           ...                   ...                    ...     ...     ...                  ...         ...        ...
+    2020-08-28       0.59     9.449000e+10  4.680000e+09                0.0400                -0.1148  0.0983  0.0229               0.1958      0.0603 2020-08-28
+    2020-10-31       0.90     1.474000e+11  7.106000e+09                0.1632                 0.0067  0.1502  0.0347               0.1949      0.0590 2020-10-31
+    2021-03-31       1.16     1.975000e+11  9.207000e+09                0.1327                 0.0112  0.1919  0.0444               0.1931      0.0571 2021-03-31
+    2021-04-30       0.42     6.547000e+10  3.344000e+09                0.6788                 0.6197  0.0622  0.0158               0.1916      0.0667 2021-04-30
+    2021-08-31       0.80     1.264000e+11  6.432000e+09                0.3375                 0.3742  0.1125  0.0287               0.1884      0.0653 2021-08-31
+
+    [66 rows x 10 columns]
+
+Three financial tables
+
+::
+
+    >>> BalanceSheet.record_data(code='000338')
+    >>> IncomeStatement.record_data(code='000338')
+    >>> CashFlowStatement.record_data(code='000338')
+
+.. note::
+    Just remember, all :ref:`schema usage <intro.schema_usage>` is in the same way.
 
 Normal data
 ------------------------------

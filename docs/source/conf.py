@@ -32,7 +32,6 @@ release = "0.9.14"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "rst2pdf.pdfbuilder",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "IPython.sphinxext.ipython_directive",
@@ -60,9 +59,6 @@ html_theme = "alabaster"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-pdf_documents = [
-    ("index", u"zvt-guide", u"zvt guide", u"foolcage"),
-]
 
 autosummary_generate = True
 
