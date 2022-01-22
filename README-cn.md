@@ -4,6 +4,7 @@
 [![image](https://img.shields.io/pypi/pyversions/zvt.svg)](https://pypi.org/project/zvt/)
 [![build](https://github.com/zvtvz/zvt/actions/workflows/build.yaml/badge.svg)](https://github.com/zvtvz/zvt/actions/workflows/build.yml)
 [![package](https://github.com/zvtvz/zvt/actions/workflows/package.yaml/badge.svg)](https://github.com/zvtvz/zvt/actions/workflows/package.yaml)
+[![Documentation Status](https://readthedocs.org/projects/zvt/badge/?version=latest)](https://zvt.readthedocs.io/en/latest/?badge=latest)
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 

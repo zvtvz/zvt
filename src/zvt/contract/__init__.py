@@ -4,18 +4,28 @@ from enum import Enum
 
 class IntervalLevel(Enum):
     """
-    repeated fixed time interval, e.g, 5m, 1d.
+    Repeated fixed time interval, e.g, 5m, 1d.
     """
 
+    #: level tick
     LEVEL_TICK = "tick"
+    #: 1 minute
     LEVEL_1MIN = "1m"
+    #: 5 minutes
     LEVEL_5MIN = "5m"
+    #: 15 minutes
     LEVEL_15MIN = "15m"
+    #: 30 minutes
     LEVEL_30MIN = "30m"
+    #: 1 hour
     LEVEL_1HOUR = "1h"
+    #: 4 hours
     LEVEL_4HOUR = "4h"
+    #: 1 day
     LEVEL_1DAY = "1d"
+    #: 1 week
     LEVEL_1WEEK = "1wk"
+    #: 1 month
     LEVEL_1MON = "1mon"
 
     def to_pd_freq(self):
@@ -57,6 +67,11 @@ class IntervalLevel(Enum):
         return int(self.to_ms() / 1000)
 
     def to_ms(self):
+        """
+        To seconds count in the interval
+
+        :return: seconds count in the interval
+        """
         #: we treat tick intervals is 5s, you could change it
         if self == IntervalLevel.LEVEL_TICK:
             return 5 * 1000
@@ -102,12 +117,19 @@ class IntervalLevel(Enum):
 
 
 class AdjustType(Enum):
-    #: 这里用拼音，因为英文不直观 split-adjusted？wtf?
+    """
+    split-adjusted type for :class:`~.zvt.contract.schema.TradableEntity` quotes
+
+    """
+
+    #: not adjusted
     #: 不复权
     bfq = "bfq"
-    #: 前复权
+    #: pre adjusted
+    #: 不复权
     qfq = "qfq"
-    #: 后复权
+    #: post adjusted
+    #: 不复权
     hfq = "hfq"
 
 
@@ -134,18 +156,25 @@ class ActorType(Enum):
 
 class TradableType(Enum):
     #: A股(中国)
+    #: China stock
     stock = "stock"
     #: 美股
+    #: USA stock
     stockus = "stockus"
     #: 港股
+    #: Hongkong Stock
     stockhk = "stockhk"
     #: 期货(中国)
+    #: China future
     future = "future"
     #: 数字货币
+    #: Cryptocurrency
     coin = "coin"
-    #: 期权
+    #: 期权(中国)
+    #: China option
     option = "option"
-    #: 基金
+    #: 基金(中国)
+    #: China fund
     fund = "fund"
 
 

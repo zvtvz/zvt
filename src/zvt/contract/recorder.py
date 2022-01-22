@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
-from zvt.contract.base import OneStateService
+from zvt.contract.base_service import OneStateService
 from zvt.contract.schema import Mixin, TradableEntity
 from zvt.contract.zvt_info import RecorderState
 from zvt.utils import pd_is_not_null

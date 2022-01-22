@@ -9,7 +9,7 @@ import pandas as pd
 from zvt.contract import IntervalLevel
 from zvt.contract import zvt_context
 from zvt.contract.api import get_data, df_to_db, del_data
-from zvt.contract.base import EntityStateService
+from zvt.contract.base_service import EntityStateService
 from zvt.contract.reader import DataReader, DataListener
 from zvt.contract.schema import Mixin, TradableEntity
 from zvt.contract.zvt_info import FactorState

@@ -12,11 +12,16 @@ from zvt.utils.time_utils import date_and_time, is_same_time, now_pd_timestamp
 
 
 class Mixin(object):
+    """
+    Base class of schema.
+    """
+
+    #: id
     id = Column(String, primary_key=True)
-    #: entity id for this model
+    #: entity id
     entity_id = Column(String)
 
-    #: the meaning could be different for different case,most of time it means 'happen time'
+    #: the meaning could be different for different case,most time it means 'happen time'
     timestamp = Column(DateTime)
 
     # unix epoch,same meaning with timestamp
@@ -51,6 +56,11 @@ class Mixin(object):
 
     @classmethod
     def register_provider(cls, provider):
+        """
+        register the provider to the schema defined by cls
+
+        :param provider:
+        """
         # don't make providers as class field,it should be created for the sub class as need
         if not hasattr(cls, "providers"):
             cls.providers = []
@@ -60,6 +70,11 @@ class Mixin(object):
 
     @classmethod
     def get_providers(cls) -> List[str]:
+        """
+        providers of the schema defined by cls
+
+        :return: providers
+        """
         assert hasattr(cls, "providers")
         return cls.providers
 
@@ -106,6 +121,32 @@ class Mixin(object):
         drop_index_col=False,
         time_field: str = "timestamp",
     ):
+        """
+        query data by the arguments
+
+        :param provider_index:
+        :param data_schema:
+        :param ids:
+        :param entity_ids:
+        :param entity_id:
+        :param codes:
+        :param code:
+        :param level:
+        :param provider:
+        :param columns:
+        :param col_label: dict with key(column), value(label)
+        :param return_type: df, domain or dict. default is df
+        :param start_timestamp:
+        :param end_timestamp:
+        :param filters:
+        :param session:
+        :param order:
+        :param limit:
+        :param index: index field name, str for single index, str list for multiple index
+        :param drop_index_col: whether drop the col if it's in index, default False
+        :param time_field:
+        :return: results basing on return_type.
+        """
         from .api import get_data
 
         if not provider:
@@ -138,6 +179,12 @@ class Mixin(object):
         cls,
         provider: str = None,
     ):
+        """
+        get the storages info
+
+        :param provider: provider
+        :return: storages
+        """
         if not provider:
             providers = cls.get_providers()
         else:
@@ -167,6 +214,25 @@ class Mixin(object):
         one_day_trading_minutes=None,
         **kwargs,
     ):
+        """
+        record data by the arguments
+
+        :param provider_index:
+        :param provider:
+        :param force_update:
+        :param sleeping_time:
+        :param exchanges:
+        :param entity_ids:
+        :param code:
+        :param codes:
+        :param real_time:
+        :param fix_duplicate_way:
+        :param start_timestamp:
+        :param end_timestamp:
+        :param one_day_trading_minutes:
+        :param kwargs:
+        :return:
+        """
         if cls.provider_map_recorder:
             print(f"{cls.__name__} registered recorders:{cls.provider_map_recorder}")
 
@@ -252,6 +318,10 @@ class Entity(Mixin):
 
 
 class TradableEntity(Entity):
+    """
+    tradable entity
+    """
+
     @classmethod
     def get_trading_dates(cls, start_date=None, end_date=None):
         """
@@ -259,7 +329,7 @@ class TradableEntity(Entity):
 
         :param start_date:
         :param end_date:
-        :return:
+        :return: list of dates
         """
         return pd.date_range(start_date, end_date, freq="B")
 
@@ -268,7 +338,7 @@ class TradableEntity(Entity):
         """
         overwrite it to get the trading intervals of the entity
 
-        :return:[(start,end)]
+        :return: list of time intervals, in format [(start,end)]
         """
         return [("09:30", "11:30"), ("13:00", "15:00")]
 
@@ -383,6 +453,10 @@ class NormalEntityMixin(TradableEntity):
 
 
 class Portfolio(TradableEntity):
+    """
+    composition of tradable entities
+    """
+
     @classmethod
     def get_stocks(
         cls,

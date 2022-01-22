@@ -2,6 +2,10 @@
 
 
 class Registry(object):
+    """
+    Class storing zvt registering meta
+    """
+
     def __init__(self) -> None:
         #: all registered providers
         self.providers = []
@@ -43,6 +47,7 @@ class Registry(object):
         self.factor_cls_registry = {}
 
 
+#: :class:`~.zvt.contract.context.Registry` instance
 zvt_context = Registry()
 
 # the __all__ is generated

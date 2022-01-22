@@ -8,7 +8,14 @@ from zvt.utils import to_snake_str
 
 
 class StatefulService(object):
+    """
+    Base service with state could be stored in state_schema
+    """
+
+    #: state schema
     state_schema: Type[StateMixin] = None
+
+    #: name of the service, default name of class if not set manually
     name = None
 
     def __init__(self) -> None:
@@ -18,17 +25,34 @@ class StatefulService(object):
         self.state_session = get_db_session(data_schema=self.state_schema, provider="zvt")
 
     def clear_state_data(self, entity_id=None):
+        """
+        clear state of the entity
+
+        :param entity_id: entity id
+        """
         filters = [self.state_schema.state_name == self.name]
         if entity_id:
             filters = filters + [self.state_schema.entity_id == entity_id]
         del_data(self.state_schema, filters=filters)
 
     def decode_state(self, state: str):
-        #: 反序列化
+        """
+        decode state
+
+        :param state:
+        :return:
+        """
+
         return json.loads(state, object_hook=self.state_object_hook())
 
     def encode_state(self, state: object):
-        #: 序列化
+        """
+        encode state
+
+        :param state:
+        :return:
+        """
+
         return json.dumps(state, cls=self.state_encoder())
 
     def state_object_hook(self):
@@ -39,6 +63,10 @@ class StatefulService(object):
 
 
 class OneStateService(StatefulService):
+    """
+    StatefulService which saving all states in one object
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.state_domain = self.state_schema.get_one(id=self.name)
@@ -57,6 +85,10 @@ class OneStateService(StatefulService):
 
 
 class EntityStateService(StatefulService):
+    """
+    StatefulService which saving one state one entity
+    """
+
     def __init__(self, entity_ids) -> None:
         super().__init__()
         self.entity_ids = entity_ids

@@ -28,14 +28,16 @@ Entity
 The existence described by itself, classification of existential concepts.
 
 In the world of zvt, there are two kinds of entities, one is :ref:`tradable entity <intro.tradable_entity>`,
-the other is :ref:`actor entity <intro.tradable_entity>`. Data is the event happened on them.
+the other is :ref:`actor entity <intro.actor_entity>`. Data is the event happened on them.
 
 .. _intro.tradable_entity:
 
 TradableEntity
 ------------------------------
 :class:`~.zvt.contract.schema.TradableEntity` is anything could be traded, it could be :class:`~.zvt.domain.meta.stock_meta.Stock`,
-:class:`~.zvt.domain.meta.etf_meta.Etf`, :class:`~.zvt.domain.meta.index_meta.Index`, future, or any valuable thing.
+:class:`~.zvt.domain.meta.etf_meta.Etf`, :class:`~.zvt.domain.meta.index_meta.Index`, future, cryptocurrency, or even a sports match.
+
+Let's start with the real world tradable entities: China stock and USA stock ——— the world's most involved trading targets.
 
 record and query stock:
 ::
@@ -123,7 +125,7 @@ From intuition, stockhk should be stock of hongkong:
 
 From intuition, other tradable entities could be added to the system and used in the same way.
 
-Below is current registered tradable entity type and its schema.
+Show current registered tradable entity type and its schema:
 ::
 
     >>> from zvt.contract import *
@@ -135,6 +137,8 @@ Below is current registered tradable entity type and its schema.
      'stock': zvt.domain.meta.stock_meta.Stock,
      'block': zvt.domain.meta.block_meta.Block,
      'fund': zvt.domain.meta.fund_meta.Fund}
+
+Adding tradable entity to zvt is easy, just follow :ref:`Extending tradable entity <extending_data.tradable_entity>`
 
 .. _intro.actor_entity:
 
@@ -223,7 +227,7 @@ e.g.
 IntervalLevel
 ------------------------------
 :class:`~.zvt.contract.IntervalLevel` is repeated fixed time interval, e.g, 5m, 1d.
-It's used in candlestick for describing time window.
+It's used in OHLC data for describing time window.
 
 ::
 
@@ -241,7 +245,7 @@ It's used in candlestick for describing time window.
     1wk
     1mon
 
-Kdata(Quote)
+Kdata(Quote, OHLC)
 ------------------------------
 the candlestick data with OHLC.
 
@@ -271,7 +275,7 @@ pre adjusted(qfq), post adjusted(hfq), or not adjusted(bfq).
 .. note:
     In order to be compatible with historical data, the qfq is an exception, {adjust_type} is left empty
 
-The pre defined kdata schema could be in :py:mod:`~.zvt.domain.quotes`, it's seperated by
+The pre defined kdata schema could be found in :py:mod:`~.zvt.domain.quotes`, it's seperated by
 entity_schema, level, and adjust type.
 
 e.g. Stock1dHfqKdata means China Stock daily hfq quotes.
@@ -348,96 +352,107 @@ stock_sz_000778                 2020-05-05        1.2     0.5     0.3     a
 ...                             2020-05-06        1.0     0.7     0.2     b
 ===============                 ==========        =====   =====   =====   =====
 
+This data structure is used heavily in zvt computing, you should be familiar with it.
+`Pandas multiple index guide <https://pandas.pydata.org/pandas-docs/stable/user_guide/advanced.html#>`_ is
+a good start.
+
+Query data returning normal data in this way:
+
+::
+
+    {Schema}.query_data(index=["entity_id, timestamp"])
+
+e.g.
+
+::
+
+    >>> from zvt.domain import *
+    >>> entity_ids = ["stock_sz_000338", "stock_sz_000001"]
+    >>> Stock1dHfqKdata.record_data(entity_ids=entity_ids, provider="em")
+    >>> df = Stock1dHfqKdata.query_data(entity_ids=entity_ids, provider="em", index=["entity_id", "timestamp"])
+    >>> print(df)
+
+                                                        id        entity_id  timestamp provider    code  name level    open   close    high     low    volume      turnover  change_pct  turnover_rate
+    entity_id       timestamp
+    stock_sz_000001 1991-04-03  stock_sz_000001_1991-04-03  stock_sz_000001 1991-04-03       em  000001  平安银行    1d   49.00   49.00   49.00   49.00       1.0  5.000000e+03      0.2250         0.0000
+                    1991-04-04  stock_sz_000001_1991-04-04  stock_sz_000001 1991-04-04       em  000001  平安银行    1d   48.76   48.76   48.76   48.76       3.0  1.500000e+04     -0.0049         0.0000
+                    1991-04-05  stock_sz_000001_1991-04-05  stock_sz_000001 1991-04-05       em  000001  平安银行    1d   48.52   48.52   48.52   48.52       2.0  1.000000e+04     -0.0049         0.0000
+                    1991-04-06  stock_sz_000001_1991-04-06  stock_sz_000001 1991-04-06       em  000001  平安银行    1d   48.28   48.28   48.28   48.28       7.0  3.400000e+04     -0.0049         0.0000
+                    1991-04-08  stock_sz_000001_1991-04-08  stock_sz_000001 1991-04-08       em  000001  平安银行    1d   48.04   48.04   48.04   48.04       2.0  1.000000e+04     -0.0050         0.0000
+    ...                                                ...              ...        ...      ...     ...   ...   ...     ...     ...     ...     ...       ...           ...         ...            ...
+    stock_sz_000338 2022-01-17  stock_sz_000338_2022-01-17  stock_sz_000338 2022-01-17       em  000338  潍柴动力    1d  296.26  297.64  298.71  293.49  504866.0  8.546921e+08      0.0026         0.0100
+                    2022-01-18  stock_sz_000338_2022-01-18  stock_sz_000338 2022-01-18       em  000338  潍柴动力    1d  298.10  300.87  302.71  296.10  622455.0  1.064735e+09      0.0109         0.0124
+                    2022-01-19  stock_sz_000338_2022-01-19  stock_sz_000338 2022-01-19       em  000338  潍柴动力    1d  299.64  299.48  304.24  298.56  610096.0  1.049195e+09     -0.0046         0.0121
+                    2022-01-20  stock_sz_000338_2022-01-20  stock_sz_000338 2022-01-20       em  000338  潍柴动力    1d  298.10  294.87  299.18  290.11  812949.0  1.361764e+09     -0.0154         0.0161
+                    2022-01-21  stock_sz_000338_2022-01-21  stock_sz_000338 2022-01-21       em  000338  潍柴动力    1d  292.72  287.04  293.34  284.58  754156.0  1.234360e+09     -0.0266         0.0150
+
+    [10878 rows x 15 columns]
+
 
 Factor
 ------------------------------
-Data describing market. It reads data from Schema, use Transformer, Accumulator
-or your custom logic to compute, and save the result if need.
+:class:`~.zvt.contract.factor.Factor` is an computing facility to build *factor* according your mind ——— algorithm.
+It reads data from schema, use :class:`~.zvt.contract.factor.Transformer`, :class:`~.zvt.contract.factor.Accumulator`
+or your custom logic to compute, and save the result to new schema if need.
+It also provides a standard way to evaluate the targets which could be used by :class:`~.zvt.factors.target_selector.TargetSelector`
+and :class:`~.zvt.trader.trader.Trader` for backtesting or real trading.
 
 * Transformer
 
 Computing factor which depends on input data only.
-
-Below is an example computing ma factor:
-
-::
-
-    class MaTransformer(Transformer):
-        def __init__(self, windows=None, cal_change_pct=False) -> None:
-            super().__init__()
-            if windows is None:
-                windows = [5, 10]
-            self.windows = windows
-            self.cal_change_pct = cal_change_pct
-
-        def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
-            if self.cal_change_pct:
-                group_pct = group_by_entity_id(input_df["close"]).pct_change()
-                input_df["change_pct"] = normalize_group_compute_result(group_pct)
-
-            for window in self.windows:
-                col = "ma{}".format(window)
-                self.indicators.append(col)
-
-                group_ma = group_by_entity_id(input_df["close"]).rolling(window=window, min_periods=window).mean()
-                input_df[col] = normalize_group_compute_result(group_ma)
-
-            return input_df
+Here is an example: :class:`~.zvt.factors.algorithm.MaTransformer`
 
 * Accumulator
 
-Computing factor which depends on input data and previous state of the factor.
+Computing factor which depends on input data and previous result of the factor.
+Here is an example: :class:`~.zvt.factors.ma.ma_stats_factor.MaStatsAccumulator.`
 
-Below is an example computing ma states:
+Let's have a look by example:
 
 ::
 
-    class MaStatsAccumulator(Accumulator):
-        def __init__(self, acc_window: int = 250, windows=None, vol_windows=None) -> None:
-            super().__init__(acc_window)
-            self.windows = windows
-            self.vol_windows = vol_windows
+    >>> from zvt.factors import GoldCrossFactor
+    >>> from zvt.domain import Stock1dHfqKdata
+    >>> entity_ids = ["stock_sz_000338"]
+    >>> Stock1dHfqKdata.record_data(entity_ids=entity_ids, provider="em")
+    >>> factor = GoldCrossFactor(entity_ids=entity_ids, provider="em", start_timestamp="2018-01-01")
+    >>> print(factor.factor_df)
+    >>> print(factor.result_df)
+    >>> factor.draw(show=True)
+                               level      turnover    high                          id    open     low        entity_id  timestamp   close  turnover_rate     volume      diff       dea      macd  live   bull  live_count
+    entity_id       timestamp
+    stock_sz_000338 2018-01-02    1d  8.325588e+08  145.97  stock_sz_000338_2018-01-02  141.21  141.06  stock_sz_000338 2018-01-02  145.67         0.0225   972471.0       NaN       NaN       NaN    -1  False          -1
+                    2018-01-03    1d  7.530370e+08  147.66  stock_sz_000338_2018-01-03  146.13  144.29  stock_sz_000338 2018-01-03  144.44         0.0202   870225.0       NaN       NaN       NaN    -1  False          -2
+                    2018-01-04    1d  4.917067e+08  145.51  stock_sz_000338_2018-01-04  144.75  143.67  stock_sz_000338 2018-01-04  145.21         0.0133   574335.0       NaN       NaN       NaN    -1  False          -3
+                    2018-01-05    1d  5.282211e+08  146.59  stock_sz_000338_2018-01-05  146.44  143.21  stock_sz_000338 2018-01-05  143.21         0.0143   616244.0       NaN       NaN       NaN    -1  False          -4
+                    2018-01-08    1d  1.255871e+09  150.43  stock_sz_000338_2018-01-08  143.82  143.82  stock_sz_000338 2018-01-08  150.12         0.0331  1426567.0       NaN       NaN       NaN    -1  False          -5
+    ...                          ...           ...     ...                         ...     ...     ...              ...        ...     ...            ...        ...       ...       ...       ...   ...    ...         ...
+                    2022-01-17    1d  8.546921e+08  298.71  stock_sz_000338_2022-01-17  296.26  293.49  stock_sz_000338 2022-01-17  297.64         0.0100   504866.0 -1.386687  1.781615 -6.336603    -1  False         -12
+                    2022-01-18    1d  1.064735e+09  302.71  stock_sz_000338_2022-01-18  298.10  296.10  stock_sz_000338 2022-01-18  300.87         0.0124   622455.0 -1.694421  1.086407 -5.561657    -1  False         -13
+                    2022-01-19    1d  1.049195e+09  304.24  stock_sz_000338_2022-01-19  299.64  298.56  stock_sz_000338 2022-01-19  299.48         0.0121   610096.0 -2.027097  0.463707 -4.981607    -1  False         -14
+                    2022-01-20    1d  1.361764e+09  299.18  stock_sz_000338_2022-01-20  298.10  290.11  stock_sz_000338 2022-01-20  294.87         0.0161   812949.0 -2.632389 -0.155513 -4.953753    -1  False         -15
+                    2022-01-21    1d  1.234360e+09  293.34  stock_sz_000338_2022-01-21  292.72  284.58  stock_sz_000338 2022-01-21  287.04         0.0150   754156.0 -3.701237 -0.864657 -5.673159    -1  False         -16
 
-        def acc_one(self, entity_id, df: pd.DataFrame, acc_df: pd.DataFrame, state: dict) -> (pd.DataFrame, dict):
-            self.logger.info(f"acc_one:{entity_id}")
-            if pd_is_not_null(acc_df):
-                df = df[df.index > acc_df.index[-1]]
-                if pd_is_not_null(df):
-                    self.logger.info(f'compute from {df.iloc[0]["timestamp"]}')
-                    acc_df = pd.concat([acc_df, df])
-                else:
-                    self.logger.info("no need to compute")
-                    return acc_df, state
-            else:
-                acc_df = df
+    [987 rows x 17 columns]
+                                filter_result
+    entity_id       timestamp
+    stock_sz_000338 2018-01-02          False
+                    2018-01-03          False
+                    2018-01-04          False
+                    2018-01-05          False
+                    2018-01-08          False
+    ...                                   ...
+                    2022-01-17          False
+                    2022-01-18          False
+                    2022-01-19          False
+                    2022-01-20          False
+                    2022-01-21          False
 
-            for window in self.windows:
-                col = "ma{}".format(window)
-                self.indicators.append(col)
+    [987 rows x 1 columns]
 
-                ma_df = acc_df["close"].rolling(window=window, min_periods=window).mean()
-                acc_df[col] = ma_df
+.. image:: ../_static/factor_draw.png
 
-            acc_df["live"] = (acc_df["ma5"] > acc_df["ma10"]).apply(lambda x: live_or_dead(x))
-            acc_df["distance"] = (acc_df["ma5"] - acc_df["ma10"]) / acc_df["close"]
-
-            live = acc_df["live"]
-            acc_df["count"] = live * (live.groupby((live != live.shift()).cumsum()).cumcount() + 1)
-
-            acc_df["bulk"] = (live != live.shift()).cumsum()
-            area_df = acc_df[["distance", "bulk"]]
-            acc_df["area"] = area_df.groupby("bulk").cumsum()
-
-            for vol_window in self.vol_windows:
-                col = "vol_ma{}".format(vol_window)
-                self.indicators.append(col)
-
-                vol_ma_df = acc_df["turnover"].rolling(window=vol_window, min_periods=vol_window).mean()
-                acc_df[col] = vol_ma_df
-
-            acc_df = acc_df.set_index("timestamp", drop=False)
-            return acc_df, state
-
+Follow :ref:`Extending factor <extending_factor>` to do the funny part.
 
 TargetSelector
 ------------------------------

@@ -18,16 +18,23 @@ logger = logging.getLogger(__name__)
 
 
 class ChartType(Enum):
+    """
+    Chart type enum
+    """
+
+    #: candlestick chart
     kline = "kline"
-    #: scatter mode
+    #: line chart
     line = "line"
+    #: area chart
     area = "area"
+    #: scatter chart
     scatter = "scatter"
-    #: distribute
+    #: histogram chart
     histogram = "histogram"
-    #: composite
+    #: pie chart
     pie = "pie"
-    #: compare
+    #: bar chart
     bar = "bar"
 
 
@@ -36,12 +43,18 @@ _zvt_chart_type_map_scatter_mode = {ChartType.line: "lines", ChartType.area: "no
 
 @to_string
 class Rect(Bean):
+    """
+    rect struct with left-bottom(x0, y0), right-top(x1, y1)
+    """
+
     def __init__(self, x0=None, y0=None, x1=None, y1=None) -> None:
-        #: left-bottom
+        #: left-bottom x0
         self.x0 = x0
+        #: left-bottom y0
         self.y0 = y0
-        #: right-top
+        #: right-top x1
         self.x1 = x1
+        #: right-top y1
         self.y1 = y1
 
 

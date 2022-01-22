@@ -7,7 +7,7 @@ import pandas as pd
 from zvt.contract import Mixin
 from zvt.contract import TradableEntity
 from zvt.contract.api import get_db_session
-from zvt.contract.base import OneStateService
+from zvt.contract.base_service import OneStateService
 from zvt.contract.zvt_info import TaggerState
 from zvt.domain import Stock, Index
 from zvt.tag.dataset.stock_tags import StockTags

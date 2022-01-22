@@ -22,14 +22,12 @@ from zvt.utils.time_utils import to_pd_timestamp
 logger = logging.getLogger(__name__)
 
 
-def get_db_name(data_schema: DeclarativeMeta) -> str:
+def _get_db_name(data_schema: DeclarativeMeta) -> str:
     """
     get db name of the domain schema
 
-    :param data_schema:
-    :type data_schema:
-    :return:
-    :rtype:
+    :param data_schema: the data schema
+    :return: db name
     """
     for db_name, base in zvt_context.dbname_map_base.items():
         if issubclass(data_schema, base):
@@ -40,21 +38,16 @@ def get_db_engine(
     provider: str, db_name: str = None, data_schema: object = None, data_path: str = zvt_env["data_path"]
 ) -> Engine:
     """
-    get db engine of the (provider,db_name) or (provider,data_schema)
+    get db engine from (provider,db_name) or (provider,data_schema)
 
-
-    :param data_path:
-    :param provider:
-    :type provider:
-    :param db_name:
-    :type db_name:
-    :param data_schema:
-    :type data_schema:
-    :return:
-    :rtype:
+    :param provider: data provider
+    :param db_name: db name
+    :param data_schema: data schema
+    :param data_path: data path
+    :return: db engine
     """
     if data_schema:
-        db_name = get_db_name(data_schema=data_schema)
+        db_name = _get_db_name(data_schema=data_schema)
 
     db_path = os.path.join(data_path, "{}_{}.db?check_same_thread=False".format(provider, db_name))
 
@@ -70,10 +63,8 @@ def get_schemas(provider: str) -> List[DeclarativeMeta]:
     """
     get domain schemas supported by the provider
 
-    :param provider:
-    :type provider:
-    :return:
-    :rtype:
+    :param provider: data provider
+    :return: schemas provided by the provider
     """
     schemas = []
     for provider1, dbs in zvt_context.provider_map_dbnames.items():
@@ -87,22 +78,16 @@ def get_schemas(provider: str) -> List[DeclarativeMeta]:
 
 def get_db_session(provider: str, db_name: str = None, data_schema: object = None, force_new: bool = False) -> Session:
     """
-    get db session of the (provider,db_name) or (provider,data_schema)
+    get db session from (provider,db_name) or (provider,data_schema)
 
-    :param provider:
-    :type provider:
-    :param db_name:
-    :type db_name:
-    :param data_schema:
-    :type data_schema:
-    :param force_new:
-    :type force_new:
-
-    :return:
-    :rtype:
+    :param provider: data provider
+    :param db_name: db name
+    :param data_schema: data schema
+    :param force_new: True for new session, otherwise use global session
+    :return: db session
     """
     if data_schema:
-        db_name = get_db_name(data_schema=data_schema)
+        db_name = _get_db_name(data_schema=data_schema)
 
     session_key = "{}_{}".format(provider, db_name)
 
@@ -118,19 +103,15 @@ def get_db_session(provider: str, db_name: str = None, data_schema: object = Non
 
 def get_db_session_factory(provider: str, db_name: str = None, data_schema: object = None):
     """
-    get db session factory of the (provider,db_name) or (provider,data_schema)
+    get db session factory from (provider,db_name) or (provider,data_schema)
 
-    :param provider:
-    :type provider:
-    :param db_name:
-    :type db_name:
-    :param data_schema:
-    :type data_schema:
-    :return:
-    :rtype:
+    :param provider: data provider
+    :param db_name: db name
+    :param data_schema: data schema
+    :return: db session factory
     """
     if data_schema:
-        db_name = get_db_name(data_schema=data_schema)
+        db_name = _get_db_name(data_schema=data_schema)
 
     session_key = "{}_{}".format(provider, db_name)
     session = zvt_context.db_session_map.get(session_key)
@@ -144,10 +125,8 @@ def get_entity_schema(entity_type: str) -> Type[TradableEntity]:
     """
     get entity schema from name
 
-    :param entity_type:
-    :type entity_type:
-    :return:
-    :rtype:
+    :param entity_type: entity type, e.g. stock, stockus.
+    :return: the Schema of the entity
     """
     return zvt_context.tradable_schema_map[entity_type]
 
@@ -156,10 +135,8 @@ def get_schema_by_name(name: str) -> DeclarativeMeta:
     """
     get domain schema by the name
 
-    :param name:
-    :type name:
-    :return:
-    :rtype:
+    :param name: schema name
+    :return: schema
     """
     for schema in zvt_context.schemas:
         if schema.__name__ == name:
@@ -170,10 +147,8 @@ def get_schema_columns(schema: DeclarativeMeta) -> List[str]:
     """
     get all columns of the domain schema
 
-    :param schema:
-    :type schema:
-    :return:
-    :rtype:
+    :param schema: data schema
+    :return: columns of the schema
     """
     return schema.__table__.columns.keys()
 
@@ -188,6 +163,19 @@ def common_filter(
     limit=None,
     time_field="timestamp",
 ):
+    """
+    build filter by the arguments
+
+    :param query: sql query
+    :param data_schema: data schema
+    :param start_timestamp: start timestamp
+    :param end_timestamp: end timestamp
+    :param filters: sql filters
+    :param order: sql order
+    :param limit: sql limit size
+    :param time_field: time field in columns
+    :return: result query
+    """
     assert data_schema is not None
     time_col = eval("data_schema.{}".format(time_field))
 
@@ -210,6 +198,13 @@ def common_filter(
 
 
 def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
+    """
+    delete data by filters
+
+    :param data_schema: data schema
+    :param filters: filters
+    :param provider: data provider
+    """
     if not provider:
         provider = data_schema.providers[0]
 
@@ -223,6 +218,15 @@ def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
 
 
 def get_one(data_schema, id: str, provider: str = None, session: Session = None):
+    """
+    get one record by id from data schema
+
+    :param data_schema: data schema
+    :param id: the record id
+    :param provider: data provider
+    :param session: db session
+    :return: the record of the id
+    """
     if "providers" not in data_schema.__dict__:
         logger.error("no provider registered for: {}", data_schema)
     if not provider:
@@ -256,6 +260,31 @@ def get_data(
     drop_index_col=False,
     time_field: str = "timestamp",
 ):
+    """
+    query data by the arguments
+
+    :param data_schema:
+    :param ids:
+    :param entity_ids:
+    :param entity_id:
+    :param codes:
+    :param code:
+    :param level:
+    :param provider:
+    :param columns:
+    :param col_label: dict with key(column), value(label)
+    :param return_type: df, domain or dict. default is df
+    :param start_timestamp:
+    :param end_timestamp:
+    :param filters:
+    :param session:
+    :param order:
+    :param limit:
+    :param index: index field name, str for single index, str list for multiple index
+    :param drop_index_col: whether drop the col if it's in index, default False
+    :param time_field:
+    :return: results basing on return_type.
+    """
     if "providers" not in data_schema.__dict__:
         logger.error("no provider registered for: {}", data_schema)
     if not provider:
@@ -340,10 +369,26 @@ def get_data(
 
 
 def data_exist(session, schema, id):
+    """
+    whether exist data of the id
+
+    :param session:
+    :param schema:
+    :param id:
+    :return:
+    """
     return session.query(exists().where(and_(schema.id == id))).scalar()
 
 
 def get_data_count(data_schema, filters=None, session=None):
+    """
+    get record count basing on the filters
+
+    :param data_schema:
+    :param filters:
+    :param session:
+    :return:
+    """
     query = session.query(data_schema)
     if filters:
         for filter in filters:
@@ -366,6 +411,12 @@ def get_group(provider, data_schema, column, group_func=func.count, session=None
 
 
 def decode_entity_id(entity_id: str):
+    """
+    decode entity id to entity_type, exchange, code
+
+    :param entity_id:
+    :return: tuple with format (entity_type, exchange, code)
+    """
     result = entity_id.split("_")
     entity_type = result[0]
     exchange = result[1]
@@ -374,16 +425,34 @@ def decode_entity_id(entity_id: str):
 
 
 def get_entity_type(entity_id: str):
+    """
+    get entity type by entity id
+
+    :param entity_id:
+    :return: entity type
+    """
     entity_type, _, _ = decode_entity_id(entity_id)
     return entity_type
 
 
 def get_entity_exchange(entity_id: str):
+    """
+    get exchange by entity id
+
+    :param entity_id:
+    :return: exchange
+    """
     _, exchange, _ = decode_entity_id(entity_id)
     return exchange
 
 
 def get_entity_code(entity_id: str):
+    """
+    get code by entity id
+
+    :param entity_id:
+    :return: code
+    """
     _, _, code = decode_entity_id(entity_id)
     return code
 
@@ -397,15 +466,14 @@ def df_to_db(
     drop_duplicates: bool = True,
 ) -> object:
     """
-    FIXME:improve
     store the df to db
 
-    :param df:
-    :param data_schema:
-    :param provider:
-    :param force_update:
-    :param sub_size:
-    :param drop_duplicates:
+    :param df: data with columns of the schema
+    :param data_schema: data schema
+    :param provider: data provider
+    :param force_update: whether update the data with id existed
+    :param sub_size: update batch size
+    :param drop_duplicates: whether drop duplicates
     :return:
     """
     if not pd_is_not_null(df):
@@ -488,6 +556,30 @@ def get_entities(
     limit: int = None,
     index: Union[str, list] = "code",
 ) -> List:
+    """
+    get entities by the arguments
+
+    :param entity_schema:
+    :param entity_type:
+    :param exchanges:
+    :param ids:
+    :param entity_ids:
+    :param entity_id:
+    :param codes:
+    :param code:
+    :param provider:
+    :param columns:
+    :param col_label:
+    :param return_type:
+    :param start_timestamp:
+    :param end_timestamp:
+    :param filters:
+    :param session:
+    :param order:
+    :param limit:
+    :param index:
+    :return:
+    """
     if not entity_schema:
         entity_schema = zvt_context.tradable_schema_map[entity_type]
 
@@ -528,6 +620,17 @@ def get_entities(
 def get_entity_ids(
     entity_type="stock", entity_schema: TradableEntity = None, exchanges=None, codes=None, provider=None, filters=None
 ):
+    """
+    get entity ids by the arguments
+
+    :param entity_type:
+    :param entity_schema:
+    :param exchanges:
+    :param codes:
+    :param provider:
+    :param filters:
+    :return:
+    """
     df = get_entities(
         entity_type=entity_type,
         entity_schema=entity_schema,
@@ -543,7 +646,7 @@ def get_entity_ids(
 
 # the __all__ is generated
 __all__ = [
-    "get_db_name",
+    "_get_db_name",
     "get_db_engine",
     "get_schemas",
     "get_db_session",
