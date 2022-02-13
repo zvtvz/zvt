@@ -204,6 +204,7 @@ class Mixin(object):
         force_update=None,
         sleeping_time=None,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         code=None,
         codes=None,

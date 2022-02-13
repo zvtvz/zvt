@@ -24,7 +24,7 @@ if ! which python > /dev/null; then
 fi
 
 pip_opt=''
-#pip_opt='-i http://pypi.douban.com/simple --trusted-host pypi.douban.com'
+#pip_opt='-i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn'
 
 if ! which virtualenv > /dev/null; then
    echo -e "virtualenv not found! Install? (y/n) \c"

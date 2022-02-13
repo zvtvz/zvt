@@ -23,3 +23,9 @@ from .holder import *
 from .holder import __all__ as _holder_all
 
 __all__ += _holder_all
+
+# import all from submodule stock_news
+from .stock_news import *
+from .stock_news import __all__ as _stock_news_all
+
+__all__ += _stock_news_all

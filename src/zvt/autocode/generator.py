@@ -103,10 +103,11 @@ def gen_exports(
     gen_flag="# the __all__ is generated",
     export_from_package=True,
     export_modules=None,
-    exludes=None,
+    excludes=None,
+    export_var=False,
 ):
-    if not exludes:
-        exludes = ["logger"]
+    if not excludes:
+        excludes = ["logger"]
     fill_package_if_not_exist(dir_path=dir_path)
     files = list_all_files(dir_path=dir_path)
     for file in files:
@@ -120,9 +121,9 @@ def gen_exports(
                     break
                 lines.append(line)
                 export = _get_interface_name(line)
-                if not export:
+                if export_var:
                     export = _get_var_name(line)
-                if export and export[0].isalpha() and export not in exludes:
+                if export and export[0].isalpha() and export not in excludes:
                     exports.append(export)
                 line = fp.readline()
         print(f"{file}:{exports}")

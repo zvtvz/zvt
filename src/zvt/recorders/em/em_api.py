@@ -3,6 +3,7 @@ import logging
 import random
 from typing import Union
 
+import demjson3
 import pandas as pd
 import requests
 
@@ -345,6 +346,41 @@ def get_tradable_list(
     return pd.concat(dfs)
 
 
+def get_news(entity_id, ps=200, index=1):
+    sec_id = to_em_sec_id(entity_id=entity_id)
+    url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
+    resp = requests.get(url)
+    # {
+    #     "Art_ShowTime": "2022-02-11 14:29:25",
+    #     "Art_Image": "",
+    #     "Art_MediaName": "每日经济新闻",
+    #     "Art_Code": "202202112274017262",
+    #     "Art_Title": "潍柴动力：巴拉德和锡里斯不纳入合并财务报表范围",
+    #     "Art_SortStart": "1644560965017262",
+    #     "Art_VideoCount": 0,
+    #     "Art_OriginUrl": "http://finance.eastmoney.com/news/1354,202202112274017262.html",
+    #     "Art_Url": "http://finance.eastmoney.com/a/202202112274017262.html",
+    # }
+    if resp.status_code == 200:
+        json_text = resp.text[resp.text.index("(") + 1 : resp.text.rindex(")")]
+        json_result = demjson3.decode(json_text)["data"]["list"]
+        if json_result:
+            json_result = [
+                {
+                    "id": f'{entity_id}_{item["Art_ShowTime"]}',
+                    "entity_id": entity_id,
+                    "timestamp": to_pd_timestamp(item["Art_ShowTime"]),
+                    "news_title": item["Art_Title"],
+                }
+                for item in json_result
+            ]
+            next_data = get_news(entity_id=entity_id, ps=ps, index=index + 1)
+            if next_data:
+                return json_result + next_data
+            else:
+                return json_result
+
+
 # utils to transform zvt entity to em entity
 def to_em_fc(entity_id):
     entity_type, exchange, code = decode_entity_id(entity_id)
@@ -422,8 +458,10 @@ if __name__ == "__main__":
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
     # df = get_kdata(entity_id='stock_sz_000338')
-    df = get_tradable_list(entity_type="stockhk")
+    # df = get_tradable_list(entity_type="stockhk")
+    df = get_news("stock_sz_300999")
     print(df)
+    print(len(df))
 # the __all__ is generated
 __all__ = [
     "get_ii_holder_report_dates",
@@ -441,6 +479,7 @@ __all__ = [
     "get_kdata",
     "get_basic_info",
     "get_tradable_list",
+    "get_news",
     "to_em_fc",
     "to_em_entity_flag",
     "to_em_fq_flag",

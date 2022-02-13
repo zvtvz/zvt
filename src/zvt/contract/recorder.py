@@ -91,6 +91,7 @@ class EntityEventRecorder(Recorder):
         force_update=False,
         sleeping_time=10,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         code=None,
         codes=None,
@@ -103,6 +104,7 @@ class EntityEventRecorder(Recorder):
         :param ignore_failed:
         :param entity_filters:
         :param exchanges:
+        :param entity_id: for record single entity
         :param entity_ids: set entity_ids or (entity_type,exchanges,codes)
         :param codes:
         :param day_data: one record per day,set to True if you want skip recording it when data of today exist
@@ -123,7 +125,11 @@ class EntityEventRecorder(Recorder):
         self.day_data = day_data
 
         #: set entity_ids or (entity_type,exchanges,codes)
-        self.entity_ids = entity_ids
+        self.entity_ids = None
+        if entity_id:
+            self.entity_ids = [entity_id]
+        if entity_ids:
+            self.entity_ids = entity_ids
         self.entity_filters = entity_filters
         self.ignore_failed = ignore_failed
 
@@ -174,6 +180,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         force_update=False,
         sleeping_time=5,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         code=None,
         codes=None,
@@ -189,6 +196,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
             force_update,
             sleeping_time,
             exchanges,
+            entity_id,
             entity_ids,
             code=code,
             codes=codes,
@@ -525,6 +533,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         force_update=True,
         sleeping_time=10,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         code=None,
         codes=None,
@@ -543,6 +552,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
             force_update,
             sleeping_time,
             exchanges,
+            entity_id,
             entity_ids,
             code=code,
             codes=codes,
@@ -621,6 +631,7 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
         force_update=False,
         sleeping_time=5,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         code=None,
         codes=None,
@@ -636,6 +647,7 @@ class TimestampsDataRecorder(TimeSeriesDataRecorder):
             force_update,
             sleeping_time,
             exchanges,
+            entity_id,
             entity_ids,
             code=code,
             codes=codes,

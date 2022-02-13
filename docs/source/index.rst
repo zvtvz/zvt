@@ -1,5 +1,5 @@
 Welcome to zvt
-===============================
+==============
 
 Contents
 --------
@@ -7,7 +7,13 @@ Contents
 .. toctree::
     :maxdepth: 2
 
-    user_guide/index
+    install
+    usage
+    intro
+    data/index
+    factor/index
+    trader/index
+    ml/index
     api/index
 
 Indices and tables
