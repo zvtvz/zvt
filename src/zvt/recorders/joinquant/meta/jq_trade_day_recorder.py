@@ -18,6 +18,7 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
     def __init__(
         self,
         exchanges=None,
+        entity_id=None,
         entity_ids=None,
         day_data=False,
         force_update=False,
@@ -32,6 +33,7 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
             force_update,
             sleeping_time,
             exchanges,
+            entity_id,
             entity_ids,
             codes=["000001"],
             day_data=day_data,

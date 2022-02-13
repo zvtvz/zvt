@@ -10,6 +10,8 @@
 
 **Read this in other languages: [English](README-cn.md).**  
 
+**详细文档:[https://zvt.readthedocs.io/en/latest/](https://zvt.readthedocs.io/en/latest/)**
+
 ## 市场模型
 ZVT 将市场抽象为如下的模型:
 

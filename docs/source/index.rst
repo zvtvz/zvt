@@ -8,7 +8,6 @@ Contents
     :maxdepth: 2
 
     install
-    usage
     intro
     data/index
     factor/index
