@@ -10,7 +10,7 @@ Data structure
 zvt use sql database(default sqlite, and easy extend to others) to store data
 and provide uniform api to record and query data.(Thanks to the great `Sqlalchemy <https://github.com/sqlalchemy/sqlalchemy>`_)
 
-As we know, TradableEntity and ActorEntity is everything about the market, data is the events happen on them.
+As we know, :ref:`TradableEntity<data.tradable_entity>` and :ref:`ActorEntity<data.actor_entity>` is everything about the market, data is the events happen on them.
 The Schema of the data would always in following structure:
 
 .. image:: ../_static/data_structure.png
@@ -80,11 +80,11 @@ Key steps
 
 Let's show the key steps to add data.
 
-Intent
+1. Intent
 ~~~~~~~~~~~~~~~~~~~~
 I want to add some data about the news on Stock.
 
-Find data source
+2. Find data source
 ~~~~~~~~~~~~~~~~~~~~
 Open `eastmoney wap <https://wap.eastmoney.com/quote/stock/0.002572.html>`_
 Find `news api <https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode=0.002572&pageSize=20&pageIndex=1&callback=jQuery1830017478247906740352_1644568731256&_=1644568879493>`_
@@ -105,7 +105,7 @@ The news item result:
       "Art_Url": "http://finance.eastmoney.com/a/202202092271136373.html"
     }
 
-Define Schema
+3. Define Schema
 ~~~~~~~~~~~~~~~~~~~~
 
 No matter what the format of the data outside zvt is, we use zvt simple and
@@ -158,7 +158,7 @@ The advantage of this mechanism is:
 * schema is the way you want
 * provider could be switched seamlessly
 
-Implement recorder
+4. Implement recorder
 ~~~~~~~~~~~~~~~~~~~~
 Let's implement a recorder for StockNews.
 
@@ -215,3 +215,8 @@ After that, you could use the data in zvt way:
 
     [372 rows x 4 columns]
 
+
+.. _extending_data.tradable_entity:
+
+Add new TradableEntity
+--------------------------

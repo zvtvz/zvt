@@ -1,6 +1,6 @@
-==========
+=============
 Data concepts
-==========
+=============
 
 
 .. _data.tradable_entity:
@@ -8,7 +8,7 @@ Data concepts
 TradableEntity
 ------------------------------
 :class:`~.zvt.contract.schema.TradableEntity` is anything could be traded, it could be :class:`~.zvt.domain.meta.stock_meta.Stock`,
-:class:`~.zvt.domain.meta.etf_meta.Etf`, :class:`~.zvt.domain.meta.index_meta.Index`, future, cryptocurrency, or even a sports match.
+:class:`~.zvt.domain.meta.etf_meta.Etf`, :class:`~.zvt.domain.meta.index_meta.Index`, future, cryptocurrency, or even a **sports match**.
 
 Let's start with the real world tradable entities: China stock and USA stock ——— the world's most involved trading targets.
 
@@ -54,7 +54,9 @@ record and query stockus:
     6348     stockus_nyse_AHI     stockus_nyse_AHI      None     stockus     nyse   AHI   Advanced Human Imaging Ltd ADR      None     None
     6349    stockus_nyse_HLGN    stockus_nyse_HLGN      None     stockus     nyse  HLGN                     Heliogen Inc      None     None
 
-what about other tradable entities?
+| what about other tradable entities?
+| Show current registered tradable entity type and its schema:
+
 ::
 
     >>> from zvt.contract import zvt_context
@@ -66,6 +68,8 @@ what about other tradable entities?
      'stock': zvt.domain.meta.stock_meta.Stock,
      'block': zvt.domain.meta.block_meta.Block,
      'fund': zvt.domain.meta.fund_meta.Fund}
+
+The key is **entity_type** and the value is its :ref:`Schema<data.schema>`.
 
 From intuition, stockhk should be stock of hongkong:
 ::
@@ -97,21 +101,7 @@ From intuition, stockhk should be stock of hongkong:
     2112  stockhk_hk_00700  stockhk_hk_00700      None     stockhk       hk  00700  腾讯控股      None     None
 
 From intuition, other tradable entities could be added to the system and used in the same way.
-
-Show current registered tradable entity type and its schema:
-::
-
-    >>> from zvt.contract import *
-    >>> zvt_context.tradable_schema_map
-    {'stockus': zvt.domain.meta.stockus_meta.Stockus,
-     'stockhk': zvt.domain.meta.stockhk_meta.Stockhk,
-     'index': zvt.domain.meta.index_meta.Index,
-     'etf': zvt.domain.meta.etf_meta.Etf,
-     'stock': zvt.domain.meta.stock_meta.Stock,
-     'block': zvt.domain.meta.block_meta.Block,
-     'fund': zvt.domain.meta.fund_meta.Fund}
-
-Adding tradable entity to zvt is easy, just follow :ref:`Extending tradable entity <extending_data.tradable_entity>`
+Just follow :ref:`Add tradable entity <extending_data.tradable_entity>`
 
 .. _data.actor_entity:
 
@@ -141,6 +131,13 @@ company, fund or individual.
     22467  stock_sz_000338_2021-09-30_corporation_cn_1008...  stock_sz_000338 2021-09-30  000338  潍柴动力  corporation_cn_10086358  corporation   10086358  奥地利IVM技术咨询维也纳有限公司       season3  2021-09-30     1.139387e+08       0.026863    1.955188e+09
 
     [22468 rows x 14 columns]
+
+.. note::
+
+    A good actor should know the good or bad actors in history, more importantly,
+    the mind behind them.
+
+.. _data.schema:
 
 Schema
 ------------------------------
@@ -245,7 +242,8 @@ pre adjusted(qfq), post adjusted(hfq), or not adjusted(bfq).
     >>> for adjust_type in AdjustType:
     >>>     print(adjust_type.value)
 
-.. note:
+.. note::
+
     In order to be compatible with historical data, the qfq is an exception, {adjust_type} is left empty
 
 The pre defined kdata schema could be found in :py:mod:`~.zvt.domain.quotes`, it's seperated by
@@ -310,4 +308,4 @@ Three financial tables
     >>> CashFlowStatement.record_data(code='000338')
 
 .. note::
-    Just remember, all :ref:`schema usage <intro.schema_usage>` is in the same way.
+    Just remember, all :ref:`schema usage <data.schema_usage>` is in the same way.

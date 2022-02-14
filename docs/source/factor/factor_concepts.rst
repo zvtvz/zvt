@@ -120,4 +120,42 @@ Follow :ref:`Extending factor <factor.extending_factor>` to do the funny part.
 
 TargetSelector
 ------------------------------
-the class select targets according to Factor.
+The class select targets according to Factors.
+You could calculate factors in the whole market and use selector to choose the targets.
+
+::
+
+    from zvt.contract import IntervalLevel
+    from zvt.factors.target_selector import TargetSelector
+    from zvt.factors.ma.ma_factor import CrossMaFactor
+
+    entity_ids = ["stock_sz_000338"]
+    entity_type = "stock"
+    start_timestamp = "2018-01-01"
+    end_timestamp = "2019-06-30"
+    my_selector = TargetSelector(
+        entity_ids=entity_ids, entity_schema=entity_type, start_timestamp=start_timestamp, end_timestamp=end_timestamp
+    )
+    # add the factors
+    my_selector.add_factor(
+        CrossMaFactor(
+            entity_provider="em",
+            provider="em",
+            entity_ids=entity_ids,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            computing_window=10,
+            windows=[5, 10],
+            need_persist=False,
+            level=IntervalLevel.LEVEL_1DAY,
+            adjust_type="hfq",
+        )
+    )
+    my_selector.run()
+    print(my_selector.open_long_df)
+    print(my_selector.open_short_df)
+    my_selector.get_open_long_targets("2019-06-27")
+
+If not set entity_ids arguments, the selected targets would be in whole market.
+And it provides get_open_long_targets function to select targets on the timestamp.
+For multiple targets backtesting, this pre computed factor would be very fast.
