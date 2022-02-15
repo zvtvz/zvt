@@ -158,6 +158,9 @@ class TradableType(Enum):
     #: A股(中国)
     #: China stock
     stock = "stock"
+    #: A股板块(中国)
+    #: China stock block
+    block = "block"
     #: 美股
     #: USA stock
     stockus = "stockus"
@@ -211,6 +214,7 @@ class Exchange(Enum):
 
 
 tradable_type_map_exchanges = {
+    TradableType.block: [Exchange.cn],
     TradableType.stock: [Exchange.sh, Exchange.sz],
     TradableType.stockhk: [Exchange.hk],
     TradableType.stockus: [Exchange.nasdaq, Exchange.nyse],

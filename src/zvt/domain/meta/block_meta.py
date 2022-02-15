@@ -22,6 +22,6 @@ class BlockStock(BlockMetaBase, PortfolioStock):
     __tablename__ = "block_stock"
 
 
-register_schema(providers=["eastmoney", "sina"], db_name="block_meta", schema_base=BlockMetaBase)
+register_schema(providers=["em", "eastmoney", "sina"], db_name="block_meta", schema_base=BlockMetaBase)
 # the __all__ is generated
 __all__ = ["Block", "BlockStock"]

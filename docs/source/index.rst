@@ -13,6 +13,7 @@ Contents
     factor/index
     trader/index
     ml/index
+    drawer/index
     api/index
 
 Indices and tables

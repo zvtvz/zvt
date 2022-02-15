@@ -129,14 +129,14 @@ class EMIndexKdataRecorder(BaseEMStockKdataRecorder):
 
 
 class EMBlockKdataRecorder(BaseEMStockKdataRecorder):
-    entity_provider = "eastmoney"
+    entity_provider = "em"
     entity_schema = Block
 
     data_schema = BlockKdataCommon
 
 
 if __name__ == "__main__":
-    recorder = EMBlockKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=["000300"])
+    recorder = EMBlockKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=["BK1067"])
     recorder.run()
 # the __all__ is generated
 __all__ = [

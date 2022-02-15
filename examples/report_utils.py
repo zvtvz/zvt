@@ -10,13 +10,38 @@ from zvt import zvt_config
 from zvt.api import get_top_volume_entities, get_top_performance_entities
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
 from zvt.contract import AdjustType
-from zvt.contract.api import get_entities, get_entity_schema, get_entity_ids, decode_entity_id
+from zvt.contract.api import get_entities, get_entity_schema, get_entity_ids
 from zvt.contract.factor import Factor
 from zvt.factors import TargetSelector, SelectMode
 from zvt.informer import EmailInformer
 from zvt.utils import next_date
 
 logger = logging.getLogger("__name__")
+
+
+def inform(
+    action: EmailInformer, entity_ids, target_date, title, entity_provider, entity_type, em_group, em_group_over_write
+):
+    msg = "no targets"
+    if entity_ids:
+        entities = get_entities(
+            provider=entity_provider, entity_type=entity_type, entity_ids=entity_ids, return_type="domain"
+        )
+        if em_group:
+            try:
+                codes = [entity.code for entity in entities]
+                add_to_eastmoney(codes=codes, entity_type=entity_type, group=em_group, over_write=em_group_over_write)
+            except Exception as e:
+                action.send_message(
+                    zvt_config["email_username"],
+                    f"{target_date} {title} error",
+                    f"{target_date} {title} error: {e}",
+                )
+
+        infos = [f"{entity.name}({entity.code})" for entity in entities]
+        msg = "\n".join(infos) + "\n"
+    logger.info(msg)
+    action.send_message(zvt_config["email_username"], f"{target_date} {title}", msg)
 
 
 def report_targets(
@@ -83,31 +108,16 @@ def report_targets(
 
             long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
 
-            msg = "no targets"
-
-            if long_stocks:
-                entities = get_entities(
-                    provider=entity_provider, entity_type=entity_type, entity_ids=long_stocks, return_type="domain"
-                )
-                if em_group:
-                    try:
-                        codes = [entity.code for entity in entities]
-                        add_to_eastmoney(
-                            codes=codes, entity_type=entity_type, group=em_group, over_write=em_group_over_write
-                        )
-                    except Exception as e:
-                        email_action.send_message(
-                            zvt_config["email_username"],
-                            f"report {entity_type}{factor_cls.__name__} error",
-                            f"report {entity_type}{factor_cls.__name__} error: {e}",
-                        )
-
-                infos = [f"{entity.name}({entity.code})" for entity in entities]
-                msg = "\n".join(infos) + "\n"
-
-            logger.info(msg)
-
-            email_action.send_message(zvt_config["email_username"], f"{target_date} {title}", msg)
+            inform(
+                email_action,
+                entity_ids=long_stocks,
+                target_date=target_date,
+                title=title,
+                entity_provider=entity_provider,
+                entity_type=entity_type,
+                em_group=em_group,
+                em_group_over_write=em_group_over_write,
+            )
 
             break
         except Exception as e:
@@ -125,7 +135,7 @@ def report_targets(
 def report_top_stats(
     entity_provider,
     data_provider,
-    periods=[7, 30, 180, 365],
+    periods=[7, 30, 365],
     ignore_new_stock=True,
     entity_type="stock",
     adjust_type=None,
@@ -133,6 +143,7 @@ def report_top_stats(
     turnover_threshold=100000000,
     turnover_rate_threshold=0.02,
     em_group_over_write=True,
+    report_stats=False,
 ):
     if not adjust_type:
         adjust_type = default_adjust_type(entity_type=entity_type)
@@ -200,52 +211,77 @@ def report_top_stats(
             data_provider=data_provider,
         )
         df.rename(columns={"score": f"score_{period}"}, inplace=True)
-        ups.append(tabulate(df.iloc[:top_count], headers="keys"))
-        downs.append(tabulate(df.iloc[-top_count:], headers="keys"))
 
-        stats.append(tabulate(df.describe(), headers="keys"))
+        if report_stats:
+            ups.append(tabulate(df.iloc[:top_count], headers="keys"))
+            downs.append(tabulate(df.iloc[-top_count:], headers="keys"))
 
-        # 最近一个月和一周最靓仔的
-        if period == 7 or period == 30:
-            try:
-                codes = [decode_entity_id(entity_id)[2] for entity_id in df.index[:top_count]]
-                add_to_eastmoney(codes=codes, entity_type=entity_type, group="最靓仔", over_write=em_group_over_write)
-            except Exception as e:
-                logger.exception(e)
-                email_action.send_message(
-                    zvt_config["email_username"], f"report_top_stats error", "report_top_stats error:{}".format(e)
-                )
+            stats.append(tabulate(df.describe(), headers="keys"))
+
+        # 最近一周最靓仔的
+        if period == 7:
+            inform(
+                email_action,
+                entity_ids=df.index[:top_count].tolist(),
+                target_date=current_timestamp,
+                title=f"{entity_type} {period}日内 最靓仔",
+                entity_provider=entity_provider,
+                entity_type=entity_type,
+                em_group="最靓仔",
+                em_group_over_write=em_group_over_write,
+            )
+        # 最近一月最靓仔的
+        elif period == 30:
+            inform(
+                email_action,
+                entity_ids=df.index[:top_count].tolist(),
+                target_date=current_timestamp,
+                title=f"{entity_type} {period}日内 最靓仔",
+                entity_provider=entity_provider,
+                entity_type=entity_type,
+                em_group="最靓仔",
+                em_group_over_write=False,
+            )
 
         # 一年内跌幅最大的
-        if period == 365:
-            try:
-                codes = [decode_entity_id(entity_id)[2] for entity_id in df.index[-top_count:]]
-                add_to_eastmoney(codes=codes, entity_type=entity_type, group="谁有我惨", over_write=em_group_over_write)
-            except Exception as e:
-                logger.exception(e)
-                email_action.send_message(
-                    zvt_config["email_username"], f"report_top_stats error", "report_top_stats error:{}".format(e)
-                )
+        elif period == 365:
+            inform(
+                email_action,
+                entity_ids=df.index[-top_count:].tolist(),
+                target_date=current_timestamp,
+                title=f"{entity_type} {period}日内 谁有我惨",
+                entity_provider=entity_provider,
+                entity_type=entity_type,
+                em_group="谁有我惨",
+                em_group_over_write=em_group_over_write,
+            )
 
-    msg = "\n"
-    for s in stats:
-        msg = msg + s + "\n"
-    email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}统计报告", msg)
+    if report_stats:
+        msg = "\n"
+        for s in stats:
+            msg = msg + s + "\n"
+        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}统计报告", msg)
 
-    msg = "\n"
-    for up in ups:
-        msg = msg + up + "\n"
-    email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}涨幅统计报告", msg)
+        msg = "\n"
+        for up in ups:
+            msg = msg + up + "\n"
+        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}涨幅统计报告", msg)
 
-    msg = "\n"
-    for down in downs:
-        msg = msg + down + "\n"
+        msg = "\n"
+        for down in downs:
+            msg = msg + down + "\n"
 
-    email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}跌幅统计报告", msg)
+        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}跌幅统计报告", msg)
 
 
 if __name__ == "__main__":
-    report_top_stats(entity_type="stockhk", entity_provider="em", data_provider="em")
+    report_top_stats(
+        entity_type="stockhk",
+        entity_provider="em",
+        data_provider="em",
+        turnover_threshold=0,
+        turnover_rate_threshold=0,
+    )
 
 # the __all__ is generated
 __all__ = ["report_targets", "report_top_stats"]

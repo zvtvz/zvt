@@ -143,7 +143,7 @@ If you have another provider, e.g. sina, just register it too:
 
 ::
 
-    >>> register_schema(providers=["eastmoney", "sina"], db_name="stock_news", schema_base=NewsBase, entity_type="stock")
+    >>> register_schema(providers=["em", "sina"], db_name="stock_news", schema_base=NewsBase, entity_type="stock")
 
 And you could find another db file:
 
@@ -159,7 +159,7 @@ The advantage of this mechanism is:
 * provider could be switched seamlessly
 
 4. Implement recorder
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 Let's implement a recorder for StockNews.
 
 ::

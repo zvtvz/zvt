@@ -36,7 +36,7 @@ def report_vol_up():
 
     report_targets(
         factor_cls=VolumeUpMaFactor,
-        entity_provider="eastmoney",
+        entity_provider="em",
         data_provider="em",
         em_group="强势板块",
         title="放量突破(半)年线板块",

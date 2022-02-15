@@ -31,7 +31,7 @@ def report_bull():
     )
     report_targets(
         factor_cls=BullAndUpFactor,
-        entity_provider="eastmoney",
+        entity_provider="em",
         data_provider="em",
         title="bull板块",
         entity_type="block",

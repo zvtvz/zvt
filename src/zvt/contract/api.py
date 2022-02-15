@@ -644,6 +644,8 @@ def get_entity_ids(
     return None
 
 
+if __name__ == "__main__":
+    print(get_entities(entity_type="block"))
 # the __all__ is generated
 __all__ = [
     "_get_db_name",

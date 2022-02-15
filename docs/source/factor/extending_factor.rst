@@ -4,6 +4,21 @@
 Extending Factor
 ================
 
+Rethink NormalData
+--------------------------
+Normal data format is as below:
+
+.. image:: ../_static/normal_data.png
+
+| Why use this format?
+| The reason is that human is comfortable for two-dimensional space and
+  high-dimensional space could be reduced to it.
+
+
+Obviously, It's complete and consistent. You could **calculate oneself in time intervals**
+or **calculate with others in specific time or intervals**. And it's easy to analyze  the
+data with charts by Intent.
+
 Factor data structure
 --------------------------
 The factor computing flow is as below:
@@ -43,7 +58,6 @@ check the dfs:
     >>> factor.data_df
     >>> factor.factor_df
     >>> factor.result_df
-
 
 Write transformer
 --------------------------

@@ -1,4 +1,4 @@
-zvt >= 0.9.11
+zvt >= 0.9.15
 apscheduler >= 3.4.0
 eastmoneypy >= 0.0.9
 tabulate>=0.8.8
