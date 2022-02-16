@@ -120,7 +120,7 @@ uniform contract to define them.
     >>> NewsBase = declarative_base()
     >>> class StockNews(NewsBase, Mixin):
     >>>     __tablename__ = "stock_news"
-    >>>     #: 基本每股收益(元)
+    >>>     #: 新闻标题
     >>>     news_title = Column(String)
     >>>
     >>> register_schema(providers=["em"], db_name="stock_news", schema_base=NewsBase, entity_type="stock")

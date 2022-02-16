@@ -4,7 +4,7 @@ Factor
 
 | Without factor, quant is not quant.
 | So, what exactly is factor?
-| zvt makes a concise and unified abstraction of factor::
+| zvt makes a concise and unified abstraction of factor:
 
 ::
 

@@ -43,7 +43,7 @@ You could use TargetSelector to select targets at specific time when
 filter_result is True and(or) score_result >=0.8 by default or do more
 precise control by setting other arguments.
 
-Let's take an the implemented BullFactor to illustrate the calculation process:
+Let's take BullFactor to illustrate the calculation process:
 ::
 
     >>> from zvt.factors.macd import BullFactor
@@ -61,15 +61,99 @@ check the dfs:
 
 Write transformer
 --------------------------
+Transformer works as bellow:
 
 .. image:: ../_static/transformer.png
+
+What you need to remember is the NormalData format, and practice the skills to
+manipulate it.
+
+You could use other ta lib with it easily, e.g Bollinger Bands using `TA lib <https://github.com/bukosabino/ta#>`_
+
+install ta at first:
+::
+
+    pip install --upgrade ta
+
+write boll transformer and factor:
+::
+
+    from typing import Optional, List
+
+    import pandas as pd
+    from ta.volatility import BollingerBands
+
+    from zvt.contract.factor import *
+    from zvt.factors import TechnicalFactor
+
+
+    class BollTransformer(Transformer):
+        def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:
+            indicator_bb = BollingerBands(close=df["close"], window=20, window_dev=2)
+
+            # Add Bollinger Bands features
+            df["bb_bbm"] = indicator_bb.bollinger_mavg()
+            df["bb_bbh"] = indicator_bb.bollinger_hband()
+            df["bb_bbl"] = indicator_bb.bollinger_lband()
+
+            # Add Bollinger Band high indicator
+            df["bb_bbhi"] = indicator_bb.bollinger_hband_indicator()
+
+            # Add Bollinger Band low indicator
+            df["bb_bbli"] = indicator_bb.bollinger_lband_indicator()
+
+            # Add Width Size Bollinger Bands
+            df["bb_bbw"] = indicator_bb.bollinger_wband()
+
+            # Add Percentage Bollinger Bands
+            df["bb_bbp"] = indicator_bb.bollinger_pband()
+            return df
+
+
+    class BollFactor(TechnicalFactor):
+        transformer = BollTransformer()
+
+        def drawer_factor_df_list(self) -> Optional[List[pd.DataFrame]]:
+            # set the factor to show
+            return [self.factor_df[["bb_bbm", "bb_bbh", "bb_bbl"]]]
+
+        def compute_result(self):
+            # set filter_result, which bb_bbli=1.0 buy and bb_bbhi=1.0 sell
+            super().compute_result()
+            self.result_df = (self.factor_df["bb_bbli"] - self.factor_df["bb_bbhi"]).to_frame(name="filter_result")
+            self.result_df[self.result_df == 0] = None
+            self.result_df[self.result_df == 1] = True
+            self.result_df[self.result_df == -1] = False
+
+Let's show it:
+::
+    >>> from zvt.domain import Stock1dHfqKdata
+
+    >>> provider = "em"
+    >>> entity_ids = ["stock_sz_000338", "stock_sh_601318"]
+    >>> Stock1dHfqKdata.record_data(entity_ids=entity_ids, provider=provider,)
+    >>> factor = BollFactor(
+    >>> entity_ids=entity_ids, provider=provider, entity_provider=provider, start_timestamp="2019-01-01"
+    >>> )
+    >>> factor.draw(show=True)
+
+.. image:: ../_static/boll_factor.png
+
+Most of ta lib support calculate single target by default, so we implement
+transform_one of the Transformer. If you want to calculate many targets at
+the same time you could implement transform directly and it would be faster.
+
+And Transformer is stateless, so it's easy to reuse in different factor if need.
+
+Select the targets
+--------------------------
+You could select the targets according result_df of the factor by yourself.
+Or use TargetSelector do it for you.
+
+.. image:: ../_static/factor_result.png
+
 
 Write accumulator
 --------------------------
 
 .. image:: ../_static/accumulator.png
-
-Select the targets
---------------------------
-
-.. image:: ../_static/factor_result.png
