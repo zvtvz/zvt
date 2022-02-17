@@ -13,33 +13,12 @@
 
 **Read the docs:[https://zvt.readthedocs.io/en/latest/](https://zvt.readthedocs.io/en/latest/)**
 
-## Market model
-ZVT abstracts the market into the following model:
-
-<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/view.png'/></p>
-
-* TradableEntity 
-
-the tradable entity e.g., stock,future,coin
-
-* ActorEntity 
-
-the actor in market e.g., fund,government,company
-
-* EntityEvent 
-
-the event about them e.g, quotes,finance factor,macro policy
-
-## Quick start
-
 ### Install
 ```
 python3 -m pip install -U zvt
 ```
 
-### Show
-
-#### Main ui
+### Main ui
 
 After the installation is complete, enter zvt on the command line
 ```shell
@@ -47,7 +26,7 @@ zvt
 ```
 open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
-> The example shown here relies on the history data, please refer to the following document for data update
+> The example shown here relies on data, factor, trader, please read [docs](https://zvt.readthedocs.io/en/latest/)
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-factor.png'/></p>
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/zvt-trader.png'/></p>
@@ -56,7 +35,7 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
 > You can write and run the strategy in your favorite ide, and then view its related targets, factor, signal and performance on the UI.
 
-#### Behold, the power of zvt:
+### Behold, the power of zvt:
 ```
 >>> from zvt.domain import Stock, Stock1dHfqKdata
 >>> from zvt.ml import MaStockMLMachine
@@ -73,17 +52,13 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 > The few lines of code above has done: data capture, persistence, incremental update, machine learning, prediction, and display results.
 > Once you are familiar with the core concepts of the system, you can apply it to any target in the market.
 
-### Core concepts
-```
->>> from zvt.domain import *
-```
-
-### TradableEntity
+### Data
 
 #### China stock
 ```
->>> Stock.record_data()
->>> df = Stock.query_data(index='code')
+>>> from zvt.domain import *
+>>> Stock.record_data(provider="em")
+>>> df = Stock.query_data(provider="em", index='code')
 >>> print(df)
 
                      id        entity_id  timestamp entity_type exchange    code   name  list_date end_date
@@ -372,7 +347,7 @@ Learn more about record_data
 * Recording the whole market if not set code, codes
 * This method will store the data locally and only do incremental updates
 
-Refer to the scheduling recoding way[data runner](https://github.com/zvtvz/zvt/blob/master/examples/recorders/data_runner)
+Refer to the scheduling recoding way[data runner](https://github.com/zvtvz/zvt/blob/master/examples/data_runner)
 
 #### Market-wide stock selection
 

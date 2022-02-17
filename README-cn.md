@@ -360,7 +360,7 @@ Block registered recorders:{'eastmoney': <class 'zvt.recorders.eastmoney.meta.ch
 * 不传入code,codes则是全市场抓取
 * 该方法会把数据存储到本地并只做增量更新
 
-定时任务的方式更新可参考[定时更新](https://github.com/zvtvz/zvt/blob/master/examples/recorders/data_runner)
+定时任务的方式更新可参考[定时更新](https://github.com/zvtvz/zvt/blob/master/examples/data_runner)
 
 #### 全市场选股
 查询数据使用的是query_data方法，把全市场的数据记录下来后，就可以在本地快速查询需要的数据了。

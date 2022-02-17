@@ -65,7 +65,7 @@ Transformer works as bellow:
 
 .. image:: ../_static/transformer.png
 
-What you need to remember is the NormalData format, and practice the skills to
+What's in your mind is the NormalData format, and then practice the skills to
 manipulate it.
 
 You could use other ta lib with it easily, e.g Bollinger Bands using `TA lib <https://github.com/bukosabino/ta#>`_
@@ -127,6 +127,7 @@ write boll transformer and factor:
 
 Let's show it:
 ::
+
     >>> from zvt.domain import Stock1dHfqKdata
 
     >>> provider = "em"
@@ -144,6 +145,29 @@ transform_one of the Transformer. If you want to calculate many targets at
 the same time you could implement transform directly and it would be faster.
 
 And Transformer is stateless, so it's easy to reuse in different factor if need.
+
+Stream computing
+--------------------------
+The data is coming continuously and the factor using the data need computing
+continuously too.
+
+It's simple and straightforward:
+
+* {Schema}.record_data in one process
+* {Factor}.move_on which call {Schema}.query_data in another process
+
+.. image:: ../_static/stream.png
+
+We keep the simple enough philosophy: single process and thread. Enjoy
+programming and make everything clear.
+
+Factor persistence
+--------------------------
+Getting data and computing factor continuously is cool.
+But...If It took a long time to calculate the factor and crashed.How would you feel?
+
+.. image:: ../_static/bear.gif
+    :align: center
 
 Select the targets
 --------------------------

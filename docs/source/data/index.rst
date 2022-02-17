@@ -6,8 +6,8 @@ Data
 | So, what exactly is data?
 | zvt makes a concise and unified abstraction of data:
 
-In the world of zvt, there are two kinds of entities, one is :ref:`tradable entity <data.tradable_entity>`,
-the other is :ref:`actor entity <data.actor_entity>`. Data is the events happened on them.
+    In the world of zvt, there are two kinds of entities, one is :ref:`tradable entity <data.tradable_entity>`,
+    the other is :ref:`actor entity <data.actor_entity>`. Data is the events happened on them.
 
 .. image:: ../_static/view.png
 
