@@ -19,4 +19,5 @@ Data
     :maxdepth: 2
 
     data_concepts
+    record_and_query
     extending_data

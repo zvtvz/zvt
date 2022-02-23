@@ -17,14 +17,26 @@ class StateMixin(Mixin):
 
 
 class RecorderState(ZvtInfoBase, StateMixin):
+    """
+    Schema for storing recorder state
+    """
+
     __tablename__ = "recoder_state"
 
 
 class TaggerState(ZvtInfoBase, StateMixin):
+    """
+    Schema for storing tagger state
+    """
+
     __tablename__ = "tagger_state"
 
 
 class FactorState(ZvtInfoBase, StateMixin):
+    """
+    Schema for storing factor state
+    """
+
     __tablename__ = "factor_state"
 
 

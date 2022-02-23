@@ -62,16 +62,27 @@ def index_df(df, index="timestamp", inplace=True, drop=False, time_field="timest
     return df
 
 
-def normal_index_df(df, category_field="entity_id", time_filed="timestamp", drop=True):
+def normal_index_df(df, category_field="entity_id", time_filed="timestamp", drop=True, default_entity="entity"):
+    if type(df) == pd.Series:
+        df = df.to_frame(name="value")
+
     index = [category_field, time_filed]
     if is_normal_df(df):
         return df
+
+    if df.index.nlevels == 1:
+        if (time_filed != df.index.name) and (time_filed not in df.columns):
+            assert False
+        if category_field not in df.columns:
+            df[category_field] = default_entity
+        if time_filed not in df.columns:
+            df = df.reset_index()
 
     return index_df(df=df, index=index, drop=drop, time_field="timestamp")
 
 
 def is_normal_df(df, category_field="entity_id", time_filed="timestamp"):
-    if pd_is_not_null(df):
+    if pd_is_not_null(df) and df.index.nlevels == 2:
         names = df.index.names
 
         if len(names) == 2 and names[0] == category_field and names[1] == time_filed:

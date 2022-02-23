@@ -75,7 +75,7 @@ e.g. `Finance data <https://github.com/zvtvz/zvt/blob/master/src/zvt/domain/fund
 refer them when you want to extend data.
 
 
-Key steps
+Key steps to add data
 --------------------------
 
 Let's show the key steps to add data.
@@ -86,8 +86,13 @@ I want to add some data about the news on Stock.
 
 2. Find data source
 ~~~~~~~~~~~~~~~~~~~~
-Open `eastmoney wap <https://wap.eastmoney.com/quote/stock/0.002572.html>`_
-Find `news api <https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode=0.002572&pageSize=20&pageIndex=1&callback=jQuery1830017478247906740352_1644568731256&_=1644568879493>`_
+The data source could be whatever you can see in the web ——— just write some
+web crawlers to get them, e.g, most of `pre-implemented recorders <https://github.com/zvtvz/zvt/tree/master/src/zvt/recorders>`_.
+And you could use data from commercial data provider in the same way, e.g. `joinquant recorders <https://github.com/zvtvz/zvt/tree/master/src/zvt/recorders/joinquant>`_.
+
+Let's show the crawler way here:
+
+Open `eastmoney wap <https://wap.eastmoney.com/quote/stock/0.002572.html>`_ and Find `news api <https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode=0.002572&pageSize=20&pageIndex=1&callback=jQuery1830017478247906740352_1644568731256&_=1644568879493>`_
 
 The news item result:
 
@@ -220,3 +225,4 @@ After that, you could use the data in zvt way:
 
 Add new TradableEntity
 --------------------------
+It's human nature to like the new and hate the old.

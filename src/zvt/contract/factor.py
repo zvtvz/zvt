@@ -178,11 +178,14 @@ class FactorMeta(type):
 
 
 class Factor(DataReader, EntityStateService, DataListener):
+    #: Schema for storing states
     state_schema = FactorState
     #: define the schema for persist,its columns should be same as indicators in transformer or accumulator
     factor_schema: Type[Mixin] = None
 
+    #: transformer for this factor if not passed as __init__ argument
     transformer: Transformer = None
+    #: accumulator for this factor if not passed as __init__ argument
     accumulator: Accumulator = None
 
     def __init__(

@@ -153,7 +153,7 @@ From specific to general, all zvt schema usage is in the same way.
 * {Schema}.record_data
 * {Schema}.query_data
 
-explore :py:mod:`~.zvt.domain` to check current schemas.
+Explore :py:mod:`~.zvt.domain` for pre defined schemas. And check :ref:`record_data & query_data details <record_and_query>`
 
 ::
 

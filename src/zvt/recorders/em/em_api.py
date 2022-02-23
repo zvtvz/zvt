@@ -469,12 +469,12 @@ if __name__ == "__main__":
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    # df = get_kdata(entity_id='stock_sz_000338')
+    df = get_kdata(entity_id="index_sz_399370", level="1wk")
     # df = get_tradable_list(entity_type="stockhk")
     # df = get_news("stock_sz_300999")
     # print(df)
     # print(len(df))
-    df = get_tradable_list(entity_type="block")
+    # df = get_tradable_list(entity_type="block")
     print(df)
 # the __all__ is generated
 __all__ = [

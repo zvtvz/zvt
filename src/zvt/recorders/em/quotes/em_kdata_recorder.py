@@ -74,7 +74,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
         )
 
     def record(self, entity, start, end, size, timestamps):
-        df = get_kdata(entity_id=entity.id, limit=size, adjust_type=self.adjust_type)
+        df = get_kdata(entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level)
         if pd_is_not_null(df):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         else:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.api.intent import compare, distribute, composite, composite_all
+from zvt.api.intent import compare_entity, distribute_entity, composite_entity, composite_all
 from zvt.contract.drawer import ChartType
 from zvt.domain import FinanceFactor, CashFlowStatement, BalanceSheet, Stock1dKdata
 from zvt.utils import to_pd_timestamp
@@ -7,37 +7,41 @@ from zvt.utils import to_pd_timestamp
 
 def test_compare_kdata():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(entity_ids=entity_ids)
+    compare_entity(entity_ids=entity_ids)
 
 
 def test_compare_line():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]})
+    compare_entity(entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]})
 
 
 def test_compare_scatter():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(
+    compare_entity(
         entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]}, chart_type=ChartType.scatter
     )
 
 
 def test_compare_area():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]}, chart_type=ChartType.area)
+    compare_entity(
+        entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]}, chart_type=ChartType.area
+    )
 
 
 def test_compare_bar():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]}, chart_type=ChartType.bar)
+    compare_entity(
+        entity_ids=entity_ids, schema_map_columns={FinanceFactor: [FinanceFactor.roe]}, chart_type=ChartType.bar
+    )
 
 
 def test_distribute():
-    distribute(entity_ids=None, data_schema=FinanceFactor, columns=["roe"])
+    distribute_entity(entity_ids=None, data_schema=FinanceFactor, columns=["roe"])
 
 
 def test_composite():
-    composite(
+    composite_entity(
         entity_id="stock_sz_000338",
         data_schema=CashFlowStatement,
         columns=[
@@ -50,7 +54,7 @@ def test_composite():
             CashFlowStatement.report_date == to_pd_timestamp("2016-12-31"),
         ],
     )
-    composite(
+    composite_entity(
         entity_id="stock_sz_000338",
         data_schema=BalanceSheet,
         columns=[

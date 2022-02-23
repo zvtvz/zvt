@@ -9,7 +9,12 @@ from zvt.contract.drawer import Drawer, ChartType
 from zvt.utils import to_pd_timestamp
 
 
-def compare(entity_ids, schema_map_columns: dict = None, chart_type: ChartType = ChartType.line):
+def compare(data, chart_type: ChartType = ChartType.line):
+    drawer = Drawer(main_df=data)
+    drawer.draw(main_chart=chart_type, show=True)
+
+
+def compare_entity(entity_ids=None, schema_map_columns: dict = None, chart_type: ChartType = ChartType.line):
     entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
     dfs = []
     for entity_type in entity_type_map_ids:
@@ -32,7 +37,7 @@ def compare(entity_ids, schema_map_columns: dict = None, chart_type: ChartType =
         drawer.draw_kline(show=True)
 
 
-def distribute(entity_ids, data_schema, columns, histnorm="percent", nbinsx=20, filters=None):
+def distribute_entity(entity_ids, data_schema, columns, histnorm="percent", nbinsx=20, filters=None):
     columns = ["entity_id", "timestamp"] + columns
     df = data_schema.query_data(entity_ids=entity_ids, columns=columns, filters=filters)
     if not entity_ids:
@@ -41,10 +46,20 @@ def distribute(entity_ids, data_schema, columns, histnorm="percent", nbinsx=20, 
     drawer.draw_histogram(show=True, histnorm=histnorm, nbinsx=nbinsx)
 
 
-def composite(entity_id, data_schema, columns, filters=None):
+def distribute(data, histnorm="percent", nbinsx=20):
+    drawer = Drawer(main_df=data)
+    drawer.draw_histogram(show=True, histnorm=histnorm, nbinsx=nbinsx)
+
+
+def composite_entity(entity_id, data_schema, columns, filters=None):
     columns = ["entity_id", "timestamp"] + columns
     df = data_schema.query_data(entity_id=entity_id, columns=columns, filters=filters)
     drawer = Drawer(main_df=df)
+    drawer.draw_pie(show=True)
+
+
+def composite(data):
+    drawer = Drawer(main_df=data)
     drawer.draw_pie(show=True)
 
 
@@ -77,11 +92,34 @@ def _group_entity_ids(entity_ids):
 
 
 if __name__ == "__main__":
+    # from zvt.domain import Index1wkKdata
+    # from zvt.api.intent import compare
+    #
+    # Index1wkKdata.record_data(provider="em", codes=["399370", "399371"])
+    # df1 = Index1wkKdata.query_data(code="399371", index="timestamp")
+    # df2 = Index1wkKdata.query_data(code="399370", index="timestamp")
+    # se = df1["close"] / (df2["close"])
+    #
+    # compare(se)
+
     from zvt.domain import CashFlowStatement
 
-    composite(
+    #
+    # composite(
+    #     entity_id="stock_sz_000338",
+    #     data_schema=CashFlowStatement,
+    #     columns=[
+    #         CashFlowStatement.net_op_cash_flows,
+    #         CashFlowStatement.net_investing_cash_flows,
+    #         CashFlowStatement.net_financing_cash_flows,
+    #     ],
+    #     filters=[
+    #         CashFlowStatement.report_period == "year",
+    #         CashFlowStatement.report_date == to_pd_timestamp("2015-12-31"),
+    #     ],
+    # )
+    df = CashFlowStatement.query_data(
         entity_id="stock_sz_000338",
-        data_schema=CashFlowStatement,
         columns=[
             CashFlowStatement.net_op_cash_flows,
             CashFlowStatement.net_investing_cash_flows,
@@ -91,6 +129,9 @@ if __name__ == "__main__":
             CashFlowStatement.report_period == "year",
             CashFlowStatement.report_date == to_pd_timestamp("2015-12-31"),
         ],
+        index="timestamp",
     )
+    composite(data=df)
+
 # the __all__ is generated
-__all__ = ["compare", "distribute", "composite", "composite_all"]
+__all__ = ["compare_entity", "distribute_entity", "composite_entity", "composite_all"]

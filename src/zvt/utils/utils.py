@@ -207,6 +207,18 @@ def parse_url_params(url):
     return parse.parse_qs(parse.urlsplit(url).query)
 
 
+def set_one_and_only_one(**kwargs):
+    all_none = all(kwargs[v] is None for v in kwargs)
+    if all_none:
+        raise ValueError(f"{kwargs} must be set one at least")
+
+    set_size = len([v for v in kwargs if kwargs[v] is not None])
+    if set_size != 1:
+        raise ValueError(f"{kwargs} could only set one")
+
+    return True
+
+
 # the __all__ is generated
 __all__ = [
     "none_values",

@@ -681,18 +681,5 @@ def annotations(annotation_df: pd.DataFrame, yref="y"):
     return None
 
 
-if __name__ == "__main__":
-    from zvt.factors.z import ZFactor
-
-    data_reader1 = ZFactor(codes=["000338"], level="1d")
-    data_reader2 = ZFactor(codes=["000338"], level="1wk")
-    print(data_reader2.data_df)
-
-    stacked = StackedDrawer(data_reader1.drawer(), data_reader2.drawer()).draw_kline(show=True)
-    # df = Stock1dHfqKdata.query_data(code='000338', start_timestamp='2015-01-01')
-    # sub_df = FinanceFactor.query_data(code='000338', start_timestamp='2015-01-01',
-    #                                   columns=[FinanceFactor.roe, FinanceFactor.entity_id, FinanceFactor.timestamp])
-    #
-    # Drawer(main_df=df, sub_df_list=[sub_df]).draw_kline(show=True)
 # the __all__ is generated
 __all__ = ["ChartType", "Rect", "Draw", "Drawable", "StackedDrawer", "Drawer", "annotations"]
