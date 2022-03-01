@@ -5,6 +5,10 @@ from zvt.contract import IntervalLevel
 
 
 def gen_kdata_schemas():
+    """
+    generate kdata(OHLC) schemas for tradable entity
+
+    """
     # A股行情
     gen_kdata_schema(
         pkg="zvt",
@@ -22,6 +26,14 @@ def gen_kdata_schemas():
         entity_type="stockus",
         levels=[IntervalLevel.LEVEL_1DAY],
         adjust_types=[None, AdjustType.hfq],
+        entity_in_submodule=True,
+    )
+    # 美指
+    gen_kdata_schema(
+        pkg="zvt",
+        providers=["em"],
+        entity_type="indexus",
+        levels=[IntervalLevel.LEVEL_1DAY],
         entity_in_submodule=True,
     )
 
@@ -44,7 +56,7 @@ def gen_kdata_schemas():
         entity_in_submodule=True,
     )
 
-    # 指数行情
+    # A股指数行情
     gen_kdata_schema(
         pkg="zvt",
         providers=["em", "sina"],
@@ -61,7 +73,7 @@ def gen_kdata_schemas():
 
 if __name__ == "__main__":
     # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
-    # gen_exports('contract',export_modules=['schema'])
+    # gen_exports("contract", export_modules=["schema"])
     # gen_exports("ml")
     # gen_exports("utils")
     gen_exports("recorders/em")
@@ -70,5 +82,5 @@ if __name__ == "__main__":
     # gen_exports('api')
     # gen_exports('trader')
     # gen_exports('autocode')
-    # gen_exports('ml')
-    # gen_kdata_schemas()
+    gen_exports("ml")
+    gen_kdata_schemas()

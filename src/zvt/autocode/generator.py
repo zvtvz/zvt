@@ -72,6 +72,7 @@ def all_sub_all(sub_module):
 # import all from submodule {0}
 from .{0} import *
 from .{0} import __all__ as _{0}_all
+
 __all__ += _{0}_all""".format(
         sub_module
     )
@@ -108,8 +109,11 @@ def gen_exports(
 ):
     if not excludes:
         excludes = ["logger"]
-    fill_package_if_not_exist(dir_path=dir_path)
-    files = list_all_files(dir_path=dir_path)
+    if os.path.isfile(dir_path):
+        files = [dir_path]
+    else:
+        fill_package_if_not_exist(dir_path=dir_path)
+        files = list_all_files(dir_path=dir_path)
     for file in files:
         exports = []
         lines = []
@@ -121,14 +125,22 @@ def gen_exports(
                     break
                 lines.append(line)
                 export = _get_interface_name(line)
-                if export_var:
+                if export_var and not export:
                     export = _get_var_name(line)
                 if export and export[0].isalpha() and export not in excludes:
                     exports.append(export)
                 line = fp.readline()
         print(f"{file}:{exports}")
         lines.append(gen_flag)
-        lines.append(f"\n__all__ = {exports}")
+        lines.append("\n")
+        exports_str = f"__all__ = {exports}"
+        exports_str = exports_str.replace("'", '"')
+        if len(exports_str) > 120:
+            exports_wrap = [f'\n    "{item}",' for item in exports]
+            exports_str = "__all__ = [" + "".join(exports_wrap) + "\n]"
+            exports_str = exports_str.replace("'", '"')
+        lines.append(exports_str)
+        lines.append("\n")
 
         # the package module
         if export_from_package:
@@ -141,7 +153,6 @@ def gen_exports(
                         modules = set(modules) & set(export_modules)
                     lines.append(
                         """
-
 # __init__.py structure:
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules"""
@@ -183,8 +194,8 @@ def gen_kdata_schema(
         logger.info(f"create dir {base_path}")
         os.makedirs(base_path)
 
+    providers_str = f"{providers}".replace("'", '"')
     for level in levels:
-
         for adjust_type in adjust_types:
             level = IntervalLevel(level)
 
@@ -197,7 +208,6 @@ def gen_kdata_schema(
             if adjust_type and (adjust_type != AdjustType.qfq):
                 class_name = f"{cap_entity_type}{cap_level}{adjust_type.value.capitalize()}Kdata"
                 table_name = f"{entity_type}_{level.value}_{adjust_type.value.lower()}_kdata"
-
             else:
                 class_name = f"{cap_entity_type}{cap_level}Kdata"
                 table_name = f"{entity_type}_{level.value}_kdata"
@@ -215,10 +225,10 @@ KdataBase = declarative_base()
 
 
 class {class_name}(KdataBase, {kdata_common}):
-    __tablename__ = '{table_name}'
+    __tablename__ = "{table_name}"
 
 
-register_schema(providers={providers}, db_name='{table_name}', schema_base=KdataBase, entity_type='{entity_type}')
+register_schema(providers={providers_str}, db_name="{table_name}", schema_base=KdataBase, entity_type="{entity_type}")
 
 """
             # generate the schema

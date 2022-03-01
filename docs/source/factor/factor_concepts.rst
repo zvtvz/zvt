@@ -1,10 +1,15 @@
+.. _factor.factor_concepts:
+
 ===============
 Factor concepts
 ===============
 
+.. _factor.normal_data:
+
 Normal data
 ------------------------------
-the pandas dataframe with multiple index which level 0 named entity_id and level 1 named timestamp:
+:class:`~.zvt.contract.normal_data.NormalData` is the data containing pandas dataframe
+with multiple index which level 0 named entity_id and level 1 named timestamp:
 
 ===============                 ==========        =====   =====   =====   =====
 entity_id                       timestamp         col1    col2    col3    col4
@@ -51,6 +56,8 @@ e.g.
 
     [10878 rows x 15 columns]
 
+
+.. _factor.factor:
 
 Factor
 ------------------------------

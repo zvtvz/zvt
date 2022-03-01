@@ -59,6 +59,8 @@ check the dfs:
     >>> factor.factor_df
     >>> factor.result_df
 
+.. _factor.write_transformer:
+
 Write transformer
 --------------------------
 Transformer works as bellow:
@@ -145,6 +147,25 @@ transform_one of the Transformer. If you want to calculate many targets at
 the same time you could implement transform directly and it would be faster.
 
 And Transformer is stateless, so it's easy to reuse in different factor if need.
+
+Factor with IntervalLevel
+--------------------------
+After you write the transformer and construct the factor, it's easy to use in
+different levels.
+
+Let's use BollFactor in IntervalLevel 30m:
+::
+
+    >>> from zvt.domain import Stock30mHfqKdata
+
+    >>> provider = "em"
+    >>> entity_ids = ["stock_sz_000338", "stock_sh_601318"]
+
+    >>> Stock30mHfqKdata.record_data(entity_ids=entity_ids, provider=provider)
+    >>> factor = BollFactor(
+            entity_ids=entity_ids, provider=provider, entity_provider=provider, start_timestamp="2021-01-01"
+        )
+    >>> factor.draw(show=True)
 
 Stream computing
 --------------------------

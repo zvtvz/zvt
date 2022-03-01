@@ -17,6 +17,12 @@ from .stockhk_meta import __all__ as _stockhk_meta_all
 
 __all__ += _stockhk_meta_all
 
+# import all from submodule indexus_meta
+from .indexus_meta import *
+from .indexus_meta import __all__ as _indexus_meta_all
+
+__all__ += _indexus_meta_all
+
 # import all from submodule index_meta
 from .index_meta import *
 from .index_meta import __all__ as _index_meta_all

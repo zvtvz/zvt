@@ -164,6 +164,9 @@ class TradableType(Enum):
     #: 美股
     #: USA stock
     stockus = "stockus"
+    #: 美股指数
+    #: USA index
+    indexus = "indexus"
     #: 港股
     #: Hongkong Stock
     stockhk = "stockhk"
@@ -189,6 +192,8 @@ class Exchange(Enum):
 
     #: 对于中国的非交易所的 标的
     cn = "cn"
+    #: 对于美国的非交易所的 标的
+    us = "us"
 
     #: 纳斯达克
     nasdaq = "nasdaq"
@@ -218,6 +223,7 @@ tradable_type_map_exchanges = {
     TradableType.stock: [Exchange.sh, Exchange.sz],
     TradableType.stockhk: [Exchange.hk],
     TradableType.stockus: [Exchange.nasdaq, Exchange.nyse],
+    TradableType.indexus: [Exchange.us],
     TradableType.future: [Exchange.shfe, Exchange.dce, Exchange.czce, Exchange.cffex],
     TradableType.coin: [Exchange.binance, Exchange.huobipro],
 }

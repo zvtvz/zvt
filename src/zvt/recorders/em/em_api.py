@@ -302,8 +302,10 @@ def get_tradable_list(
         ex_flag = to_em_entity_flag(exchange=exchange)
         entity_flag = f"fs=m:{ex_flag}"
 
+        if entity_type == TradableType.indexus:
+            entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX"
         # m为交易所代码，t为交易类型
-        if entity_type in [TradableType.block, TradableType.stock, TradableType.stockus, TradableType.stockhk]:
+        elif entity_type in [TradableType.block, TradableType.stock, TradableType.stockus, TradableType.stockhk]:
             if exchange == Exchange.sh:
                 # t=2 主板
                 # t=23 科创板
@@ -425,6 +427,8 @@ exchange_map_em_flag = {
     Exchange.hk: 116,
     # 中国行业/概念板块
     Exchange.cn: 90,
+    # 美国指数
+    Exchange.us: 100,
 }
 
 
@@ -445,11 +449,19 @@ def to_em_fq_flag(adjust_type: AdjustType):
 
 def to_em_level_flag(level: IntervalLevel):
     level = IntervalLevel(level)
-    if level == IntervalLevel.LEVEL_1DAY:
+    if level == IntervalLevel.LEVEL_5MIN:
+        return 5
+    if level == IntervalLevel.LEVEL_15MIN:
+        return 15
+    elif level == IntervalLevel.LEVEL_30MIN:
+        return 30
+    elif level == IntervalLevel.LEVEL_1HOUR:
+        return 60
+    elif level == IntervalLevel.LEVEL_1DAY:
         return 101
-    if level == IntervalLevel.LEVEL_1WEEK:
+    elif level == IntervalLevel.LEVEL_1WEEK:
         return 102
-    if level == IntervalLevel.LEVEL_1MON:
+    elif level == IntervalLevel.LEVEL_1MON:
         return 103
 
     assert False
@@ -469,12 +481,14 @@ if __name__ == "__main__":
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
     # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
     #                       org_type=actor_type_to_org_type(ActorType.corporation)))
-    df = get_kdata(entity_id="index_sz_399370", level="1wk")
+    # df = get_kdata(entity_id="index_sz_399370", level="1wk")
     # df = get_tradable_list(entity_type="stockhk")
     # df = get_news("stock_sz_300999")
     # print(df)
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
+    # df = get_tradable_list(entity_type="indexus")
+    df = get_kdata(entity_id="index_us_SPX", level="1d")
     print(df)
 # the __all__ is generated
 __all__ = [

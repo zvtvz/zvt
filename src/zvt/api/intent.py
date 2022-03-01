@@ -9,12 +9,7 @@ from zvt.contract.drawer import Drawer, ChartType
 from zvt.utils import to_pd_timestamp
 
 
-def compare(data, chart_type: ChartType = ChartType.line):
-    drawer = Drawer(main_df=data)
-    drawer.draw(main_chart=chart_type, show=True)
-
-
-def compare_entity(entity_ids=None, schema_map_columns: dict = None, chart_type: ChartType = ChartType.line):
+def compare(entity_ids=None, schema_map_columns: dict = None, chart_type: ChartType = ChartType.line):
     entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
     dfs = []
     for entity_type in entity_type_map_ids:
@@ -35,6 +30,11 @@ def compare_entity(entity_ids=None, schema_map_columns: dict = None, chart_type:
     else:
         drawer = Drawer(main_df=all_df, sub_df_list=[all_df[["entity_id", "timestamp", "turnover"]].copy()])
         drawer.draw_kline(show=True)
+
+
+def change(data, chart_type: ChartType = ChartType.line):
+    drawer = Drawer(main_df=data)
+    drawer.draw(main_chart=chart_type, show=True)
 
 
 def distribute_entity(entity_ids, data_schema, columns, histnorm="percent", nbinsx=20, filters=None):
@@ -134,4 +134,4 @@ if __name__ == "__main__":
     composite(data=df)
 
 # the __all__ is generated
-__all__ = ["compare_entity", "distribute_entity", "composite_entity", "composite_all"]
+__all__ = ["compare", "distribute_entity", "composite_entity", "composite_all"]

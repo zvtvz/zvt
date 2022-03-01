@@ -55,3 +55,14 @@ if __name__ == "__main__":
         entity_ids=entity_ids, provider=provider, entity_provider=provider, start_timestamp="2019-01-01"
     )
     factor.draw(show=True)
+
+    from zvt.domain import Stock30mHfqKdata
+
+    provider = "em"
+    entity_ids = ["stock_sz_000338", "stock_sh_601318"]
+
+    Stock30mHfqKdata.record_data(entity_ids=entity_ids, provider=provider)
+    factor = BollFactor(
+        entity_ids=entity_ids, provider=provider, entity_provider=provider, start_timestamp="2021-01-01"
+    )
+    factor.draw(show=True)
