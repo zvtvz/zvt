@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
-@sched.scheduled_job("cron", hour=19, minute=30, day_of_week="mon-fri")
+@sched.scheduled_job("cron", hour=18, minute=0, day_of_week="mon-fri")
 def report_bull():
     report_targets(
         factor_cls=BullAndUpFactor,
