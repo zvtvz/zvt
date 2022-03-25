@@ -23,6 +23,12 @@ from .indexus_meta import __all__ as _indexus_meta_all
 
 __all__ += _indexus_meta_all
 
+# import all from submodule country_meta
+from .country_meta import *
+from .country_meta import __all__ as _country_meta_all
+
+__all__ += _country_meta_all
+
 # import all from submodule index_meta
 from .index_meta import *
 from .index_meta import __all__ as _index_meta_all

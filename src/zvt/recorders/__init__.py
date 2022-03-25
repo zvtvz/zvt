@@ -90,6 +90,12 @@ from .em import __all__ as _em_all
 
 __all__ += _em_all
 
+# import all from submodule wb
+from .wb import *
+from .wb import __all__ as _wb_all
+
+__all__ += _wb_all
+
 # import all from submodule consts
 from .consts import *
 from .consts import __all__ as _consts_all
