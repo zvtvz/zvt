@@ -159,6 +159,7 @@ def gen_exports(
                     )
                     for mod in modules:
                         lines.append(all_sub_all(mod))
+                    lines.append("\n")
 
         # write with __all__
         with open(file, mode="w") as fp:
