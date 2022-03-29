@@ -77,7 +77,7 @@ if __name__ == "__main__":
     # gen_exports("ml")
     # gen_exports("utils")
     gen_exports("recorders")
-    # gen_exports("domain")
+    gen_exports("domain")
     # gen_exports('informer')
     # gen_exports('api')
     # gen_exports('trader')

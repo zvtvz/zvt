@@ -18,6 +18,12 @@ from .meta import __all__ as _meta_all
 
 __all__ += _meta_all
 
+# import all from submodule macro
+from .macro import *
+from .macro import __all__ as _macro_all
+
+__all__ += _macro_all
+
 # import all from submodule news
 from .news import *
 from .news import __all__ as _news_all

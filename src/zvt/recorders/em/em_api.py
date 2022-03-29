@@ -12,9 +12,51 @@ from zvt.contract import ActorType, AdjustType, IntervalLevel, Exchange, Tradabl
 from zvt.contract.api import decode_entity_id
 from zvt.domain import BlockCategory
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import to_pd_timestamp, to_float, json_callback_param, now_timestamp
+from zvt.utils import to_pd_timestamp, to_float, json_callback_param, now_timestamp, to_time_str
 
 logger = logging.getLogger(__name__)
+
+
+# 获取中美国债收益率
+def get_treasury_yield(pn=1, ps=2000, fetch_all=True):
+    results = get_em_data(
+        request_type="RPTA_WEB_TREASURYYIELD",
+        fields="ALL",
+        sort_by="SOLAR_DATE",
+        sort="desc",
+        pn=pn,
+        ps=ps,
+        fetch_all=fetch_all,
+    )
+    yields = []
+    for item in results:
+        date = item["SOLAR_DATE"]
+        # 中国
+        yields.append(
+            {
+                "id": f"country_galaxy_CN_{to_time_str(date)}",
+                "entity_id": "country_galaxy_CN",
+                "timestamp": to_pd_timestamp(date),
+                "code": "CN",
+                "yield_2": item.get("EMM00588704"),
+                "yield_5": item.get("EMM00166462"),
+                "yield_10": item.get("EMM00166466"),
+                "yield_30": item.get("EMM00166469"),
+            }
+        )
+        yields.append(
+            {
+                "id": f"country_galaxy_US_{to_time_str(date)}",
+                "entity_id": "country_galaxy_US",
+                "timestamp": to_pd_timestamp(date),
+                "code": "US",
+                "yield_2": item.get("EMG00001306"),
+                "yield_5": item.get("EMG00001308"),
+                "yield_10": item.get("EMG00001310"),
+                "yield_30": item.get("EMG00001312"),
+            }
+        )
+    return yields
 
 
 # 机构持仓日期
@@ -86,7 +128,7 @@ def get_holders(code, end_date):
     )
 
 
-def get_url(type, sty, filters, order_by="", order="asc", pn=1, ps=2000):
+def get_url(type, sty, filters=None, order_by="", order="asc", pn=1, ps=2000):
     # 根据 url 映射如下
     # type=RPT_F10_MAIN_ORGHOLDDETAILS
     # sty=SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE
@@ -98,7 +140,11 @@ def get_url(type, sty, filters, order_by="", order="asc", pn=1, ps=2000):
     else:
         sr = -1
     v = random.randint(1000000000000000, 9000000000000000)
-    return f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source=SECURITIES&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
+
+    if filters:
+        return f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source=SECURITIES&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
+    else:
+        return f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
 
 
 def get_exchange(code):
@@ -140,25 +186,31 @@ def generate_filters(code=None, report_date=None, end_date=None, org_type=None):
     return result
 
 
-def get_em_data(request_type, fields, filters, sort_by="", sort="asc", pn=1, ps=2000):
-    url = get_url(type=request_type, sty=fields, filters=filters, order_by=sort_by, pn=pn, ps=ps)
+def get_em_data(request_type, fields, filters=None, sort_by="", sort="asc", pn=1, ps=2000, fetch_all=True):
+    url = get_url(type=request_type, sty=fields, filters=filters, order_by=sort_by, order=sort, pn=pn, ps=ps)
     resp = requests.get(url)
     if resp.status_code == 200:
         json_result = resp.json()
         if json_result and json_result["result"]:
             data: list = json_result["result"]["data"]
-            if json_result["result"]["pages"] > pn:
-                next_data = get_em_data(
-                    request_type=request_type,
-                    fields=fields,
-                    filters=filters,
-                    sort_by=sort_by,
-                    sort=sort,
-                    pn=pn + 1,
-                    ps=ps,
-                )
-                if next_data:
-                    data = data + next_data
+            if fetch_all:
+                if pn < json_result["result"]["pages"]:
+                    next_data = get_em_data(
+                        request_type=request_type,
+                        fields=fields,
+                        filters=filters,
+                        sort_by=sort_by,
+                        sort=sort,
+                        pn=pn + 1,
+                        ps=ps,
+                        fetch_all=fetch_all,
+                    )
+                    if next_data:
+                        data = data + next_data
+                        return data
+                    else:
+                        return data
+                else:
                     return data
             else:
                 return data
@@ -488,10 +540,13 @@ if __name__ == "__main__":
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
     # df = get_tradable_list(entity_type="indexus")
-    df = get_kdata(entity_id="index_us_SPX", level="1d")
+    # df = get_kdata(entity_id="index_us_SPX", level="1d")
+    # print(df)
+    df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
     print(df)
 # the __all__ is generated
 __all__ = [
+    "get_treasury_yield",
     "get_ii_holder_report_dates",
     "get_holder_report_dates",
     "get_free_holder_report_dates",
