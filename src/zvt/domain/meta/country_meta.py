@@ -9,7 +9,6 @@ from zvt.contract.register import register_schema, register_entity
 CountryMetaBase = declarative_base()
 
 
-#: 指数
 @register_entity(entity_type="country")
 class Country(CountryMetaBase, TradableEntity):
     __tablename__ = "country"

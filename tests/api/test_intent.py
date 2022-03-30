@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.api.intent import compare, distribute_entity, composite_entity, composite_all
+from zvt.api.intent import compare, distribute, composite, composite_all
 from zvt.contract.drawer import ChartType
 from zvt.domain import FinanceFactor, CashFlowStatement, BalanceSheet, Stock1dKdata
 from zvt.utils import to_pd_timestamp
@@ -33,11 +33,11 @@ def test_compare_bar():
 
 
 def test_distribute():
-    distribute_entity(entity_ids=None, data_schema=FinanceFactor, columns=["roe"])
+    distribute(entity_ids=None, data_schema=FinanceFactor, columns=["roe"])
 
 
 def test_composite():
-    composite_entity(
+    composite(
         entity_id="stock_sz_000338",
         data_schema=CashFlowStatement,
         columns=[
@@ -50,7 +50,7 @@ def test_composite():
             CashFlowStatement.report_date == to_pd_timestamp("2016-12-31"),
         ],
     )
-    composite_entity(
+    composite(
         entity_id="stock_sz_000338",
         data_schema=BalanceSheet,
         columns=[

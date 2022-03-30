@@ -9,57 +9,116 @@ from zvt.contract.drawer import Drawer, ChartType
 from zvt.utils import to_pd_timestamp
 
 
-def compare(entity_ids=None, schema_map_columns: dict = None, chart_type: ChartType = ChartType.line):
-    entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
+def compare(
+    entity_ids=None,
+    codes=None,
+    schema=None,
+    columns=None,
+    schema_map_columns: dict = None,
+    chart_type: ChartType = ChartType.line,
+):
+    """
+    compare indicators(columns) of entities
+
+    :param entity_ids:
+    :param codes:
+    :param schema:
+    :param columns:
+    :param schema_map_columns: key represents schema, value represents columns
+    :param chart_type: "line", "area", "scatter", default "line"
+    """
+
+    # compare
     dfs = []
-    for entity_type in entity_type_map_ids:
-        if schema_map_columns:
-            for schema in schema_map_columns:
-                columns = ["entity_id", "timestamp"] + schema_map_columns.get(schema)
-                df = schema.query_data(entity_ids=entity_type_map_ids.get(entity_type), columns=columns)
-                dfs.append(df)
-        else:
+    # default compare kdata
+    if schema_map_columns is None and schema is None:
+        entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
+        for entity_type in entity_type_map_ids:
             schema = get_kdata_schema(entity_type=entity_type)
             df = schema.query_data(entity_ids=entity_type_map_ids.get(entity_type))
             dfs.append(df)
-    all_df = pd.concat(dfs)
-
-    if schema_map_columns:
-        drawer = Drawer(main_df=all_df)
-        drawer.draw(main_chart=chart_type, show=True)
-    else:
+        all_df = pd.concat(dfs)
         drawer = Drawer(main_df=all_df, sub_df_list=[all_df[["entity_id", "timestamp", "turnover"]].copy()])
         drawer.draw_kline(show=True)
+    else:
+        if schema_map_columns:
+            for schema in schema_map_columns:
+                columns = ["entity_id", "timestamp"] + schema_map_columns.get(schema)
+                df = schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns)
+                dfs.append(df)
+        elif schema:
+            columns = ["entity_id", "timestamp"] + columns
+            df = schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns)
+            dfs.append(df)
+
+        all_df = pd.concat(dfs)
+        drawer = Drawer(main_df=all_df)
+        drawer.draw(main_chart=chart_type, show=True)
 
 
-def change(data, chart_type: ChartType = ChartType.line):
-    drawer = Drawer(main_df=data)
+def compare_df(df: pd.DataFrame, chart_type: ChartType = ChartType.line):
+    """
+    compare indicators(columns) of entities in df
+
+    :param df: normal df
+    :param chart_type:
+    """
+    drawer = Drawer(main_df=df)
     drawer.draw(main_chart=chart_type, show=True)
 
 
-def distribute_entity(entity_ids, data_schema, columns, histnorm="percent", nbinsx=20, filters=None):
+def distribute(data_schema, columns, entity_ids=None, codes=None, histnorm="percent", nbinsx=20, filters=None):
+    """
+    distribute indicators(columns) of entities
+
+    :param data_schema:
+    :param columns:
+    :param entity_ids:
+    :param codes:
+    :param histnorm: "percent", "probability", default "percent"
+    :param nbinsx:
+    :param filters:
+    """
     columns = ["entity_id", "timestamp"] + columns
-    df = data_schema.query_data(entity_ids=entity_ids, columns=columns, filters=filters)
-    if not entity_ids:
+    df = data_schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns, filters=filters)
+    if not entity_ids or codes:
         df["entity_id"] = "entity_x_distribute"
+    distribute_df(df=df, histnorm=histnorm, nbinsx=nbinsx)
+
+
+def distribute_df(df, histnorm="percent", nbinsx=20):
+    """
+    distribute indicators(columns) of entities in df
+
+    :param df: normal df
+    :param histnorm: "percent", "probability", default "percent"
+    :param nbinsx:
+    """
     drawer = Drawer(main_df=df)
     drawer.draw_histogram(show=True, histnorm=histnorm, nbinsx=nbinsx)
 
 
-def distribute(data, histnorm="percent", nbinsx=20):
-    drawer = Drawer(main_df=data)
-    drawer.draw_histogram(show=True, histnorm=histnorm, nbinsx=nbinsx)
+def composite(entity_id, data_schema, columns, filters=None):
+    """
+    composite indicators(columns) of entity
 
-
-def composite_entity(entity_id, data_schema, columns, filters=None):
+    :param entity_id:
+    :param data_schema:
+    :param columns:
+    :param filters:
+    """
     columns = ["entity_id", "timestamp"] + columns
     df = data_schema.query_data(entity_id=entity_id, columns=columns, filters=filters)
+    composite_df(df=df)
+
+
+def composite_df(df):
+    """
+    composite indicators(columns) of entity in df
+
+    :param df:
+    """
     drawer = Drawer(main_df=df)
-    drawer.draw_pie(show=True)
-
-
-def composite(data):
-    drawer = Drawer(main_df=data)
     drawer.draw_pie(show=True)
 
 
@@ -131,7 +190,7 @@ if __name__ == "__main__":
         ],
         index="timestamp",
     )
-    composite(data=df)
+    composite_df(df=df)
 
 # the __all__ is generated
-__all__ = ["compare", "distribute_entity", "composite_entity", "composite_all"]
+__all__ = ["compare", "distribute", "composite", "composite_all"]
