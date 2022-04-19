@@ -42,7 +42,7 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 >>> Stock.record_data(provider="em")
 >>> entity_ids = ["stock_sz_000001", "stock_sz_000338", "stock_sh_601318"]
 >>> Stock1dHfqKdata.record_data(provider="em", entity_ids=entity_ids, sleeping_time=1)
->>> machine = MaStockMLMachine(entity_ids=["stock_sz_000001"])
+>>> machine = MaStockMLMachine(entity_ids=["stock_sz_000001"], data_provider="em")
 >>> machine.train()
 >>> machine.predict()
 >>> machine.draw_result(entity_id="stock_sz_000001")
