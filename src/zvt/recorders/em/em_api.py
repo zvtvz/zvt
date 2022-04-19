@@ -255,6 +255,9 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
     sec_id = to_em_sec_id(entity_id)
     fq_flag = to_em_fq_flag(adjust_type)
     level_flag = to_em_level_flag(level)
+    # f131 结算价
+    # f133 持仓
+    # 目前未获取
     url = f"https://push2his.eastmoney.com/api/qt/stock/kline/get?secid={sec_id}&klt={level_flag}&fqt={fq_flag}&lmt={limit}&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1"
 
     resp = requests.get(url, headers=DEFAULT_HEADER)
@@ -272,6 +275,7 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
             # "2000-01-28,1005.26,1012.56,1173.12,982.13,3023326,3075552000.00"
             # "2021-08-27,19.39,20.30,20.30,19.25,1688497,3370240912.00,5.48,6.01,1.15,3.98,0,0,0"
             # time,open,close,high,low,volume,turnover
+            # "2022-04-13,10708,10664,10790,10638,402712,43124771328,1.43,0.57,60,0.00,4667112399583576064,4690067230254170112,1169270784"
             fields = result.split(",")
             the_timestamp = to_pd_timestamp(fields[0])
 
@@ -334,6 +338,39 @@ def get_basic_info(entity_id):
     return resp.json()["Result"][result_field]
 
 
+def get_future_list():
+    # 主连
+    url = f"https://futsseapi.eastmoney.com/list/filter/2?fid=sp_all&mktid=0&typeid=0&pageSize=1000&pageIndex=0&callbackName=jQuery34106875017735118845_1649736551642&sort=asc&orderBy=idx&_={now_timestamp()}"
+    resp = requests.get(url, headers=DEFAULT_HEADER)
+    resp.raise_for_status()
+    result = json_callback_param(resp.text)
+    # [['DCE', 'im'], ['SHFE', 'rbm'], ['SHFE', 'hcm'], ['SHFE', 'ssm'], ['CZCE', 'SFM'], ['CZCE', 'SMM'], ['SHFE', 'wrm'], ['SHFE', 'cum'], ['SHFE', 'alm'], ['SHFE', 'znm'], ['SHFE', 'pbm'], ['SHFE', 'nim'], ['SHFE', 'snm'], ['INE', 'bcm'], ['SHFE', 'aum'], ['SHFE', 'agm'], ['DCE', 'am'], ['DCE', 'bm'], ['DCE', 'ym'], ['DCE', 'mm'], ['CZCE', 'RSM'], ['CZCE', 'OIM'], ['CZCE', 'RMM'], ['DCE', 'pm'], ['DCE', 'cm'], ['DCE', 'csm'], ['DCE', 'jdm'], ['CZCE', 'CFM'], ['CZCE', 'CYM'], ['CZCE', 'SRM'], ['CZCE', 'APM'], ['CZCE', 'CJM'], ['CZCE', 'PKM'], ['CZCE', 'PMM'], ['CZCE', 'WHM'], ['DCE', 'rrm'], ['CZCE', 'JRM'], ['CZCE', 'RIM'], ['CZCE', 'LRM'], ['DCE', 'lhm'], ['INE', 'scm'], ['SHFE', 'fum'], ['DCE', 'pgm'], ['INE', 'lum'], ['SHFE', 'bum'], ['CZCE', 'MAM'], ['DCE', 'egm'], ['DCE', 'lm'], ['CZCE', 'TAM'], ['DCE', 'vm'], ['DCE', 'ppm'], ['DCE', 'ebm'], ['CZCE', 'SAM'], ['CZCE', 'FGM'], ['CZCE', 'URM'], ['SHFE', 'rum'], ['INE', 'nrm'], ['SHFE', 'spm'], ['DCE', 'fbm'], ['DCE', 'bbm'], ['CZCE', 'PFM'], ['DCE', 'jmm'], ['DCE', 'jm'], ['CZCE', 'ZCM'], ['8', '060120'], ['8', '040120'], ['8', '070120'], ['8', '110120'], ['8', '050120'], ['8', '130120']]
+    futures = []
+    for item in result["list"]:
+        entity = {}
+        entity["exchange"], entity["code"] = item["uid"].split("|")
+
+        # {'8', 'CZCE', 'DCE', 'INE', 'SHFE'}
+        if entity["exchange"] == "8":
+            entity["exchange"] = "cffex"
+            entity["code"] = to_zvt_code(entity["code"])
+        else:
+            entity["exchange"] = Exchange(entity["exchange"].lower()).value
+            if entity["code"][-1].lower() == "m":
+                entity["code"] = entity["code"][:-1]
+            else:
+                assert False
+            entity["code"] = entity["code"].upper()
+
+        entity["entity_type"] = "future"
+        entity["name"] = item["name"]
+        entity["id"] = f"future_{entity['exchange']}_{entity['code']}"
+        entity["entity_id"] = entity["id"]
+        futures.append(entity)
+    df = pd.DataFrame.from_records(data=futures)
+    return df
+
+
 def get_tradable_list(
     entity_type: Union[TradableType, str] = "stock",
     exchange: Union[Exchange, str] = None,
@@ -342,6 +379,9 @@ def get_tradable_list(
     block_category=BlockCategory.concept,
 ):
     entity_type = TradableType(entity_type)
+    if entity_type == TradableType.future:
+        return get_future_list()
+
     exchanges = get_entity_exchanges(entity_type=entity_type)
 
     if exchange is not None:
@@ -467,15 +507,25 @@ def to_em_fc(entity_id):
 
 
 exchange_map_em_flag = {
-    # 深证交易所
+    #: 深证交易所
     Exchange.sz: 0,
-    # 上证交易所
+    #: 上证交易所
     Exchange.sh: 1,
-    # 纳斯达克
+    #: 纳斯达克
     Exchange.nasdaq: 105,
-    # 纽交所
+    #: 纽交所
     Exchange.nyse: 106,
-    # 港交所
+    #: 中国金融期货交易所
+    Exchange.cffex: 8,
+    #: 上海期货交易所
+    Exchange.shfe: 113,
+    #: 大连商品交易所
+    Exchange.dce: 114,
+    #: 郑州商品交易所
+    Exchange.czce: 115,
+    #: 上海国际能源交易中心
+    Exchange.ine: 142,
+    #: 港交所
     Exchange.hk: 116,
     # 中国行业/概念板块
     Exchange.cn: 90,
@@ -521,7 +571,32 @@ def to_em_level_flag(level: IntervalLevel):
 
 def to_em_sec_id(entity_id):
     entity_type, exchange, code = decode_entity_id(entity_id)
+    # 主力合约
+    if entity_type == "future" and code[-1].isalpha():
+        code = code + "m"
     return f"{to_em_entity_flag(exchange)}.{code}"
+
+
+def to_zvt_code(code):
+    #  ('中证当月连续', '8|060120'),
+    #  ('沪深当月连续', '8|040120'),
+    #  ('上证当月连续', '8|070120'),
+    #  ('十债当季连续', '8|110120'),
+    #  ('五债当季连续', '8|050120'),
+    #  ('二债当季连续', '8|130120')]
+    if code == "060120":
+        return "IC"
+    elif code == "040120":
+        return "IF"
+    elif code == "070120":
+        return "IH"
+    elif code == "110120":
+        return "T"
+    elif code == "050120":
+        return "TF"
+    elif code == "130120":
+        return "TS"
+    return code
 
 
 if __name__ == "__main__":
@@ -542,7 +617,11 @@ if __name__ == "__main__":
     # df = get_tradable_list(entity_type="indexus")
     # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # print(df)
-    df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
+    # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
+    # print(df)
+    # df = get_future_list()
+    # print(df)
+    df = get_kdata(entity_id="future_dce_I", level="1d")
     print(df)
 # the __all__ is generated
 __all__ = [
@@ -561,6 +640,7 @@ __all__ = [
     "get_em_data",
     "get_kdata",
     "get_basic_info",
+    "get_future_list",
     "get_tradable_list",
     "get_news",
     "to_em_fc",
@@ -568,4 +648,5 @@ __all__ = [
     "to_em_fq_flag",
     "to_em_level_flag",
     "to_em_sec_id",
+    "to_zvt_code",
 ]

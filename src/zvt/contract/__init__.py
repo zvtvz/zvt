@@ -216,6 +216,8 @@ class Exchange(Enum):
     czce = "czce"
     #: 中国金融期货交易所
     cffex = "cffex"
+    #: 上海国际能源交易中心
+    ine = "ine"
 
 
 tradable_type_map_exchanges = {
@@ -224,7 +226,7 @@ tradable_type_map_exchanges = {
     TradableType.stockhk: [Exchange.hk],
     TradableType.stockus: [Exchange.nasdaq, Exchange.nyse],
     TradableType.indexus: [Exchange.us],
-    TradableType.future: [Exchange.shfe, Exchange.dce, Exchange.czce, Exchange.cffex],
+    TradableType.future: [Exchange.shfe, Exchange.dce, Exchange.czce, Exchange.cffex, Exchange.ine],
     TradableType.coin: [Exchange.binance, Exchange.huobipro],
 }
 

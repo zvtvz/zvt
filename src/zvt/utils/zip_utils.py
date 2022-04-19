@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import pathlib
 import zipfile
 
 
@@ -32,7 +33,10 @@ def zip_dir(src_dir, dst_dir=None, zip_file_name=None):
 def unzip(zip_file, dst_dir):
     the_zip_file = zipfile.ZipFile(zip_file)
     print("start unzip {} to {}".format(zip_file, dst_dir))
-    the_zip_file.extractall(dst_dir)
+
+    for name in the_zip_file.namelist():
+        extracted_path = pathlib.Path(the_zip_file.extract(name, path=dst_dir))
+        extracted_path.rename(f"{extracted_path}".encode("cp437").decode("gbk"))
     print("finish unzip {} to {}".format(zip_file, dst_dir))
     the_zip_file.close()
 

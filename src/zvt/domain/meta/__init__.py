@@ -35,6 +35,12 @@ from .index_meta import __all__ as _index_meta_all
 
 __all__ += _index_meta_all
 
+# import all from submodule future_meta
+from .future_meta import *
+from .future_meta import __all__ as _future_meta_all
+
+__all__ += _future_meta_all
+
 # import all from submodule etf_meta
 from .etf_meta import *
 from .etf_meta import __all__ as _etf_meta_all

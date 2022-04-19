@@ -75,6 +75,18 @@ class StockhkKdataCommon(KdataCommon):
     pass
 
 
+# future common kdata
+class FutureKdataCommon(KdataCommon):
+    #: 持仓量
+    interest = Column(Float)
+    #: 结算价
+    settlement = Column(Float)
+    #: 涨跌幅(按收盘价)
+    # change_pct = Column(Float)
+    #: 涨跌幅(按结算价)
+    change_pct1 = Column(Float)
+
+
 # the __all__ is generated
 __all__ = [
     "KdataCommon",
@@ -86,6 +98,7 @@ __all__ = [
     "StockKdataCommon",
     "StockusKdataCommon",
     "StockhkKdataCommon",
+    "FutureKdataCommon",
 ]
 
 # __init__.py structure:
@@ -133,6 +146,12 @@ from .stock import *
 from .stock import __all__ as _stock_all
 
 __all__ += _stock_all
+
+# import all from submodule future
+from .future import *
+from .future import __all__ as _future_all
+
+__all__ += _future_all
 
 # import all from submodule block
 from .block import *

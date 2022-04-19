@@ -63,8 +63,87 @@ class CompanyType(enum.Enum):
     quanshang = "quanshang"
 
 
+CHINA_FUTURE_CODE_MAP_NAME = {
+    "I": "铁矿石",
+    "RB": "螺纹钢",
+    "HC": "热轧卷板",
+    "SS": "不锈钢",
+    "SF": "硅铁",
+    "SM": "锰硅",
+    "WR": "线材",
+    "CU": "沪铜",
+    "AL": "沪铝",
+    "ZN": "沪锌",
+    "PB": "沪铅",
+    "NI": "沪镍",
+    "SN": "沪锡",
+    "BC": "国际铜",
+    "AU": "沪金",
+    "AG": "沪银",
+    "A": "豆一",
+    "B": "豆二",
+    "Y": "豆油",
+    "M": "豆粕",
+    "RS": "菜籽",
+    "OI": "菜油",
+    "RM": "菜粕",
+    "P": "棕榈油",
+    "C": "玉米",
+    "CS": "玉米淀粉",
+    "JD": "鸡蛋",
+    "CF": "一号棉花",
+    "CY": "棉纱",
+    "SR": "白糖",
+    "AP": "苹果",
+    "CJ": "红枣",
+    "PK": "花生",
+    "PM": "普麦",
+    "WH": "强麦",
+    "RR": "粳米",
+    "JR": "粳稻",
+    "RI": "早籼稻",
+    "LR": "晚籼稻",
+    "LH": "生猪",
+    "SC": "原油",
+    "FU": "燃油",
+    "PG": "LPG",
+    "LU": "低硫燃油",
+    "BU": "石油沥青",
+    "MA": "甲醇",
+    "EG": "乙二醇",
+    "L": "聚乙烯",
+    "TA": "PTA",
+    "V": "聚氯乙烯",
+    "PP": "聚丙烯",
+    "EB": "苯乙烯",
+    "SA": "纯碱",
+    "FG": "玻璃",
+    "UR": "尿素",
+    "RU": "橡胶",
+    "NR": "20号胶",
+    "SP": "纸浆",
+    "FB": "纤维板",
+    "BB": "胶合板",
+    "PF": "短纤",
+    "JM": "焦煤",
+    "J": "焦炭",
+    "ZC": "动力煤",
+    "IC": "中证500指数",
+    "IF": "沪深300指数",
+    "IH": "上证50指数",
+    "T": "10年期国债期货",
+    "TF": "5年期国债期货",
+    "TS": "2年期国债期货",
+}
+
+
+def get_future_name(code):
+    simple_code = code[:-4]
+    return f"{CHINA_FUTURE_CODE_MAP_NAME[simple_code]}{code[-4:]}"
+
+
 # the __all__ is generated
-__all__ = ["BlockCategory", "IndexCategory", "ReportPeriod", "CompanyType"]
+__all__ = ["BlockCategory", "IndexCategory", "ReportPeriod", "CompanyType", "get_future_name"]
 
 # __init__.py structure:
 # common code of the package

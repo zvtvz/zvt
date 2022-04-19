@@ -18,6 +18,14 @@ def gen_kdata_schemas():
         adjust_types=[None, AdjustType.hfq],
         entity_in_submodule=True,
     )
+    # 中国期货
+    gen_kdata_schema(
+        pkg="zvt",
+        providers=["em"],
+        entity_type="future",
+        levels=[IntervalLevel.LEVEL_1DAY],
+        entity_in_submodule=True,
+    )
 
     # 美股
     gen_kdata_schema(

@@ -15,6 +15,8 @@ from zvt.domain import (
     BlockKdataCommon,
     Indexus,
     IndexusKdataCommon,
+    Future,
+    FutureKdataCommon,
 )
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
@@ -144,8 +146,15 @@ class EMBlockKdataRecorder(BaseEMStockKdataRecorder):
     data_schema = BlockKdataCommon
 
 
+class EMFutureKdataRecorder(BaseEMStockKdataRecorder):
+    entity_provider = "em"
+    entity_schema = Future
+
+    data_schema = FutureKdataCommon
+
+
 if __name__ == "__main__":
-    recorder = EMIndexusKdataRecorder(level=IntervalLevel.LEVEL_1DAY, codes=["DJIA", "SPX", "NDX"])
+    recorder = EMFutureKdataRecorder(level=IntervalLevel.LEVEL_1DAY)
     recorder.run()
 # the __all__ is generated
 __all__ = [
@@ -156,4 +165,5 @@ __all__ = [
     "EMIndexKdataRecorder",
     "EMIndexusKdataRecorder",
     "EMBlockKdataRecorder",
+    "EMFutureKdataRecorder",
 ]
