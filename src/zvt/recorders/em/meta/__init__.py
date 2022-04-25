@@ -12,6 +12,12 @@ from .em_stockus_meta_recorder import __all__ as _em_stockus_meta_recorder_all
 
 __all__ += _em_stockus_meta_recorder_all
 
+# import all from submodule em_currency_meta_recorder
+from .em_currency_meta_recorder import *
+from .em_currency_meta_recorder import __all__ as _em_currency_meta_recorder_all
+
+__all__ += _em_currency_meta_recorder_all
+
 # import all from submodule em_stockhk_meta_recorder
 from .em_stockhk_meta_recorder import *
 from .em_stockhk_meta_recorder import __all__ as _em_stockhk_meta_recorder_all

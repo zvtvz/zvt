@@ -59,7 +59,9 @@ class Rect(Bean):
 
 
 class Draw(object):
-    def draw_kline(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_kline(
+        self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs
+    ):
         return self.draw(
             main_chart=ChartType.kline,
             width=width,
@@ -67,10 +69,13 @@ class Draw(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
-    def draw_line(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_line(
+        self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs
+    ):
         return self.draw(
             main_chart=ChartType.line,
             width=width,
@@ -78,10 +83,13 @@ class Draw(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
-    def draw_area(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_area(
+        self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs
+    ):
         return self.draw(
             main_chart=ChartType.area,
             width=width,
@@ -89,10 +97,13 @@ class Draw(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
-    def draw_scatter(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_scatter(
+        self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs
+    ):
         return self.draw(
             main_chart=ChartType.scatter,
             width=width,
@@ -100,10 +111,13 @@ class Draw(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
-    def draw_histogram(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_histogram(
+        self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs
+    ):
         return self.draw(
             ChartType.histogram,
             width=width,
@@ -111,17 +125,32 @@ class Draw(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
-    def draw_bar(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_bar(self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs):
         return self.draw(
-            ChartType.bar, width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show, **kwargs
+            ChartType.bar,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            scale_value=scale_value,
+            **kwargs,
         )
 
-    def draw_pie(self, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs):
+    def draw_pie(self, width=None, height=None, title=None, keep_ui_state=True, show=False, scale_value=None, **kwargs):
         return self.draw(
-            ChartType.pie, width=width, height=height, title=title, keep_ui_state=keep_ui_state, show=show, **kwargs
+            ChartType.pie,
+            width=width,
+            height=height,
+            title=title,
+            keep_ui_state=keep_ui_state,
+            show=show,
+            scale_value=scale_value,
+            **kwargs,
         )
 
     def draw(
@@ -133,6 +162,7 @@ class Draw(object):
         title=None,
         keep_ui_state=True,
         show=False,
+        scale_value=None,
         **kwargs,
     ):
 
@@ -214,7 +244,15 @@ class Drawable(object):
         return drawer
 
     def draw(
-        self, main_chart=ChartType.kline, width=None, height=None, title=None, keep_ui_state=True, show=False, **kwargs
+        self,
+        main_chart=ChartType.kline,
+        width=None,
+        height=None,
+        title=None,
+        keep_ui_state=True,
+        show=False,
+        scale_value=None,
+        **kwargs,
     ):
         return self.drawer().draw(
             main_chart=main_chart,
@@ -223,6 +261,7 @@ class Drawable(object):
             title=title,
             keep_ui_state=keep_ui_state,
             show=show,
+            scale_value=scale_value,
             **kwargs,
         )
 
@@ -296,6 +335,7 @@ class StackedDrawer(Draw):
         title=None,
         keep_ui_state=True,
         show=False,
+        scale_value=None,
         **kwargs,
     ):
         stacked_fig = go.Figure()
@@ -309,7 +349,9 @@ class StackedDrawer(Draw):
                 start = 2
                 break
         for index, drawer in enumerate(self.drawers, start=start):
-            traces, sub_traces = drawer.make_traces(main_chart=main_chart, sub_chart=sub_chart, **kwargs)
+            traces, sub_traces = drawer.make_traces(
+                main_chart=main_chart, sub_chart=sub_chart, scale_value=scale_value, **kwargs
+            )
 
             # fix sub traces as the bottom
             if sub_traces:
@@ -374,6 +416,7 @@ class Drawer(Draw):
         sub_col_chart: Optional[dict] = None,
         rects: List[Rect] = None,
         annotation_df: pd.DataFrame = None,
+        scale_value: int = None,
     ) -> None:
         """
 
@@ -418,6 +461,8 @@ class Drawer(Draw):
         #: list of rect
         self.rects = rects
 
+        self.scale_value = scale_value
+
     def add_factor_df(self, df: pd.DataFrame):
         self.add_factor_data(NormalData(df))
 
@@ -437,12 +482,24 @@ class Drawer(Draw):
     def has_sub_plot(self):
         return self.sub_data_list is not None and not self.sub_data_list[0].empty()
 
-    def make_traces(self, main_chart=ChartType.kline, sub_chart="bar", yaxis="y", **kwargs):
+    def make_traces(self, main_chart=ChartType.kline, sub_chart="bar", yaxis="y", scale_value=None, **kwargs):
         traces = []
         sub_traces = []
 
         for entity_id, df in self.main_data.entity_map_df.items():
             df = df.select_dtypes(np.number)
+            df = df.copy()
+            if scale_value:
+                for col in df.columns:
+                    first = None
+                    for i in range(0, len(df)):
+                        first = df[col][i]
+                        if first != 0:
+                            break
+                    if first == 0:
+                        continue
+                    scale = scale_value / first
+                    df[col] = df[col] * scale
             code = entity_id
             try:
                 _, _, code = decode_entity_id(entity_id)
@@ -574,10 +631,13 @@ class Drawer(Draw):
         title=None,
         keep_ui_state=True,
         show=False,
+        scale_value=None,
         **kwargs,
     ):
         yaxis = "y"
-        traces, sub_traces = self.make_traces(main_chart=main_chart, sub_chart=sub_chart, yaxis=yaxis, **kwargs)
+        traces, sub_traces = self.make_traces(
+            main_chart=main_chart, sub_chart=sub_chart, yaxis=yaxis, scale_value=scale_value, **kwargs
+        )
 
         if sub_traces:
             fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], vertical_spacing=0.08, shared_xaxes=True)

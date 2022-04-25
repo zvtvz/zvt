@@ -219,6 +219,12 @@ def set_one_and_only_one(**kwargs):
     return True
 
 
+if __name__ == "__main__":
+    url = url_unquote(
+        "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields=f1,f2,f3,f4,f12,f13,f14&pn=1&pz=30&fid=f3&po=1&fs=i:119.USDNZD,i:119.THBUSD,i:119.AUDUSD,i:119.ZARUSD,i:119.EURUSD,i:119.CZKUSD,i:119.DKKUSD,i:119.SEKUSD,i:119.MXNUSD,i:119.NOKUSD,i:119.PLNUSD,i:119.SGDUSD,i:119.GBPUSD,i:119.USDHKD,i:119.INRUSD,i:119.HUFUSD,i:119.TRYUSD,i:119.SARUSD,i:119.HKDUSD,i:119.USDJPY,i:119.USDCHF,i:119.USDGBP,i:119.USDSGD,i:119.USDCAD,i:119.USDTHB,i:119.USDNOK,i:119.USDDKK,i:119.USDSEK,i:119.USDEUR,i:119.USDAUD&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallback&&callback=jQuery34105658946316352569_1650874211986&_=1650874211988"
+    )
+    print(url)
+
 # the __all__ is generated
 __all__ = [
     "none_values",

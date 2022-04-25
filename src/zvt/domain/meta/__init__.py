@@ -47,6 +47,12 @@ from .etf_meta import __all__ as _etf_meta_all
 
 __all__ += _etf_meta_all
 
+# import all from submodule currency_meta
+from .currency_meta import *
+from .currency_meta import __all__ as _currency_meta_all
+
+__all__ += _currency_meta_all
+
 # import all from submodule stock_meta
 from .stock_meta import *
 from .stock_meta import __all__ as _stock_meta_all

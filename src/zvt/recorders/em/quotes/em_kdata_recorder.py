@@ -17,6 +17,8 @@ from zvt.domain import (
     IndexusKdataCommon,
     Future,
     FutureKdataCommon,
+    Currency,
+    CurrencyKdataCommon,
 )
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
@@ -153,8 +155,17 @@ class EMFutureKdataRecorder(BaseEMStockKdataRecorder):
     data_schema = FutureKdataCommon
 
 
+class EMCurrencyKdataRecorder(BaseEMStockKdataRecorder):
+    entity_provider = "em"
+    entity_schema = Currency
+
+    data_schema = CurrencyKdataCommon
+
+
 if __name__ == "__main__":
-    recorder = EMFutureKdataRecorder(level=IntervalLevel.LEVEL_1DAY)
+    df = Currency.query_data(filters=[Currency.code.like("USD%")])
+    entity_ids = df["entity_id"].tolist()
+    recorder = EMCurrencyKdataRecorder(level=IntervalLevel.LEVEL_1DAY, entity_ids=entity_ids, sleeping_time=0)
     recorder.run()
 # the __all__ is generated
 __all__ = [

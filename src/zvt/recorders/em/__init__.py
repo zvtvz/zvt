@@ -36,6 +36,12 @@ from .em_api import __all__ as _em_api_all
 
 __all__ += _em_api_all
 
+# import all from submodule trading
+from .trading import *
+from .trading import __all__ as _trading_all
+
+__all__ += _trading_all
+
 # import all from submodule actor
 from .actor import *
 from .actor import __all__ as _actor_all

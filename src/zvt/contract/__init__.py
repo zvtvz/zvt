@@ -182,6 +182,9 @@ class TradableType(Enum):
     #: 基金(中国)
     #: China fund
     fund = "fund"
+    #: 货币汇率
+    #: currency exchange rate
+    currency = "currency"
 
 
 class Exchange(Enum):
@@ -219,6 +222,10 @@ class Exchange(Enum):
     #: 上海国际能源交易中心
     ine = "ine"
 
+    #: 外汇交易所(虚拟)
+    #: currency exchange(virtual)
+    forex = "forex"
+
 
 tradable_type_map_exchanges = {
     TradableType.block: [Exchange.cn],
@@ -228,6 +235,7 @@ tradable_type_map_exchanges = {
     TradableType.indexus: [Exchange.us],
     TradableType.future: [Exchange.shfe, Exchange.dce, Exchange.czce, Exchange.cffex, Exchange.ine],
     TradableType.coin: [Exchange.binance, Exchange.huobipro],
+    TradableType.currency: [Exchange.forex],
 }
 
 

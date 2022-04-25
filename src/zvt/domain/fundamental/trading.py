@@ -91,8 +91,8 @@ class MarginTrading(TradingBase, Mixin):
 class DragonAndTiger(TradingBase, Mixin):
     __tablename__ = "dragon_and_tiger"
 
-    provider = Column(String(length=32))
     code = Column(String(length=32))
+    name = Column(String(length=32))
 
     #: 异动原因
     reason = Column(String(length=128))
@@ -101,62 +101,64 @@ class DragonAndTiger(TradingBase, Mixin):
     #: 涨幅
     change_pct = Column(Float)
     #: 净买入
-    net_inflow = Column(Float)
+    net_in = Column(Float)
 
     #: 买入营业部
-    net_in_dep1 = Column(String(length=128))
-    net_in_dep1_money_in = Column(Float)
-    net_in_dep1_money_out = Column(Float)
-    net_in_dep1_rate = Column(Float)
+    dep1 = Column(String(length=128))
+    dep1_in = Column(Float)
+    dep1_out = Column(Float)
+    dep1_rate = Column(Float)
 
-    net_in_dep2 = Column(String(length=128))
-    net_in_dep2_money_in = Column(Float)
-    net_in_dep2_money_out = Column(Float)
-    net_in_dep2_rate = Column(Float)
+    dep2 = Column(String(length=128))
+    dep2_in = Column(Float)
+    dep2_out = Column(Float)
+    dep2_rate = Column(Float)
 
-    net_in_dep3 = Column(String(length=128))
-    net_in_dep3_money_in = Column(Float)
-    net_in_dep3_money_out = Column(Float)
-    net_in_dep3_rate = Column(Float)
+    dep3 = Column(String(length=128))
+    dep3_in = Column(Float)
+    dep3_out = Column(Float)
+    dep3_rate = Column(Float)
 
-    net_in_dep4 = Column(String(length=128))
-    net_in_dep4_money_in = Column(Float)
-    net_in_dep4_money_out = Column(Float)
-    net_in_dep4_rate = Column(Float)
+    dep4 = Column(String(length=128))
+    dep4_in = Column(Float)
+    dep4_out = Column(Float)
+    dep4_rate = Column(Float)
 
-    net_in_dep5 = Column(String(length=128))
-    net_in_dep5_money_in = Column(Float)
-    net_in_dep5_money_out = Column(Float)
-    net_in_dep5_rate = Column(Float)
+    dep5 = Column(String(length=128))
+    dep5_in = Column(Float)
+    dep5_out = Column(Float)
+    dep5_rate = Column(Float)
 
     #: 卖出营业部
-    net_out_dep1 = Column(String(length=128))
-    net_out_dep1_money_in = Column(Float)
-    net_out_dep1_money_out = Column(Float)
-    net_out_dep1_rate = Column(Float)
+    dep_1 = Column(String(length=128))
+    dep_1_in = Column(Float)
+    dep_1_out = Column(Float)
+    dep_1_rate = Column(Float)
 
-    net_out_dep2 = Column(String(length=128))
-    net_out_dep2_money_in = Column(Float)
-    net_out_dep2_money_out = Column(Float)
-    net_out_dep2_rate = Column(Float)
+    dep_2 = Column(String(length=128))
+    dep_2_in = Column(Float)
+    dep_2_out = Column(Float)
+    dep_2_rate = Column(Float)
 
-    net_out_dep3 = Column(String(length=128))
-    net_out_dep3_money_in = Column(Float)
-    net_out_dep3_money_out = Column(Float)
-    net_out_dep3_rate = Column(Float)
+    dep_3 = Column(String(length=128))
+    dep_3_in = Column(Float)
+    dep_3_out = Column(Float)
+    dep_3_rate = Column(Float)
 
-    net_out_dep4 = Column(String(length=128))
-    net_out_dep4_money_in = Column(Float)
-    net_out_dep4_money_out = Column(Float)
-    net_out_dep4_rate = Column(Float)
+    dep_4 = Column(String(length=128))
+    dep_4_in = Column(Float)
+    dep_4_out = Column(Float)
+    dep_4_rate = Column(Float)
 
-    net_out_dep5 = Column(String(length=128))
-    net_out_dep5_money_in = Column(Float)
-    net_out_dep5_money_out = Column(Float)
-    net_out_dep5_rate = Column(Float)
+    dep_5 = Column(String(length=128))
+    dep_5_in = Column(Float)
+    dep_5_out = Column(Float)
+    dep_5_rate = Column(Float)
 
 
-register_schema(providers=["eastmoney", "joinquant"], db_name="trading", schema_base=TradingBase, entity_type="stock")
+register_schema(
+    providers=["em", "eastmoney", "joinquant"], db_name="trading", schema_base=TradingBase, entity_type="stock"
+)
 
 # the __all__ is generated
 __all__ = ["ManagerTrading", "HolderTrading", "BigDealTrading", "MarginTrading", "DragonAndTiger"]

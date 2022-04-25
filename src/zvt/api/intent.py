@@ -16,6 +16,8 @@ def compare(
     columns=None,
     schema_map_columns: dict = None,
     chart_type: ChartType = ChartType.line,
+    start_timestamp=None,
+    scale_value: int = None,
 ):
     """
     compare indicators(columns) of entities
@@ -26,34 +28,37 @@ def compare(
     :param columns:
     :param schema_map_columns: key represents schema, value represents columns
     :param chart_type: "line", "area", "scatter", default "line"
+    :param start_timestamp: "
+    :param scale_value: compare with same value which scaled to scale_value
     """
 
-    # compare
     dfs = []
     # default compare kdata
     if schema_map_columns is None and schema is None:
         entity_type_map_ids = _group_entity_ids(entity_ids=entity_ids)
         for entity_type in entity_type_map_ids:
             schema = get_kdata_schema(entity_type=entity_type)
-            df = schema.query_data(entity_ids=entity_type_map_ids.get(entity_type))
+            df = schema.query_data(entity_ids=entity_type_map_ids.get(entity_type), start_timestamp=start_timestamp)
             dfs.append(df)
         all_df = pd.concat(dfs)
         drawer = Drawer(main_df=all_df, sub_df_list=[all_df[["entity_id", "timestamp", "turnover"]].copy()])
-        drawer.draw_kline(show=True)
+        drawer.draw_kline(show=True, scale_value=scale_value)
     else:
         if schema_map_columns:
             for schema in schema_map_columns:
                 columns = ["entity_id", "timestamp"] + schema_map_columns.get(schema)
-                df = schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns)
+                df = schema.query_data(
+                    entity_ids=entity_ids, codes=codes, columns=columns, start_timestamp=start_timestamp
+                )
                 dfs.append(df)
         elif schema:
             columns = ["entity_id", "timestamp"] + columns
-            df = schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns)
+            df = schema.query_data(entity_ids=entity_ids, codes=codes, columns=columns, start_timestamp=start_timestamp)
             dfs.append(df)
 
         all_df = pd.concat(dfs)
         drawer = Drawer(main_df=all_df)
-        drawer.draw(main_chart=chart_type, show=True)
+        drawer.draw(main_chart=chart_type, show=True, scale_value=scale_value)
 
 
 def compare_df(df: pd.DataFrame, chart_type: ChartType = ChartType.line):

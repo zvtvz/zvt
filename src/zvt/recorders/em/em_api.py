@@ -70,6 +70,18 @@ def get_ii_holder_report_dates(code):
     )
 
 
+# 龙虎榜
+def get_dragon_and_tiger(code, start_date=None):
+    return get_em_data(
+        request_type="RPT_OPERATEDEPT_TRADE",
+        fields="TRADE_ID,TRADE_DATE,EXPLANATION,SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,ACCUM_AMOUNT,CHANGE_RATE,NET_BUY,BUY_BUY_TOTAL,BUY_SELL_TOTAL,BUY_RATIO_TOTAL,SELL_BUY_TOTAL,SELL_SELL_TOTAL,SELL_RATIO_TOTAL,TRADE_DIRECTION,RANK,OPERATEDEPT_NAME,BUY_AMT_REAL,SELL_AMT_REAL,BUY_RATIO,SELL_RATIO,BUY_TOTAL,SELL_TOTAL,BUY_TOTAL_NET,SELL_TOTAL_NET,NET",
+        filters=generate_filters(code=code, trade_date=start_date, field_op={"trade_date": ">="}),
+        params='(groupField=TRADE_ID)(groupedFields=TRADE_DIRECTION,RANK,OPERATEDEPT_NAME,BUY_AMT_REAL,SELL_AMT_REAL,BUY_RATIO,SELL_RATIO,NET")(groupListName="LIST")',
+        sort_by="TRADE_DATE,RANK",
+        sort="asc,asc",
+    )
+
+
 # 十大股东持仓日期
 def get_holder_report_dates(code):
     return get_em_data(
@@ -128,23 +140,32 @@ def get_holders(code, end_date):
     )
 
 
-def get_url(type, sty, filters=None, order_by="", order="asc", pn=1, ps=2000):
+def _order_param(order: str):
+    if order:
+        orders = order.split(",")
+        return ",".join(["1" if item == "asc" else "-1" for item in orders])
+    return order
+
+
+def get_url(type, sty, filters=None, order_by="", order="asc", pn=1, ps=2000, params=None):
     # 根据 url 映射如下
     # type=RPT_F10_MAIN_ORGHOLDDETAILS
     # sty=SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE
     # filter=(SECUCODE="000338.SZ")(REPORT_DATE=\'2021-03-31\')(ORG_TYPE="01")
     # sr=1
     # st=
-    if order == "asc":
-        sr = 1
-    else:
-        sr = -1
+    sr = _order_param(order=order)
     v = random.randint(1000000000000000, 9000000000000000)
 
     if filters:
-        return f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source=SECURITIES&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
+        url = f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source=SECURITIES&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
     else:
-        return f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
+        url = f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
+
+    if params:
+        url = url + f"&params={params}"
+
+    return url
 
 
 def get_exchange(code):
@@ -172,22 +193,31 @@ def actor_type_to_org_type(actor_type: ActorType):
     assert False
 
 
-def generate_filters(code=None, report_date=None, end_date=None, org_type=None):
+def generate_filters(code=None, trade_date=None, report_date=None, end_date=None, org_type=None, field_op: dict = None):
+    args = [item for item in locals().items() if item[1] and (item[0] not in ("code", "org_type", "field_op"))]
+
     result = ""
     if code:
         result += f'(SECUCODE="{code}.{get_exchange(code)}")'
-    if report_date:
-        result += f"(REPORT_DATE='{report_date}')"
     if org_type:
         result += f'(ORG_TYPE="{org_type}")'
-    if end_date:
-        result += f"(END_DATE='{end_date}')"
+
+    for arg in args:
+        field = arg[0]
+        value = arg[1]
+        if field_op:
+            op = field_op.get(field, "=")
+        else:
+            op = "="
+        result += f"({field.upper()}{op}'{value}')"
 
     return result
 
 
-def get_em_data(request_type, fields, filters=None, sort_by="", sort="asc", pn=1, ps=2000, fetch_all=True):
-    url = get_url(type=request_type, sty=fields, filters=filters, order_by=sort_by, order=sort, pn=pn, ps=ps)
+def get_em_data(request_type, fields, filters=None, sort_by="", sort="asc", pn=1, ps=2000, fetch_all=True, params=None):
+    url = get_url(
+        type=request_type, sty=fields, filters=filters, order_by=sort_by, order=sort, pn=pn, ps=ps, params=params
+    )
     resp = requests.get(url)
     if resp.status_code == 200:
         json_result = resp.json()
@@ -395,7 +425,8 @@ def get_tradable_list(
         entity_flag = f"fs=m:{ex_flag}"
 
         if entity_type == TradableType.indexus:
-            entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX"
+            # 纳斯达克，道琼斯，标普500，美元指数
+            entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX,i:100.UDI"
         # m为交易所代码，t为交易类型
         elif entity_type in [TradableType.block, TradableType.stock, TradableType.stockus, TradableType.stockhk]:
             if exchange == Exchange.sh:
@@ -527,10 +558,12 @@ exchange_map_em_flag = {
     Exchange.ine: 142,
     #: 港交所
     Exchange.hk: 116,
-    # 中国行业/概念板块
+    #: 中国行业/概念板块
     Exchange.cn: 90,
-    # 美国指数
+    #: 美国指数
     Exchange.us: 100,
+    #: 汇率
+    Exchange.forex: 119,
 }
 
 
@@ -600,6 +633,7 @@ def to_zvt_code(code):
 
 
 if __name__ == "__main__":
+    # from pprint import pprint
     # pprint(get_free_holder_report_dates(code='000338'))
     # pprint(get_holder_report_dates(code='000338'))
     # pprint(get_holders(code='000338', end_date='2021-03-31'))
@@ -615,18 +649,22 @@ if __name__ == "__main__":
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
     # df = get_tradable_list(entity_type="indexus")
+    df = get_tradable_list(entity_type="currency")
     # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # print(df)
     # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
     # print(df)
     # df = get_future_list()
     # print(df)
-    df = get_kdata(entity_id="future_dce_I", level="1d")
+    # df = get_kdata(entity_id="future_dce_I", level="1d")
+    # print(df)
+    # df = get_dragon_and_tiger(code="000989", start_date="2018-10-31")
     print(df)
 # the __all__ is generated
 __all__ = [
     "get_treasury_yield",
     "get_ii_holder_report_dates",
+    "get_dragon_and_tiger",
     "get_holder_report_dates",
     "get_free_holder_report_dates",
     "get_ii_holder",

@@ -87,6 +87,17 @@ class FutureKdataCommon(KdataCommon):
     change_pct1 = Column(Float)
 
 
+class CurrencyKdataCommon(KdataCommon):
+    #: 持仓量
+    interest = Column(Float)
+    #: 结算价
+    settlement = Column(Float)
+    #: 涨跌幅(按收盘价)
+    # change_pct = Column(Float)
+    #: 涨跌幅(按结算价)
+    change_pct1 = Column(Float)
+
+
 # the __all__ is generated
 __all__ = [
     "KdataCommon",
@@ -99,6 +110,7 @@ __all__ = [
     "StockusKdataCommon",
     "StockhkKdataCommon",
     "FutureKdataCommon",
+    "CurrencyKdataCommon",
 ]
 
 # __init__.py structure:
@@ -146,6 +158,12 @@ from .stock import *
 from .stock import __all__ as _stock_all
 
 __all__ += _stock_all
+
+# import all from submodule currency
+from .currency import *
+from .currency import __all__ as _currency_all
+
+__all__ += _currency_all
 
 # import all from submodule future
 from .future import *

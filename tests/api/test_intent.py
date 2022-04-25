@@ -7,7 +7,8 @@ from zvt.utils import to_pd_timestamp
 
 def test_compare_kdata():
     entity_ids = ["stock_sz_000338", "stock_sh_601318"]
-    compare(entity_ids=entity_ids)
+    compare(entity_ids=entity_ids, scale_value=10)
+    compare(entity_ids=entity_ids, start_timestamp="2010-01-01")
 
 
 def test_compare_line():

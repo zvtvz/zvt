@@ -78,6 +78,11 @@ def gen_kdata_schemas():
         pkg="zvt", providers=["sina"], entity_type="etf", levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True
     )
 
+    # etf行情
+    gen_kdata_schema(
+        pkg="zvt", providers=["em"], entity_type="currency", levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True
+    )
+
 
 if __name__ == "__main__":
     # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
@@ -85,10 +90,10 @@ if __name__ == "__main__":
     # gen_exports("ml")
     # gen_exports("utils")
     gen_exports("recorders")
-    gen_exports("domain")
+    # gen_exports("domain")
     # gen_exports('informer')
     # gen_exports('api')
     # gen_exports('trader')
     # gen_exports('autocode')
     # gen_exports("ml")
-    # gen_kdata_schemas()
+    gen_kdata_schemas()
