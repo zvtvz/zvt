@@ -424,7 +424,14 @@ def get_tradable_list(
         ex_flag = to_em_entity_flag(exchange=exchange)
         entity_flag = f"fs=m:{ex_flag}"
 
-        if entity_type == TradableType.indexus:
+        if entity_type == TradableType.index:
+            if exchange == Exchange.sh:
+                entity_flag = "fs=i:1.000001,i:1.000002,i:1.000003,i:1.000009,i:1.000010,i:1.000011,i:1.000012,i:1.000016,i:1.000300,i:1.000903,i:1.000905,i:1.000906,i:1.000688"
+            if exchange == Exchange.sz:
+                entity_flag = "fs=i:0.399001,i:0.399002,i:0.399003,i:0.399004,i:0.399005,i:0.399006,i:0.399100,i:0.399106,i:0.399305,i:0.399550"
+        elif entity_type == TradableType.currency:
+            entity_flag = "fs=m:119,m:120"
+        elif entity_type == TradableType.indexus:
             # 纳斯达克，道琼斯，标普500，美元指数
             entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX,i:100.UDI"
         # m为交易所代码，t为交易类型
@@ -569,7 +576,7 @@ exchange_map_em_flag = {
 
 def to_em_entity_flag(exchange: Union[Exchange, str]):
     exchange = Exchange(exchange)
-    return exchange_map_em_flag.get(exchange)
+    return exchange_map_em_flag.get(exchange, exchange)
 
 
 def to_em_fq_flag(adjust_type: AdjustType):
@@ -607,6 +614,8 @@ def to_em_sec_id(entity_id):
     # 主力合约
     if entity_type == "future" and code[-1].isalpha():
         code = code + "m"
+    if entity_type == "currency" and "CNYC" in code:
+        return f"120.{code}"
     return f"{to_em_entity_flag(exchange)}.{code}"
 
 
@@ -649,7 +658,8 @@ if __name__ == "__main__":
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
     # df = get_tradable_list(entity_type="indexus")
-    df = get_tradable_list(entity_type="currency")
+    # df = get_tradable_list(entity_type="currency")
+    df = get_tradable_list(entity_type="index")
     # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # print(df)
     # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)

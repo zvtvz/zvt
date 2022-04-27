@@ -14,6 +14,7 @@ Contents
     trader/index
     ml/index
     drawer/index
+    contributor
     api/index
 
 Indices and tables

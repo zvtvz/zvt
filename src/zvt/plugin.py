@@ -30,5 +30,5 @@ def export():
 
 
 if __name__ == "__main__":
-    gen_plugin_project(dir_path="../../", entity_type="macro", providers=["zvt"])
+    gen_plugin_project(dir_path="../../../", entity_type="macro", providers=["zvt"])
     main()

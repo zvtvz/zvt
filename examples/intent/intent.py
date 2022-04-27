@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.api.intent import compare
-from zvt.domain import Indexus1dKdata, Index, Indexus, Index1dKdata
+from zvt.domain import Indexus1dKdata, Index, Indexus, Index1dKdata, Currency, Currency1dKdata
 from zvt.domain import TreasuryYield
 
 
@@ -57,9 +57,21 @@ def compare_udi_and_stock():
     )
 
 
+def compare_cny_and_stock():
+    Currency1dKdata.record_data(entity_id="currency_forex_USDCNYC")
+    entity_ids = ["index_sh_000001", "currency_forex_USDCNYC"]
+    compare(
+        entity_ids=entity_ids,
+        start_timestamp="2005-01-01",
+        scale_value=100,
+        schema_map_columns={Currency1dKdata: ["close"], Index1dKdata: ["close"]},
+    )
+
+
 if __name__ == "__main__":
     # compare_kline()
     # us_yield_and_stock()
     # commodity_and_stock()
     # compare_metal()
-    compare_udi_and_stock()
+    # compare_udi_and_stock()
+    compare_cny_and_stock()

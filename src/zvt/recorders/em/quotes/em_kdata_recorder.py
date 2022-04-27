@@ -128,7 +128,7 @@ class EMStockhkKdataRecorder(BaseEMStockKdataRecorder):
 
 
 class EMIndexKdataRecorder(BaseEMStockKdataRecorder):
-    entity_provider = "exchange"
+    entity_provider = "em"
     entity_schema = Index
 
     data_schema = IndexKdataCommon
@@ -177,4 +177,5 @@ __all__ = [
     "EMIndexusKdataRecorder",
     "EMBlockKdataRecorder",
     "EMFutureKdataRecorder",
+    "EMCurrencyKdataRecorder",
 ]

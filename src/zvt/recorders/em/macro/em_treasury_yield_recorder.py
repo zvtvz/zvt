@@ -5,7 +5,7 @@ from zvt.contract import IntervalLevel
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Country
-from zvt.domain.macro import TreasuryYield
+from zvt.domain.macro.monetary import TreasuryYield
 from zvt.recorders.em import em_api
 
 

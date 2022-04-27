@@ -5,10 +5,10 @@ from sqlalchemy.orm import declarative_base
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
 
-CurrencyBase = declarative_base()
+MonetaryBase = declarative_base()
 
 
-class TreasuryYield(CurrencyBase, Mixin):
+class TreasuryYield(MonetaryBase, Mixin):
     __tablename__ = "treasury_yield"
 
     code = Column(String(length=32))
@@ -23,6 +23,6 @@ class TreasuryYield(CurrencyBase, Mixin):
     yield_30 = Column(Float)
 
 
-register_schema(providers=["em"], db_name="currency", schema_base=CurrencyBase)
+register_schema(providers=["em"], db_name="monetary", schema_base=MonetaryBase)
 # the __all__ is generated
 __all__ = ["TreasuryYield"]

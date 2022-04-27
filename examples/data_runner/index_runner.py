@@ -24,8 +24,9 @@ def record_index():
 
 @sched.scheduled_job("cron", hour=16, minute=20)
 def record_index_kdata():
+    run_data_recorder(domain=Index, data_provider="em")
     run_data_recorder(
-        domain=Index1dKdata, data_provider="em", entity_provider="exchange", codes=IMPORTANT_INDEX, day_data=True
+        domain=Index1dKdata, data_provider="em", entity_provider="em", codes=IMPORTANT_INDEX, day_data=True
     )
 
 
