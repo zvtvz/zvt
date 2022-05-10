@@ -203,7 +203,7 @@ class Factor(DataReader, EntityStateService, DataListener):
         filters: List = None,
         order: object = None,
         limit: int = None,
-        level: Union[str, IntervalLevel] = None,
+        level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
         computing_window: int = None,

@@ -221,7 +221,7 @@ def set_one_and_only_one(**kwargs):
 
 if __name__ == "__main__":
     url = url_unquote(
-        "https://push2.eastmoney.com/api/qt/clist/get?cb=jQuery341011493786409034579_1651073788955&ut=bd1d9ddb04089700cf9c27f6f7426281&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f23,f24,f25,f22,f11,f62,f104,f105,f111,f128,f136,f115,f148,f152&np=1&fltt=2&invt=2&pn=1&fs=i:1.000001,i:1.000002,i:1.000003,i:1.000009,i:1.000010,i:1.000011,i:1.000012,i:1.000016,i:1.000300,i:1.000903,i:1.000905,i:1.000906,i:0.399001,i:0.399002,i:0.399003,i:0.399004,i:0.399005,i:0.399006,i:0.399100,i:0.399106,i:0.399305,i:0.399550,i:1.000688&fid=f3&po=1&pz=40&_=1651073788967"
+        "https://datacenter.eastmoney.com/securities/api/data/get?type=RPT_DAILYBILLBOARD_DETAILS&sty=ALL&source=DataCenter&client=WAP&p=1&ps=20&sr=-1,1&st=TRADE_DATE,SECURITY_CODE&filter=(TRADE_DATE%3E=%272022-04-01%27)(TRADE_DATE%3C=%272022-04-29%27)(MARKET=%22SH%22)&?v=05160638952989893"
     )
     print(url)
 

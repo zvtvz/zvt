@@ -83,6 +83,7 @@ def report_targets(
                     end_timestamp=target_date,
                     adjust_type=adjust_type,
                     pct=0.4,
+                    data_provider=data_provider,
                 )
                 current_entity_pool = vol_df.index.tolist()
                 logger.info(f"current_entity_pool({len(current_entity_pool)}): {current_entity_pool}")
@@ -92,6 +93,12 @@ def report_targets(
                 start_timestamp=start_timestamp, end_timestamp=target_date, select_mode=SelectMode.condition_or
             )
             entity_schema = get_entity_schema(entity_type=entity_type)
+            if "entity_ids" in factor_kv:
+                if current_entity_pool:
+                    current_entity_pool = set(current_entity_pool) & set(factor_kv.pop("entity_ids"))
+                else:
+                    current_entity_pool = set(factor_kv.pop("entity_ids"))
+
             tech_factor = factor_cls(
                 entity_schema=entity_schema,
                 entity_provider=entity_provider,

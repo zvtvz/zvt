@@ -70,6 +70,21 @@ def get_ii_holder_report_dates(code):
     )
 
 
+def get_dragon_and_tiger_list(start_date, end_date=None):
+    start_date = to_time_str(start_date)
+    if not end_date:
+        end_date = now_timestamp()
+    end_date = to_time_str(end_date)
+    return get_em_data(
+        request_type="RPT_DAILYBILLBOARD_DETAILS",
+        fields="ALL",
+        source="DataCenter",
+        filters=f"(TRADE_DATE>='{start_date}')(TRADE_DATE<='{end_date}')",
+        sort_by="TRADE_DATE,SECURITY_CODE",
+        sort="asc,asc",
+    )
+
+
 # 龙虎榜
 def get_dragon_and_tiger(code, start_date=None):
     return get_em_data(
@@ -147,7 +162,7 @@ def _order_param(order: str):
     return order
 
 
-def get_url(type, sty, filters=None, order_by="", order="asc", pn=1, ps=2000, params=None):
+def get_url(type, sty, source="SECURITIES", filters=None, order_by="", order="asc", pn=1, ps=2000, params=None):
     # 根据 url 映射如下
     # type=RPT_F10_MAIN_ORGHOLDDETAILS
     # sty=SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE
@@ -158,7 +173,7 @@ def get_url(type, sty, filters=None, order_by="", order="asc", pn=1, ps=2000, pa
     v = random.randint(1000000000000000, 9000000000000000)
 
     if filters:
-        url = f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source=SECURITIES&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
+        url = f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source={source}&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
     else:
         url = f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
 
@@ -214,9 +229,28 @@ def generate_filters(code=None, trade_date=None, report_date=None, end_date=None
     return result
 
 
-def get_em_data(request_type, fields, filters=None, sort_by="", sort="asc", pn=1, ps=2000, fetch_all=True, params=None):
+def get_em_data(
+    request_type,
+    fields,
+    source="SECURITIES",
+    filters=None,
+    sort_by="",
+    sort="asc",
+    pn=1,
+    ps=2000,
+    fetch_all=True,
+    params=None,
+):
     url = get_url(
-        type=request_type, sty=fields, filters=filters, order_by=sort_by, order=sort, pn=pn, ps=ps, params=params
+        type=request_type,
+        sty=fields,
+        source=source,
+        filters=filters,
+        order_by=sort_by,
+        order=sort,
+        pn=pn,
+        ps=ps,
+        params=params,
     )
     resp = requests.get(url)
     if resp.status_code == 200:
@@ -228,6 +262,7 @@ def get_em_data(request_type, fields, filters=None, sort_by="", sort="asc", pn=1
                     next_data = get_em_data(
                         request_type=request_type,
                         fields=fields,
+                        source=source,
                         filters=filters,
                         sort_by=sort_by,
                         sort=sort,
@@ -468,7 +503,11 @@ def get_tradable_list(
                 else:
                     assert False
 
-        url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields=f1,f2,f3,f4,f12,f13,f14&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
+        fields = "f1,f2,f3,f4,f12,f13,f14"
+        if entity_type == TradableType.stock:
+            # 市值,流通市值,pe,pb
+            fields = fields + ",f20,f21,f9,f23"
+        url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
         resp = requests.get(url, headers=DEFAULT_HEADER)
 
         resp.raise_for_status()
@@ -476,8 +515,14 @@ def get_tradable_list(
         result = json_callback_param(resp.text)
         data = result["data"]["diff"]
         df = pd.DataFrame.from_records(data=data)
-        df = df[["f12", "f13", "f14"]]
-        df.columns = ["code", "exchange", "name"]
+        if entity_type == TradableType.stock:
+            df = df[["f12", "f13", "f14", "f20", "f21", "f9", "f23"]]
+            df.columns = ["code", "exchange", "name", "cap", "cap1", "pe", "pb"]
+            df[["cap", "cap1", "pe", "pb"]] = df[["cap", "cap1", "pe", "pb"]].apply(pd.to_numeric, errors="coerce")
+        else:
+            df = df[["f12", "f13", "f14"]]
+            df.columns = ["code", "exchange", "name"]
+
         df["exchange"] = exchange.value
         df["entity_type"] = entity_type.value
         df["id"] = df[["entity_type", "exchange", "code"]].apply(lambda x: "_".join(x.astype(str)), axis=1)
@@ -659,7 +704,7 @@ if __name__ == "__main__":
     # df = get_tradable_list(entity_type="block")
     # df = get_tradable_list(entity_type="indexus")
     # df = get_tradable_list(entity_type="currency")
-    df = get_tradable_list(entity_type="index")
+    # df = get_tradable_list(entity_type="index")
     # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # print(df)
     # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
@@ -669,6 +714,7 @@ if __name__ == "__main__":
     # df = get_kdata(entity_id="future_dce_I", level="1d")
     # print(df)
     # df = get_dragon_and_tiger(code="000989", start_date="2018-10-31")
+    df = get_dragon_and_tiger_list(start_date="2022-04-25")
     print(df)
 # the __all__ is generated
 __all__ = [

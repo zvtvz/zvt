@@ -192,7 +192,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         # 价格刚上均线
         cols = [f"ma{window}" for window in self.windows]
         filter_up = (self.factor_df["close"] > self.factor_df[cols[0]]) & (
-            self.factor_df["close"] < 1.1 * self.factor_df[cols[0]]
+            self.factor_df["close"] < 1.15 * self.factor_df[cols[0]]
         )
         for col in cols[1:]:
             if self.over_mode == "and":

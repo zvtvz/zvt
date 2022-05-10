@@ -181,7 +181,9 @@ class EMDragonAndTigerRecorder(FixedCycleDataRecorder):
                     record[dep_name] = dep["OPERATEDEPT_NAME"]
                     record[dep_in] = dep["BUY_AMT_REAL"]
                     record[dep_out] = dep["SELL_AMT_REAL"]
-                    record[dep_rate] = dep["BUY_RATIO"] - dep["SELL_RATIO"]
+                    record[dep_rate] = (dep["BUY_RATIO"] if dep["BUY_RATIO"] else 0) - (
+                        dep["SELL_RATIO"] if dep["SELL_RATIO"] else 0
+                    )
 
                 records.append(record)
             df = pd.DataFrame.from_records(records)
@@ -191,6 +193,6 @@ class EMDragonAndTigerRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == "__main__":
-    EMDragonAndTigerRecorder(codes=["000989"]).run()
+    EMDragonAndTigerRecorder(sleeping_time=0.1, exchanges=["sh"]).run()
 # the __all__ is generated
 __all__ = ["EMDragonAndTigerRecorder"]

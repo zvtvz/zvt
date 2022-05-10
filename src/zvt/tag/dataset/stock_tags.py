@@ -17,7 +17,7 @@ class StockTags(StockTagsBase, Mixin):
 
     #: :class:`~.zvt.tag.tags.actor_tag.ActorTag` values
     actor_tag = Column(String(length=64))
-    #: :class:`~.zvt.tag.tags.actor_tag.ActorTag` values
+    #: :class:`~.zvt.tag.tags.style_tag.StyleTag` values
     style_tag = Column(String(length=64))
     #: :class:`~.zvt.tag.tags.cycle_tag.CycleTag` values
     cycle_tag = Column(String(length=64))
