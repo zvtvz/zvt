@@ -9,7 +9,7 @@ from examples.utils import add_to_eastmoney
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, get_top_performance_entities
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
-from zvt.contract import AdjustType
+from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities, get_entity_schema, get_entity_ids
 from zvt.contract.factor import Factor
 from zvt.factors import TargetSelector, SelectMode
@@ -66,8 +66,8 @@ def report_targets(
         email_action = EmailInformer()
 
         try:
-            if entity_type == "stock" and not adjust_type:
-                adjust_type = AdjustType.hfq
+            if not adjust_type:
+                adjust_type = default_adjust_type(entity_type=entity_type)
 
             target_date = get_latest_kdata_date(
                 provider=data_provider, entity_type=entity_type, adjust_type=adjust_type
@@ -88,17 +88,33 @@ def report_targets(
                 current_entity_pool = vol_df.index.tolist()
                 logger.info(f"current_entity_pool({len(current_entity_pool)}): {current_entity_pool}")
 
-            # add the factor
-            my_selector = TargetSelector(
-                start_timestamp=start_timestamp, end_timestamp=target_date, select_mode=SelectMode.condition_or
-            )
-            entity_schema = get_entity_schema(entity_type=entity_type)
+            kdata_schema = get_kdata_schema(entity_type, level=IntervalLevel.LEVEL_1DAY, adjust_type=adjust_type)
+            filters = []
+            if "turnover_threshold" in factor_kv:
+                filters = filters + [kdata_schema.turnover >= factor_kv.get("turnover_threshold")]
+            if "turnover_rate_threshold" in factor_kv:
+                filters = filters + [kdata_schema.turnover_rate >= factor_kv.get("turnover_rate_threshold")]
+            if filters:
+                filters = filters + [kdata_schema.timestamp == target_date]
+                kdata_df = kdata_schema.query_data(
+                    provider=data_provider, filters=filters, columns=["entity_id", "timestamp"], index="entity_id"
+                )
+                if current_entity_pool:
+                    current_entity_pool = set(current_entity_pool) & set(kdata_df.index.tolist())
+                else:
+                    current_entity_pool = kdata_df.index.tolist()
+
             if "entity_ids" in factor_kv:
                 if current_entity_pool:
                     current_entity_pool = set(current_entity_pool) & set(factor_kv.pop("entity_ids"))
                 else:
                     current_entity_pool = set(factor_kv.pop("entity_ids"))
 
+            # add the factor
+            my_selector = TargetSelector(
+                start_timestamp=start_timestamp, end_timestamp=target_date, select_mode=SelectMode.condition_or
+            )
+            entity_schema = get_entity_schema(entity_type=entity_type)
             tech_factor = factor_cls(
                 entity_schema=entity_schema,
                 entity_provider=entity_provider,
@@ -156,16 +172,14 @@ def report_top_stats(
         adjust_type = default_adjust_type(entity_type=entity_type)
     kdata_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
     entity_schema = get_entity_schema(entity_type=entity_type)
-    latest_day = kdata_schema.query_data(
-        provider=data_provider, order=kdata_schema.timestamp.desc(), limit=1, return_type="domain"
-    )
-    current_timestamp = latest_day[0].timestamp
+
+    target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
     email_action = EmailInformer()
 
     # 至少上市一年
     filter_entity_ids = []
     if ignore_new_stock:
-        pre_year = next_date(current_timestamp, -365)
+        pre_year = next_date(target_date, -365)
 
         entity_ids = get_entity_ids(
             provider=entity_provider, entity_schema=entity_schema, filters=[entity_schema.timestamp <= pre_year]
@@ -184,7 +198,7 @@ def report_top_stats(
             kdata_schema.turnover_rate >= turnover_rate_threshold,
         ],
         provider=data_provider,
-        start_timestamp=current_timestamp,
+        start_timestamp=target_date,
         index="entity_id",
         columns=["entity_id", "code"],
     )
@@ -207,7 +221,7 @@ def report_top_stats(
     downs = []
 
     for period in periods:
-        start = next_date(current_timestamp, -period)
+        start = next_date(target_date, -period)
         df, _ = get_top_performance_entities(
             entity_type=entity_type,
             start_timestamp=start,
@@ -230,7 +244,7 @@ def report_top_stats(
             inform(
                 email_action,
                 entity_ids=df.index[:top_count].tolist(),
-                target_date=current_timestamp,
+                target_date=target_date,
                 title=f"{entity_type} {period}日内 最靓仔",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
@@ -242,7 +256,7 @@ def report_top_stats(
             inform(
                 email_action,
                 entity_ids=df.index[:top_count].tolist(),
-                target_date=current_timestamp,
+                target_date=target_date,
                 title=f"{entity_type} {period}日内 最靓仔",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
@@ -255,7 +269,7 @@ def report_top_stats(
             inform(
                 email_action,
                 entity_ids=df.index[-top_count:].tolist(),
-                target_date=current_timestamp,
+                target_date=target_date,
                 title=f"{entity_type} {period}日内 谁有我惨",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
@@ -267,18 +281,18 @@ def report_top_stats(
         msg = "\n"
         for s in stats:
             msg = msg + s + "\n"
-        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}统计报告", msg)
+        email_action.send_message(zvt_config["email_username"], f"{target_date} {entity_type}统计报告", msg)
 
         msg = "\n"
         for up in ups:
             msg = msg + up + "\n"
-        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}涨幅统计报告", msg)
+        email_action.send_message(zvt_config["email_username"], f"{target_date} {entity_type}涨幅统计报告", msg)
 
         msg = "\n"
         for down in downs:
             msg = msg + down + "\n"
 
-        email_action.send_message(zvt_config["email_username"], f"{current_timestamp} {entity_type}跌幅统计报告", msg)
+        email_action.send_message(zvt_config["email_username"], f"{target_date} {entity_type}跌幅统计报告", msg)
 
 
 if __name__ == "__main__":

@@ -198,4 +198,4 @@ if __name__ == "__main__":
     composite_df(df=df)
 
 # the __all__ is generated
-__all__ = ["compare", "distribute", "composite", "composite_all"]
+__all__ = ["compare", "compare_df", "distribute", "distribute_df", "composite", "composite_df", "composite_all"]

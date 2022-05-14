@@ -65,31 +65,18 @@ class DataReader(Drawable):
 
         self.data_schema = data_schema
         self.entity_schema = entity_schema
-
         self.provider = provider
         self.entity_provider = entity_provider
-
         self.start_timestamp = start_timestamp
         self.end_timestamp = end_timestamp
-
         self.start_timestamp = to_pd_timestamp(self.start_timestamp)
         self.end_timestamp = to_pd_timestamp(self.end_timestamp)
-
         self.exchanges = exchanges
-
-        if codes:
-            if type(codes) == str:
-                codes = codes.replace(" ", "")
-                if codes.startswith("[") and codes.endswith("]"):
-                    codes = json.loads(codes)
-                else:
-                    codes = codes.split(",")
-
         self.codes = codes
         self.entity_ids = entity_ids
 
         # 转换成标准entity_id
-        if entity_schema and not self.entity_ids:
+        if not self.entity_ids:
             df = get_entities(
                 entity_schema=entity_schema, provider=self.entity_provider, exchanges=self.exchanges, codes=self.codes
             )
@@ -114,16 +101,9 @@ class DataReader(Drawable):
 
         self.columns = columns
 
-        # we store the data in a multiple index(category_column,timestamp) Dataframe
         if self.columns:
-            #: support str
-            if type(columns[0]) == str:
-                self.columns = []
-                for col in columns:
-                    self.columns.append(eval("data_schema.{}".format(col)))
-
             # always add category_column and time_field for normalizing
-            self.columns = list(set(self.columns) | {self.category_col, self.time_col})
+            self.columns = list(set(self.columns) | {self.category_field, self.time_field})
 
         self.data_listeners: List[DataListener] = []
 
@@ -154,7 +134,7 @@ class DataReader(Drawable):
         self.logger.info("load_data start")
         start_time = time.time()
         params = dict(
-            entity_ids=self.entity_ids,
+            entity_size=len(self.entity_ids) if self.entity_ids != None else None,
             provider=self.provider,
             columns=self.columns,
             start_timestamp=self.start_timestamp,

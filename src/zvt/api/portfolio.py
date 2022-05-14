@@ -101,9 +101,4 @@ def get_fund_stocks(code=None, codes=None, ids=None, timestamp=now_pd_timestamp(
 
 
 # the __all__ is generated
-__all__ = [
-    "portfolio_relate_stock",
-    "get_portfolio_stocks",
-    "get_etf_stocks",
-    "get_fund_stocks",
-]
+__all__ = ["portfolio_relate_stock", "get_portfolio_stocks", "get_etf_stocks", "get_fund_stocks"]

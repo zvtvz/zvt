@@ -12,6 +12,12 @@ from .intent import __all__ as _intent_all
 
 __all__ += _intent_all
 
+# import all from submodule selector
+from .selector import *
+from .selector import __all__ as _selector_all
+
+__all__ += _selector_all
+
 # import all from submodule kdata
 from .kdata import *
 from .kdata import __all__ as _kdata_all

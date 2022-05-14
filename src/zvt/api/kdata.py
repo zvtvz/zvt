@@ -172,4 +172,11 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
 
 
 # the __all__ is generated
-__all__ = ["get_kdata_schema", "get_kdata", "generate_kdata_id", "to_high_level_kdata"]
+__all__ = [
+    "get_latest_kdata_date",
+    "get_kdata_schema",
+    "get_kdata",
+    "default_adjust_type",
+    "generate_kdata_id",
+    "to_high_level_kdata",
+]

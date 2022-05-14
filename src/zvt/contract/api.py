@@ -297,14 +297,9 @@ def get_data(
 
     if columns:
         # support str
-        if type(columns[0]) == str:
-            columns_ = []
-            for col in columns:
-                if isinstance(col, str):
-                    columns_.append(eval("data_schema.{}".format(col)))
-                else:
-                    columns_.append(col)
-            columns = columns_
+        for i, col in enumerate(columns):
+            if isinstance(col, str):
+                columns[i] = eval("data_schema.{}".format(col))
 
         # make sure get timestamp
         if time_col not in columns:
