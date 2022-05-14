@@ -27,7 +27,7 @@ def report_bull():
         title="bull股票",
         entity_type="stock",
         em_group="bull股票",
-        em_group_over_write=True,
+        em_group_over_write=False,
         filter_by_volume=False,
         adjust_type=AdjustType.hfq,
         start_timestamp="2019-01-01",
