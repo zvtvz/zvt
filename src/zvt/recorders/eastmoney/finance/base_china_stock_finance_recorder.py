@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from jqdatapy.api import get_fundamentals
+from jqdatapy.api import get_fundamentals, get_query_count
 
 from zvt.api.utils import to_report_period_type
 from zvt.contract.api import get_data
@@ -72,6 +72,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
         )
 
         try:
+            self.logger.info(f"joinquant query count:{get_query_count()}")
             self.fetch_jq_timestamp = True
         except Exception as e:
             self.fetch_jq_timestamp = False
@@ -165,7 +166,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                 )
                 self.session.commit()
         except Exception as e:
-            self.logger.error(e)
+            self.logger.error(f"Failed to fill timestamp(publish date) for finance data from joinquant", e)
 
     def on_finish_entity(self, entity):
         super().on_finish_entity(entity)
