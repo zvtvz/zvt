@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import pandas as pd
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata
-from zvt.utils import to_pd_timestamp, next_date
+from zvt.utils import to_pd_timestamp, next_date, current_date
+
+logger = logging.getLogger(__name__)
 
 # 500亿
 BIG_CAP = 50000000000
@@ -13,6 +17,11 @@ BIG_CAP = 50000000000
 MIDDLE_CAP = 15000000000
 # 40亿
 SMALL_CAP = 4000000000
+
+# 买入榜单
+IN_DEPS = ["dep1", "dep2", "dep3", "dep4", "dep5"]
+# 卖出入榜单
+OUT_DEPS = ["dep_1", "dep_2", "dep_3", "dep_4", "dep_5"]
 
 
 def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction="in"):
@@ -29,28 +38,43 @@ def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction=
     df = DragonAndTiger.query_data(start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters)
     counts = []
     for col in columns:
-        counts.append(df[[col, f"{col}_rate"]].groupby(col).count().sort_values(f"{col}_rate", ascending=False))
+        counts.append(df[[col, f"{col}_count"]].groupby(col).count().sort_values(f"{col}_count", ascending=False))
     return counts
 
 
 def get_big_players(start_timestamp, end_timestamp=None, count=40):
     dep1, dep2, dep3 = get_dragon_and_tigger_player(start_timestamp=start_timestamp, end_timestamp=end_timestamp)
     # 榜1前40
-    top1 = dep1.index.tolist()[:count]
+    bang1 = dep1.index.tolist()[:count]
 
     # 榜2前40
     bang2 = dep2.index.tolist()[:count]
-    top2 = list(set(bang2) - set(top1))
 
     # 榜3前40
     bang3 = dep3.index.tolist()[:count]
-    top3 = list(set(bang3) - set(top1) - set(top2))
 
-    return top1 + top2 + top3
+    return list(set(bang1 + bang2 + bang3))
 
 
-def get_player_performance(start_timestamp, end_timestamp=None, days=5, player="机构专用", provider="em"):
-    filters = [or_(DragonAndTiger.dep1 == player, DragonAndTiger.dep2 == player, DragonAndTiger.dep3 == player)]
+def get_player_performance(start_timestamp, end_timestamp=None, days=5, players="机构专用", provider="em", buy_rate=5):
+    filters = []
+    if isinstance(players, str):
+        players = [players]
+
+    if isinstance(players, list):
+        for player in players:
+            filters.append(
+                or_(
+                    and_(DragonAndTiger.dep1 == player, DragonAndTiger.dep1_rate >= buy_rate),
+                    and_(DragonAndTiger.dep2 == player, DragonAndTiger.dep2_rate >= buy_rate),
+                    and_(DragonAndTiger.dep3 == player, DragonAndTiger.dep3_rate >= buy_rate),
+                    and_(DragonAndTiger.dep4 == player, DragonAndTiger.dep4_rate >= buy_rate),
+                    and_(DragonAndTiger.dep5 == player, DragonAndTiger.dep5_rate >= buy_rate),
+                )
+            )
+    else:
+        raise AssertionError("players should be list or str type")
+
     df = DragonAndTiger.query_data(
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
@@ -61,7 +85,7 @@ def get_player_performance(start_timestamp, end_timestamp=None, days=5, player="
     df = df[~df.index.duplicated(keep="first")]
     records = []
     for entity_id, timestamp in df.index:
-        end_date = next_date(timestamp, days + round(days * 2 / 5 + 30))
+        end_date = next_date(timestamp, days + round(days + days * 2 / 5 + 30))
         kdata = Stock1dHfqKdata.query_data(
             entity_id=entity_id,
             start_timestamp=timestamp,
@@ -69,9 +93,11 @@ def get_player_performance(start_timestamp, end_timestamp=None, days=5, player="
             provider=provider,
             index="timestamp",
         )
-        end_index = min(days, len(kdata) - 1)
+        if len(kdata) <= days:
+            logger.warning(f"ignore {timestamp} -> end_timestamp: {end_date}")
+            break
         close = kdata["close"]
-        change_pct = (close[end_index] - close[0]) / close[0]
+        change_pct = (close[days] - close[0]) / close[0]
         records.append({"entity_id": entity_id, "timestamp": timestamp, f"change_pct": change_pct})
     return pd.DataFrame.from_records(records)
 
@@ -79,7 +105,7 @@ def get_player_performance(start_timestamp, end_timestamp=None, days=5, player="
 def get_player_success_rate(
     start_timestamp,
     end_timestamp=None,
-    intervals=(5, 10, 20, 60, 90),
+    intervals=(3, 5, 10, 60),
     players=("机构专用", "东方财富证券股份有限公司拉萨团结路第二证券营业部"),
     provider="em",
 ):
@@ -91,13 +117,28 @@ def get_player_success_rate(
                 start_timestamp=start_timestamp,
                 end_timestamp=end_timestamp,
                 days=days,
-                player=player,
+                players=player,
                 provider=provider,
             )
             rate = len(df[df["change_pct"] > 0]) / len(df)
             record[f"rate_{days}"] = rate
         records.append(record)
     return pd.DataFrame.from_records(records, index="player")
+
+
+def get_good_players(timestamp=current_date(), recent_days=400, intervals=(3, 5, 10)):
+    end_timestamp = next_date(timestamp, -intervals[-1] - 30)
+    # recent year
+    start_timestamp = next_date(end_timestamp, -recent_days)
+    print(f"{start_timestamp} to {end_timestamp}")
+    # 最近一年牛x的营业部
+    players = get_big_players(start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+    logger.info(players)
+    df = get_player_success_rate(
+        start_timestamp=start_timestamp, end_timestamp=end_timestamp, intervals=intervals, players=players
+    )
+    good_players = df[(df["rate_3"] > 0.4) & (df["rate_5"] > 0.3) & (df["rate_10"] > 0.3)].index.tolist()
+    return good_players
 
 
 def get_entity_list_by_cap(timestamp, cap_start, cap_end, entity_type="stock", provider=None, adjust_type=None):
@@ -177,6 +218,7 @@ __all__ = [
     "get_big_players",
     "get_player_performance",
     "get_player_success_rate",
+    "get_good_players",
     "get_entity_list_by_cap",
     "get_big_cap_stock",
     "get_middle_cap_stock",
