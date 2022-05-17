@@ -166,7 +166,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                 )
                 self.session.commit()
         except Exception as e:
-            self.logger.error(f"Failed to fill timestamp(publish date) for finance data from joinquant", e)
+            self.logger.error(f"Failed to fill timestamp(publish date) for finance data from joinquant {e}")
 
     def on_finish_entity(self, entity):
         super().on_finish_entity(entity)
