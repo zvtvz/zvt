@@ -38,7 +38,7 @@ def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction=
     df = DragonAndTiger.query_data(start_timestamp=start_timestamp, end_timestamp=end_timestamp, filters=filters)
     counts = []
     for col in columns:
-        counts.append(df[[col, f"{col}_count"]].groupby(col).count().sort_values(f"{col}_count", ascending=False))
+        counts.append(df[[col, f"{col}_rate"]].groupby(col).count().sort_values(f"{col}_rate", ascending=False))
     return counts
 
 
