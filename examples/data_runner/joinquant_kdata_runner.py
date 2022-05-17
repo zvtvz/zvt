@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
+from jqdatapy import get_token
+from zvt import zvt_config
+get_token(zvt_config["jq_username"], zvt_config["jq_password"], force=True)
+
+
 @sched.scheduled_job("cron", hour=15, minute=30)
 def record_stock_data(data_provider="joinquant", entity_provider="joinquant"):
     # A股标的
