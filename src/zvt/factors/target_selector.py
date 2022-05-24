@@ -145,6 +145,23 @@ class TargetSelector(object):
                 return target_df["entity_id"].tolist()
         return []
 
+    def get_targets_between(
+        self, start_timestamp, end_timestamp, target_type: TargetType = TargetType.open_long
+    ) -> List[str]:
+        if target_type == TargetType.open_long:
+            df = self.open_long_df
+        elif target_type == TargetType.open_short:
+            df = self.open_short_df
+        elif target_type == TargetType.keep:
+            df = self.keep_df
+        else:
+            assert False
+
+        if pd_is_not_null(df):
+            index = pd.date_range(start_timestamp, end_timestamp, freq=self.level.to_pd_freq())
+            return list(set(df.loc[df.index & index]["entity_id"].tolist()))
+        return []
+
     def get_open_long_targets(self, timestamp):
         return self.get_targets(timestamp=timestamp, target_type=TargetType.open_long)
 

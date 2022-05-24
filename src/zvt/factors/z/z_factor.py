@@ -247,7 +247,7 @@ class ZAccumulator(Accumulator):
                 current_value = kdata["low"]
             acc_df.loc[index, "current_direction"] = zen_state.direction.value
             acc_df.loc[index, "current_interval"] = current_interval
-            change = (current_value - pre_value) / pre_value
+            change = (current_value - pre_value) / abs(pre_value)
             acc_df.loc[index, "current_change"] = change
             acc_df.loc[index, "current_slope"] = change / current_interval
             if current_zhongshu:
@@ -296,7 +296,7 @@ class ZAccumulator(Accumulator):
                     current_value = kdata["low"]
                 acc_df.loc[index, "tmp_direction"] = tmp_direction.value
                 acc_df.loc[index, "opposite_interval"] = current_interval
-                change = (current_value - pre_value) / pre_value
+                change = (current_value - pre_value) / abs(pre_value)
                 acc_df.loc[index, "opposite_change"] = change
                 acc_df.loc[index, "opposite_slope"] = change / current_interval
 
@@ -339,7 +339,7 @@ class ZAccumulator(Accumulator):
 
                         # 计算笔斜率
                         if zen_state.pre_bi:
-                            change = (bi_value - zen_state.pre_bi[1]) / zen_state.pre_bi[1]
+                            change = (bi_value - zen_state.pre_bi[1]) / abs(zen_state.pre_bi[1])
                             interval = zen_state.can_fenxing_index - zen_state.pre_bi[0]
                             bi_slope = change / interval
                             acc_df.loc[zen_state.can_fenxing_index, "bi_change"] = change
@@ -420,7 +420,7 @@ class ZAccumulator(Accumulator):
 
                                     # 计算段斜率
                                     if zen_state.pre_duan:
-                                        change = (duan_value - zen_state.pre_duan[1]) / zen_state.pre_duan[1]
+                                        change = (duan_value - zen_state.pre_duan[1]) / abs(zen_state.pre_duan[1])
                                         interval = duan_index - zen_state.pre_duan[0]
                                         duan_slope = change / interval
                                         acc_df.loc[duan_index, "duan_change"] = change

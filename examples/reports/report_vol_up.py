@@ -34,7 +34,7 @@ def report_vol_up():
         windows=[120, 250],
         over_mode="or",
         up_intervals=60,
-        turnover_threshold=200000000,
+        turnover_threshold=300000000,
         turnover_rate_threshold=0.02,
         entity_ids=entity_ids,
     )

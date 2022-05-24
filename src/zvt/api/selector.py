@@ -7,7 +7,7 @@ from sqlalchemy import or_, and_
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata
-from zvt.utils import to_pd_timestamp, next_date, current_date
+from zvt.utils import to_pd_timestamp, next_date, current_date, pd_is_not_null
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +126,41 @@ def get_player_success_rate(
     return pd.DataFrame.from_records(records, index="player")
 
 
+def get_players(entity_id, start_timestamp, end_timestamp, provider="em", direction="in", buy_rate=5):
+    columns = ["entity_id", "timestamp"]
+    if direction == "in":
+        for i in range(5):
+            columns.append(f"dep{i + 1}")
+            columns.append(f"dep{i + 1}_rate")
+    elif direction == "out":
+        for i in range(5):
+            columns.append(f"dep_{i + 1}")
+            columns.append(f"dep_{i + 1}_rate")
+
+    df = DragonAndTiger.query_data(
+        entity_id=entity_id,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        provider=provider,
+        columns=columns,
+        index=["entity_id", "timestamp"],
+    )
+    dfs = []
+    if direction == "in":
+        for i in range(5):
+            p_df = df[[f"dep{i + 1}", f"dep{i + 1}_rate"]].copy()
+            p_df.columns = ["player", "buy_rate"]
+            dfs.append(p_df)
+    elif direction == "out":
+        for i in range(5):
+            p_df = df[[f"dep_{i + 1}", f"dep_{i + 1}_rate"]].copy()
+            p_df.columns = ["player", "buy_rate"]
+            dfs.append(p_df)
+
+    player_df = pd.concat(dfs, sort=True)
+    return player_df.sort_index(level=[0, 1])
+
+
 def get_good_players(timestamp=current_date(), recent_days=400, intervals=(3, 5, 10)):
     end_timestamp = next_date(timestamp, -intervals[-1] - 30)
     # recent year
@@ -141,7 +176,9 @@ def get_good_players(timestamp=current_date(), recent_days=400, intervals=(3, 5,
     return good_players
 
 
-def get_entity_list_by_cap(timestamp, cap_start, cap_end, entity_type="stock", provider=None, adjust_type=None):
+def get_entity_list_by_cap(
+    timestamp, cap_start, cap_end, entity_type="stock", provider=None, adjust_type=None, retry_times=20
+):
     if not adjust_type:
         adjust_type = default_adjust_type(entity_type=entity_type)
 
@@ -151,13 +188,26 @@ def get_entity_list_by_cap(timestamp, cap_start, cap_end, entity_type="stock", p
         filters=[kdata_schema.timestamp == to_pd_timestamp(timestamp)],
         index="entity_id",
     )
-    df["cap"] = df["turnover"] / df["turnover_rate"]
-    df_result = df.copy()
-    if cap_start:
-        df_result = df_result.loc[(df["cap"] >= cap_start)]
-    if cap_end:
-        df_result = df_result.loc[(df["cap"] <= cap_end)]
-    return df_result.index.tolist()
+    if pd_is_not_null(df):
+        df["cap"] = df["turnover"] / df["turnover_rate"]
+        df_result = df.copy()
+        if cap_start:
+            df_result = df_result.loc[(df["cap"] >= cap_start)]
+        if cap_end:
+            df_result = df_result.loc[(df["cap"] <= cap_end)]
+        return df_result.index.tolist()
+    else:
+        if retry_times == 0:
+            return []
+        return get_entity_list_by_cap(
+            timestamp=next_date(timestamp, 1),
+            cap_start=cap_start,
+            cap_end=cap_end,
+            entity_type=entity_type,
+            provider=provider,
+            adjust_type=adjust_type,
+            retry_times=retry_times - 1,
+        )
 
 
 def get_big_cap_stock(timestamp, provider="em"):
