@@ -153,7 +153,7 @@ def report_targets(
                 )
 
 
-def report_top_entites(
+def report_top_entities(
     entity_provider,
     data_provider,
     periods=None,
@@ -260,7 +260,7 @@ def report_top_entites(
 
 
 if __name__ == "__main__":
-    report_top_entites(
+    report_top_entities(
         entity_type="stockhk",
         entity_provider="em",
         data_provider="em",
@@ -269,4 +269,4 @@ if __name__ == "__main__":
     )
 
 # the __all__ is generated
-__all__ = ["report_targets", "report_top_entites"]
+__all__ = ["report_targets", "report_top_entities"]
