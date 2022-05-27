@@ -3,7 +3,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.report_utils import report_top_entites
+from examples.report_utils import report_top_entities
 from zvt import init_log
 from zvt.api import TopType
 
@@ -14,7 +14,7 @@ sched = BackgroundScheduler()
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_top_stocks():
-    report_top_entites(
+    report_top_entities(
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
@@ -27,7 +27,7 @@ def report_top_stocks():
         em_group_over_write=True,
         return_type=TopType.positive,
     )
-    report_top_entites(
+    report_top_entities(
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
