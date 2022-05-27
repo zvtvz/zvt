@@ -24,7 +24,7 @@ class TopBottomTransformer(Transformer):
         top_df = top_df.reset_index(level=0, drop=True)
         input_df["top"] = top_df
 
-        bottom_df = input_df["high"].groupby(level=0).rolling(window=self.window, min_periods=self.window).min()
+        bottom_df = input_df["low"].groupby(level=0).rolling(window=self.window, min_periods=self.window).min()
         bottom_df = bottom_df.reset_index(level=0, drop=True)
         input_df["bottom"] = bottom_df
 
