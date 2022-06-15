@@ -18,26 +18,92 @@ def report_top_stocks():
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[3, 8, 30],
+        periods=[3, 8, 15],
         ignore_new_stock=True,
         adjust_type=None,
         top_count=20,
-        turnover_threshold=400000000,
-        turnover_rate_threshold=0.02,
+        turnover_threshold=0,
+        turnover_rate_threshold=0,
+        em_group="短期最强",
         em_group_over_write=True,
         return_type=TopType.positive,
     )
+
     report_top_entities(
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[365],
+        periods=[30, 60],
         ignore_new_stock=True,
         adjust_type=None,
-        top_count=30,
-        turnover_threshold=200000000,
-        turnover_rate_threshold=0.02,
+        top_count=20,
+        turnover_threshold=0,
+        turnover_rate_threshold=0,
+        em_group="中期最强",
         em_group_over_write=True,
+        return_type=TopType.positive,
+    )
+
+    report_top_entities(
+        entity_type="stock",
+        entity_provider="em",
+        data_provider="em",
+        periods=[800],
+        ignore_new_stock=True,
+        adjust_type=None,
+        top_count=40,
+        turnover_threshold=100000000,
+        turnover_rate_threshold=0.01,
+        em_group="谁有我惨",
+        em_group_over_write=True,
+        return_type=TopType.negative,
+    )
+
+
+@sched.scheduled_job("cron", hour=17, minute=20, day_of_week="mon-fri")
+def report_top_stockhk():
+    report_top_entities(
+        entity_type="stockhk",
+        entity_provider="em",
+        data_provider="em",
+        top_count=10,
+        periods=[3, 8, 15],
+        ignore_new_stock=True,
+        adjust_type=None,
+        turnover_threshold=100000000,
+        turnover_rate_threshold=0.002,
+        em_group="短期最强",
+        em_group_over_write=False,
+        return_type=TopType.positive,
+    )
+
+    report_top_entities(
+        entity_type="stockhk",
+        entity_provider="em",
+        data_provider="em",
+        top_count=10,
+        periods=[30, 60],
+        ignore_new_stock=True,
+        adjust_type=None,
+        turnover_threshold=100000000,
+        turnover_rate_threshold=0.002,
+        em_group="中期最强",
+        em_group_over_write=False,
+        return_type=TopType.positive,
+    )
+
+    report_top_entities(
+        entity_type="stockhk",
+        entity_provider="em",
+        data_provider="em",
+        top_count=10,
+        periods=[800],
+        ignore_new_stock=True,
+        adjust_type=None,
+        turnover_threshold=100000000,
+        turnover_rate_threshold=0.002,
+        em_group="谁有我惨",
+        em_group_over_write=False,
         return_type=TopType.negative,
     )
 
@@ -46,6 +112,7 @@ if __name__ == "__main__":
     init_log("report_top_stocks.log")
 
     report_top_stocks()
+    report_top_stockhk()
 
     sched.start()
 

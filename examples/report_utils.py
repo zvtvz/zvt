@@ -163,6 +163,7 @@ def report_top_entities(
     top_count=30,
     turnover_threshold=100000000,
     turnover_rate_threshold=0.02,
+    em_group=None,
     em_group_over_write=True,
     return_type=TopType.positive,
 ):
@@ -243,7 +244,7 @@ def report_top_entities(
                 title=f"{entity_type} {period}日内 {tag}",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
-                em_group=tag,
+                em_group=em_group,
                 em_group_over_write=em_group_over_write,
             )
         else:
@@ -254,7 +255,7 @@ def report_top_entities(
                 title=f"{entity_type} {period}日内 {tag}",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
-                em_group=tag,
+                em_group=em_group,
                 em_group_over_write=False,
             )
 
