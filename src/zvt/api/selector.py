@@ -6,7 +6,8 @@ from sqlalchemy import or_, and_
 
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
-from zvt.domain import DragonAndTiger, Stock1dHfqKdata
+from zvt.contract.api import get_entity_ids
+from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock
 from zvt.utils import to_pd_timestamp, next_date, current_date, pd_is_not_null
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,23 @@ SMALL_CAP = 4000000000
 IN_DEPS = ["dep1", "dep2", "dep3", "dep4", "dep5"]
 # 卖出入榜单
 OUT_DEPS = ["dep_1", "dep_2", "dep_3", "dep_4", "dep_5"]
+
+
+def get_stocks(provider="em", ignore_st=True, ignore_new_stock=True, target_date=None, entity_schema=Stock):
+    filters = []
+    if ignore_new_stock:
+        if not target_date:
+            target_date = current_date()
+        pre_year = next_date(target_date, -365)
+        filters += [entity_schema.timestamp <= pre_year]
+    if ignore_st:
+        filters += [
+            entity_schema.name.not_like("%退%"),
+            entity_schema.name.not_like("%ST%"),
+            entity_schema.name.not_like("%*ST%"),
+        ]
+    entity_ids = get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters)
+    return entity_ids
 
 
 def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction="in"):

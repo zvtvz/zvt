@@ -7,6 +7,7 @@ from examples.utils import add_to_eastmoney
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, get_top_performance_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
+from zvt.api.selector import get_stocks
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities, get_entity_schema, get_entity_ids
 from zvt.contract.factor import Factor
@@ -158,6 +159,7 @@ def report_top_entities(
     data_provider,
     periods=None,
     ignore_new_stock=True,
+    ignore_st=True,
     entity_type="stock",
     adjust_type=None,
     top_count=30,
@@ -177,21 +179,19 @@ def report_top_entities(
     target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
     email_action = EmailInformer()
 
-    # 至少上市一年
-    filter_entity_ids = []
-    if ignore_new_stock:
-        pre_year = next_date(target_date, -365)
+    filter_entity_ids = get_stocks(
+        provider=entity_provider,
+        ignore_st=ignore_st,
+        ignore_new_stock=ignore_new_stock,
+        entity_schema=entity_schema,
+        target_date=target_date,
+    )
 
-        entity_ids = get_entity_ids(
-            provider=entity_provider, entity_schema=entity_schema, filters=[entity_schema.timestamp <= pre_year]
-        )
-
-        if not entity_ids:
-            msg = f"{entity_type} no entity_ids listed one year"
-            logger.error(msg)
-            email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
-            return
-        filter_entity_ids = entity_ids
+    if not filter_entity_ids:
+        msg = f"{entity_type} no entity_ids selected"
+        logger.error(msg)
+        email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+        return
 
     filter_turnover_df = kdata_schema.query_data(
         filters=[
@@ -262,11 +262,19 @@ def report_top_entities(
 
 if __name__ == "__main__":
     report_top_entities(
-        entity_type="stockhk",
+        entity_type="block",
         entity_provider="em",
         data_provider="em",
-        turnover_threshold=0,
-        turnover_rate_threshold=0,
+        top_count=10,
+        periods=[365, 750],
+        ignore_new_stock=False,
+        ignore_st=False,
+        adjust_type=None,
+        turnover_threshold=50000000,
+        turnover_rate_threshold=0.005,
+        em_group=None,
+        em_group_over_write=False,
+        return_type=TopType.negative,
     )
 
 # the __all__ is generated

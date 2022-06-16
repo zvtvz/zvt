@@ -56,27 +56,8 @@ def report_vol_up():
         over_mode="or",
         up_intervals=60,
         turnover_threshold=300000000,
-        turnover_rate_threshold=0.02,
+        turnover_rate_threshold=0.01,
         entity_ids=entity_ids,
-    )
-
-    report_targets(
-        factor_cls=VolumeUpMaFactor,
-        entity_provider="em",
-        data_provider="em",
-        em_group="bull股票",
-        title="放量突破(半)年线板块",
-        entity_type="block",
-        em_group_over_write=True,
-        filter_by_volume=False,
-        adjust_type=AdjustType.qfq,
-        start_timestamp="2019-01-01",
-        # factor args
-        windows=[120, 250],
-        over_mode="or",
-        up_intervals=40,
-        turnover_threshold=10000000000,
-        turnover_rate_threshold=0.02,
     )
 
     report_targets(
@@ -95,7 +76,7 @@ def report_vol_up():
         over_mode="or",
         up_intervals=20,
         turnover_threshold=100000000,
-        turnover_rate_threshold=0.02,
+        turnover_rate_threshold=0.01,
     )
 
 
