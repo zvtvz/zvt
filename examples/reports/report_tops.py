@@ -6,6 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from examples.report_utils import report_top_entities
 from zvt import init_log
 from zvt.api import TopType
+from zvt.domain import Block, BlockCategory
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,47 @@ def report_top_stocks():
 
 
 @sched.scheduled_job("cron", hour=17, minute=20, day_of_week="mon-fri")
-def report_top_stockhk():
+def report_top_blocks():
+    df = Block.query_data(filters=[Block.category == BlockCategory.industry.value], index="entity_id")
+
+    entity_ids = df.index.tolist()
+    report_top_entities(
+        entity_type="block",
+        entity_provider="em",
+        data_provider="em",
+        periods=[3, 8, 30],
+        ignore_new_stock=False,
+        ignore_st=False,
+        adjust_type=None,
+        top_count=10,
+        turnover_threshold=0,
+        turnover_rate_threshold=0,
+        em_group="关注板块",
+        em_group_over_write=True,
+        return_type=TopType.positive,
+        entity_ids=entity_ids,
+    )
+
+    report_top_entities(
+        entity_type="block",
+        entity_provider="em",
+        data_provider="em",
+        periods=[365, 750],
+        ignore_new_stock=False,
+        ignore_st=False,
+        adjust_type=None,
+        top_count=10,
+        turnover_threshold=0,
+        turnover_rate_threshold=0,
+        em_group="关注板块",
+        em_group_over_write=False,
+        return_type=TopType.negative,
+        entity_ids=entity_ids,
+    )
+
+
+@sched.scheduled_job("cron", hour=17, minute=30, day_of_week="mon-fri")
+def report_top_stockhks():
     report_top_entities(
         entity_type="stockhk",
         entity_provider="em",
@@ -118,7 +159,8 @@ if __name__ == "__main__":
     init_log("report_top_stocks.log")
 
     report_top_stocks()
-    report_top_stockhk()
+    report_top_stockhks()
+    report_top_blocks()
 
     sched.start()
 

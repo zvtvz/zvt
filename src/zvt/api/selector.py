@@ -25,7 +25,9 @@ IN_DEPS = ["dep1", "dep2", "dep3", "dep4", "dep5"]
 OUT_DEPS = ["dep_1", "dep_2", "dep_3", "dep_4", "dep_5"]
 
 
-def get_stocks(provider="em", ignore_st=True, ignore_new_stock=True, target_date=None, entity_schema=Stock):
+def get_entity_ids_by_filter(
+    provider="em", ignore_st=True, ignore_new_stock=True, target_date=None, entity_schema=Stock, entity_ids=None
+):
     filters = []
     if ignore_new_stock:
         if not target_date:
@@ -38,8 +40,7 @@ def get_stocks(provider="em", ignore_st=True, ignore_new_stock=True, target_date
             entity_schema.name.not_like("%ST%"),
             entity_schema.name.not_like("%*ST%"),
         ]
-    entity_ids = get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters)
-    return entity_ids
+    return get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters, entity_ids=entity_ids)
 
 
 def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction="in"):

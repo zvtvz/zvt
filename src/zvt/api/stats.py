@@ -60,7 +60,8 @@ def get_top_performance_entities(
     pct=0.1,
     return_type=None,
     adjust_type: Union[AdjustType, str] = None,
-    filters=None,
+    entity_filters=None,
+    kdata_filters=None,
     show_name=False,
     list_days=None,
     entity_provider=None,
@@ -70,22 +71,25 @@ def get_top_performance_entities(
         adjust_type = default_adjust_type(entity_type=entity_type)
     data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
 
+    if not entity_filters:
+        entity_filters = []
     if list_days:
         entity_schema = get_entity_schema(entity_type=entity_type)
         list_date = next_date(start_timestamp, -list_days)
-        ignore_entities = get_entity_ids(
-            provider=entity_provider,
-            entity_type=entity_type,
-            filters=[entity_schema.list_date >= list_date],
-        )
-        if ignore_entities:
-            logger.info(f"ignore size: {len(ignore_entities)}")
-            logger.info(f"ignore entities: {ignore_entities}")
-            f = [data_schema.entity_id.notin_(ignore_entities)]
-            if filters:
-                filters = filters + f
-            else:
-                filters = f
+        entity_filters += [entity_schema.list_date <= list_date]
+
+    filter_entities = get_entity_ids(
+        provider=entity_provider,
+        entity_type=entity_type,
+        filters=entity_filters,
+    )
+    if not filter_entities:
+        logger.warning(f"no entities selected")
+        return None, None
+
+    if not kdata_filters:
+        kdata_filters = []
+    kdata_filters = kdata_filters + [data_schema.entity_id.in_(filter_entities)]
 
     return get_top_entities(
         data_schema=data_schema,
@@ -95,7 +99,7 @@ def get_top_performance_entities(
         pct=pct,
         method=WindowMethod.change,
         return_type=return_type,
-        filters=filters,
+        kdata_filters=kdata_filters,
         show_name=show_name,
         data_provider=data_provider,
     )
@@ -176,7 +180,7 @@ def get_performance(
         pct=1,
         method=WindowMethod.change,
         return_type=TopType.positive,
-        filters=[data_schema.entity_id.in_(entity_ids)],
+        kdata_filters=[data_schema.entity_id.in_(entity_ids)],
         data_provider=data_provider,
     )
     return result
@@ -274,7 +278,7 @@ def get_top_volume_entities(
         pct=pct,
         method=method,
         return_type=return_type,
-        filters=filters,
+        kdata_filters=filters,
         data_provider=data_provider,
     )
     return result
@@ -311,7 +315,7 @@ def get_top_turnover_rate_entities(
         pct=pct,
         method=method,
         return_type=return_type,
-        filters=filters,
+        kdata_filters=filters,
         data_provider=data_provider,
     )
     return result
@@ -325,7 +329,7 @@ def get_top_entities(
     pct=0.1,
     method: WindowMethod = WindowMethod.change,
     return_type: TopType = None,
-    filters=None,
+    kdata_filters=None,
     show_name=False,
     data_provider=None,
 ):
@@ -339,7 +343,8 @@ def get_top_entities(
     :param pct: range (0,1]
     :param method:
     :param return_type:
-    :param filters:
+    :param entity_filters:
+    :param kdata_filters:
     :param show_name: show entity name
     :return:
     """
@@ -358,7 +363,7 @@ def get_top_entities(
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
         columns=columns,
-        filters=filters,
+        filters=kdata_filters,
         provider=data_provider,
     )
     if not pd_is_not_null(all_df):

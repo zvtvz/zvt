@@ -8,7 +8,7 @@ import pandas as pd
 from zvt.contract import IntervalLevel, AdjustType, Mixin
 from zvt.contract.api import decode_entity_id, get_schema_by_name
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
+from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601, to_pd_timestamp
 
 
 def get_latest_kdata_date(
@@ -16,13 +16,13 @@ def get_latest_kdata_date(
     provider: str = None,
     level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY,
     adjust_type: Union[AdjustType, str] = None,
-):
+) -> pd.Timestamp:
     data_schema: Mixin = get_kdata_schema(entity_type, level=level, adjust_type=adjust_type)
 
     latest_data = data_schema.query_data(
         provider=provider, order=data_schema.timestamp.desc(), limit=1, return_type="domain"
     )
-    return latest_data[0].timestamp
+    return to_pd_timestamp(latest_data[0].timestamp)
 
 
 def get_kdata_schema(

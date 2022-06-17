@@ -613,7 +613,13 @@ def get_entities(
 
 
 def get_entity_ids(
-    entity_type="stock", entity_schema: TradableEntity = None, exchanges=None, codes=None, provider=None, filters=None
+    entity_type="stock",
+    entity_schema: TradableEntity = None,
+    exchanges=None,
+    codes=None,
+    provider=None,
+    filters=None,
+    entity_ids=None,
 ):
     """
     get entity ids by the arguments
@@ -624,6 +630,7 @@ def get_entity_ids(
     :param codes:
     :param provider:
     :param filters:
+    :param entity_ids:
     :return:
     """
     df = get_entities(
@@ -633,6 +640,7 @@ def get_entity_ids(
         codes=codes,
         provider=provider,
         filters=filters,
+        entity_ids=entity_ids,
     )
     if pd_is_not_null(df):
         return df["entity_id"].to_list()

@@ -7,9 +7,9 @@ from examples.utils import add_to_eastmoney
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, get_top_performance_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
-from zvt.api.selector import get_stocks
+from zvt.api.selector import get_entity_ids_by_filter
 from zvt.contract import IntervalLevel
-from zvt.contract.api import get_entities, get_entity_schema, get_entity_ids
+from zvt.contract.api import get_entities, get_entity_schema
 from zvt.contract.factor import Factor
 from zvt.factors import TargetSelector, SelectMode
 from zvt.informer import EmailInformer
@@ -160,6 +160,7 @@ def report_top_entities(
     periods=None,
     ignore_new_stock=True,
     ignore_st=True,
+    entity_ids=None,
     entity_type="stock",
     adjust_type=None,
     top_count=30,
@@ -179,12 +180,13 @@ def report_top_entities(
     target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
     email_action = EmailInformer()
 
-    filter_entity_ids = get_stocks(
+    filter_entity_ids = get_entity_ids_by_filter(
         provider=entity_provider,
         ignore_st=ignore_st,
         ignore_new_stock=ignore_new_stock,
         entity_schema=entity_schema,
         target_date=target_date,
+        entity_ids=entity_ids,
     )
 
     if not filter_entity_ids:
@@ -217,11 +219,14 @@ def report_top_entities(
     logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
     filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
     for i, period in enumerate(periods):
-        start = next_date(target_date, -period)
+        interval = period
+        if target_date.weekday() + 1 < interval:
+            interval = interval + 2
+        start = next_date(target_date, -interval)
         positive_df, negative_df = get_top_performance_entities(
             entity_type=entity_type,
             start_timestamp=start,
-            filters=filters,
+            kdata_filters=filters,
             pct=1,
             show_name=True,
             entity_provider=entity_provider,
