@@ -77,7 +77,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
         except Exception as e:
             self.fetch_jq_timestamp = False
             self.logger.warning(
-                f"joinquant account not ok,the timestamp(publish date) for finance would be not correct", e
+                f"joinquant account not ok,the timestamp(publish date) for finance would be not correct. {e}"
             )
 
     def init_timestamps(self, entity):

@@ -170,98 +170,109 @@ def report_top_entities(
     em_group_over_write=True,
     return_type=TopType.positive,
 ):
-    if periods is None:
-        periods = [7, 30, 365]
-    if not adjust_type:
-        adjust_type = default_adjust_type(entity_type=entity_type)
-    kdata_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
-    entity_schema = get_entity_schema(entity_type=entity_type)
+    error_count = 0
 
-    target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
+    while error_count <= 10:
+        try:
+            if periods is None:
+                periods = [7, 30, 365]
+            if not adjust_type:
+                adjust_type = default_adjust_type(entity_type=entity_type)
+            kdata_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
+            entity_schema = get_entity_schema(entity_type=entity_type)
 
-    filter_entity_ids = get_entity_ids_by_filter(
-        provider=entity_provider,
-        ignore_st=ignore_st,
-        ignore_new_stock=ignore_new_stock,
-        entity_schema=entity_schema,
-        target_date=target_date,
-        entity_ids=entity_ids,
-    )
-
-    if not filter_entity_ids:
-        msg = f"{entity_type} no entity_ids selected"
-        logger.error(msg)
-        informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
-        return
-
-    filter_turnover_df = kdata_schema.query_data(
-        filters=[
-            kdata_schema.turnover >= turnover_threshold,
-            kdata_schema.turnover_rate >= turnover_rate_threshold,
-        ],
-        provider=data_provider,
-        start_timestamp=target_date,
-        index="entity_id",
-        columns=["entity_id", "code"],
-    )
-    if filter_entity_ids:
-        filter_entity_ids = set(filter_entity_ids) & set(filter_turnover_df.index.tolist())
-    else:
-        filter_entity_ids = filter_turnover_df.index.tolist()
-
-    if not filter_entity_ids:
-        msg = f"{entity_type} no entity_ids selected"
-        logger.error(msg)
-        informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
-        return
-
-    logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
-    filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
-    for i, period in enumerate(periods):
-        interval = period
-        if target_date.weekday() + 1 < interval:
-            interval = interval + 2
-        start = next_date(target_date, -interval)
-        positive_df, negative_df = get_top_performance_entities(
-            entity_type=entity_type,
-            start_timestamp=start,
-            kdata_filters=filters,
-            pct=1,
-            show_name=True,
-            entity_provider=entity_provider,
-            data_provider=data_provider,
-            return_type=return_type,
-        )
-
-        if return_type == TopType.positive:
-            tag = "最靓仔"
-            df = positive_df
-        else:
-            tag = "谁有我惨"
-            df = negative_df
-
-        if i == 0:
-            inform(
-                informer,
-                entity_ids=df.index[:top_count].tolist(),
-                target_date=target_date,
-                title=f"{entity_type} {period}日内 {tag}",
-                entity_provider=entity_provider,
-                entity_type=entity_type,
-                em_group=em_group,
-                em_group_over_write=em_group_over_write,
+            target_date = get_latest_kdata_date(
+                provider=data_provider, entity_type=entity_type, adjust_type=adjust_type
             )
-        else:
-            inform(
-                informer,
-                entity_ids=df.index[:top_count].tolist(),
+
+            filter_entity_ids = get_entity_ids_by_filter(
+                provider=entity_provider,
+                ignore_st=ignore_st,
+                ignore_new_stock=ignore_new_stock,
+                entity_schema=entity_schema,
                 target_date=target_date,
-                title=f"{entity_type} {period}日内 {tag}",
-                entity_provider=entity_provider,
-                entity_type=entity_type,
-                em_group=em_group,
-                em_group_over_write=False,
+                entity_ids=entity_ids,
             )
+
+            if not filter_entity_ids:
+                msg = f"{entity_type} no entity_ids selected"
+                logger.error(msg)
+                informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+                return
+
+            filter_turnover_df = kdata_schema.query_data(
+                filters=[
+                    kdata_schema.turnover >= turnover_threshold,
+                    kdata_schema.turnover_rate >= turnover_rate_threshold,
+                ],
+                provider=data_provider,
+                start_timestamp=target_date,
+                index="entity_id",
+                columns=["entity_id", "code"],
+            )
+            if filter_entity_ids:
+                filter_entity_ids = set(filter_entity_ids) & set(filter_turnover_df.index.tolist())
+            else:
+                filter_entity_ids = filter_turnover_df.index.tolist()
+
+            if not filter_entity_ids:
+                msg = f"{entity_type} no entity_ids selected"
+                logger.error(msg)
+                informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+                return
+
+            logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
+            filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
+            for i, period in enumerate(periods):
+                interval = period
+                if target_date.weekday() + 1 < interval:
+                    interval = interval + 2
+                start = next_date(target_date, -interval)
+                positive_df, negative_df = get_top_performance_entities(
+                    entity_type=entity_type,
+                    start_timestamp=start,
+                    kdata_filters=filters,
+                    pct=1,
+                    show_name=True,
+                    entity_provider=entity_provider,
+                    data_provider=data_provider,
+                    return_type=return_type,
+                )
+
+                if return_type == TopType.positive:
+                    tag = "最靓仔"
+                    df = positive_df
+                else:
+                    tag = "谁有我惨"
+                    df = negative_df
+
+                if i == 0:
+                    inform(
+                        informer,
+                        entity_ids=df.index[:top_count].tolist(),
+                        target_date=target_date,
+                        title=f"{entity_type} {period}日内 {tag}",
+                        entity_provider=entity_provider,
+                        entity_type=entity_type,
+                        em_group=em_group,
+                        em_group_over_write=em_group_over_write,
+                    )
+                else:
+                    inform(
+                        informer,
+                        entity_ids=df.index[:top_count].tolist(),
+                        target_date=target_date,
+                        title=f"{entity_type} {period}日内 {tag}",
+                        entity_provider=entity_provider,
+                        entity_type=entity_type,
+                        em_group=em_group,
+                        em_group_over_write=False,
+                    )
+            break
+        except Exception as e:
+            logger.exception("report error:{}".format(e))
+            time.sleep(30)
+            error_count = error_count + 1
 
 
 if __name__ == "__main__":

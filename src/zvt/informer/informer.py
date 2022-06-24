@@ -27,36 +27,40 @@ class EmailInformer(Informer):
     def send_message_(self, to_user, title, body, **kwargs):
         host = zvt_config["smtp_host"]
         port = zvt_config["smtp_port"]
-        if self.ssl:
-            try:
-                smtp_client = smtplib.SMTP_SSL(host=host, port=port)
-            except:
-                smtp_client = smtplib.SMTP_SSL()
-        else:
-            try:
-                smtp_client = smtplib.SMTP(host=host, port=port)
-            except:
-                smtp_client = smtplib.SMTP()
 
-        smtp_client.connect(host=host, port=port)
-        smtp_client.login(zvt_config["email_username"], zvt_config["email_password"])
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = Header(title).encode()
-        msg["From"] = "{} <{}>".format(Header("zvt").encode(), zvt_config["email_username"])
-        if type(to_user) is list:
-            msg["To"] = ", ".join(to_user)
-        else:
-            msg["To"] = to_user
-        msg["Message-id"] = email.utils.make_msgid()
-        msg["Date"] = email.utils.formatdate()
-
-        plain_text = MIMEText(body, _subtype="plain", _charset="UTF-8")
-        msg.attach(plain_text)
-
+        smtp_client = None
         try:
+            if self.ssl:
+                try:
+                    smtp_client = smtplib.SMTP_SSL(host=host, port=port)
+                except:
+                    smtp_client = smtplib.SMTP_SSL()
+            else:
+                try:
+                    smtp_client = smtplib.SMTP(host=host, port=port)
+                except:
+                    smtp_client = smtplib.SMTP()
+
+            smtp_client.connect(host=host, port=port)
+            smtp_client.login(zvt_config["email_username"], zvt_config["email_password"])
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = Header(title).encode()
+            msg["From"] = "{} <{}>".format(Header("zvt").encode(), zvt_config["email_username"])
+            if type(to_user) is list:
+                msg["To"] = ", ".join(to_user)
+            else:
+                msg["To"] = to_user
+            msg["Message-id"] = email.utils.make_msgid()
+            msg["Date"] = email.utils.formatdate()
+
+            plain_text = MIMEText(body, _subtype="plain", _charset="UTF-8")
+            msg.attach(plain_text)
             smtp_client.sendmail(zvt_config["email_username"], to_user, msg.as_string())
         except Exception as e:
             self.logger.exception("send email failed", e)
+        finally:
+            if smtp_client:
+                smtp_client.quit()
 
     def send_message(self, to_user, title, body, sub_size=20, with_sender=True, **kwargs):
         if type(to_user) is list and sub_size:
