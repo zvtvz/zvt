@@ -49,6 +49,7 @@ def report_targets(
     data_provider,
     title,
     entity_type="stock",
+    informer: EmailInformer = None,
     em_group=None,
     em_group_over_write=True,
     filter_by_volume=True,
@@ -62,8 +63,6 @@ def report_targets(
     error_count = 0
 
     while error_count <= 10:
-        email_action = EmailInformer()
-
         try:
             if not adjust_type:
                 adjust_type = default_adjust_type(entity_type=entity_type)
@@ -131,7 +130,7 @@ def report_targets(
             long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
 
             inform(
-                email_action,
+                informer,
                 entity_ids=long_stocks,
                 target_date=target_date,
                 title=title,
@@ -147,7 +146,7 @@ def report_targets(
             time.sleep(60 * 3)
             error_count = error_count + 1
             if error_count == 10:
-                email_action.send_message(
+                informer.send_message(
                     zvt_config["email_username"],
                     f"report {entity_type}{factor_cls.__name__} error",
                     f"report {entity_type}{factor_cls.__name__} error: {e}",
@@ -166,6 +165,7 @@ def report_top_entities(
     top_count=30,
     turnover_threshold=100000000,
     turnover_rate_threshold=0.02,
+    informer: EmailInformer = None,
     em_group=None,
     em_group_over_write=True,
     return_type=TopType.positive,
@@ -178,7 +178,6 @@ def report_top_entities(
     entity_schema = get_entity_schema(entity_type=entity_type)
 
     target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
-    email_action = EmailInformer()
 
     filter_entity_ids = get_entity_ids_by_filter(
         provider=entity_provider,
@@ -192,7 +191,7 @@ def report_top_entities(
     if not filter_entity_ids:
         msg = f"{entity_type} no entity_ids selected"
         logger.error(msg)
-        email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+        informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
         return
 
     filter_turnover_df = kdata_schema.query_data(
@@ -213,7 +212,7 @@ def report_top_entities(
     if not filter_entity_ids:
         msg = f"{entity_type} no entity_ids selected"
         logger.error(msg)
-        email_action.send_message(zvt_config["email_username"], "report_top_stats error", msg)
+        informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
         return
 
     logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
@@ -243,7 +242,7 @@ def report_top_entities(
 
         if i == 0:
             inform(
-                email_action,
+                informer,
                 entity_ids=df.index[:top_count].tolist(),
                 target_date=target_date,
                 title=f"{entity_type} {period}日内 {tag}",
@@ -254,7 +253,7 @@ def report_top_entities(
             )
         else:
             inform(
-                email_action,
+                informer,
                 entity_ids=df.index[:top_count].tolist(),
                 target_date=target_date,
                 title=f"{entity_type} {period}日内 {tag}",

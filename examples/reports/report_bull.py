@@ -9,10 +9,12 @@ from zvt import init_log
 from zvt.api import get_latest_kdata_date
 from zvt.api.selector import get_middle_and_big_stock
 from zvt.contract import AdjustType
+from zvt.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
 
 sched = BackgroundScheduler()
+email_informer = EmailInformer()
 
 
 @sched.scheduled_job("cron", hour=18, minute=0, day_of_week="mon-fri")
@@ -26,6 +28,7 @@ def report_bull():
         data_provider="em",
         title="bull股票",
         entity_type="stock",
+        informer=email_informer,
         em_group="bull股票",
         em_group_over_write=False,
         filter_by_volume=False,
@@ -41,6 +44,7 @@ def report_bull():
         data_provider="em",
         title="bull板块",
         entity_type="block",
+        informer=email_informer,
         em_group="bull股票",
         em_group_over_write=False,
         filter_by_volume=False,

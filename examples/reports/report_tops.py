@@ -7,14 +7,18 @@ from examples.report_utils import report_top_entities
 from zvt import init_log
 from zvt.api import TopType
 from zvt.domain import Block, BlockCategory
+from zvt.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
 
 sched = BackgroundScheduler()
 
+email_informer = EmailInformer()
+
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_top_stocks():
+
     report_top_entities(
         entity_type="stock",
         entity_provider="em",
@@ -26,6 +30,7 @@ def report_top_stocks():
         top_count=20,
         turnover_threshold=0,
         turnover_rate_threshold=0,
+        informer=email_informer,
         em_group="短期最强",
         em_group_over_write=True,
         return_type=TopType.positive,
@@ -42,6 +47,7 @@ def report_top_stocks():
         top_count=20,
         turnover_threshold=0,
         turnover_rate_threshold=0,
+        informer=email_informer,
         em_group="中期最强",
         em_group_over_write=True,
         return_type=TopType.positive,
@@ -58,6 +64,7 @@ def report_top_stocks():
         top_count=25,
         turnover_threshold=100000000,
         turnover_rate_threshold=0.01,
+        informer=email_informer,
         em_group="谁有我惨",
         em_group_over_write=True,
         return_type=TopType.negative,
@@ -80,6 +87,7 @@ def report_top_blocks():
         top_count=10,
         turnover_threshold=0,
         turnover_rate_threshold=0,
+        informer=email_informer,
         em_group="关注板块",
         em_group_over_write=True,
         return_type=TopType.positive,
@@ -97,6 +105,7 @@ def report_top_blocks():
         top_count=10,
         turnover_threshold=0,
         turnover_rate_threshold=0,
+        informer=email_informer,
         em_group="关注板块",
         em_group_over_write=False,
         return_type=TopType.negative,
@@ -116,7 +125,8 @@ def report_top_stockhks():
         ignore_st=False,
         adjust_type=None,
         turnover_threshold=50000000,
-        turnover_rate_threshold=0.005,
+        turnover_rate_threshold=0.001,
+        informer=email_informer,
         em_group="短期最强",
         em_group_over_write=False,
         return_type=TopType.positive,
@@ -132,7 +142,8 @@ def report_top_stockhks():
         ignore_st=False,
         adjust_type=None,
         turnover_threshold=50000000,
-        turnover_rate_threshold=0.005,
+        turnover_rate_threshold=0.001,
+        informer=email_informer,
         em_group="中期最强",
         em_group_over_write=False,
         return_type=TopType.positive,
@@ -142,13 +153,14 @@ def report_top_stockhks():
         entity_type="stockhk",
         entity_provider="em",
         data_provider="em",
-        top_count=10,
+        top_count=20,
         periods=[365, 750],
         ignore_new_stock=True,
         ignore_st=False,
         adjust_type=None,
         turnover_threshold=50000000,
         turnover_rate_threshold=0.005,
+        informer=email_informer,
         em_group="谁有我惨",
         em_group_over_write=False,
         return_type=TopType.negative,
@@ -156,11 +168,11 @@ def report_top_stockhks():
 
 
 if __name__ == "__main__":
-    init_log("report_top_stocks.log")
+    init_log("report_tops.log")
 
     report_top_stocks()
-    report_top_stockhks()
     report_top_blocks()
+    report_top_stockhks()
 
     sched.start()
 

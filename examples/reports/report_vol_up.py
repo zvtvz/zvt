@@ -9,20 +9,25 @@ from zvt.api.kdata import get_latest_kdata_date
 from zvt.api.selector import get_mini_and_small_stock, get_middle_and_big_stock
 from zvt.contract import AdjustType
 from zvt.factors import VolumeUpMaFactor
+from zvt.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
 
 sched = BackgroundScheduler()
+
+email_informer = EmailInformer()
 
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_vol_up():
     target_date = get_latest_kdata_date(entity_type="stock", adjust_type=AdjustType.hfq, provider="em")
     entity_ids = get_mini_and_small_stock(timestamp=target_date, provider="em")
+
     report_targets(
         factor_cls=VolumeUpMaFactor,
         entity_provider="em",
         data_provider="em",
+        informer=email_informer,
         em_group="年线股票",
         title="放量突破(半)年线小市值股票",
         entity_type="stock",
@@ -44,6 +49,7 @@ def report_vol_up():
         factor_cls=VolumeUpMaFactor,
         entity_provider="em",
         data_provider="em",
+        informer=email_informer,
         em_group="年线股票",
         title="放量突破(半)年线大市值股票",
         entity_type="stock",
@@ -64,6 +70,7 @@ def report_vol_up():
         factor_cls=VolumeUpMaFactor,
         entity_provider="em",
         data_provider="em",
+        informer=email_informer,
         em_group="年线股票",
         title="放量突破(半)年线港股",
         entity_type="stockhk",
