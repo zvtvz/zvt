@@ -41,9 +41,11 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
 
     # 报告新概念和行业
     email_action = EmailInformer()
-    list_date = next_date(current_date(), -90)
     df = Block.query_data(
-        filters=[Block.category == BlockCategory.concept.value, Block.list_date >= list_date], index="entity_id"
+        filters=[Block.category == BlockCategory.concept.value],
+        order=Block.list_date.desc(),
+        index="entity_id",
+        limit=5,
     )
 
     inform(
@@ -53,8 +55,8 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
         title="report 新概念",
         entity_provider=entity_provider,
         entity_type="block",
-        em_group="新概念",
-        em_group_over_write=False,
+        em_group="关注板块",
+        em_group_over_write=True,
     )
 
 
