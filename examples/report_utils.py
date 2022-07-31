@@ -223,6 +223,7 @@ def report_top_entities(
 
             logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
             filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
+            selected = []
             for i, period in enumerate(periods):
                 interval = period
                 if target_date.weekday() + 1 < interval:
@@ -240,34 +241,21 @@ def report_top_entities(
                 )
 
                 if return_type == TopType.positive:
-                    tag = "最靓仔"
                     df = positive_df
                 else:
-                    tag = "谁有我惨"
                     df = negative_df
+                selected = selected + df.index[:top_count].tolist()
 
-                if i == 0:
-                    inform(
-                        informer,
-                        entity_ids=df.index[:top_count].tolist(),
-                        target_date=target_date,
-                        title=f"{entity_type} {period}日内 {tag}",
-                        entity_provider=entity_provider,
-                        entity_type=entity_type,
-                        em_group=em_group,
-                        em_group_over_write=em_group_over_write,
-                    )
-                else:
-                    inform(
-                        informer,
-                        entity_ids=df.index[:top_count].tolist(),
-                        target_date=target_date,
-                        title=f"{entity_type} {period}日内 {tag}",
-                        entity_provider=entity_provider,
-                        entity_type=entity_type,
-                        em_group=em_group,
-                        em_group_over_write=False,
-                    )
+            inform(
+                informer,
+                entity_ids=selected,
+                target_date=target_date,
+                title=f"{entity_type} {em_group}({len(selected)})",
+                entity_provider=entity_provider,
+                entity_type=entity_type,
+                em_group=em_group,
+                em_group_over_write=em_group_over_write,
+            )
             break
         except Exception as e:
             logger.exception("report error:{}".format(e))
