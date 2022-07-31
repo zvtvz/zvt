@@ -245,6 +245,7 @@ def report_top_entities(
                 else:
                     df = negative_df
                 selected = selected + df.index[:top_count].tolist()
+                selected = list(dict.fromkeys(selected))
 
             inform(
                 informer,
