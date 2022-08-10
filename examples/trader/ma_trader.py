@@ -72,7 +72,7 @@ if __name__ == "__main__":
         codes=["000338"],
         level=IntervalLevel.LEVEL_1DAY,
         start_timestamp="2019-01-01",
-        end_timestamp="2020-06-30",
+        end_timestamp="2019-06-30",
         trader_name="000338_ma_trader",
     ).run()
 

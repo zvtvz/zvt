@@ -44,7 +44,7 @@ class DataReader(Drawable):
     def __init__(
         self,
         data_schema: Type[Mixin],
-        entity_schema: Type[TradableEntity],
+        entity_schema: Type[TradableEntity] = None,
         provider: str = None,
         entity_provider: str = None,
         entity_ids: List[str] = None,
@@ -76,7 +76,7 @@ class DataReader(Drawable):
         self.entity_ids = entity_ids
 
         # 转换成标准entity_id
-        if not self.entity_ids:
+        if entity_schema and not self.entity_ids:
             df = get_entities(
                 entity_schema=entity_schema, provider=self.entity_provider, exchanges=self.exchanges, codes=self.codes
             )
