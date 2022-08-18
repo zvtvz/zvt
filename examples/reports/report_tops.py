@@ -23,7 +23,7 @@ def report_top_stocks():
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[*range(2, 16)],
+        periods=[*range(2, 21)],
         ignore_new_stock=True,
         ignore_st=True,
         adjust_type=None,
@@ -40,7 +40,7 @@ def report_top_stocks():
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[30, 45, 60],
+        periods=[*range(21, 60)],
         ignore_new_stock=True,
         ignore_st=True,
         adjust_type=None,
@@ -53,25 +53,25 @@ def report_top_stocks():
         return_type=TopType.positive,
     )
 
-    report_top_entities(
-        entity_type="stock",
-        entity_provider="em",
-        data_provider="em",
-        periods=[365, 750],
-        ignore_new_stock=False,
-        ignore_st=True,
-        adjust_type=None,
-        top_count=25,
-        turnover_threshold=100000000,
-        turnover_rate_threshold=0.01,
-        informer=email_informer,
-        em_group="谁有我惨",
-        em_group_over_write=True,
-        return_type=TopType.negative,
-    )
+    # report_top_entities(
+    #     entity_type="stock",
+    #     entity_provider="em",
+    #     data_provider="em",
+    #     periods=[365, 750],
+    #     ignore_new_stock=False,
+    #     ignore_st=True,
+    #     adjust_type=None,
+    #     top_count=25,
+    #     turnover_threshold=100000000,
+    #     turnover_rate_threshold=0.01,
+    #     informer=email_informer,
+    #     em_group="谁有我惨",
+    #     em_group_over_write=True,
+    #     return_type=TopType.negative,
+    # )
 
 
-@sched.scheduled_job("cron", hour=17, minute=20, day_of_week="mon-fri")
+@sched.scheduled_job("cron", hour=17, minute=30, day_of_week="mon-fri")
 def report_top_blocks():
     df = Block.query_data(filters=[Block.category == BlockCategory.industry.value], index="entity_id")
 
@@ -80,7 +80,7 @@ def report_top_blocks():
         entity_type="block",
         entity_provider="em",
         data_provider="em",
-        periods=[3, 5, 8, 30],
+        periods=[*range(2, 30)],
         ignore_new_stock=False,
         ignore_st=False,
         adjust_type=None,
@@ -88,17 +88,20 @@ def report_top_blocks():
         turnover_threshold=0,
         turnover_rate_threshold=0,
         informer=email_informer,
-        em_group="关注板块",
-        em_group_over_write=False,
+        em_group="最强行业",
+        em_group_over_write=True,
         return_type=TopType.positive,
         entity_ids=entity_ids,
     )
 
+    df = Block.query_data(filters=[Block.category == BlockCategory.concept.value], index="entity_id")
+    df = df[~df.name.str.contains("昨日")]
+    entity_ids = df.index.tolist()
     report_top_entities(
         entity_type="block",
         entity_provider="em",
         data_provider="em",
-        periods=[365, 750],
+        periods=[*range(2, 30)],
         ignore_new_stock=False,
         ignore_st=False,
         adjust_type=None,
@@ -106,9 +109,9 @@ def report_top_blocks():
         turnover_threshold=0,
         turnover_rate_threshold=0,
         informer=email_informer,
-        em_group="关注板块",
-        em_group_over_write=False,
-        return_type=TopType.negative,
+        em_group="最强概念",
+        em_group_over_write=True,
+        return_type=TopType.positive,
         entity_ids=entity_ids,
     )
 
@@ -172,7 +175,7 @@ if __name__ == "__main__":
 
     report_top_stocks()
     report_top_blocks()
-    report_top_stockhks()
+    # report_top_stockhks()
 
     sched.start()
 
