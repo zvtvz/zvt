@@ -217,7 +217,7 @@ def del_data(data_schema: Type[Mixin], filters: List = None, provider=None):
     session.commit()
 
 
-def get_one(data_schema, id: str, provider: str = None, session: Session = None):
+def get_by_id(data_schema, id: str, provider: str = None, session: Session = None):
     """
     get one record by id from data schema
 
@@ -661,7 +661,7 @@ __all__ = [
     "get_schema_columns",
     "common_filter",
     "del_data",
-    "get_one",
+    "get_by_id",
     "get_data",
     "data_exist",
     "get_data_count",

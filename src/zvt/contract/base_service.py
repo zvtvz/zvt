@@ -69,7 +69,7 @@ class OneStateService(StatefulService):
 
     def __init__(self) -> None:
         super().__init__()
-        self.state_domain = self.state_schema.get_one(id=self.name)
+        self.state_domain = self.state_schema.get_by_id(id=self.name)
         if self.state_domain:
             self.state: dict = self.decode_state(self.state_domain.state)
         else:
@@ -106,7 +106,7 @@ class EntityStateService(StatefulService):
         state = self.states.get(entity_id)
         if state:
             domain_id = f"{self.name}_{entity_id}"
-            state_domain = self.state_schema.get_one(domain_id)
+            state_domain = self.state_schema.get_by_id(domain_id)
             state_str = self.encode_state(state)
             if not state_domain:
                 state_domain = self.state_schema(id=domain_id, entity_id=entity_id, state_name=self.name)

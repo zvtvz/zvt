@@ -90,12 +90,12 @@ class Mixin(object):
                     assert item[0][k] == data[k]
 
     @classmethod
-    def get_one(cls, id, provider_index: int = 0, provider: str = None):
-        from .api import get_one
+    def get_by_id(cls, id, provider_index: int = 0, provider: str = None):
+        from .api import get_by_id
 
         if not provider:
             provider = cls.providers[provider_index]
-        return get_one(data_schema=cls, id=id, provider=provider)
+        return get_by_id(data_schema=cls, id=id, provider=provider)
 
     @classmethod
     def query_data(

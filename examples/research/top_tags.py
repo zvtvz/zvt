@@ -7,10 +7,10 @@ from zvt.utils import next_date, month_end_date, is_same_date
 # 每月涨幅前30，市值90%分布在100亿以下
 # 重复上榜的有1/4左右
 # 连续两个月上榜的1/10左右
-def top_tags(data_provider="em", start_timestamp="2010-01-01"):
+def top_tags(data_provider="em", start_timestamp="2020-01-01", end_timestamp="2021-01-01"):
     records = []
     for _, timestamp, df in get_top_performance_by_month(
-        start_timestamp=start_timestamp, list_days=250, data_provider=data_provider
+        start_timestamp=start_timestamp, end_timestamp=end_timestamp, list_days=250, data_provider=data_provider
     ):
         for entity_id in df.index[:30]:
             query_timestamp = timestamp

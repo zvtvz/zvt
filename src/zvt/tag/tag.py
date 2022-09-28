@@ -46,7 +46,7 @@ class Tagger(OneStateService):
     def get_tag_domain(self, entity_id, timestamp, **fill_kv):
         the_date = to_time_str(timestamp, fmt=TIME_FORMAT_DAY)
         the_id = f"{entity_id}_{the_date}"
-        the_domain = self.data_schema.get_one(id=the_id)
+        the_domain = self.data_schema.get_by_id(id=the_id)
 
         if the_domain:
             for k, v in fill_kv.items():

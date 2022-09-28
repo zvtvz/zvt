@@ -126,10 +126,10 @@ class AdjustType(Enum):
     #: 不复权
     bfq = "bfq"
     #: pre adjusted
-    #: 不复权
+    #: 前复权
     qfq = "qfq"
     #: post adjusted
-    #: 不复权
+    #: 后复权
     hfq = "hfq"
 
 

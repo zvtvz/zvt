@@ -449,20 +449,29 @@ def show_industry_composition(entity_ids, timestamp):
     drawer.draw_pie(show=True)
 
 
-if __name__ == "__main__":
-    df = get_performance_stats_by_month()
-    print(df)
-    dfs = []
-    for timestamp, _, df in get_top_performance_by_month(start_timestamp="2012-01-01", list_days=250):
-        if pd_is_not_null(df):
-            entity_ids = df.index.tolist()
-            the_date = pre_month_end_date(timestamp)
-            show_industry_composition(entity_ids=entity_ids, timestamp=timestamp)
-    for entity_id in df.index:
-        from zvt.utils.time_utils import month_end_date, pre_month_start_date
+def get_change_ratio(
+    entity_type="stock",
+    start_timestamp=None,
+    end_timestamp=None,
+    adjust_type: Union[AdjustType, str] = None,
+    provider="em",
+):
+    def cal_ratio(df):
+        positive = df[df["direction"]]
+        other = df[~df["direction"]]
+        return len(positive) / len(other)
 
-        end_date = month_end_date(pre_month_start_date(timestamp))
-        TechnicalFactor(entity_ids=[entity_id], end_timestamp=end_date).draw(show=True)
+    if not adjust_type:
+        adjust_type = default_adjust_type(entity_type=entity_type)
+    data_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
+    kdata_df = data_schema.query_data(provider=provider, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+    kdata_df["direction"] = kdata_df["change_pct"] > 0
+    ratio_df = kdata_df.groupby("timestamp").apply(lambda df: cal_ratio(df))
+    return ratio_df
+
+
+if __name__ == "__main__":
+    get_change_ratio(start_timestamp="2022-06-01")
 
 # the __all__ is generated
 __all__ = [

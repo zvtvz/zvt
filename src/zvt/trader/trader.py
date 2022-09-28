@@ -308,9 +308,6 @@ class Trader(object):
         self.on_trading_finish(timestmap)
         # show the result
         if self.draw_result:
-            import plotly.io as pio
-
-            pio.renderers.default = "browser"
             reader = AccountStatsReader(trader_names=[self.trader_name])
             df = reader.data_df
             drawer = Drawer(
