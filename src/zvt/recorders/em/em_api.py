@@ -720,6 +720,7 @@ if __name__ == "__main__":
 __all__ = [
     "get_treasury_yield",
     "get_ii_holder_report_dates",
+    "get_dragon_and_tiger_list",
     "get_dragon_and_tiger",
     "get_holder_report_dates",
     "get_free_holder_report_dates",

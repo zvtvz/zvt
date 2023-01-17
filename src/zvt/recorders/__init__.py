@@ -102,6 +102,12 @@ from .consts import __all__ as _consts_all
 
 __all__ += _consts_all
 
+# import all from submodule jqka
+from .jqka import *
+from .jqka import __all__ as _jqka_all
+
+__all__ += _jqka_all
+
 # import all from submodule eastmoney
 from .eastmoney import *
 from .eastmoney import __all__ as _eastmoney_all
