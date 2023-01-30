@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import dash_core_components as dcc
+from dash import dcc
 
 from zvt.api.kdata import get_kdata_schema
 from zvt.api.trader_info_api import OrderReader, AccountStatsReader

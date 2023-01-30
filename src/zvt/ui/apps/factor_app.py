@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
-import dash_core_components as dcc
+from dash import dcc
 import dash_daq as daq
 import dash_html_components as html
 from dash import dash
@@ -284,7 +284,7 @@ def update_column_selector(schema_name):
         Input("levels-selector", "value"),
         Input("schema-column-selector", "value"),
     ],
-    state=[State("trader-selector", "value"), State("data-selector", "value")],
+    [State("trader-selector", "value"), State("data-selector", "value")],
 )
 def update_factor_details(factor, entity_type, entity, levels, columns, trader_index, schema_name):
     if factor and entity_type and entity and levels:

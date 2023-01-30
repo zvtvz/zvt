@@ -16,7 +16,6 @@ def serve_layout():
                 dbc.Tabs(
                     [dbc.Tab(label="factor", tab_id="tab-factor", label_style={}, tab_style={"width": "100px"})],
                     id="card-tabs",
-                    card=True,
                     active_tab="tab-factor",
                 )
             ),
