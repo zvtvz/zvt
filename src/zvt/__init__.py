@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import importlib
 import json
 import logging
 import os
-import pkgutil
 import pprint
 from logging.handlers import RotatingFileHandler
 
@@ -153,16 +151,6 @@ def init_config(pkg_name: str = None, current_config: dict = None, **kwargs) -> 
     logger.info(f"current_config:{current_config}")
 
     return current_config
-
-
-def init_plugins():
-    for finder, name, ispkg in pkgutil.iter_modules():
-        if name.startswith("zvt_"):
-            try:
-                _plugins[name] = importlib.import_module(name)
-            except Exception as e:
-                logger.warning(f"failed to load plugin {name}", e)
-    logger.info(f"loaded plugins:{_plugins}")
 
 
 if os.getenv("TESTING_ZVT"):
