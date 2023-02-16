@@ -13,4 +13,4 @@ jqdatapy==0.1.8
 dash-bootstrap-components==0.11.0
 dash_daq==0.5.0
 scikit-learn==1.0.1
-Werkzeug==2.0.0
+Werkzeug==2.2.3
