@@ -6,7 +6,6 @@ import pandas as pd
 from zvt.contract import IntervalLevel
 from zvt.contract.factor import Factor, Transformer, Accumulator
 from zvt.domain import Stock, DragonAndTiger
-from zvt.factors import TargetSelector
 from zvt.trader import StockTrader
 
 
@@ -27,7 +26,7 @@ class DragonTigerFactor(Factor):
         level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
         keep_all_timestamp: bool = False,
         fill_method: str = "ffill",
         effective_number: int = None,
@@ -56,7 +55,7 @@ class DragonTigerFactor(Factor):
             level,
             category_field,
             time_field,
-            computing_window,
+            keep_window,
             keep_all_timestamp,
             fill_method,
             effective_number,
@@ -75,20 +74,10 @@ class DragonTigerFactor(Factor):
 
 
 class MyTrader(StockTrader):
-    def init_selectors(
+    def init_factors(
         self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, adjust_type=None
     ):
-        myselector = TargetSelector(
-            entity_ids=entity_ids,
-            entity_schema=entity_schema,
-            exchanges=exchanges,
-            codes=codes,
-            start_timestamp=start_timestamp,
-            end_timestamp=end_timestamp,
-            provider="em",
-        )
-
-        myselector.add_factor(
+        return [
             DragonTigerFactor(
                 entity_ids=entity_ids,
                 exchanges=exchanges,
@@ -96,9 +85,7 @@ class MyTrader(StockTrader):
                 start_timestamp=start_timestamp,
                 end_timestamp=end_timestamp,
             )
-        )
-
-        self.selectors.append(myselector)
+        ]
 
 
 if __name__ == "__main__":

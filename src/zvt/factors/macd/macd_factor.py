@@ -60,5 +60,11 @@ class GoldCrossFactor(MacdFactor):
         self.result_df = s.to_frame(name="filter_result")
 
 
+if __name__ == "__main__":
+    f = BullFactor(provider="em", entity_provider="em", entity_ids=["stock_sz_000338"])
+    print(f.data_df)
+    f.update_entity_ids(["stock_sz_000338", "stock_sh_600000"])
+    f.move_on()
+    print(f.data_df)
 # the __all__ is generated
 __all__ = ["MacdFactor", "BullFactor", "KeepBullFactor", "LiveOrDeadFactor", "GoldCrossFactor"]

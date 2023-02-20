@@ -15,12 +15,12 @@ from zvt.contract import IntervalLevel
 
 def test_china_stock_reader():
     data_reader = DataReader(
-        codes=["002572", "000338"],
         data_schema=Stock1dKdata,
         entity_schema=Stock,
+        entity_provider="eastmoney",
+        codes=["002572", "000338"],
         start_timestamp="2019-01-01",
         end_timestamp="2019-06-10",
-        entity_provider="eastmoney",
     )
 
     categories = data_reader.data_df.index.levels[0].to_list()
@@ -48,12 +48,12 @@ def test_china_stock_reader():
 
 def test_reader_move_on():
     data_reader = DataReader(
-        codes=["002572", "000338"],
         data_schema=Stock1dKdata,
         entity_schema=Stock,
+        entity_provider="eastmoney",
+        codes=["002572", "000338"],
         start_timestamp="2019-06-13",
         end_timestamp="2019-06-14",
-        entity_provider="eastmoney",
     )
 
     data_reader.move_on(to_timestamp="2019-06-15")

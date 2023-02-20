@@ -2,6 +2,7 @@
 import json
 import logging
 import time
+from enum import Enum
 from typing import List, Union, Optional, Type
 
 import pandas as pd
@@ -13,8 +14,15 @@ from zvt.contract.base_service import EntityStateService
 from zvt.contract.reader import DataReader, DataListener
 from zvt.contract.schema import Mixin, TradableEntity
 from zvt.contract.zvt_info import FactorState
+from zvt.utils import to_pd_timestamp
 from zvt.utils.pd_utils import pd_is_not_null, drop_continue_duplicate, is_filter_result_df, is_score_result_df
 from zvt.utils.str_utils import to_snake_str
+
+
+class TargetType(Enum):
+    positive = "positive"
+    negative = "negative"
+    keep = "keep"
 
 
 class Indicator(object):
@@ -206,7 +214,7 @@ class Factor(DataReader, EntityStateService, DataListener):
         level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
         keep_all_timestamp: bool = False,
         fill_method: str = "ffill",
         effective_number: int = None,
@@ -257,7 +265,7 @@ class Factor(DataReader, EntityStateService, DataListener):
             level,
             category_field,
             time_field,
-            computing_window,
+            keep_window,
         )
 
         EntityStateService.__init__(self, entity_ids=entity_ids)
@@ -279,7 +287,7 @@ class Factor(DataReader, EntityStateService, DataListener):
             self.accumulator = self.__class__.accumulator
 
         self.need_persist = need_persist
-        self.dry_run = only_compute_factor
+        self.only_compute_factor = only_compute_factor
 
         #: 中间结果，不持久化
         #: data_df->pipe_df
@@ -334,7 +342,7 @@ class Factor(DataReader, EntityStateService, DataListener):
         super().load_data()
 
     def load_factor(self):
-        if self.dry_run:
+        if self.only_compute_factor:
             #: 如果只是为了计算因子，只需要读取acc_window的factor_df
             if self.accumulator is not None:
                 self.factor_df = self.load_window_df(
@@ -350,11 +358,14 @@ class Factor(DataReader, EntityStateService, DataListener):
                 index=[self.category_field, self.time_field],
             )
 
+        self.decode_factor_df(self.factor_df)
+
+    def decode_factor_df(self, df):
         col_map_object_hook = self.factor_col_map_object_hook()
-        if pd_is_not_null(self.factor_df) and col_map_object_hook:
+        if pd_is_not_null(df) and col_map_object_hook:
             for col in col_map_object_hook:
-                if col in self.factor_df.columns:
-                    self.factor_df[col] = self.factor_df[col].apply(
+                if col in df.columns:
+                    df[col] = df[col].apply(
                         lambda x: json.loads(x, object_hook=col_map_object_hook.get(col)) if x else None
                     )
 
@@ -495,6 +506,48 @@ class Factor(DataReader, EntityStateService, DataListener):
         self.result_df = self.result_df.reindex(new_index)
         self.result_df = self.result_df.groupby(level=0).fillna(method=self.fill_method, limit=self.effective_number)
 
+    def update_entities(self, entity_ids):
+        if (self.entity_ids and entity_ids) and (set(self.entity_ids) == set(entity_ids)):
+            self.logger.info(f"current: {self.entity_ids}")
+            self.logger.info(f"refresh: {entity_ids}")
+            return
+        new_entity_ids = None
+        if entity_ids:
+            new_entity_ids = list(set(entity_ids) - set(self.entity_ids))
+            self.entity_ids = list(set(self.entity_ids + entity_ids))
+
+        if new_entity_ids:
+            self.logger.info(f"added new entity: {new_entity_ids}")
+            if not self.only_load_factor:
+                new_data_df = self.data_schema.query_data(
+                    entity_ids=new_entity_ids,
+                    provider=self.provider,
+                    columns=self.columns,
+                    start_timestamp=self.start_timestamp,
+                    end_timestamp=self.end_timestamp,
+                    filters=self.filters,
+                    order=self.order,
+                    limit=self.limit,
+                    level=self.level,
+                    index=[self.category_field, self.time_field],
+                    time_field=self.time_field,
+                )
+                self.data_df = pd.concat([self.data_df, new_data_df], sort=False)
+                self.data_df.sort_index(level=[0, 1], inplace=True)
+
+            new_factor_df = get_data(
+                provider="zvt",
+                data_schema=self.factor_schema,
+                start_timestamp=self.start_timestamp,
+                entity_ids=new_entity_ids,
+                end_timestamp=self.end_timestamp,
+                index=[self.category_field, self.time_field],
+            )
+            self.decode_factor_df(new_factor_df)
+
+            self.factor_df = pd.concat([self.factor_df, new_factor_df], sort=False)
+            self.factor_df.sort_index(level=[0, 1], inplace=True)
+
     def on_data_loaded(self, data: pd.DataFrame):
         self.compute()
 
@@ -541,6 +594,66 @@ class Factor(DataReader, EntityStateService, DataListener):
                     self.clear_state_data(entity_id)
         else:
             df_to_db(df=df, data_schema=self.factor_schema, provider="zvt", force_update=False)
+
+    def get_filter_df(self):
+        if is_filter_result_df(self.result_df):
+            return self.result_df[["filter_result"]]
+
+    def get_score_df(self):
+        if is_score_result_df(self.result_df):
+            return self.result_df[["score_result"]]
+
+    def get_targets(
+        self,
+        timestamp=None,
+        start_timestamp=None,
+        end_timestamp=None,
+        target_type: TargetType = TargetType.positive,
+        positive_threshold=0.8,
+        negative_threshold=-0.8,
+    ):
+        if timestamp and (start_timestamp or end_timestamp):
+            raise ValueError("Use timestamp or (start_timestamp, end_timestamp)")
+        # select by filter
+        filter_df = self.get_filter_df()
+        selected_df = None
+        target_df = None
+        if pd_is_not_null(filter_df):
+            if target_type == TargetType.positive:
+                selected_df = filter_df[filter_df["filter_result"] == True]
+            elif target_type == TargetType.negative:
+                selected_df = filter_df[filter_df["filter_result"] == False]
+            else:
+                selected_df = filter_df[filter_df["filter_result"].isna()]
+
+        # select by score
+        score_df = self.get_score_df()
+        if pd_is_not_null(score_df):
+            if pd_is_not_null(selected_df):
+                # filter at first
+                score_df = score_df.loc[selected_df.index, :]
+            if target_type == TargetType.positive:
+                selected_df = score_df[score_df["score_result"] >= positive_threshold]
+            elif target_type == TargetType.negative:
+                selected_df = score_df[score_df["score_result"] <= negative_threshold]
+            else:
+                selected_df = score_df[
+                    (score_df["score_result"] > negative_threshold) & (score_df["score"] < positive_threshold)
+                ]
+        print(selected_df)
+        if pd_is_not_null(selected_df):
+            selected_df = selected_df.reset_index(level="entity_id")
+            if timestamp:
+                if to_pd_timestamp(timestamp) in selected_df.index:
+                    target_df = selected_df.loc[[to_pd_timestamp(timestamp)], ["entity_id"]]
+            else:
+                target_df = selected_df.loc[
+                    slice(to_pd_timestamp(start_timestamp), to_pd_timestamp(end_timestamp)), ["entity_id"]
+                ]
+
+        if pd_is_not_null(target_df):
+            return target_df["entity_id"].tolist()
+        return []
 
 
 class ScoreFactor(Factor):

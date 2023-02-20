@@ -49,7 +49,7 @@ class TopBottomFactor(TechnicalFactor):
         level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
         keep_all_timestamp: bool = False,
         fill_method: str = "ffill",
         effective_number: int = None,
@@ -81,7 +81,7 @@ class TopBottomFactor(TechnicalFactor):
             level,
             category_field,
             time_field,
-            computing_window,
+            keep_window,
             keep_all_timestamp,
             fill_method,
             effective_number,
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     )
     print(factor.factor_df)
 
-    data_reader1 = DataReader(codes=["601318"], data_schema=Stock1dKdata, entity_schema=Stock)
+    data_reader1 = DataReader(data_schema=Stock1dKdata, entity_schema=Stock, codes=["601318"])
 
     drawer = Drawer(main_df=data_reader1.data_df, factor_df_list=[factor.factor_df[["top", "bottom"]]])
     drawer.draw_kline(show=True)

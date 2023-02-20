@@ -59,7 +59,7 @@ class DataReader(Drawable):
         level: IntervalLevel = None,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
     ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -94,7 +94,7 @@ class DataReader(Drawable):
 
         self.category_field = category_field
         self.time_field = time_field
-        self.computing_window = computing_window
+        self.computing_window = keep_window
 
         self.category_col = eval("self.data_schema.{}".format(self.category_field))
         self.time_col = eval("self.data_schema.{}".format(self.time_field))
@@ -182,13 +182,13 @@ class DataReader(Drawable):
         :return:
         :rtype:
         """
+
         if not pd_is_not_null(self.data_df):
             self.load_data()
             return
 
         start_time = time.time()
 
-        #: FIXME:we suppose history data should be there at first
         has_got = []
         dfs = []
         changed = False
@@ -275,9 +275,9 @@ if __name__ == "__main__":
     from zvt.domain import Stock1dKdata, Stock
 
     data_reader = DataReader(
-        codes=["002572", "000338"],
         data_schema=Stock1dKdata,
         entity_schema=Stock,
+        codes=["002572", "000338"],
         start_timestamp="2017-01-01",
         end_timestamp="2019-06-10",
     )

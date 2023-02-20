@@ -5,13 +5,12 @@ from typing import Type
 
 from examples.utils import add_to_eastmoney
 from zvt import zvt_config
-from zvt.api import get_top_volume_entities, get_top_performance_entities, TopType
+from zvt.api import get_top_volume_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
-from zvt.api.selector import get_entity_ids_by_filter
+from zvt.api.stats import get_top_performance_entities_by_periods
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities, get_entity_schema
-from zvt.contract.factor import Factor
-from zvt.factors import TargetSelector, SelectMode
+from zvt.contract.factor import Factor, TargetType
 from zvt.informer import EmailInformer
 from zvt.utils import next_date
 
@@ -109,9 +108,6 @@ def report_targets(
                     current_entity_pool = set(factor_kv.pop("entity_ids"))
 
             # add the factor
-            my_selector = TargetSelector(
-                start_timestamp=start_timestamp, end_timestamp=target_date, select_mode=SelectMode.condition_or
-            )
             entity_schema = get_entity_schema(entity_type=entity_type)
             tech_factor = factor_cls(
                 entity_schema=entity_schema,
@@ -123,11 +119,8 @@ def report_targets(
                 adjust_type=adjust_type,
                 **factor_kv,
             )
-            my_selector.add_factor(tech_factor)
 
-            my_selector.run()
-
-            long_stocks = my_selector.get_open_long_targets(timestamp=target_date)
+            long_stocks = tech_factor.get_targets(timestamp=target_date, target_type=TargetType.positive)
 
             inform(
                 informer,
@@ -174,78 +167,24 @@ def report_top_entities(
 
     while error_count <= 10:
         try:
-            if periods is None:
-                periods = [7, 30, 365]
-            if not adjust_type:
-                adjust_type = default_adjust_type(entity_type=entity_type)
-            kdata_schema = get_kdata_schema(entity_type=entity_type, adjust_type=adjust_type)
-            entity_schema = get_entity_schema(entity_type=entity_type)
-
             target_date = get_latest_kdata_date(
                 provider=data_provider, entity_type=entity_type, adjust_type=adjust_type
             )
 
-            filter_entity_ids = get_entity_ids_by_filter(
-                provider=entity_provider,
-                ignore_st=ignore_st,
+            selected = get_top_performance_entities_by_periods(
+                entity_provider=entity_provider,
+                data_provider=data_provider,
+                periods=periods,
                 ignore_new_stock=ignore_new_stock,
-                entity_schema=entity_schema,
-                target_date=target_date,
+                ignore_st=ignore_st,
                 entity_ids=entity_ids,
+                entity_type=entity_type,
+                adjust_type=adjust_type,
+                top_count=top_count,
+                turnover_threshold=turnover_threshold,
+                turnover_rate_threshold=turnover_rate_threshold,
+                return_type=return_type,
             )
-
-            if not filter_entity_ids:
-                msg = f"{entity_type} no entity_ids selected"
-                logger.error(msg)
-                informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
-                return
-
-            filter_turnover_df = kdata_schema.query_data(
-                filters=[
-                    kdata_schema.turnover >= turnover_threshold,
-                    kdata_schema.turnover_rate >= turnover_rate_threshold,
-                ],
-                provider=data_provider,
-                start_timestamp=target_date,
-                index="entity_id",
-                columns=["entity_id", "code"],
-            )
-            if filter_entity_ids:
-                filter_entity_ids = set(filter_entity_ids) & set(filter_turnover_df.index.tolist())
-            else:
-                filter_entity_ids = filter_turnover_df.index.tolist()
-
-            if not filter_entity_ids:
-                msg = f"{entity_type} no entity_ids selected"
-                logger.error(msg)
-                informer.send_message(zvt_config["email_username"], "report_top_stats error", msg)
-                return
-
-            logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
-            filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
-            selected = []
-            for i, period in enumerate(periods):
-                interval = period
-                if target_date.weekday() + 1 < interval:
-                    interval = interval + 2
-                start = next_date(target_date, -interval)
-                positive_df, negative_df = get_top_performance_entities(
-                    entity_type=entity_type,
-                    start_timestamp=start,
-                    kdata_filters=filters,
-                    pct=1,
-                    show_name=True,
-                    entity_provider=entity_provider,
-                    data_provider=data_provider,
-                    return_type=return_type,
-                )
-
-                if return_type == TopType.positive:
-                    df = positive_df
-                else:
-                    df = negative_df
-                selected = selected + df.index[:top_count].tolist()
-                selected = list(dict.fromkeys(selected))
 
             inform(
                 informer,

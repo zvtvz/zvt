@@ -1,0 +1,173 @@
+/*Fonts ––––––––––––––––––––––––––––––––––––––––––––––––––*/
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+body {
+    margin: 0px;
+    padding: 0px;
+    background-color: #F3F4F9;
+    font-family: 'Roboto';
+    color: #203cb3;
+}
+
+.zvt-banner {
+    color: #7f7f7f;
+    font-weight: 600;
+    font-size: 20px;
+    background: #fafbfc;
+    padding: 12px;
+    padding-left: 24px;
+    border-bottom: 2px solid lightgray;
+}
+
+.zvt-nav {
+    color: #7f7f7f;
+    background: #fafbfc;
+    padding: 12px;
+    padding-left: 36px;
+}
+
+.div-logo {
+    display: inline-block;
+    float: right;
+}
+
+.logo {
+    height: 35px;
+    padding: 6px;
+    margin-top: 3px;
+}
+
+.h2-title, .h2-title-mobile {
+    font-family: 'Roboto';
+    display: inline-block;
+    letter-spacing: 3.8px;
+    font-weight: 800;
+    font-size: 20px;
+}
+
+.h2-title-mobile {
+    display: none;
+}
+
+h5, h6 {
+    font-family: 'Roboto';
+    font-weight: 600;
+    font-size: 16px;
+}
+
+h5 {
+    padding-left: 42px;
+}
+
+.alert {
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+}
+
+.bg-white {
+    background-color: white;
+    padding: 24px 32px;
+}
+
+
+.card {
+    padding: 24px 12px 24px 12px;
+    margin-left: 4%;
+}
+
+.card-left {
+    padding: 24px 12px 24px 12px;
+    margin-left: 0px;
+}
+
+.padding-top-bot {
+    padding-top: 12px;
+    padding-bottom: 18px;
+}
+
+.upload {
+    width: 100%;
+    line-height: 60px;
+    border-width: 1px;
+    border-style: dashed;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.upload p, .upload a {
+    display: inline;
+}
+
+.Select-control {
+    border: 1px solid #203cb3;
+}
+
+@media only screen and (max-width: 320px) {
+    .Select-menu-outer, .Select-value {
+        font-size: 10.5px;
+    }
+
+    .upload {
+        padding: 5px;
+    }
+}
+
+/* mobile */
+@media only screen and (max-width: 768px) {
+    .upload {
+        line-height: 60px;
+        border-width: 1px;
+        border-style: dashed;
+        border-radius: 5px;
+        text-align: center;
+        font-size: small;
+    }
+
+    .columns {
+        width: 100%;
+    }
+
+    .card, .card-left {
+        padding: 12px;
+        margin: 0px;
+    }
+
+    .bg-white {
+        height: auto;
+    }
+
+    .logo {
+        height: 28px;
+        padding-left: 0px;
+        padding-bottom: 0px;
+    }
+
+    .div-logo {
+        float: left;
+        display: block;
+        width: 100%;
+    }
+
+    .h2-title {
+        display: none;
+    }
+
+    .h2-title-mobile {
+        display: block;
+        float: left;
+    }
+
+    .app-body {
+        margin-left: 0px;
+    }
+
+    .columns {
+        text-align: center;
+    }
+
+    .user-control {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+}

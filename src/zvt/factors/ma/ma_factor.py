@@ -41,7 +41,7 @@ class MaFactor(TechnicalFactor):
         level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
         keep_all_timestamp: bool = False,
         fill_method: str = "ffill",
         effective_number: int = None,
@@ -77,7 +77,7 @@ class MaFactor(TechnicalFactor):
             level,
             category_field,
             time_field,
-            computing_window,
+            keep_window,
             keep_all_timestamp,
             fill_method,
             effective_number,
@@ -124,7 +124,7 @@ class VolumeUpMaFactor(TechnicalFactor):
         level: Union[str, IntervalLevel] = IntervalLevel.LEVEL_1DAY,
         category_field: str = "entity_id",
         time_field: str = "timestamp",
-        computing_window: int = None,
+        keep_window: int = None,
         keep_all_timestamp: bool = False,
         fill_method: str = "ffill",
         effective_number: int = None,
@@ -172,7 +172,7 @@ class VolumeUpMaFactor(TechnicalFactor):
             level,
             category_field,
             time_field,
-            computing_window,
+            keep_window,
             keep_all_timestamp,
             fill_method,
             effective_number,
@@ -248,34 +248,16 @@ class CrossMaVolumeFactor(VolumeUpMaFactor):
 
 
 if __name__ == "__main__":
-    print("start")
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--level", help="trading level", default="1d", choices=[item.value for item in IntervalLevel])
-    parser.add_argument("--start", help="start code", default="000001")
-    parser.add_argument("--end", help="end code", default="000005")
-
-    args = parser.parse_args()
-
-    level = IntervalLevel(args.level)
-    start = args.start
-    end = args.end
-
-    entities = get_entities(
-        provider="eastmoney",
-        entity_type="stock",
-        columns=[Stock.entity_id, Stock.code],
-        filters=[Stock.code >= start, Stock.code < end],
-    )
-
-    codes = entities.index.to_list()
 
     factor = VolumeUpMaFactor(
+        entity_provider="em",
+        provider="em",
         entity_ids=["stock_sz_000338"],
         start_timestamp="2020-01-01",
         end_timestamp=now_pd_timestamp(),
-        level=level,
         need_persist=False,
     )
-    print(factor.result_df)
+    selected = factor.get_targets(timestamp="2021-12-30")
+    print(selected)
 # the __all__ is generated
 __all__ = ["get_ma_factor_schema", "MaFactor", "CrossMaFactor", "VolumeUpMaFactor", "CrossMaVolumeFactor"]
