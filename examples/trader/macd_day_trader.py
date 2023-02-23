@@ -74,11 +74,11 @@ class MacdDayTrader(StockTrader):
         # 空头仓位管理
         return super().short_position_control()
 
-    def on_targets_filtered(
+    def on_factor_targets_filtered(
         self, timestamp, level, factor: Factor, long_targets: List[str], short_targets: List[str]
     ) -> Tuple[List[str], List[str]]:
         # 过滤某级别选出的 标的
-        return super().on_targets_filtered(timestamp, level, factor, long_targets, short_targets)
+        return super().on_factor_targets_filtered(timestamp, level, factor, long_targets, short_targets)
 
 
 if __name__ == "__main__":

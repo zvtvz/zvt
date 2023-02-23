@@ -506,7 +506,7 @@ class Factor(DataReader, EntityStateService, DataListener):
         self.result_df = self.result_df.reindex(new_index)
         self.result_df = self.result_df.groupby(level=0).fillna(method=self.fill_method, limit=self.effective_number)
 
-    def update_entities(self, entity_ids):
+    def add_entities(self, entity_ids):
         if (self.entity_ids and entity_ids) and (set(self.entity_ids) == set(entity_ids)):
             self.logger.info(f"current: {self.entity_ids}")
             self.logger.info(f"refresh: {entity_ids}")

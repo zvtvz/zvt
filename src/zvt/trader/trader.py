@@ -36,6 +36,7 @@ class Trader(object):
         adjust_type: AdjustType = None,
         profit_threshold=(3, -0.3),
         keep_history=False,
+        pre_load_days=365,
     ) -> None:
         assert self.entity_schema is not None
         assert start_timestamp is not None
@@ -57,6 +58,7 @@ class Trader(object):
         self.real_time = real_time
         self.start_timestamp = to_pd_timestamp(start_timestamp)
         self.end_timestamp = to_pd_timestamp(end_timestamp)
+        self.pre_load_days = pre_load_days
 
         self.trading_dates = self.entity_schema.get_trading_dates(
             start_date=self.start_timestamp, end_date=self.end_timestamp
@@ -101,30 +103,39 @@ class Trader(object):
             entity_schema=self.entity_schema,
             exchanges=self.exchanges,
             codes=self.codes,
-            start_timestamp=next_date(self.start_timestamp, -365),
+            start_timestamp=next_date(self.start_timestamp, -self.pre_load_days),
             end_timestamp=self.end_timestamp,
             adjust_type=self.adjust_type,
         )
 
         if self.factors:
-            self.trading_level_asc = list(set([IntervalLevel(selector.level) for selector in self.factors]))
+            self.trading_level_asc = list(set([IntervalLevel(factor.level) for factor in self.factors]))
             self.trading_level_asc.sort()
 
             self.logger.info(f"trader level:{self.level},factors level:{self.trading_level_asc}")
 
             if self.level != self.trading_level_asc[0]:
-                raise Exception("trader level should be the min of the selectors")
+                raise Exception("trader level should be the min of the factors")
 
             self.trading_level_desc = list(self.trading_level_asc)
             self.trading_level_desc.reverse()
-
+        else:
+            self.trading_level_asc = [self.level]
+            self.trading_level_desc = [self.level]
         self.on_init()
 
     def on_init(self):
         self.logger.info(f"trader:{self.trader_name} on_start")
 
-    def on_refresh_entities(self, timestamp):
-        self.logger.info(f"trader: {self.trader_name} timestamp: {timestamp} on_refresh_entities")
+    def init_entities(self, timestamp):
+        """
+        init the entities for timestamp
+
+        :param timestamp:
+        :return:
+        """
+        self.logger.info(f"timestamp: {timestamp} init_entities")
+        return self.entity_ids
 
     def init_factors(
         self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, adjust_type=None
@@ -134,7 +145,7 @@ class Trader(object):
         :param adjust_type:
 
         """
-        pass
+        return []
 
     def update_targets_by_level(
         self,
@@ -245,7 +256,7 @@ class Trader(object):
             return close_long_entity_ids, None
         return None, None
 
-    def buy(self, due_timestamp, happen_timestamp, entity_ids, ignore_in_position=True):
+    def buy(self, timestamp, entity_ids, ignore_in_position=True):
         if ignore_in_position:
             account = self.get_current_account()
             current_holdings = []
@@ -262,18 +273,19 @@ class Trader(object):
             position_pct = self.long_position_control()
             position_pct = (1.0 / len(entity_ids)) * position_pct
 
+            due_timestamp = to_pd_timestamp(timestamp) + pd.Timedelta(seconds=self.level.to_second())
             for entity_id in entity_ids:
                 trading_signal = TradingSignal(
                     entity_id=entity_id,
                     due_timestamp=due_timestamp,
-                    happen_timestamp=happen_timestamp,
+                    happen_timestamp=timestamp,
                     trading_signal_type=TradingSignalType.open_long,
                     trading_level=self.level,
                     position_pct=position_pct,
                 )
                 self.trading_signals.append(trading_signal)
 
-    def sell(self, due_timestamp, happen_timestamp, entity_ids):
+    def sell(self, timestamp, entity_ids):
         # current position
         account = self.get_current_account()
         current_holdings = []
@@ -287,22 +299,17 @@ class Trader(object):
         if shorted:
             position_pct = self.short_position_control()
 
+            due_timestamp = to_pd_timestamp(timestamp) + pd.Timedelta(seconds=self.level.to_second())
             for entity_id in shorted:
                 trading_signal = TradingSignal(
                     entity_id=entity_id,
                     due_timestamp=due_timestamp,
-                    happen_timestamp=happen_timestamp,
+                    happen_timestamp=timestamp,
                     trading_signal_type=TradingSignalType.close_long,
                     trading_level=self.level,
                     position_pct=position_pct,
                 )
                 self.trading_signals.append(trading_signal)
-
-    def trade_the_targets(self, due_timestamp, happen_timestamp, long_selected, short_selected):
-        if short_selected:
-            self.sell(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=short_selected)
-        if long_selected:
-            self.buy(due_timestamp=due_timestamp, happen_timestamp=happen_timestamp, entity_ids=long_selected)
 
     def on_finish(self, timestmap):
         self.on_trading_finish(timestmap)
@@ -315,17 +322,17 @@ class Trader(object):
             )
             drawer.draw_line(show=True)
 
-    def on_targets_filtered(
+    def on_factor_targets_filtered(
         self, timestamp, level, factor: Factor, long_targets: List[str], short_targets: List[str]
     ) -> Tuple[List[str], List[str]]:
         """
-        overwrite it to filter the targets from selector
+        overwrite it to filter the targets from factor
 
         :param timestamp: the event time
         :param level: the level
         :param factor: the factor
-        :param long_targets: the long targets from the selector
-        :param short_targets: the short targets from the selector
+        :param long_targets: the long targets from the factor
+        :param short_targets: the short targets from the factor
         :return: filtered long targets, filtered short targets
         """
         self.logger.info(f"on_targets_filtered {level} long:{long_targets}")
@@ -350,6 +357,8 @@ class Trader(object):
     def on_trading_signals(self, trading_signals: List[TradingSignal]):
         for l in self.trading_signal_listeners:
             l.on_trading_signals(trading_signals)
+        # clear after all listener handling
+        self.trading_signals = []
 
     def on_trading_signal(self, trading_signal: TradingSignal):
         for l in self.trading_signal_listeners:
@@ -375,18 +384,84 @@ class Trader(object):
         for l in self.trading_signal_listeners:
             l.on_trading_error(timestamp, error)
 
+    def on_non_trading_day(self, timestamp):
+        self.logger.info(f"on_non_trading_day: {timestamp}")
+
+    def get_factors_by_level(self, level):
+        return [factor for factor in self.factors if factor.level == level]
+
+    def handle_factor_targets(self, timestamp: pd.Timestamp):
+        """
+        select targets from factors
+        :param timestamp: the timestamp for next kdata coming
+        """
+        # 一般来说factor计算 多标的 历史数据比较快，多级别的计算也比较方便，常用于全市场标的粗过滤
+        # 更细节的控制可以在on_targets_filtered里进一步处理
+        # 也可以在on_time里面设计一些自己的逻辑配合过滤
+        # 多级别的遍历算法要点:
+        # 1)计算各级别的 标的，通过 on_factor_targets_filtered 过滤，缓存在level_map_long_targets，level_map_short_targets
+        # 2)在最小的level通过 on_targets_selected_from_levels 根据多级别的缓存标的，生成最终的选中标的
+        # 这里需要注意的是，小级别拿到上一个周期的大级别的标的，这是合理的
+        for level in self.trading_level_asc:
+            self.logger.info(f"level: {level}")
+            # in every cycle, all level factor do its job in its time
+            if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
+                all_long_targets = []
+                all_short_targets = []
+
+                # 从该level的factor中过滤targets
+                current_level_factors = self.get_factors_by_level(level=level)
+                for factor in current_level_factors:
+                    long_targets = factor.get_targets(timestamp=timestamp, target_type=TargetType.positive)
+                    short_targets = factor.get_targets(timestamp=timestamp, target_type=TargetType.negative)
+
+                    if long_targets or short_targets:
+                        long_targets, short_targets = self.on_factor_targets_filtered(
+                            timestamp=timestamp,
+                            level=level,
+                            factor=factor,
+                            long_targets=long_targets,
+                            short_targets=short_targets,
+                        )
+
+                    if long_targets:
+                        all_long_targets += long_targets
+                    if short_targets:
+                        all_short_targets += short_targets
+
+                # 将各级别的targets缓存在level_map_long_targets，level_map_short_targets
+                self.update_targets_by_level(level, all_long_targets, all_short_targets)
+
     def run(self):
         # iterate timestamp of the min level,e.g,9:30,9:35,9.40...for 5min level
         # timestamp represents the timestamp in kdata
         for timestamp in self.entity_schema.get_interval_timestamps(
             start_date=self.start_timestamp, end_date=self.end_timestamp, level=self.level
         ):
+            self.logger.info(f">>>>>>>>>>")
+
+            self.entity_ids = self.init_entities(timestamp=timestamp)
+            self.logger.info(f"current entities: {self.entity_ids}")
 
             if not self.in_trading_date(timestamp=timestamp):
+                self.on_non_trading_day(timestamp=timestamp)
                 continue
 
+            # on_trading_open to set the account
+            if self.level >= IntervalLevel.LEVEL_1DAY or (
+                self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)
+            ):
+                self.on_trading_open(timestamp=timestamp)
+
+            # the signals were generated by previous timestamp kdata
+            if self.trading_signals:
+                self.logger.info("current signals:")
+                for signal in self.trading_signals:
+                    self.logger.info(str(signal))
+                self.on_trading_signals(self.trading_signals)
+
             for factor in self.factors:
-                factor.update_entities(entity_ids=self.entity_ids)
+                factor.add_entities(entity_ids=self.entity_ids)
 
             waiting_seconds = 0
 
@@ -394,7 +469,7 @@ class Trader(object):
                 if is_same_date(timestamp, now_pd_timestamp()):
                     while True:
                         self.logger.info(f"time is:{now_pd_timestamp()},just smoke for minutes")
-                        time.sleep(60)
+                        time.sleep(600)
                         current = now_pd_timestamp()
                         if current.hour >= 19:
                             waiting_seconds = 20
@@ -415,96 +490,37 @@ class Trader(object):
                 # iterate the factor from min to max which in finished timestamp kdata
                 for level in self.trading_level_asc:
                     if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
-                        for factor in self.factors:
-                            if factor.level == level:
-                                factor.move_on(to_timestamp=timestamp, timeout=waiting_seconds + 20)
+                        factors = self.get_factors_by_level(level=level)
+                        for factor in factors:
+                            factor.move_on(to_timestamp=timestamp, timeout=waiting_seconds + 20)
 
-            # on_trading_open to set the account
-            if self.level >= IntervalLevel.LEVEL_1DAY or (
-                self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_open_timestamp(timestamp)
-            ):
-                self.on_trading_open(timestamp=timestamp)
+            if self.factors:
+                self.handle_factor_targets(timestamp=timestamp)
 
             self.on_time(timestamp=timestamp)
 
-            # 一般来说factor计算 多标的 历史数据比较快，多级别的计算也比较方便，常用于全市场标的粗过滤
-            # 更细节的控制可以在on_targets_filtered里进一步处理
-            # 也可以在on_time里面设计一些自己的逻辑配合过滤
-            if self.factors:
-                # 多级别的遍历算法要点:
-                # 1)计算各级别的 标的，通过 on_targets_filtered 过滤，缓存在level_map_long_targets，level_map_short_targets
-                # 2)在最小的level通过 on_targets_selected_from_levels 根据多级别的缓存标的，生成最终的选中标的
-                # 这里需要注意的是，小级别拿到上一个周期的大级别的标的，这是合理的
-                for level in self.trading_level_asc:
-                    # in every cycle, all level selector do its job in its time
-                    if self.entity_schema.is_finished_kdata_timestamp(timestamp=timestamp, level=level):
-                        all_long_targets = []
-                        all_short_targets = []
+            long_selected, short_selected = self.on_targets_selected_from_levels(timestamp)
 
-                        # 从该level的selector中过滤targets
-                        for factor in self.factors:
-                            if factor.level == level:
-                                long_targets = factor.get_targets(timestamp=timestamp, target_type=TargetType.positive)
-                                short_targets = factor.get_targets(timestamp=timestamp, target_type=TargetType.negative)
+            # 处理 止赢 止损
+            passive_short, _ = self.on_profit_control()
+            if passive_short:
+                if not short_selected:
+                    short_selected = passive_short
+                else:
+                    short_selected = list(set(short_selected) | set(passive_short))
 
-                                if long_targets or short_targets:
-                                    long_targets, short_targets = self.on_targets_filtered(
-                                        timestamp=timestamp,
-                                        level=level,
-                                        factor=factor,
-                                        long_targets=long_targets,
-                                        short_targets=short_targets,
-                                    )
-
-                                if long_targets:
-                                    all_long_targets += long_targets
-                                if short_targets:
-                                    all_short_targets += short_targets
-
-                        # 将各级别的targets缓存在level_map_long_targets，level_map_short_targets
-                        self.update_targets_by_level(level, all_long_targets, all_short_targets)
-
-                        # the time always move on by min level step and we could check all targets of levels
-                        # 1)the targets is generated for next interval
-                        # 2)the acceptable price is next interval prices,you could buy it at current price
-                        # if the time is before the timestamp(due_timestamp) when trading signal received
-                        # 3)the suggest price the the close price for generating the signal(happen_timestamp)
-                        due_timestamp = timestamp + pd.Timedelta(seconds=self.level.to_second())
-
-                        # 在最小level生成最终的 交易信号
-                        if level == self.level:
-                            long_selected, short_selected = self.on_targets_selected_from_levels(timestamp)
-
-                            # 处理 止赢 止损
-                            passive_short, _ = self.on_profit_control()
-                            if passive_short:
-                                if not short_selected:
-                                    short_selected = passive_short
-                                else:
-                                    short_selected = list(set(short_selected) | set(passive_short))
-
-                            self.logger.debug("timestamp:{},long_selected:{}".format(due_timestamp, long_selected))
-                            self.logger.debug("timestamp:{},short_selected:{}".format(due_timestamp, short_selected))
-
-                            if long_selected or short_selected:
-                                self.trade_the_targets(
-                                    due_timestamp=due_timestamp,
-                                    happen_timestamp=timestamp,
-                                    long_selected=long_selected,
-                                    short_selected=short_selected,
-                                )
-
-            if self.trading_signals:
-                self.on_trading_signals(self.trading_signals)
-            # clear
-            self.trading_signals = []
+            if short_selected:
+                self.sell(timestamp=timestamp, entity_ids=short_selected)
+            if long_selected:
+                self.buy(timestamp=timestamp, entity_ids=long_selected)
 
             # on_trading_close to calculate date account
             if self.level >= IntervalLevel.LEVEL_1DAY or (
                 self.level != IntervalLevel.LEVEL_1DAY and self.entity_schema.is_close_timestamp(timestamp)
             ):
                 self.on_trading_close(timestamp)
-                self.on_refresh_entities(timestamp=timestamp)
+
+            self.logger.info(f"<<<<<<<<<<\n")
 
         self.on_finish(timestamp)
 

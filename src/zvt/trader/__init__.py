@@ -29,15 +29,14 @@ class TradingSignal:
         position_pct: float = 0,
         order_money: float = 0,
     ):
+        self.trading_signal_type = trading_signal_type
         self.entity_id = entity_id
         self.due_timestamp = due_timestamp
         self.happen_timestamp = happen_timestamp
         self.trading_level = trading_level
-        self.trading_signal_type = trading_signal_type
 
         # use position_pct or order_money
         self.position_pct = position_pct
-
         # when close the position,just use position_pct
         self.order_money = order_money
 

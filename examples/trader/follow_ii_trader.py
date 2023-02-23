@@ -32,12 +32,12 @@ class FollowIITrader(StockTrader):
         long_df = df[df["change_ratio"] > 0.05]
         short_df = df[df["change_ratio"] < -0.5]
         try:
-            self.trade_the_targets(
-                due_timestamp=timestamp,
-                happen_timestamp=timestamp,
-                long_selected=set(long_df["entity_id"].to_list()),
-                short_selected=set(short_df["entity_id"].to_list()),
-            )
+            long_targets = set(long_df["entity_id"].to_list())
+            short_targets = set(short_df["entity_id"].to_list())
+            if long_targets:
+                self.buy(timestamp=timestamp, entity_ids=long_targets)
+            if short_targets:
+                self.sell(timestamp=timestamp, entity_ids=short_targets)
         except Exception as e:
             self.logger.error(e)
 
