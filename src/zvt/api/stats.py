@@ -113,6 +113,8 @@ def get_top_performance_entities_by_periods(
     selected = []
     for i, period in enumerate(periods):
         interval = period
+        # 周1 weekday为0，2日内最强，得算3,即把周末两天加上
+        # 一般长一点的周期，就不需要管
         if target_date.weekday() + 1 < interval:
             interval = interval + 2
         start = next_date(target_date, -interval)

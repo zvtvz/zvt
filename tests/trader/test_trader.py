@@ -27,7 +27,6 @@ def test_single_trader():
         end_timestamp="2020-01-10",
         trader_name="000338_single_trader",
         draw_result=True,
-        adjust_type=AdjustType.qfq,
     )
     trader.run()
 

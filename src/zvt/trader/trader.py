@@ -12,7 +12,7 @@ from zvt.contract.factor import Factor, TargetType
 from zvt.contract.normal_data import NormalData
 from zvt.domain import Stock, AccountStats, Position
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
-from zvt.trader.account import SimAccountService
+from zvt.trader.sim_account import SimAccountService
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, is_same_date, next_date
 
 
@@ -311,8 +311,8 @@ class Trader(object):
                 )
                 self.trading_signals.append(trading_signal)
 
-    def on_finish(self, timestmap):
-        self.on_trading_finish(timestmap)
+    def on_finish(self, timestamp):
+        self.on_trading_finish(timestamp)
         # show the result
         if self.draw_result:
             reader = AccountStatsReader(trader_names=[self.trader_name])
@@ -359,14 +359,6 @@ class Trader(object):
             l.on_trading_signals(trading_signals)
         # clear after all listener handling
         self.trading_signals = []
-
-    def on_trading_signal(self, trading_signal: TradingSignal):
-        for l in self.trading_signal_listeners:
-            try:
-                l.on_trading_signal(trading_signal)
-            except Exception as e:
-                self.logger.exception(e)
-                l.on_trading_error(timestamp=trading_signal.happen_timestamp, error=e)
 
     def on_trading_open(self, timestamp):
         for l in self.trading_signal_listeners:

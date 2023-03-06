@@ -7,6 +7,8 @@ class IntervalLevel(Enum):
     Repeated fixed time interval, e.g, 5m, 1d.
     """
 
+    #: level l2 quote
+    LEVEL_L2_QUOTE = "l2quote"
     #: level tick
     LEVEL_TICK = "tick"
     #: 1 minute
@@ -147,7 +149,7 @@ class ActorType(Enum):
     #: 信托
     trust = "trust"
     #: 券商
-    broker = "broker"
+    broker = "qmt"
     #: 私募
     private_equity = "private_equity"
     #: 公司(可能包括私募)

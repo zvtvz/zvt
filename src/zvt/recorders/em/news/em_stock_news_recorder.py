@@ -25,6 +25,7 @@ class EMStockNewsRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == "__main__":
+    Stock.record_data(provider="em")
     r = EMStockNewsRecorder(entity_ids=["stock_sz_300999"])
     r.run()
 # the __all__ is generated

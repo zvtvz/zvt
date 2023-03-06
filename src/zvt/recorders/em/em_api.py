@@ -557,23 +557,24 @@ def get_news(entity_id, ps=200, index=1):
     # }
     if resp.status_code == 200:
         json_text = resp.text[resp.text.index("(") + 1 : resp.text.rindex(")")]
-        json_result = demjson3.decode(json_text)["data"]["list"]
-        resp.close()
-        if json_result:
-            json_result = [
-                {
-                    "id": f'{entity_id}_{item["Art_ShowTime"]}',
-                    "entity_id": entity_id,
-                    "timestamp": to_pd_timestamp(item["Art_ShowTime"]),
-                    "news_title": item["Art_Title"],
-                }
-                for item in json_result
-            ]
-            next_data = get_news(entity_id=entity_id, ps=ps, index=index + 1)
-            if next_data:
-                return json_result + next_data
-            else:
-                return json_result
+        if "list" in demjson3.decode(json_text)["data"]:
+            json_result = demjson3.decode(json_text)["data"]["list"]
+            resp.close()
+            if json_result:
+                json_result = [
+                    {
+                        "id": f'{entity_id}_{item["Art_ShowTime"]}',
+                        "entity_id": entity_id,
+                        "timestamp": to_pd_timestamp(item["Art_ShowTime"]),
+                        "news_title": item["Art_Title"],
+                    }
+                    for item in json_result
+                ]
+                next_data = get_news(entity_id=entity_id, ps=ps, index=index + 1)
+                if next_data:
+                    return json_result + next_data
+                else:
+                    return json_result
 
 
 # utils to transform zvt entity to em entity

@@ -100,6 +100,7 @@ def register_schema(
         for table_name, table in iter(schema_base.metadata.tables.items()):
             index_list = []
             with engine.connect() as con:
+                con.execute("PRAGMA journal_mode=WAL;")
                 rs = con.execute("PRAGMA INDEX_LIST('{}')".format(table_name))
                 for row in rs:
                     index_list.append(row[1])

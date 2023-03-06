@@ -46,10 +46,6 @@ class MacdDayTrader(StockTrader):
         # 批量处理交易信号，比如连接交易接口，发邮件，微信推送等
         super().on_trading_signals(trading_signals)
 
-    def on_trading_signal(self, trading_signal: TradingSignal):
-        # 处理交易信号，比如连接交易接口，发邮件，微信推送等
-        super().on_trading_signal(trading_signal)
-
     def on_trading_open(self, timestamp):
         # 开盘自定义逻辑
         super().on_trading_open(timestamp)

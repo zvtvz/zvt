@@ -4,7 +4,8 @@ import pandas as pd
 
 from zvt.contract.factor import Transformer
 from zvt.domain import Stock1dHfqKdata
-from zvt.factors import MaTransformer
+from zvt.factors import MaTransformer, TechnicalFactor
+from zvt.utils import to_pd_timestamp
 from zvt.utils.pd_utils import group_by_entity_id, normalize_group_compute_result, merge_filter_result
 
 
@@ -34,6 +35,19 @@ class CrossMaTransformer(MaTransformer):
         for col in cols[2:]:
             s = s & (input_df[current_col] > input_df[col])
             current_col = col
+        input_df["filter_result"] = s
+        return input_df
+
+
+class SpecificTransformer(Transformer):
+    def __init__(self, buy_timestamp, sell_timestamp) -> None:
+        self.buy_timestamp = to_pd_timestamp(buy_timestamp)
+        self.sell_timestamp = to_pd_timestamp(sell_timestamp)
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        s = input_df[input_df.get_level_values["timestamp"] == self.buy_timestamp]
+        s[s == False] = None
+        s[input_df.get_level_values["timestamp"] == self.sell_timestamp] = False
         input_df["filter_result"] = s
         return input_df
 
@@ -70,6 +84,7 @@ class FallBelowTransformer(Transformer):
 
 
 if __name__ == "__main__":
-    df = Stock1dHfqKdata.query_data(codes=["000338"], index=["entity_id", "timestamp"])
-    df = FallBelowTransformer().transform(df)
-    print(df["filter_result"])
+    # df = Stock1dHfqKdata.query_data(codes=["000338"], index=["entity_id", "timestamp"])
+    # df = FallBelowTransformer().transform(df)
+    # print(df["filter_result"])
+    TechnicalFactor(transformer=SpecificTransformer(timestamp="2020-03-01"))
