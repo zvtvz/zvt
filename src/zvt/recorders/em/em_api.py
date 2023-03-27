@@ -255,6 +255,7 @@ def get_em_data(
     resp = requests.get(url)
     if resp.status_code == 200:
         json_result = resp.json()
+        resp.close()
         if json_result and json_result["result"]:
             data: list = json_result["result"]["data"]
             if fetch_all:
@@ -328,6 +329,7 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
     resp = requests.get(url, headers=DEFAULT_HEADER)
     resp.raise_for_status()
     results = resp.json()
+    resp.close()
     data = results["data"]
 
     kdatas = []
@@ -399,6 +401,7 @@ def get_basic_info(entity_id):
     resp = requests.post(url=url, json=data, headers=DEFAULT_HEADER)
 
     resp.raise_for_status()
+    resp.close()
 
     return resp.json()["Result"][result_field]
 
@@ -409,6 +412,7 @@ def get_future_list():
     resp = requests.get(url, headers=DEFAULT_HEADER)
     resp.raise_for_status()
     result = json_callback_param(resp.text)
+    resp.close()
     # [['DCE', 'im'], ['SHFE', 'rbm'], ['SHFE', 'hcm'], ['SHFE', 'ssm'], ['CZCE', 'SFM'], ['CZCE', 'SMM'], ['SHFE', 'wrm'], ['SHFE', 'cum'], ['SHFE', 'alm'], ['SHFE', 'znm'], ['SHFE', 'pbm'], ['SHFE', 'nim'], ['SHFE', 'snm'], ['INE', 'bcm'], ['SHFE', 'aum'], ['SHFE', 'agm'], ['DCE', 'am'], ['DCE', 'bm'], ['DCE', 'ym'], ['DCE', 'mm'], ['CZCE', 'RSM'], ['CZCE', 'OIM'], ['CZCE', 'RMM'], ['DCE', 'pm'], ['DCE', 'cm'], ['DCE', 'csm'], ['DCE', 'jdm'], ['CZCE', 'CFM'], ['CZCE', 'CYM'], ['CZCE', 'SRM'], ['CZCE', 'APM'], ['CZCE', 'CJM'], ['CZCE', 'PKM'], ['CZCE', 'PMM'], ['CZCE', 'WHM'], ['DCE', 'rrm'], ['CZCE', 'JRM'], ['CZCE', 'RIM'], ['CZCE', 'LRM'], ['DCE', 'lhm'], ['INE', 'scm'], ['SHFE', 'fum'], ['DCE', 'pgm'], ['INE', 'lum'], ['SHFE', 'bum'], ['CZCE', 'MAM'], ['DCE', 'egm'], ['DCE', 'lm'], ['CZCE', 'TAM'], ['DCE', 'vm'], ['DCE', 'ppm'], ['DCE', 'ebm'], ['CZCE', 'SAM'], ['CZCE', 'FGM'], ['CZCE', 'URM'], ['SHFE', 'rum'], ['INE', 'nrm'], ['SHFE', 'spm'], ['DCE', 'fbm'], ['DCE', 'bbm'], ['CZCE', 'PFM'], ['DCE', 'jmm'], ['DCE', 'jm'], ['CZCE', 'ZCM'], ['8', '060120'], ['8', '040120'], ['8', '070120'], ['8', '110120'], ['8', '050120'], ['8', '130120']]
     futures = []
     for item in result["list"]:
@@ -513,6 +517,7 @@ def get_tradable_list(
         resp.raise_for_status()
 
         result = json_callback_param(resp.text)
+        resp.close()
         data = result["data"]["diff"]
         df = pd.DataFrame.from_records(data=data)
         if entity_type == TradableType.stock:
@@ -553,6 +558,7 @@ def get_news(entity_id, ps=200, index=1):
     if resp.status_code == 200:
         json_text = resp.text[resp.text.index("(") + 1 : resp.text.rindex(")")]
         json_result = demjson3.decode(json_text)["data"]["list"]
+        resp.close()
         if json_result:
             json_result = [
                 {
