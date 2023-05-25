@@ -7,8 +7,22 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, AdjustType, Mixin
 from zvt.contract.api import decode_entity_id, get_schema_by_name
+from zvt.domain import Index1dKdata
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601, to_pd_timestamp
+
+
+def get_trade_dates(start, end):
+    df = Index1dKdata.query_data(
+        entity_id="index_sh_000001",
+        provider="em",
+        columns=["timestamp"],
+        start_timestamp=start,
+        end_timestamp=end,
+        order=Index1dKdata.timestamp.asc(),
+        return_type="df",
+    )
+    return df["timestamp"].tolist()
 
 
 def get_latest_kdata_date(
@@ -173,6 +187,7 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
 
 # the __all__ is generated
 __all__ = [
+    "get_trade_dates",
     "get_latest_kdata_date",
     "get_kdata_schema",
     "get_kdata",

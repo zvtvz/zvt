@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 
-from zvt.api.kdata import get_kdata_schema, default_adjust_type, get_latest_kdata_date
+from zvt.api.kdata import get_kdata_schema, default_adjust_type, get_latest_kdata_date, get_trade_dates
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.api.utils import get_recent_report_date
 from zvt.contract import Mixin, AdjustType
@@ -14,7 +14,7 @@ from zvt.contract.api import decode_entity_id, get_entity_schema, get_entity_ids
 from zvt.contract.drawer import Drawer
 from zvt.domain import FundStock, StockValuation, BlockStock, Block
 from zvt.utils import now_pd_timestamp, next_date, pd_is_not_null
-from zvt.utils.time_utils import month_start_end_ranges, to_time_str
+from zvt.utils.time_utils import month_start_end_ranges, to_time_str, is_same_date
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,8 @@ def get_top_performance_entities_by_periods(
             kdata_schema.turnover_rate >= turnover_rate_threshold,
         ],
         provider=data_provider,
-        start_timestamp=target_date,
+        start_timestamp=next_date(target_date, -7),
+        end_timestamp=target_date,
         index="entity_id",
         columns=["entity_id", "code"],
     )
@@ -111,17 +112,22 @@ def get_top_performance_entities_by_periods(
     logger.info(f"{entity_type} filter_entity_ids size: {len(filter_entity_ids)}")
     filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
     selected = []
+    current_start = None
     for i, period in enumerate(periods):
-        interval = period
-        # 周1 weekday为0，2日内最强，得算3,即把周末两天加上
-        # 一般长一点的周期，就不需要管
-        if target_date.weekday() + 1 < interval:
-            interval = interval + 2
-        start = next_date(target_date, -interval)
+        start = next_date(target_date, -period)
+        trade_days = get_trade_dates(start=next_date(target_date, -period), end=target_date)
+        if not trade_days:
+            logger.info(f"no trade days in: {start} to {target_date}")
+            continue
+        if current_start and is_same_date(current_start, trade_days[0]):
+            logger.info("ignore same trade days")
+            continue
+        current_start = trade_days[0]
+        current_end = trade_days[-1]
         positive_df, negative_df = get_top_performance_entities(
             entity_type=entity_type,
-            start_timestamp=start,
-            end_timestamp=target_date,
+            start_timestamp=current_start,
+            end_timestamp=current_end,
             kdata_filters=filters,
             pct=1,
             show_name=True,
@@ -558,7 +564,7 @@ def get_change_ratio(
 
 
 if __name__ == "__main__":
-    get_change_ratio(start_timestamp="2022-06-01")
+    print(get_top_performance_entities_by_periods(entity_provider="em", data_provider="em", target_date="2023-05-20"))
 
 # the __all__ is generated
 __all__ = [

@@ -487,6 +487,7 @@ def df_to_db(
         print("wrong cols")
         return 0
 
+    cols = list(cols)
     df = df[cols]
 
     size = len(df)
