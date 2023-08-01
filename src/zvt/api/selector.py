@@ -26,7 +26,13 @@ OUT_DEPS = ["dep_1", "dep_2", "dep_3", "dep_4", "dep_5"]
 
 
 def get_entity_ids_by_filter(
-    provider="em", ignore_st=True, ignore_new_stock=True, target_date=None, entity_schema=Stock, entity_ids=None
+    provider="em",
+    ignore_delist=True,
+    ignore_st=True,
+    ignore_new_stock=True,
+    target_date=None,
+    entity_schema=Stock,
+    entity_ids=None,
 ):
     filters = []
     if ignore_new_stock:
@@ -34,12 +40,17 @@ def get_entity_ids_by_filter(
             target_date = current_date()
         pre_year = next_date(target_date, -365)
         filters += [entity_schema.timestamp <= pre_year]
-    if ignore_st:
+    if ignore_delist:
         filters += [
             entity_schema.name.not_like("%退%"),
+        ]
+
+    if ignore_st:
+        filters += [
             entity_schema.name.not_like("%ST%"),
             entity_schema.name.not_like("%*ST%"),
         ]
+
     return get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters, entity_ids=entity_ids)
 
 
@@ -279,8 +290,8 @@ if __name__ == "__main__":
     # mini = get_mini_cap_stock(timestamp=target_date)
     # print(len(mini))
     # print(mini)
-    df = get_player_performance(start_timestamp="2022-01-01")
-    print(df)
+    # df = get_player_performance(start_timestamp="2022-01-01")
+    print(len(get_entity_ids_by_filter()))
 # the __all__ is generated
 __all__ = [
     "get_dragon_and_tigger_player",

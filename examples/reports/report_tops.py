@@ -23,11 +23,11 @@ def report_top_stocks():
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[*range(2, 21)],
+        periods=[*range(2, 27)],
         ignore_new_stock=True,
         ignore_st=True,
         adjust_type=None,
-        top_count=20,
+        top_count=25,
         turnover_threshold=0,
         turnover_rate_threshold=0,
         informer=email_informer,
@@ -40,7 +40,7 @@ def report_top_stocks():
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[*range(21, 60)],
+        periods=[*range(27, 67)],
         ignore_new_stock=True,
         ignore_st=True,
         adjust_type=None,
@@ -123,7 +123,7 @@ def report_top_stockhks():
         entity_provider="em",
         data_provider="em",
         top_count=10,
-        periods=[*range(2, 10)],
+        periods=[*range(2, 27)],
         ignore_new_stock=False,
         ignore_st=False,
         adjust_type=None,
@@ -152,22 +152,22 @@ def report_top_stockhks():
         return_type=TopType.positive,
     )
 
-    report_top_entities(
-        entity_type="stockhk",
-        entity_provider="em",
-        data_provider="em",
-        top_count=20,
-        periods=[365, 750],
-        ignore_new_stock=True,
-        ignore_st=False,
-        adjust_type=None,
-        turnover_threshold=50000000,
-        turnover_rate_threshold=0.005,
-        informer=email_informer,
-        em_group="谁有我惨",
-        em_group_over_write=False,
-        return_type=TopType.negative,
-    )
+    # report_top_entities(
+    #     entity_type="stockhk",
+    #     entity_provider="em",
+    #     data_provider="em",
+    #     top_count=20,
+    #     periods=[365, 750],
+    #     ignore_new_stock=True,
+    #     ignore_st=False,
+    #     adjust_type=None,
+    #     turnover_threshold=50000000,
+    #     turnover_rate_threshold=0.005,
+    #     informer=email_informer,
+    #     em_group="谁有我惨",
+    #     em_group_over_write=False,
+    #     return_type=TopType.negative,
+    # )
 
 
 if __name__ == "__main__":
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     report_top_stocks()
     report_top_blocks()
-    # report_top_stockhks()
+    report_top_stockhks()
 
     sched.start()
 

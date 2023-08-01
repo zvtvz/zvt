@@ -540,7 +540,7 @@ def get_tradable_list(
     return pd.concat(dfs)
 
 
-def get_news(entity_id, ps=200, index=1):
+def get_news(entity_id, ps=200, index=1, start_timestamp=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
     resp = requests.get(url)
@@ -561,7 +561,7 @@ def get_news(entity_id, ps=200, index=1):
             json_result = demjson3.decode(json_text)["data"]["list"]
             resp.close()
             if json_result:
-                json_result = [
+                news = [
                     {
                         "id": f'{entity_id}_{item["Art_ShowTime"]}',
                         "entity_id": entity_id,
@@ -569,12 +569,15 @@ def get_news(entity_id, ps=200, index=1):
                         "news_title": item["Art_Title"],
                     }
                     for item in json_result
+                    if not start_timestamp or (to_pd_timestamp(item["Art_ShowTime"]) >= start_timestamp)
                 ]
+                if len(news) < len(json_result):
+                    return news
                 next_data = get_news(entity_id=entity_id, ps=ps, index=index + 1)
                 if next_data:
-                    return json_result + next_data
+                    return news + next_data
                 else:
-                    return json_result
+                    return news
 
 
 # utils to transform zvt entity to em entity
@@ -721,7 +724,11 @@ if __name__ == "__main__":
     # df = get_kdata(entity_id="future_dce_I", level="1d")
     # print(df)
     # df = get_dragon_and_tiger(code="000989", start_date="2018-10-31")
-    df = get_dragon_and_tiger_list(start_date="2022-04-25")
+    # df = get_dragon_and_tiger_list(start_date="2022-04-25")
+    df = get_tradable_list()
+    df_delist = df[df["name"].str.contains("退")]
+    print(df_delist[["id", "name"]].values.tolist())
+
     print(df)
 # the __all__ is generated
 __all__ = [

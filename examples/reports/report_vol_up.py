@@ -19,7 +19,7 @@ email_informer = EmailInformer()
 
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
-def report_vol_up():
+def report_vol_up_stocks():
     target_date = get_latest_kdata_date(entity_type="stock", adjust_type=AdjustType.hfq, provider="em")
     entity_ids = get_mini_and_small_stock(timestamp=target_date, provider="em")
 
@@ -34,7 +34,7 @@ def report_vol_up():
         em_group_over_write=True,
         filter_by_volume=False,
         adjust_type=AdjustType.hfq,
-        start_timestamp="2019-01-01",
+        start_timestamp="2021-01-01",
         # factor args
         windows=[120, 250],
         over_mode="or",
@@ -56,7 +56,7 @@ def report_vol_up():
         em_group_over_write=False,
         filter_by_volume=False,
         adjust_type=AdjustType.hfq,
-        start_timestamp="2019-01-01",
+        start_timestamp="2021-01-01",
         # factor args
         windows=[120, 250],
         over_mode="or",
@@ -66,6 +66,9 @@ def report_vol_up():
         entity_ids=entity_ids,
     )
 
+
+@sched.scheduled_job("cron", hour=17, minute=30, day_of_week="mon-fri")
+def report_vol_up_stockhks():
     report_targets(
         factor_cls=VolumeUpMaFactor,
         entity_provider="em",
@@ -77,11 +80,11 @@ def report_vol_up():
         em_group_over_write=False,
         filter_by_volume=False,
         adjust_type=AdjustType.hfq,
-        start_timestamp="2019-01-01",
+        start_timestamp="2021-01-01",
         # factor args
         windows=[120, 250],
         over_mode="or",
-        up_intervals=20,
+        up_intervals=60,
         turnover_threshold=100000000,
         turnover_rate_threshold=0.01,
     )
@@ -90,8 +93,8 @@ def report_vol_up():
 if __name__ == "__main__":
     init_log("report_vol_up.log")
 
-    report_vol_up()
-
+    report_vol_up_stocks()
+    report_vol_up_stockhks()
     sched.start()
 
     sched._thread.join()

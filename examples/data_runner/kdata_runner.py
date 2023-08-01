@@ -6,6 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from examples.recorder_utils import run_data_recorder
 from examples.report_utils import inform
 from zvt import init_log
+from zvt.api.selector import get_entity_ids_by_filter
 from zvt.domain import (
     Stock,
     Stock1dHfqKdata,
@@ -16,6 +17,7 @@ from zvt.domain import (
     BlockCategory,
     Index,
     Index1dKdata,
+    StockNews,
 )
 from zvt.informer import EmailInformer
 from zvt.utils import next_date, current_date
@@ -25,6 +27,22 @@ logger = logging.getLogger(__name__)
 sched = BackgroundScheduler()
 
 
+@sched.scheduled_job("cron", hour=16, minute=30, day_of_week="mon-fri")
+def record_stock_news(data_provider="em"):
+    normal_stock_ids = get_entity_ids_by_filter(
+        provider="em", ignore_delist=True, ignore_st=False, ignore_new_stock=False
+    )
+
+    run_data_recorder(
+        entity_ids=normal_stock_ids,
+        day_data=True,
+        domain=StockNews,
+        data_provider=data_provider,
+        force_update=False,
+        sleeping_time=2,
+    )
+
+
 @sched.scheduled_job("cron", hour=15, minute=30, day_of_week="mon-fri")
 def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2):
     # A股指数
@@ -32,17 +50,6 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
     # A股指数行情
     run_data_recorder(
         domain=Index1dKdata,
-        data_provider=data_provider,
-        entity_provider=entity_provider,
-        day_data=True,
-        sleeping_time=sleeping_time,
-    )
-
-    # A股标的
-    run_data_recorder(domain=Stock, data_provider=data_provider, force_update=False)
-    # A股后复权行情
-    run_data_recorder(
-        domain=Stock1dHfqKdata,
         data_provider=data_provider,
         entity_provider=entity_provider,
         day_data=True,
@@ -76,8 +83,24 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
         title="report 新概念",
         entity_provider=entity_provider,
         entity_type="block",
-        em_group="关注板块",
-        em_group_over_write=True,
+        em_group="练气",
+        em_group_over_write=False,
+    )
+
+    # A股标的
+    run_data_recorder(domain=Stock, data_provider=data_provider, force_update=False)
+    # A股后复权行情
+    normal_stock_ids = get_entity_ids_by_filter(
+        provider="em", ignore_delist=True, ignore_st=False, ignore_new_stock=False
+    )
+
+    run_data_recorder(
+        entity_ids=normal_stock_ids,
+        domain=Stock1dHfqKdata,
+        data_provider=data_provider,
+        entity_provider=entity_provider,
+        day_data=True,
+        sleeping_time=sleeping_time,
     )
 
 
