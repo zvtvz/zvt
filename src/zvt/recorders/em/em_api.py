@@ -7,12 +7,20 @@ import demjson3
 import pandas as pd
 import requests
 
-from zvt.api import generate_kdata_id, value_to_pct
+from zvt.api import generate_kdata_id, value_to_pct, china_stock_code_to_id
 from zvt.contract import ActorType, AdjustType, IntervalLevel, Exchange, TradableType, get_entity_exchanges
 from zvt.contract.api import decode_entity_id
 from zvt.domain import BlockCategory
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import to_pd_timestamp, to_float, json_callback_param, now_timestamp, to_time_str
+from zvt.utils import (
+    to_pd_timestamp,
+    to_float,
+    json_callback_param,
+    now_timestamp,
+    to_time_str,
+    now_pd_timestamp,
+    current_date,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -540,6 +548,34 @@ def get_tradable_list(
     return pd.concat(dfs)
 
 
+def get_block_stocks(block_id, name=""):
+    entity_type, exchange, code = decode_entity_id(block_id)
+    category_stocks_url = f"http://48.push2.eastmoney.com/api/qt/clist/get?cb=jQuery11240710111145777397_{now_timestamp() - 1}&pn=1&pz=1000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=4668014655929990|0|1|0|web&fid=f3&fs=b:{code}+f:!50&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152,f45&_={now_timestamp()}"
+    resp = requests.get(category_stocks_url, headers=DEFAULT_HEADER)
+    results = json_callback_param(resp.text)["data"]["diff"]
+    the_list = []
+    for result in results:
+        stock_code = result["f12"]
+        stock_name = result["f14"]
+        stock_id = china_stock_code_to_id(stock_code)
+
+        the_list.append(
+            {
+                "id": "{}_{}".format(block_id, stock_id),
+                "entity_id": block_id,
+                "entity_type": "block",
+                "exchange": exchange,
+                "code": code,
+                "name": name,
+                "timestamp": current_date(),
+                "stock_id": stock_id,
+                "stock_code": stock_code,
+                "stock_name": stock_name,
+            }
+        )
+    return the_list
+
+
 def get_news(entity_id, ps=200, index=1, start_timestamp=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
@@ -725,11 +761,10 @@ if __name__ == "__main__":
     # print(df)
     # df = get_dragon_and_tiger(code="000989", start_date="2018-10-31")
     # df = get_dragon_and_tiger_list(start_date="2022-04-25")
-    df = get_tradable_list()
-    df_delist = df[df["name"].str.contains("退")]
-    print(df_delist[["id", "name"]].values.tolist())
-
-    print(df)
+    # # df = get_tradable_list()
+    # # df_delist = df[df["name"].str.contains("退")]
+    # print(df_delist[["id", "name"]].values.tolist())
+    print(get_block_stocks(block_id="block_cn_BK1144"))
 # the __all__ is generated
 __all__ = [
     "get_treasury_yield",

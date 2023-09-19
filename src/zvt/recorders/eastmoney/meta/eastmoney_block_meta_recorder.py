@@ -97,9 +97,9 @@ class EastmoneyBlockStockRecorder(TimeSeriesDataRecorder):
 
 if __name__ == "__main__":
     # init_log('china_stock_category.log')
-    # EastmoneyBlockRecorder().run()
+    EastmoneyBlockRecorder().run()
 
-    recorder = EastmoneyBlockStockRecorder()
+    recorder = EastmoneyBlockStockRecorder(code="BK1144")
     recorder.run()
 # the __all__ is generated
 __all__ = ["EastmoneyBlockRecorder", "EastmoneyBlockStockRecorder"]

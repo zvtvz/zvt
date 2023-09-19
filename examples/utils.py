@@ -54,6 +54,7 @@ def hot_stats(data: pd.Series):
 
 
 def group_stocks_by_topic(entities, start_timestamp=None):
+    # 默认半年内的新闻
     if not start_timestamp:
         start_timestamp = next_date(today(), -180)
     stock_map = {}
@@ -72,6 +73,8 @@ def group_stocks_by_topic(entities, start_timestamp=None):
         text = row["news_title"]
 
         is_hot = False
+        # hot words config为二重结构
+        # 即 主题:[分支1，分支2,...]的形式
         for topic in hot_words_config:
             topic_count.setdefault(topic, 0)
             for words in hot_words_config[topic]:
