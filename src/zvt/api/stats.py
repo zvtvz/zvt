@@ -113,17 +113,25 @@ def get_top_performance_entities_by_periods(
     filters = [kdata_schema.entity_id.in_(filter_entity_ids)]
     selected = []
     current_start = None
+    real_period = 1
     for i, period in enumerate(periods):
-        start = next_date(target_date, -period)
-        trade_days = get_trade_dates(start=next_date(target_date, -period), end=target_date)
-        if not trade_days:
-            logger.info(f"no trade days in: {start} to {target_date}")
-            continue
-        if current_start and is_same_date(current_start, trade_days[0]):
-            logger.info("ignore same trade days")
-            continue
+        real_period = max(real_period, period)
+        while True:
+            start = next_date(target_date, -real_period)
+            trade_days = get_trade_dates(start=start, end=target_date)
+            if not trade_days:
+                logger.info(f"no trade days in: {start} to {target_date}")
+                real_period = real_period + 1
+                continue
+            if current_start and is_same_date(current_start, trade_days[0]):
+                logger.info("ignore same trade days")
+                real_period = real_period + 1
+                continue
+            break
         current_start = trade_days[0]
         current_end = trade_days[-1]
+
+        logger.info(f"trade days in: {current_start} to {current_end}, real_period: {real_period} ")
         positive_df, negative_df = get_top_performance_entities(
             entity_type=entity_type,
             start_timestamp=current_start,

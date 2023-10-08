@@ -3,7 +3,7 @@ import logging
 import time
 from typing import Type
 
-from examples.utils import add_to_eastmoney
+from examples.utils import add_to_eastmoney, group_stocks_by_topic, msg_group_stocks_by_topic
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
@@ -18,7 +18,15 @@ logger = logging.getLogger("__name__")
 
 
 def inform(
-    action: EmailInformer, entity_ids, target_date, title, entity_provider, entity_type, em_group, em_group_over_write
+    action: EmailInformer,
+    entity_ids,
+    target_date,
+    title,
+    entity_provider,
+    entity_type,
+    em_group,
+    em_group_over_write,
+    group_by_topic=True,
 ):
     msg = "no targets"
     if entity_ids:
@@ -36,8 +44,12 @@ def inform(
                     f"{target_date} {title} error: {e}",
                 )
 
-        infos = [f"{entity.name}({entity.code})" for entity in entities]
-        msg = "\n".join(infos) + "\n"
+        if group_by_topic and (entity_type == "stock"):
+            msg = msg_group_stocks_by_topic(entities=entities, threshold=1, days_ago=60)
+        else:
+            infos = [f"{entity.name}({entity.code})" for entity in entities]
+            msg = "\n".join(infos) + "\n"
+
     logger.info(msg)
     action.send_message(zvt_config["email_username"], f"{target_date} {title}", msg)
 
@@ -126,7 +138,7 @@ def report_targets(
                 informer,
                 entity_ids=long_stocks,
                 target_date=target_date,
-                title=title,
+                title=f"{entity_type} {title}({len(long_stocks)})",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
                 em_group=em_group,
@@ -159,11 +171,15 @@ def report_top_entities(
     turnover_threshold=100000000,
     turnover_rate_threshold=0.02,
     informer: EmailInformer = None,
+    title="最强",
     em_group=None,
     em_group_over_write=True,
     return_type=TopType.positive,
 ):
     error_count = 0
+
+    if not adjust_type:
+        adjust_type = default_adjust_type(entity_type=entity_type)
 
     while error_count <= 10:
         try:
@@ -190,7 +206,7 @@ def report_top_entities(
                 informer,
                 entity_ids=selected,
                 target_date=target_date,
-                title=f"{entity_type} {em_group}({len(selected)})",
+                title=f"{entity_type} {title}({len(selected)})",
                 entity_provider=entity_provider,
                 entity_type=entity_type,
                 em_group=em_group,
