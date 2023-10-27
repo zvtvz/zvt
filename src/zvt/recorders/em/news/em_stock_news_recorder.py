@@ -33,8 +33,9 @@ class EMStockNewsRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == "__main__":
-    # Stock.record_data(provider="em")
-    r = EMStockNewsRecorder(entity_ids=["stock_sz_000005"])
+    df = Stock.query_data(filters=[Stock.exchange == "bj"], provider="em")
+    entity_ids = df["entity_id"].tolist()
+    r = EMStockNewsRecorder(entity_ids=entity_ids, sleeping_time=0)
     r.run()
 # the __all__ is generated
 __all__ = ["EMStockNewsRecorder"]

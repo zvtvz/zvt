@@ -486,11 +486,13 @@ def get_tradable_list(
             if exchange == Exchange.sh:
                 # t=2 主板
                 # t=23 科创板
-                entity_flag = f"fs=m:1+t:2,m:1+t:23"
+                entity_flag = "fs=m:1+t:2,m:1+t:23"
             if exchange == Exchange.sz:
                 # t=6 主板
                 # t=80 创业板
-                entity_flag = f"fs=m:0+t:6,m:0+t:13,m:0+t:80"
+                entity_flag = "fs=m:0+t:6,m:0+t:13,m:0+t:80"
+            if exchange == Exchange.bj:
+                entity_flag = "fs=m:0+t:81+s:2048"
             if exchange == Exchange.hk:
                 if hk_south:
                     # 港股通
@@ -640,6 +642,8 @@ exchange_map_em_flag = {
     Exchange.sz: 0,
     #: 上证交易所
     Exchange.sh: 1,
+    #: 北交所
+    Exchange.bj: 0,
     #: 纳斯达克
     Exchange.nasdaq: 105,
     #: 纽交所
@@ -764,7 +768,12 @@ if __name__ == "__main__":
     # # df = get_tradable_list()
     # # df_delist = df[df["name"].str.contains("退")]
     # print(df_delist[["id", "name"]].values.tolist())
-    print(get_block_stocks(block_id="block_cn_BK1144"))
+    # print(get_block_stocks(block_id="block_cn_BK1144"))
+    df = get_tradable_list(entity_type="stock", exchange=Exchange.bj)
+    print(df)
+    df = get_kdata(entity_id="stock_bj_873693", level="1d")
+    print(df)
+
 # the __all__ is generated
 __all__ = [
     "get_treasury_yield",

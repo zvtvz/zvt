@@ -45,8 +45,11 @@ def get_recent_report_period(the_date=now_pd_timestamp(), step=0):
 
 
 def get_china_exchange(code):
-    if code >= "333333":
+    code_ = int(code)
+    if code_ >= 600000:
         return "sh"
+    elif code_ >= 400000:
+        return "bj"
     else:
         return "sz"
 

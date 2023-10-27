@@ -29,7 +29,7 @@ def get_entity_ids_by_filter(
     provider="em",
     ignore_delist=True,
     ignore_st=True,
-    ignore_new_stock=True,
+    ignore_new_stock=False,
     target_date=None,
     entity_schema=Stock,
     entity_ids=None,
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     # print(len(mini))
     # print(mini)
     # df = get_player_performance(start_timestamp="2022-01-01")
-    print(len(get_entity_ids_by_filter()))
+    print((get_entity_ids_by_filter(ignore_new_stock=False)))
 # the __all__ is generated
 __all__ = [
     "get_dragon_and_tigger_player",

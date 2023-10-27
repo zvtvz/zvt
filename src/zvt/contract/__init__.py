@@ -197,6 +197,8 @@ class Exchange(Enum):
     sh = "sh"
     #: 深证交易所
     sz = "sz"
+    #: 北交所
+    bj = "bj"
 
     #: 对于中国的非交易所的 标的
     cn = "cn"
@@ -236,7 +238,7 @@ class Exchange(Enum):
 tradable_type_map_exchanges = {
     TradableType.block: [Exchange.cn],
     TradableType.index: [Exchange.sh, Exchange.sz],
-    TradableType.stock: [Exchange.sh, Exchange.sz],
+    TradableType.stock: [Exchange.sh, Exchange.sz, Exchange.bj],
     TradableType.stockhk: [Exchange.hk],
     TradableType.stockus: [Exchange.nasdaq, Exchange.nyse],
     TradableType.indexus: [Exchange.us],

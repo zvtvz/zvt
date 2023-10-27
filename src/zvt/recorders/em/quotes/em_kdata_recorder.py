@@ -163,9 +163,11 @@ class EMCurrencyKdataRecorder(BaseEMStockKdataRecorder):
 
 
 if __name__ == "__main__":
-    df = Currency.query_data(filters=[Currency.code.like("USD%")])
+    df = Stock.query_data(filters=[Stock.exchange == "bj"], provider="em")
     entity_ids = df["entity_id"].tolist()
-    recorder = EMCurrencyKdataRecorder(level=IntervalLevel.LEVEL_1DAY, entity_ids=entity_ids, sleeping_time=0)
+    recorder = EMStockKdataRecorder(
+        level=IntervalLevel.LEVEL_1DAY, entity_ids=entity_ids, sleeping_time=0, adjust_type=AdjustType.hfq
+    )
     recorder.run()
 # the __all__ is generated
 __all__ = [

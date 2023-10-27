@@ -43,7 +43,7 @@ def count_hot_words(text: str):
     for topic in hot_words_config:
         topic_count = 0
         for word in hot_words_config[topic]:
-            word_stats[word] = text.count(word)
+            word_stats[word] = text.lower().count(word)
             topic_count = topic_count + word_stats[word]
         topic_stats[topic] = topic_count
     return topic_stats, word_stats
@@ -104,7 +104,7 @@ def group_stocks_by_topic(
                 word_count.setdefault(words, 0)
                 count = 0
                 for word in words.split(","):
-                    count = text.count(word) + count
+                    count = text.lower().count(word) + count
                 if count >= threshold:
                     word_count[words] = word_count[words] + 1
                     topic_count[topic] = topic_count[topic] + 1

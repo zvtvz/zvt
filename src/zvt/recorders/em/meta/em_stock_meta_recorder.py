@@ -13,7 +13,7 @@ class EMStockRecorder(Recorder):
     data_schema = Stock
 
     def run(self):
-        for exchange in [Exchange.sh, Exchange.sz]:
+        for exchange in [Exchange.sh, Exchange.sz, Exchange.bj]:
             df = em_api.get_tradable_list(entity_type="stock", exchange=exchange)
             # df_delist = df[df["name"].str.contains("退")]
             if pd_is_not_null(df):
