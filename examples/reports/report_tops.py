@@ -24,7 +24,7 @@ def report_top_stocks():
         entity_provider="em",
         data_provider="em",
         periods=[*range(2, 27)],
-        ignore_new_stock=True,
+        ignore_new_stock=False,
         ignore_st=True,
         adjust_type=None,
         top_count=25,
@@ -42,7 +42,7 @@ def report_top_stocks():
         entity_provider="em",
         data_provider="em",
         periods=[*range(27, 67)],
-        ignore_new_stock=True,
+        ignore_new_stock=False,
         ignore_st=True,
         adjust_type=None,
         top_count=20,
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     init_log("report_tops.log")
 
     report_top_stocks()
-    report_top_blocks()
+    # report_top_blocks()
     report_top_stockhks()
 
     sched.start()

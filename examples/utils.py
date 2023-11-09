@@ -9,7 +9,7 @@ import pandas as pd
 
 from zvt.api.stats import get_top_performance_entities_by_periods
 from zvt.contract.api import get_entities
-from zvt.domain import StockNews, Stock
+from zvt.domain import StockNews, Stock, LimitUpInfo
 from zvt.utils import next_date, today
 
 logger = logging.getLogger(__name__)
@@ -156,9 +156,23 @@ def msg_group_stocks_by_topic(
     return msg
 
 
+def get_hot_topics(start_timestamp=None, days_ago=20, limit=15):
+    if not start_timestamp:
+        start_timestamp = next_date(today(), -days_ago)
+    df = LimitUpInfo.query_data(start_timestamp=start_timestamp, columns=["reason"])
+    df["reason"] = df["reason"].str.split("+")
+    result = df["reason"].tolist()
+    result = [item for sublist in result for item in sublist]
+    result = pd.Series(result)
+    result = result.value_counts()
+    result = result[:limit].to_dict()
+    return result
+
+
 if __name__ == "__main__":
-    ids = get_top_performance_entities_by_periods(entity_provider="em", data_provider="em")
-
-    entities = get_entities(provider="em", entity_type="stock", entity_ids=ids, return_type="domain")
-
-    print(msg_group_stocks_by_topic(entities=entities, threshold=1))
+    # ids = get_top_performance_entities_by_periods(entity_provider="em", data_provider="em")
+    #
+    # entities = get_entities(provider="em", entity_type="stock", entity_ids=ids, return_type="domain")
+    #
+    # print(msg_group_stocks_by_topic(entities=entities, threshold=1))
+    get_hot_topics(days_ago=10)

@@ -2,20 +2,22 @@
 from typing import List
 
 import pandas as pd
-
+import re
 from zvt.api.utils import china_stock_code_to_id
-from zvt.contract.api import df_to_db
+from zvt.contract.api import df_to_db, get_db_session
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.emotion.emotion import LimitUpInfo, LimitDownInfo, Emotion
 from zvt.recorders.jqka import jqka_api
-from zvt.utils import to_time_str, next_date, current_date, to_pd_timestamp
+from zvt.utils import to_time_str, next_date, current_date, to_pd_timestamp, pd_is_not_null
 
 
 def _get_high_days_count(high_days_str: str):
     if not high_days_str or (high_days_str == "首板"):
         return 1
-    return int(high_days_str[3])
+    pattern = r"\d+"
+    result = re.findall(pattern, high_days_str)
+    return int(result[-1])
 
 
 class JqkaLimitUpRecorder(TimestampsDataRecorder):
@@ -202,6 +204,7 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
 
 
 if __name__ == "__main__":
-    JqkaEmotionRecorder().run()
+    JqkaLimitUpRecorder().run()
+
 # the __all__ is generated
 __all__ = ["JqkaLimitUpRecorder", "JqkaLimitDownRecorder", "JqkaEmotionRecorder"]

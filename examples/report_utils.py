@@ -3,7 +3,7 @@ import logging
 import time
 from typing import Type
 
-from examples.utils import add_to_eastmoney, group_stocks_by_topic, msg_group_stocks_by_topic
+from examples.utils import add_to_eastmoney, msg_group_stocks_by_topic
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
@@ -11,6 +11,7 @@ from zvt.api.stats import get_top_performance_entities_by_periods
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities, get_entity_schema
 from zvt.contract.factor import Factor, TargetType
+from zvt.domain import StockNews
 from zvt.informer import EmailInformer
 from zvt.utils import next_date
 
@@ -45,6 +46,14 @@ def inform(
                 )
 
         if group_by_topic and (entity_type == "stock"):
+            StockNews.record_data(
+                entity_ids=entity_ids,
+                provider="em",
+                force_update=False,
+                sleeping_time=0.05,
+                day_data=True,
+            )
+
             msg = msg_group_stocks_by_topic(entities=entities, threshold=1, days_ago=60)
         else:
             infos = [f"{entity.name}({entity.code})" for entity in entities]
