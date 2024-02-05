@@ -3,10 +3,12 @@ import logging
 import time
 from typing import Type
 
+from examples.tag_utils import group_stocks_by_tag, get_main_line_tags, get_main_line_hidden_tags
 from examples.utils import add_to_eastmoney, msg_group_stocks_by_topic
 from zvt import zvt_config
 from zvt.api import get_top_volume_entities, TopType
 from zvt.api.kdata import get_latest_kdata_date, get_kdata_schema, default_adjust_type
+from zvt.api.selector import get_limit_up_stocks
 from zvt.api.stats import get_top_performance_entities_by_periods
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entities, get_entity_schema
@@ -27,23 +29,16 @@ def inform(
     entity_type,
     em_group,
     em_group_over_write,
-    group_by_topic=True,
+    em_group_over_write_tag=False,
+    group_by_topic=False,
+    group_by_tag=True,
+    special_hidden_tag="北交所",
 ):
     msg = "no targets"
     if entity_ids:
         entities = get_entities(
             provider=entity_provider, entity_type=entity_type, entity_ids=entity_ids, return_type="domain"
         )
-        if em_group:
-            try:
-                codes = [entity.code for entity in entities]
-                add_to_eastmoney(codes=codes, entity_type=entity_type, group=em_group, over_write=em_group_over_write)
-            except Exception as e:
-                action.send_message(
-                    zvt_config["email_username"],
-                    f"{target_date} {title} error",
-                    f"{target_date} {title} error: {e}",
-                )
 
         if group_by_topic and (entity_type == "stock"):
             StockNews.record_data(
@@ -55,7 +50,64 @@ def inform(
             )
 
             msg = msg_group_stocks_by_topic(entities=entities, threshold=1, days_ago=60)
+            logger.info(msg)
+            action.send_message(zvt_config["email_username"], f"{target_date} {title}", msg)
+
+        if group_by_tag and (entity_type == "stock"):
+            main_line_hidden_tags = get_main_line_hidden_tags()
+            sorted_entities = group_stocks_by_tag(
+                entities=entities, hidden_tags=main_line_hidden_tags + [special_hidden_tag]
+            )
+            msg = ""
+            main_line = []
+            others = []
+            special = []
+            main_line_tags = get_main_line_tags()
+            for index, (tag, stocks) in enumerate(sorted_entities):
+                msg = msg + f"^^^^^^ {tag}[{len(stocks)}/{len(entities)}] ^^^^^^\n"
+                msg = msg + "\n".join([f"{stock.name}({stock.code})" for stock in stocks]) + "\n"
+                if tag == special_hidden_tag:
+                    special = special + stocks
+                elif (not main_line_tags) and (tag != "未知") and (index < 3):
+                    main_line = main_line + stocks
+                elif main_line_tags and (tag in main_line_tags):
+                    main_line = main_line + stocks
+                elif main_line_hidden_tags and (tag in main_line_hidden_tags):
+                    main_line = main_line + stocks
+                else:
+                    others = others + stocks
+
+            # 主线
+            if main_line:
+                codes = [entity.code for entity in main_line]
+                add_to_eastmoney(codes=codes, entity_type=entity_type, group="主线", over_write=em_group_over_write_tag)
+
+            # 其他
+            if others:
+                codes = [entity.code for entity in others]
+                if not em_group:
+                    em_group = "其他"
+                add_to_eastmoney(codes=codes, entity_type=entity_type, group=em_group, over_write=em_group_over_write)
+            # 特别处理
+            if special:
+                codes = [entity.code for entity in special]
+                add_to_eastmoney(
+                    codes=codes, entity_type=entity_type, group=special_hidden_tag, over_write=em_group_over_write_tag
+                )
         else:
+            if em_group:
+                try:
+                    codes = [entity.code for entity in entities]
+                    add_to_eastmoney(
+                        codes=codes, entity_type=entity_type, group=em_group, over_write=em_group_over_write
+                    )
+                except Exception as e:
+                    action.send_message(
+                        zvt_config["email_username"],
+                        f"{target_date} {title} error",
+                        f"{target_date} {title} error: {e}",
+                    )
+
             infos = [f"{entity.name}({entity.code})" for entity in entities]
             msg = "\n".join(infos) + "\n"
 
@@ -72,6 +124,7 @@ def report_targets(
     informer: EmailInformer = None,
     em_group=None,
     em_group_over_write=True,
+    em_group_over_write_tag=False,
     filter_by_volume=True,
     adjust_type=None,
     start_timestamp="2019-01-01",
@@ -152,6 +205,7 @@ def report_targets(
                 entity_type=entity_type,
                 em_group=em_group,
                 em_group_over_write=em_group_over_write,
+                em_group_over_write_tag=em_group_over_write_tag,
             )
 
             break
@@ -183,7 +237,9 @@ def report_top_entities(
     title="最强",
     em_group=None,
     em_group_over_write=True,
+    em_group_over_write_tag=False,
     return_type=TopType.positive,
+    include_limit_up=False,
 ):
     error_count = 0
 
@@ -196,7 +252,7 @@ def report_top_entities(
                 provider=data_provider, entity_type=entity_type, adjust_type=adjust_type
             )
 
-            selected = get_top_performance_entities_by_periods(
+            selected, real_period = get_top_performance_entities_by_periods(
                 entity_provider=entity_provider,
                 data_provider=data_provider,
                 periods=periods,
@@ -211,6 +267,11 @@ def report_top_entities(
                 return_type=return_type,
             )
 
+            if include_limit_up and (entity_type == "stock"):
+                limit_up_stocks = get_limit_up_stocks(timestamp=target_date)
+                if limit_up_stocks:
+                    selected = list(set(selected + limit_up_stocks))
+
             inform(
                 informer,
                 entity_ids=selected,
@@ -220,8 +281,9 @@ def report_top_entities(
                 entity_type=entity_type,
                 em_group=em_group,
                 em_group_over_write=em_group_over_write,
+                em_group_over_write_tag=em_group_over_write_tag,
             )
-            break
+            return real_period
         except Exception as e:
             logger.exception("report error:{}".format(e))
             time.sleep(30)

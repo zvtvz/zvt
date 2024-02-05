@@ -7,8 +7,10 @@ import pprint
 import eastmoneypy
 import pandas as pd
 
+from zvt.api.selector import get_entity_ids_by_filter
 from zvt.api.stats import get_top_performance_entities_by_periods
-from zvt.contract.api import get_entities
+from zvt.api.tag import get_limit_up_reasons
+from zvt.contract.api import get_entities, decode_entity_id
 from zvt.domain import StockNews, Stock, LimitUpInfo
 from zvt.utils import next_date, today
 
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
+    codes = list(set(codes))
     if over_write:
         try:
             eastmoneypy.del_group(group_name=group)
@@ -175,4 +178,5 @@ if __name__ == "__main__":
     # entities = get_entities(provider="em", entity_type="stock", entity_ids=ids, return_type="domain")
     #
     # print(msg_group_stocks_by_topic(entities=entities, threshold=1))
-    get_hot_topics(days_ago=10)
+    # get_hot_topics(days_ago=10)
+    print(get_limit_up_reasons(entity_id="stock_sz_300857"))

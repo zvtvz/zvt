@@ -20,6 +20,7 @@ from zvt.domain import (
     Index1dKdata,
     StockNews,
     LimitUpInfo,
+    BlockStock,
 )
 from zvt.informer import EmailInformer
 from zvt.utils import current_date
@@ -43,6 +44,15 @@ def record_stock_news(data_provider="em"):
         force_update=False,
         sleeping_time=2,
     )
+
+
+def report_limit_up():
+    latest_data = LimitUpInfo.query_data(order=LimitUpInfo.timestamp.desc(), limit=1, return_type="domain")
+    timestamp = latest_data[0].timestamp
+    df = LimitUpInfo.query_data(start_timestamp=timestamp, end_timestamp=timestamp, columns=["code", "name", "reason"])
+    df["reason"] = df["reason"].str.split("+")
+    print(df)
+    EmailInformer().send_message(zvt_config["email_username"], f"{timestamp} 热门报告", f"{df}")
 
 
 def report_hot_topics():
@@ -78,7 +88,7 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
     email_action = EmailInformer()
     # 涨停数据
     run_data_recorder(domain=LimitUpInfo, data_provider=None, force_update=False)
-    report_hot_topics()
+    report_limit_up()
 
     # A股指数
     run_data_recorder(domain=Index, data_provider=data_provider, force_update=False)
@@ -101,6 +111,12 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
         day_data=True,
         sleeping_time=sleeping_time,
     )
+    # run_data_recorder(
+    #     domain=BlockStock,
+    #     entity_provider=entity_provider,
+    #     data_provider=entity_provider,
+    #     sleeping_time=sleeping_time,
+    # )
 
     # 报告新概念和行业
     df = Block.query_data(
@@ -117,7 +133,7 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2)
         title="report 新概念",
         entity_provider=entity_provider,
         entity_type="block",
-        em_group="练气",
+        em_group=None,
         em_group_over_write=False,
     )
 

@@ -61,6 +61,7 @@ def holiday_distance(timestamp=None, days=15):
 
 
 if __name__ == "__main__":
-    for month in range(1, 13):
-        holiday_distance(f"2023-{month}-15")
-        holiday_distance(f"2023-{month}-20")
+    holiday_distance()
+    # for month in range(1, 13):
+    #     holiday_distance(f"2023-{month}-15")
+    #     holiday_distance(f"2023-{month}-20")

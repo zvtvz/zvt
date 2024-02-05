@@ -154,6 +154,23 @@ def get_free_holders(code, end_date):
     )
 
 
+def get_controlling_shareholder(code):
+    holders = get_em_data(
+        request_type="RPT_F10_EH_RELATION",
+        fields="SECUCODE,HOLDER_NAME,RELATED_RELATION,HOLD_RATIO",
+        filters=generate_filters(code=code),
+    )
+
+    if holders:
+        control = {}
+        for holder in holders:
+            if holder["RELATED_RELATION"] == "控股股东":
+                control["holder"] = holder["HOLDER_NAME"]
+            elif holder["RELATED_RELATION"] == "实际控制人":
+                control["parent"] = holder["HOLDER_NAME"]
+        return control
+
+
 def get_holders(code, end_date):
     return get_em_data(
         request_type="RPT_F10_EH_HOLDERS",
@@ -554,27 +571,29 @@ def get_block_stocks(block_id, name=""):
     entity_type, exchange, code = decode_entity_id(block_id)
     category_stocks_url = f"http://48.push2.eastmoney.com/api/qt/clist/get?cb=jQuery11240710111145777397_{now_timestamp() - 1}&pn=1&pz=1000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=4668014655929990|0|1|0|web&fid=f3&fs=b:{code}+f:!50&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152,f45&_={now_timestamp()}"
     resp = requests.get(category_stocks_url, headers=DEFAULT_HEADER)
-    results = json_callback_param(resp.text)["data"]["diff"]
+    data = json_callback_param(resp.text)["data"]
     the_list = []
-    for result in results:
-        stock_code = result["f12"]
-        stock_name = result["f14"]
-        stock_id = china_stock_code_to_id(stock_code)
+    if data:
+        results = data["diff"]
+        for result in results:
+            stock_code = result["f12"]
+            stock_name = result["f14"]
+            stock_id = china_stock_code_to_id(stock_code)
 
-        the_list.append(
-            {
-                "id": "{}_{}".format(block_id, stock_id),
-                "entity_id": block_id,
-                "entity_type": "block",
-                "exchange": exchange,
-                "code": code,
-                "name": name,
-                "timestamp": current_date(),
-                "stock_id": stock_id,
-                "stock_code": stock_code,
-                "stock_name": stock_name,
-            }
-        )
+            the_list.append(
+                {
+                    "id": "{}_{}".format(block_id, stock_id),
+                    "entity_id": block_id,
+                    "entity_type": "block",
+                    "exchange": exchange,
+                    "code": code,
+                    "name": name,
+                    "timestamp": current_date(),
+                    "stock_id": stock_id,
+                    "stock_code": stock_code,
+                    "stock_name": stock_name,
+                }
+            )
     return the_list
 
 
@@ -769,10 +788,11 @@ if __name__ == "__main__":
     # # df_delist = df[df["name"].str.contains("退")]
     # print(df_delist[["id", "name"]].values.tolist())
     # print(get_block_stocks(block_id="block_cn_BK1144"))
-    df = get_tradable_list(entity_type="stock", exchange=Exchange.bj)
-    print(df)
-    df = get_kdata(entity_id="stock_bj_873693", level="1d")
-    print(df)
+    # df = get_tradable_list(entity_type="stock", exchange=Exchange.bj)
+    # print(df)
+    # df = get_kdata(entity_id="stock_bj_873693", level="1d")
+    # print(df)
+    print(get_controlling_shareholder(code="000338"))
 
 # the __all__ is generated
 __all__ = [

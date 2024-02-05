@@ -60,7 +60,7 @@ def get_limit_down(date: str):
     return get_jkqa_data(url=url)
 
 
-def get_jkqa_data(url, pn=1, ps=2000, fetch_all=True, headers=_JKQA_HEADER):
+def get_jkqa_data(url, pn=1, ps=200, fetch_all=True, headers=_JKQA_HEADER):
     url = url + f"&page={pn}&limit={ps}&_={now_timestamp()}"
     print(url)
     resp = requests.get(url, headers=headers)

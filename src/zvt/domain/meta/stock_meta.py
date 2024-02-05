@@ -13,6 +13,8 @@ StockMetaBase = declarative_base()
 @register_entity(entity_type="stock")
 class Stock(StockMetaBase, TradableEntity):
     __tablename__ = "stock"
+    tags = Column(String)
+    core_tag = Column(String)
 
 
 #: 个股详情

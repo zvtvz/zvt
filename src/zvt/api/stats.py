@@ -151,7 +151,7 @@ def get_top_performance_entities_by_periods(
         if pd_is_not_null(df):
             selected = selected + df.index[:top_count].tolist()
             selected = list(dict.fromkeys(selected))
-    return selected
+    return selected, real_period
 
 
 def get_top_performance_entities(
@@ -572,7 +572,7 @@ def get_change_ratio(
 
 
 if __name__ == "__main__":
-    print(get_top_performance_entities_by_periods(entity_provider="em", data_provider="em", target_date="2023-05-20"))
+    print(get_top_performance_entities_by_periods(entity_provider="em", data_provider="em"))
 
 # the __all__ is generated
 __all__ = [

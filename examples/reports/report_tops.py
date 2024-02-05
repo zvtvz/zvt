@@ -19,39 +19,44 @@ email_informer = EmailInformer()
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_top_stocks():
 
-    report_top_entities(
+    short_period = report_top_entities(
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[*range(2, 27)],
+        periods=[*range(1, 20)],
         ignore_new_stock=False,
         ignore_st=True,
         adjust_type=None,
-        top_count=25,
+        top_count=30,
         turnover_threshold=0,
         turnover_rate_threshold=0,
         informer=email_informer,
         title="短期最强",
         em_group="短期最强",
         em_group_over_write=True,
+        em_group_over_write_tag=True,
         return_type=TopType.positive,
+        include_limit_up=True,
     )
+
+    long_period_start = short_period + 1
 
     report_top_entities(
         entity_type="stock",
         entity_provider="em",
         data_provider="em",
-        periods=[*range(27, 67)],
+        periods=[*range(long_period_start, long_period_start + 30)],
         ignore_new_stock=False,
         ignore_st=True,
         adjust_type=None,
-        top_count=20,
+        top_count=30,
         turnover_threshold=0,
         turnover_rate_threshold=0,
         informer=email_informer,
         title="中期最强",
         em_group="中期最强",
         em_group_over_write=True,
+        em_group_over_write_tag=False,
         return_type=TopType.positive,
     )
 

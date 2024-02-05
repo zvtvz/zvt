@@ -7,7 +7,7 @@ from sqlalchemy import or_, and_
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entity_ids
-from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock
+from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo
 from zvt.utils import to_pd_timestamp, next_date, current_date, pd_is_not_null
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,12 @@ def get_entity_ids_by_filter(
         ]
 
     return get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters, entity_ids=entity_ids)
+
+
+def get_limit_up_stocks(timestamp):
+    df = LimitUpInfo.query_data(start_timestamp=timestamp, end_timestamp=timestamp, columns=[LimitUpInfo.entity_id])
+    if pd_is_not_null(df):
+        return df["entity_id"].tolist()
 
 
 def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction="in"):
@@ -291,7 +297,8 @@ if __name__ == "__main__":
     # print(len(mini))
     # print(mini)
     # df = get_player_performance(start_timestamp="2022-01-01")
-    print((get_entity_ids_by_filter(ignore_new_stock=False)))
+    # print((get_entity_ids_by_filter(ignore_new_stock=False)))
+    print(get_limit_up_stocks(timestamp="2023-12-2"))
 # the __all__ is generated
 __all__ = [
     "get_dragon_and_tigger_player",
