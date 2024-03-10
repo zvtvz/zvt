@@ -114,6 +114,12 @@ from .eastmoney import __all__ as _eastmoney_all
 
 __all__ += _eastmoney_all
 
+# import all from submodule qmt
+from .qmt import *
+from .qmt import __all__ as _qmt_all
+
+__all__ += _qmt_all
+
 # import all from submodule sina
 from .sina import *
 from .sina import __all__ as _sina_all

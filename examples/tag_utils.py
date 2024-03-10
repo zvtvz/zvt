@@ -11,6 +11,14 @@ from zvt.domain import BlockStock, Block, Stock
 from zvt.utils import current_date, next_date, pd_is_not_null
 
 
+def get_concept(code):
+    with open(os.path.join(os.path.dirname(__file__), "concept.json")) as f:
+        concept_map = json.load(f)
+        concepts = [item for sublist in concept_map.values() for item in sublist]
+        df = BlockStock.query_data(filters=[BlockStock.stock_code == code, BlockStock.name.in_(concepts)])
+        return df["name"].tolist()
+
+
 def industry_to_tag(industry):
     if industry in ["风电设备", "电池", "光伏设备", "能源金属", "电源设备"]:
         return "赛道"
@@ -30,7 +38,7 @@ def industry_to_tag(industry):
         return "消费电子"
     if industry in ["汽车零部件", "汽车服务", "汽车整车"]:
         return "汽车"
-    if industry in ["电机", "通用设备", "专用设备"]:
+    if industry in ["电机", "通用设备", "专用设备", "仪器仪表"]:
         return "智能机器"
     if industry in ["电网设备", "电力行业"]:
         return "电力"
@@ -56,8 +64,6 @@ def industry_to_tag(industry):
         return "军工"
     if industry in ["专业服务"]:
         return "专业服务"
-    if industry in ["仪器仪表"]:
-        return "仪器仪表"
 
 
 def build_default_tags(codes, provider="em"):
@@ -96,7 +102,7 @@ def get_main_line_hidden_tags():
         return json.load(f)
 
 
-def replace_tags(old_tag="次新股"):
+def replace_tags(old_tag="仪器仪表"):
     with open(os.path.join(os.path.dirname(__file__), "stock_tags.json")) as f:
         stock_tags = json.load(f)
         for stock_tag in stock_tags:
@@ -169,7 +175,7 @@ def get_core_tag(codes):
         if tags:
             code_tag_hidden_tag_list.append((code, tags[0], None))
         else:
-            code_tag_hidden_tag_list.append((code, tags[0], get_hidden_code(code)))
+            code_tag_hidden_tag_list.append((code, "未知", get_hidden_code(code)))
 
     return code_tag_hidden_tag_list
 
@@ -277,7 +283,8 @@ def refresh_hidden_tags():
 if __name__ == "__main__":
     # build_stock_tags(block_name="化工原料", tag="化工", hidden_tag=None)
     # merge_tags(tags_file="stock_tags.json", hidden_tags_file="化工.json", result_file="result.json", force_update=False)
-    # replace_tags()
-    check_tags()
+    # replace_tags(old_tag="仪器仪表")
+    # check_tags()
     # complete_tags()
     # refresh_hidden_tags()
+    print(get_concept(code="688787"))

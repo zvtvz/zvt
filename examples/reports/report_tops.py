@@ -3,10 +3,12 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.report_utils import report_top_entities
+from examples.report_utils import report_top_entities, inform
 from zvt import init_log
-from zvt.api import TopType
+from zvt.contract import AdjustType
+from zvt.api import TopType, get_latest_kdata_date
 from zvt.domain import Block, BlockCategory
+from zvt.factors.top_stocks import compute_top_stocks, get_top_stocks
 from zvt.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
@@ -18,46 +20,35 @@ email_informer = EmailInformer()
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_top_stocks():
+    compute_top_stocks()
+    provider = "em"
+    entity_type = "stock"
+    target_date = get_latest_kdata_date(provider=provider, entity_type=entity_type, adjust_type=AdjustType.hfq)
+    selected = get_top_stocks(target_date=target_date, return_type="short")
 
-    short_period = report_top_entities(
-        entity_type="stock",
-        entity_provider="em",
-        data_provider="em",
-        periods=[*range(1, 20)],
-        ignore_new_stock=False,
-        ignore_st=True,
-        adjust_type=None,
-        top_count=30,
-        turnover_threshold=0,
-        turnover_rate_threshold=0,
-        informer=email_informer,
-        title="短期最强",
+    inform(
+        email_informer,
+        entity_ids=selected,
+        target_date=target_date,
+        title=f"stock 短期最强({len(selected)})",
+        entity_provider=provider,
+        entity_type=entity_type,
         em_group="短期最强",
         em_group_over_write=True,
         em_group_over_write_tag=True,
-        return_type=TopType.positive,
-        include_limit_up=True,
     )
+    selected = get_top_stocks(target_date=target_date, return_type="long")
 
-    long_period_start = short_period + 1
-
-    report_top_entities(
-        entity_type="stock",
-        entity_provider="em",
-        data_provider="em",
-        periods=[*range(long_period_start, long_period_start + 30)],
-        ignore_new_stock=False,
-        ignore_st=True,
-        adjust_type=None,
-        top_count=30,
-        turnover_threshold=0,
-        turnover_rate_threshold=0,
-        informer=email_informer,
-        title="中期最强",
+    inform(
+        email_informer,
+        entity_ids=selected,
+        target_date=target_date,
+        title=f"stock 中期最强({len(selected)})",
+        entity_provider=provider,
+        entity_type=entity_type,
         em_group="中期最强",
         em_group_over_write=True,
         em_group_over_write_tag=False,
-        return_type=TopType.positive,
     )
 
     # report_top_entities(

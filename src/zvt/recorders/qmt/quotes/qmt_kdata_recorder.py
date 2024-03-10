@@ -97,3 +97,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
 class EMStockKdataRecorder(BaseEMStockKdataRecorder):
     entity_schema = Stock
     data_schema = StockKdataCommon
+
+
+# the __all__ is generated
+__all__ = ["BaseEMStockKdataRecorder", "EMStockKdataRecorder"]

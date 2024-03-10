@@ -96,4 +96,4 @@ if __name__ == "__main__":
     # gen_exports("ml")
     # gen_kdata_schemas()
     gen_exports("recorders")
-    gen_exports("domain")
+    # gen_exports("domain")

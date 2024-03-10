@@ -1,5 +1,5 @@
 requests==2.28.2
-SQLAlchemy == 1.4.46
+SQLAlchemy == 1.4.52
 pandas==1.5.3
 arrow==1.2.3
 openpyxl==3.1.1

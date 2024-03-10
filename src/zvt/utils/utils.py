@@ -219,6 +219,30 @@ def set_one_and_only_one(**kwargs):
     return True
 
 
+def flatten_list(input_list):
+    if not input_list:
+        return input_list
+    result = []
+    for item in input_list:
+        if isinstance(item, list):
+            result.extend(item)
+        elif isinstance(item, dict):
+            result.append(item)
+        else:
+            result.append(item)
+    return result
+
+
+def to_str(str_or_list):
+    if not str_or_list:
+        return None
+    if isinstance(str_or_list, str):
+        return str_or_list
+    if isinstance(str_or_list, list):
+        str_list = [str(item) for item in str_or_list]
+        return ";".join(str_list)
+
+
 if __name__ == "__main__":
     url = url_unquote(
         "https://datacenter.eastmoney.com/securities/api/data/get?type=RPT_DAILYBILLBOARD_DETAILS&sty=ALL&source=DataCenter&client=WAP&p=1&ps=20&sr=-1,1&st=TRADE_DATE,SECURITY_CODE&filter=(TRADE_DATE%3E=%272022-04-01%27)(TRADE_DATE%3C=%272022-04-29%27)(MARKET=%22SH%22)&?v=05160638952989893"
@@ -246,4 +270,5 @@ __all__ = [
     "iterate_with_step",
     "url_unquote",
     "parse_url_params",
+    "flatten_list",
 ]

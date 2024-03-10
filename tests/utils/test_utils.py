@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.contract.api import get_entities
-from zvt.utils.utils import iterate_with_step
+from zvt.utils.utils import iterate_with_step, to_str
 
 
 def test_iterate_with_step():
@@ -30,3 +30,11 @@ def test_iterate_entities():
 
     assert len(first) == 100
     assert len(last) <= 100
+
+
+def test_to_str():
+    assert to_str(None) is None
+    assert to_str("") is None
+    assert to_str("a") == "a"
+    assert to_str(["a", "b"]) == "a;b"
+    assert to_str([1, 2]) == "1;2"

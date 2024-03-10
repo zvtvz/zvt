@@ -20,7 +20,10 @@ from zvt.utils import (
     to_time_str,
     now_pd_timestamp,
     current_date,
+    flatten_list,
+    is_same_date,
 )
+from zvt.utils.utils import to_str
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,7 @@ logger = logging.getLogger(__name__)
 def get_treasury_yield(pn=1, ps=2000, fetch_all=True):
     results = get_em_data(
         request_type="RPTA_WEB_TREASURYYIELD",
+        source=None,
         fields="ALL",
         sort_by="SOLAR_DATE",
         sort="desc",
@@ -197,7 +201,7 @@ def get_url(type, sty, source="SECURITIES", filters=None, order_by="", order="as
     sr = _order_param(order=order)
     v = random.randint(1000000000000000, 9000000000000000)
 
-    if filters:
+    if filters or source:
         url = f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source={source}&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
     else:
         url = f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
@@ -209,8 +213,11 @@ def get_url(type, sty, source="SECURITIES", filters=None, order_by="", order="as
 
 
 def get_exchange(code):
-    if code >= "333333":
+    code_ = int(code)
+    if 800000 >= code_ >= 600000:
         return "SH"
+    elif code_ >= 400000:
+        return "BJ"
     else:
         return "SZ"
 
@@ -264,6 +271,7 @@ def get_em_data(
     pn=1,
     ps=2000,
     fetch_all=True,
+    fetch_count=1,
     params=None,
 ):
     url = get_url(
@@ -277,14 +285,24 @@ def get_em_data(
         ps=ps,
         params=params,
     )
+    print(f"current url: {url}")
     resp = requests.get(url)
     if resp.status_code == 200:
         json_result = resp.json()
         resp.close()
-        if json_result and json_result["result"]:
-            data: list = json_result["result"]["data"]
-            if fetch_all:
-                if pn < json_result["result"]["pages"]:
+
+        if json_result:
+            if "result" in json_result:
+                data: list = json_result["result"]["data"]
+                need_next = pn < json_result["result"]["pages"]
+            elif "data" in json_result:
+                data: list = json_result["data"]
+                need_next = json_result["hasNext"] == 1
+            else:
+                data = []
+                need_next = False
+            if fetch_all or fetch_count - 1 > 0:
+                if need_next:
                     next_data = get_em_data(
                         request_type=request_type,
                         fields=fields,
@@ -295,6 +313,8 @@ def get_em_data(
                         pn=pn + 1,
                         ps=ps,
                         fetch_all=fetch_all,
+                        fetch_count=fetch_count - 1,
+                        params=params,
                     )
                     if next_data:
                         data = data + next_data
@@ -490,7 +510,7 @@ def get_tradable_list(
 
         if entity_type == TradableType.index:
             if exchange == Exchange.sh:
-                entity_flag = "fs=i:1.000001,i:1.000002,i:1.000003,i:1.000009,i:1.000010,i:1.000011,i:1.000012,i:1.000016,i:1.000300,i:1.000903,i:1.000905,i:1.000906,i:1.000688"
+                entity_flag = "fs=i:1.000001,i:1.000002,i:1.000003,i:1.000009,i:1.000010,i:1.000011,i:1.000012,i:1.000016,i:1.000300,i:1.000903,i:1.000905,i:1.000906,i:1.000688,i:1.000852,i:2.932000"
             if exchange == Exchange.sz:
                 entity_flag = "fs=i:0.399001,i:0.399002,i:0.399003,i:0.399004,i:0.399005,i:0.399006,i:0.399100,i:0.399106,i:0.399305,i:0.399550"
         elif entity_type == TradableType.currency:
@@ -597,6 +617,47 @@ def get_block_stocks(block_id, name=""):
     return the_list
 
 
+def get_events(entity_id, fetch_count=2000):
+    _, _, code = decode_entity_id(entity_id)
+
+    datas = get_em_data(
+        fields=None,
+        request_type="RTP_F10_DETAIL",
+        source="SECURITIES",
+        params=f"{code}.{get_exchange(code)}",
+        fetch_all=False,
+        fetch_count=fetch_count,
+    )
+    if not datas:
+        return None
+    datas = flatten_list(datas)
+    stock_events = []
+    checking_date = None
+    index = 0
+    for item in datas:
+        the_date = item["NOTICE_DATE"]
+        event_type = item["EVENT_TYPE"]
+        if checking_date == the_date:
+            index = index + 1
+            the_id = f"{entity_id}_{the_date}_{event_type}_{index}"
+        else:
+            checking_date = the_date
+            index = 0
+            the_id = f"{entity_id}_{the_date}_{event_type}"
+        event = {
+            "id": the_id,
+            "entity_id": entity_id,
+            "timestamp": to_pd_timestamp(the_date),
+            "event_type": event_type,
+            "specific_event_type": item["SPECIFIC_EVENTTYPE"],
+            "notice_date": to_pd_timestamp(the_date),
+            "level1_content": to_str(item["LEVEL1_CONTENT"]),
+            "level2_content": to_str(item["LEVEL2_CONTENT"]),
+        }
+        stock_events.append(event)
+    return stock_events
+
+
 def get_news(entity_id, ps=200, index=1, start_timestamp=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
@@ -625,7 +686,7 @@ def get_news(entity_id, ps=200, index=1, start_timestamp=None):
                         "timestamp": to_pd_timestamp(item["Art_ShowTime"]),
                         "news_title": item["Art_Title"],
                     }
-                    for item in json_result
+                    for index, item in enumerate(json_result)
                     if not start_timestamp or (to_pd_timestamp(item["Art_ShowTime"]) >= start_timestamp)
                 ]
                 if len(news) < len(json_result):
@@ -788,11 +849,13 @@ if __name__ == "__main__":
     # # df_delist = df[df["name"].str.contains("退")]
     # print(df_delist[["id", "name"]].values.tolist())
     # print(get_block_stocks(block_id="block_cn_BK1144"))
-    # df = get_tradable_list(entity_type="stock", exchange=Exchange.bj)
+    # df = get_tradable_list(entity_type="index")
     # print(df)
     # df = get_kdata(entity_id="stock_bj_873693", level="1d")
     # print(df)
-    print(get_controlling_shareholder(code="000338"))
+    # print(get_controlling_shareholder(code="000338"))
+    events = get_events(entity_id="stock_sz_300684")
+    print(events)
 
 # the __all__ is generated
 __all__ = [
@@ -805,6 +868,7 @@ __all__ = [
     "get_ii_holder",
     "get_ii_summary",
     "get_free_holders",
+    "get_controlling_shareholder",
     "get_holders",
     "get_url",
     "get_exchange",
@@ -815,6 +879,8 @@ __all__ = [
     "get_basic_info",
     "get_future_list",
     "get_tradable_list",
+    "get_block_stocks",
+    "get_events",
     "get_news",
     "to_em_fc",
     "to_em_entity_flag",

@@ -33,13 +33,16 @@ def get_entity_ids_by_filter(
     target_date=None,
     entity_schema=Stock,
     entity_ids=None,
+    ignore_bj=False,
 ):
     filters = []
+    if not target_date:
+        target_date = current_date()
     if ignore_new_stock:
-        if not target_date:
-            target_date = current_date()
         pre_year = next_date(target_date, -365)
         filters += [entity_schema.timestamp <= pre_year]
+    else:
+        filters += [entity_schema.timestamp <= target_date]
     if ignore_delist:
         filters += [
             entity_schema.name.not_like("%退%"),
@@ -50,6 +53,8 @@ def get_entity_ids_by_filter(
             entity_schema.name.not_like("%ST%"),
             entity_schema.name.not_like("%*ST%"),
         ]
+    if ignore_bj:
+        filters += [entity_schema.exchange != "bj"]
 
     return get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters, entity_ids=entity_ids)
 

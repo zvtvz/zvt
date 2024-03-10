@@ -19,6 +19,7 @@ from zvt.domain import (
     Index,
     Index1dKdata,
     StockNews,
+    StockEvents,
     LimitUpInfo,
     BlockStock,
 )
@@ -43,6 +44,21 @@ def record_stock_news(data_provider="em"):
         data_provider=data_provider,
         force_update=False,
         sleeping_time=2,
+    )
+
+
+def record_stock_events(data_provider="em"):
+    normal_stock_ids = get_entity_ids_by_filter(
+        provider="em", ignore_delist=True, ignore_st=False, ignore_new_stock=False
+    )
+
+    run_data_recorder(
+        entity_ids=normal_stock_ids,
+        day_data=True,
+        domain=StockEvents,
+        data_provider=data_provider,
+        force_update=False,
+        sleeping_time=0.01,
     )
 
 

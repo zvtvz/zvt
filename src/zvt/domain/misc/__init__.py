@@ -12,6 +12,12 @@ from .overall import __all__ as _overall_all
 
 __all__ += _overall_all
 
+# import all from submodule stock_events
+from .stock_events import *
+from .stock_events import __all__ as _stock_events_all
+
+__all__ += _stock_events_all
+
 # import all from submodule money_flow
 from .money_flow import *
 from .money_flow import __all__ as _money_flow_all
