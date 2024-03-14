@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy.sql.expression import text
+
 from zvt.contract import Exchange
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
@@ -20,7 +22,7 @@ class EMStockRecorder(Recorder):
                 for item in df[["id", "name"]].values.tolist():
                     id = item[0]
                     name = item[1]
-                    sql = f'update stock set name = "{name}" where id = "{id}"'
+                    sql = text(f'update stock set name = "{name}" where id = "{id}"')
                     self.session.execute(sql)
                     self.session.commit()
             self.logger.info(df)

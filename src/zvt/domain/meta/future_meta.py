@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from zvt.contract.register import register_schema, register_entity
 from zvt.contract.schema import TradableEntity

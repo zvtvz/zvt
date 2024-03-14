@@ -226,7 +226,8 @@ class DataReader(Drawable):
                     #: if got data,just move to another entity_id
                     changed = True
                     has_got.append(entity_id)
-                    df = df.append(added_df, sort=False)
+                    # df = df.append(added_df, sort=False)
+                    df = pd.concat([df, added_df], sort=False)
                     dfs.append(df)
                 else:
                     cost_time = time.time() - start_time

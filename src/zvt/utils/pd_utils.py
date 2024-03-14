@@ -113,7 +113,8 @@ def fill_with_same_index(df_list: List[pd.DataFrame]):
         added_df = pd.DataFrame(index=added_index, columns=df.columns)
 
         # df1 = df.reindex(idx)
-        df1 = df.append(added_df)
+        # df1 = df.append(added_df)
+        df1 = pd.concat([df, added_df])
         df1 = df1.sort_index()
         result.append(df1)
     return result

@@ -8,6 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import func, exists, and_
 from sqlalchemy.engine import Engine
+from sqlalchemy.sql.expression import text
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import sessionmaker, Session
@@ -49,7 +50,10 @@ def get_db_engine(
     if data_schema:
         db_name = _get_db_name(data_schema=data_schema)
 
-    db_path = os.path.join(data_path, "{}_{}.db?check_same_thread=False".format(provider, db_name))
+    provider_path = os.path.join(data_path, provider)
+    if not os.path.exists(provider_path):
+        os.makedirs(provider_path)
+    db_path = os.path.join(provider_path, "{}_{}.db?check_same_thread=False".format(provider, db_name))
 
     engine_key = "{}_{}".format(provider, db_name)
     db_engine = zvt_context.db_engine_map.get(engine_key)
@@ -389,7 +393,7 @@ def get_data_count(data_schema, filters=None, session=None):
         for filter in filters:
             query = query.filter(filter)
 
-    count_q = query.statement.with_only_columns([func.count(data_schema.id)]).order_by(None)
+    count_q = query.statement.with_only_columns(func.count(data_schema.id)).order_by(None)
     count = session.execute(count_q).scalar()
     return count
 
@@ -511,9 +515,9 @@ def df_to_db(
         if force_update:
             ids = df_current["id"].tolist()
             if len(ids) == 1:
-                sql = f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"'
+                sql = text(f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"')
             else:
-                sql = f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}"
+                sql = text(f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}")
 
             session.execute(sql)
             session.commit()

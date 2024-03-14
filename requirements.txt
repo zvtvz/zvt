@@ -1,11 +1,11 @@
-requests==2.28.2
-SQLAlchemy == 1.4.52
-pandas==1.5.3
+requests==2.31.0
+SQLAlchemy==2.0.28
+pandas==2.0.3
 arrow==1.2.3
 openpyxl==3.1.1
 demjson3==3.0.6
-marshmallow-sqlalchemy==0.28.1
-marshmallow==3.19.0
+marshmallow-sqlalchemy==1.0.0
+marshmallow==3.21.1
 plotly==5.13.0
 dash==2.8.1
 jqdatapy==0.1.8

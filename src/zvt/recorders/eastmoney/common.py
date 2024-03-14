@@ -67,7 +67,7 @@ def call_eastmoney_api(url=None, method="post", param=None, path_fields=None):
     if method == "post":
         resp = requests.post(url, json=param)
 
-    resp.encoding = "utf8"
+    resp.encoding = "utf-8"
 
     try:
         origin_result = resp.json().get("Result")

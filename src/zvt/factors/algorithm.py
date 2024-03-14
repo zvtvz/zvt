@@ -292,7 +292,8 @@ class MacdTransformer(Transformer):
                 count_live_dead=self.count_live_dead,
             )
         )
-        input_df = pd.concat([input_df, macd_df], axis=1, sort=False)
+        macd_df = macd_df.reset_index(level=0, drop=True)
+        input_df = pd.concat([input_df, macd_df], axis=1, sort=False, verify_integrity=True)
         return input_df
 
     def transform_one(self, entity_id, df: pd.DataFrame) -> pd.DataFrame:

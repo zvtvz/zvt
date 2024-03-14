@@ -154,7 +154,7 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
     if to_level == IntervalLevel.LEVEL_1WEEK:
         # loffset='-2'　用周五作为时间标签
         if entity_type == "stock":
-            df = kdata_df.resample("W", loffset=pd.DateOffset(days=-2)).apply(
+            df = kdata_df.resample("W", offset=pd.Timedelta(days=-2)).apply(
                 {
                     "close": to_close,
                     "open": to_open,
@@ -165,7 +165,7 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
                 }
             )
         else:
-            df = kdata_df.resample("W", loffset=pd.DateOffset(days=-2)).apply(
+            df = kdata_df.resample("W", offset=pd.Timedelta(days=-2)).apply(
                 {
                     "close": to_close,
                     "open": to_open,

@@ -44,7 +44,7 @@ class ExchangeStockMetaRecorder(Recorder):
                 encoding="GB2312",
                 dtype=str,
                 parse_dates=["上市日期"],
-                error_bad_lines=False,
+                on_bad_lines="skip",
             )
             if df is not None:
                 df = df.loc[:, ["公司代码", "公司简称", "上市日期"]]

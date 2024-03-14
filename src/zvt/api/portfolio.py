@@ -2,6 +2,8 @@
 
 from typing import List
 
+import pandas as pd
+
 from zvt.api.utils import get_recent_report_date
 from zvt.contract import PortfolioStockHistory
 from zvt.contract.api import get_schema_by_name
@@ -66,7 +68,8 @@ def get_portfolio_stocks(
                     end_timestamp=timestamp,
                     filters=[data_schema.report_date == to_pd_timestamp(report_date)],
                 )
-                df = df.append(pre_df)
+                # df = df.append(pre_df)
+                df = pd.concat([df, pre_df])
 
                 # 半年报和年报
                 if (ReportPeriod.half_year.value in pre_df["report_period"].tolist()) or (

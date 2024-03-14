@@ -3,8 +3,11 @@ import logging
 from typing import List
 
 import sqlalchemy
+from sqlalchemy import Column, inspect, MetaData
+from sqlalchemy.schema import Table
 from sqlalchemy.ext.declarative import DeclarativeMeta
-
+from sqlalchemy.sql.ddl import CreateTable
+from sqlalchemy.sql.expression import text
 from zvt.contract import zvt_context
 from zvt.contract.schema import TradableEntity, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
@@ -88,8 +91,7 @@ def register_schema(
 
         # create the db & table
         engine = get_db_engine(provider, db_name=db_name)
-        schema_base.metadata.create_all(engine)
-
+        schema_base.metadata.create_all(bind=engine)
         session_fac = get_db_session_factory(provider, db_name=db_name)
         session_fac.configure(bind=engine)
 
@@ -98,12 +100,32 @@ def register_schema(
 
         # create index for 'timestamp','entity_id','code','report_period','updated_timestamp
         for table_name, table in iter(schema_base.metadata.tables.items()):
+            # auto add new columns
+            db_meta = MetaData()
+            db_meta.reflect(bind=engine)
+            db_table = db_meta.tables[table_name]
+            existing_columns = [c.name for c in db_table.columns]
+            added_columns = [c for c in table.columns if c.name not in existing_columns]
             index_list = []
             with engine.connect() as con:
-                con.execute("PRAGMA journal_mode=WAL;")
-                rs = con.execute("PRAGMA INDEX_LIST('{}')".format(table_name))
+                con.execute(text("PRAGMA journal_mode=WAL;"))
+                rs = con.execute(text("PRAGMA INDEX_LIST('{}')".format(table_name)))
                 for row in rs:
                     index_list.append(row[1])
+
+                try:
+                    # Using migration tool like Alembic is too complex
+                    # So we just support add new column, for others just change the db manually
+                    if added_columns:
+                        ddl_c = engine.dialect.ddl_compiler(engine.dialect, CreateTable(table))
+                        for added_column in added_columns:
+                            stmt = text(
+                                f"ALTER TABLE {table_name} ADD COLUMN {ddl_c.get_column_specification(added_column)}"
+                            )
+                            logger.info(f"{engine.url} migrations:\n {stmt}")
+                            con.execute(stmt)
+                except Exception as e:
+                    logger.error(e)
 
             logger.debug("engine:{},table:{},index:{}".format(engine, table_name, index_list))
 
