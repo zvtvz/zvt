@@ -107,3 +107,9 @@ node_modules/
 *running.ipynb
 
 .DS_Store
+
+
+# my ignore
+.venv
+Pipfile
+zvt_recorder_job.bat
