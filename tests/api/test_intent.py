@@ -66,5 +66,9 @@ def test_composite():
 
 def test_composite_all():
     composite_all(
-        entity_ids=None, data_schema=Stock1dKdata, column=Stock1dKdata.turnover, timestamp=to_pd_timestamp("2016-12-02")
+        provider="joinquant",
+        entity_ids=None,
+        data_schema=Stock1dKdata,
+        column=Stock1dKdata.turnover,
+        timestamp=to_pd_timestamp("2016-12-02"),
     )

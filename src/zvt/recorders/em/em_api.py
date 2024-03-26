@@ -292,10 +292,10 @@ def get_em_data(
         resp.close()
 
         if json_result:
-            if "result" in json_result:
+            if json_result.get("result"):
                 data: list = json_result["result"]["data"]
                 need_next = pn < json_result["result"]["pages"]
-            elif "data" in json_result:
+            elif json_result.get("data"):
                 data: list = json_result["data"]
                 need_next = json_result["hasNext"] == 1
             else:
@@ -824,8 +824,9 @@ if __name__ == "__main__":
     # pprint(get_free_holders(code='000338', end_date='2021-03-31'))
     # pprint(get_ii_holder(code='000338', report_date='2021-03-31',
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
-    # pprint(get_ii_summary(code='000338', report_date='2021-03-31',
-    #                       org_type=actor_type_to_org_type(ActorType.corporation)))
+    print(
+        get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
+    )
     # df = get_kdata(entity_id="index_sz_399370", level="1wk")
     # df = get_tradable_list(entity_type="stockhk")
     # df = get_news("stock_sz_300999")
@@ -854,8 +855,8 @@ if __name__ == "__main__":
     # df = get_kdata(entity_id="stock_bj_873693", level="1d")
     # print(df)
     # print(get_controlling_shareholder(code="000338"))
-    events = get_events(entity_id="stock_sz_300684")
-    print(events)
+    # events = get_events(entity_id="stock_sz_300684")
+    # print(events)
 
 # the __all__ is generated
 __all__ = [

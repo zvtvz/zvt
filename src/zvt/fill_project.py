@@ -12,7 +12,7 @@ def gen_kdata_schemas():
     # A股行情
     gen_kdata_schema(
         pkg="zvt",
-        providers=["joinquant", "em"],
+        providers=["em", "joinquant"],
         entity_type="stock",
         levels=[level for level in IntervalLevel if level != IntervalLevel.LEVEL_TICK],
         adjust_types=[None, AdjustType.hfq],
@@ -78,7 +78,7 @@ def gen_kdata_schemas():
         pkg="zvt", providers=["sina"], entity_type="etf", levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True
     )
 
-    # etf行情
+    # currency行情
     gen_kdata_schema(
         pkg="zvt", providers=["em"], entity_type="currency", levels=[IntervalLevel.LEVEL_1DAY], entity_in_submodule=True
     )
@@ -95,5 +95,5 @@ if __name__ == "__main__":
     # gen_exports('autocode')
     # gen_exports("ml")
     # gen_kdata_schemas()
-    gen_exports("recorders")
-    # gen_exports("domain")
+    # gen_exports("recorders")
+    gen_exports("tag")

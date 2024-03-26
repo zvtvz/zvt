@@ -21,7 +21,7 @@ class RecorderState(ZvtInfoBase, StateMixin):
     Schema for storing recorder state
     """
 
-    __tablename__ = "recoder_state"
+    __tablename__ = "recorder_state"
 
 
 class TaggerState(ZvtInfoBase, StateMixin):

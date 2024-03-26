@@ -42,5 +42,5 @@ def test_jq_1d_hfq_kdata():
 
 
 def test_get_latest_kdata_date():
-    date = get_latest_kdata_date(entity_type="stock", adjust_type=AdjustType.hfq)
+    date = get_latest_kdata_date(provider="joinquant", entity_type="stock", adjust_type=AdjustType.hfq)
     assert date is not None

@@ -21,6 +21,7 @@ class SingleTrader(StockTrader):
 
 def test_single_trader():
     trader = SingleTrader(
+        provider="joinquant",
         codes=["000338"],
         level=IntervalLevel.LEVEL_1DAY,
         start_timestamp="2019-01-01",
@@ -38,10 +39,18 @@ def test_single_trader():
     print(account)
 
     buy_price = get_kdata(
-        entity_id="stock_sz_000338", start_timestamp=buy_timestamp, end_timestamp=buy_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sz_000338",
+        start_timestamp=buy_timestamp,
+        end_timestamp=buy_timestamp,
+        return_type="domain",
     )[0]
     sell_price = get_kdata(
-        entity_id="stock_sz_000338", start_timestamp=sell_timestamp, end_timestamp=sell_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sz_000338",
+        start_timestamp=sell_timestamp,
+        end_timestamp=sell_timestamp,
+        return_type="domain",
     )[0]
 
     sell_lost = trader.account_service.slippage + trader.account_service.sell_cost
@@ -78,6 +87,7 @@ class MultipleTrader(StockTrader):
 
 def test_multiple_trader():
     trader = MultipleTrader(
+        provider="joinquant",
         codes=["000338", "601318"],
         level=IntervalLevel.LEVEL_1DAY,
         start_timestamp="2019-01-01",
@@ -97,10 +107,18 @@ def test_multiple_trader():
 
     # 000338
     buy_price = get_kdata(
-        entity_id="stock_sz_000338", start_timestamp=buy_timestamp, end_timestamp=buy_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sz_000338",
+        start_timestamp=buy_timestamp,
+        end_timestamp=buy_timestamp,
+        return_type="domain",
     )[0]
     sell_price = get_kdata(
-        entity_id="stock_sz_000338", start_timestamp=sell_timestamp, end_timestamp=sell_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sz_000338",
+        start_timestamp=sell_timestamp,
+        end_timestamp=sell_timestamp,
+        return_type="domain",
     )[0]
 
     sell_lost = trader.account_service.slippage + trader.account_service.sell_cost
@@ -109,10 +127,18 @@ def test_multiple_trader():
 
     # 601318
     buy_price = get_kdata(
-        entity_id="stock_sh_601318", start_timestamp=buy_timestamp, end_timestamp=buy_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sh_601318",
+        start_timestamp=buy_timestamp,
+        end_timestamp=buy_timestamp,
+        return_type="domain",
     )[0]
     sell_price = get_kdata(
-        entity_id="stock_sh_601318", start_timestamp=sell_timestamp, end_timestamp=sell_timestamp, return_type="domain"
+        provider="joinquant",
+        entity_id="stock_sh_601318",
+        start_timestamp=sell_timestamp,
+        end_timestamp=sell_timestamp,
+        return_type="domain",
     )[0]
 
     pct2 = (sell_price.close * (1 - sell_lost) - buy_price.close * (1 + buy_lost)) / buy_price.close * (1 + buy_lost)
@@ -125,6 +151,7 @@ def test_multiple_trader():
 def test_basic_trader():
     try:
         MyBullTrader(
+            provider="joinquant",
             codes=["000338"],
             level=IntervalLevel.LEVEL_1DAY,
             start_timestamp="2018-01-01",

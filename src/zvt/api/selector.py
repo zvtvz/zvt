@@ -35,7 +35,7 @@ def get_entity_ids_by_filter(
     entity_ids=None,
     ignore_bj=False,
 ):
-    filters = []
+    filters = [entity_schema.timestamp.isnot(None)]
     if not target_date:
         target_date = current_date()
     if ignore_new_stock:

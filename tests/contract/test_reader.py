@@ -15,6 +15,7 @@ from zvt.contract import IntervalLevel
 
 def test_china_stock_reader():
     data_reader = DataReader(
+        provider="joinquant",
         data_schema=Stock1dKdata,
         entity_schema=Stock,
         entity_provider="eastmoney",

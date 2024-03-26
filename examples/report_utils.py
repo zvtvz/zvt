@@ -39,6 +39,10 @@ def inform(
         entities = get_entities(
             provider=entity_provider, entity_type=entity_type, entity_ids=entity_ids, return_type="domain"
         )
+        entities = [entity for entity in entities if entity.entity_id in entity_ids]
+        print(len(entities))
+        print(len(entity_ids))
+        assert len(entities) == len(entity_ids)
 
         if group_by_topic and (entity_type == "stock"):
             StockNews.record_data(

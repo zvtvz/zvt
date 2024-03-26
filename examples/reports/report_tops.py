@@ -20,7 +20,7 @@ email_informer = EmailInformer()
 
 @sched.scheduled_job("cron", hour=17, minute=0, day_of_week="mon-fri")
 def report_top_stocks():
-    compute_top_stocks()
+    # compute_top_stocks()
     provider = "em"
     entity_type = "stock"
     target_date = get_latest_kdata_date(provider=provider, entity_type=entity_type, adjust_type=AdjustType.hfq)

@@ -13,6 +13,7 @@ predict_start_timestamp = "2018-06-01"
 
 def test_sgd_classification():
     machine = MaStockMLMachine(
+        data_provider="joinquant",
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
         predict_start_timestamp=predict_start_timestamp,
@@ -28,6 +29,7 @@ def test_sgd_classification():
 
 def test_sgd_regressor():
     machine = MaStockMLMachine(
+        data_provider="joinquant",
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,
         predict_start_timestamp=predict_start_timestamp,

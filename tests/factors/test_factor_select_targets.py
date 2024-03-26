@@ -14,6 +14,7 @@ def test_cross_ma_select_targets():
     start_timestamp = "2018-01-01"
     end_timestamp = "2019-06-30"
     factor = CrossMaFactor(
+        provider="joinquant",
         entity_ids=entity_ids,
         start_timestamp=start_timestamp,
         end_timestamp=end_timestamp,

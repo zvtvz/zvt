@@ -100,7 +100,7 @@ def report_hot_topics():
 
 
 @sched.scheduled_job("cron", hour=15, minute=30, day_of_week="mon-fri")
-def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=2):
+def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=0.2):
     email_action = EmailInformer()
     # 涨停数据
     run_data_recorder(domain=LimitUpInfo, data_provider=None, force_update=False)

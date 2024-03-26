@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import os
 import platform
@@ -58,9 +59,15 @@ def get_db_engine(
     engine_key = "{}_{}".format(provider, db_name)
     db_engine = zvt_context.db_engine_map.get(engine_key)
     if not db_engine:
-        db_engine = create_engine("sqlite:///" + db_path, echo=False)
+        db_engine = create_engine(
+            "sqlite:///" + db_path, echo=False, json_serializer=lambda obj: json.dumps(obj, ensure_ascii=False)
+        )
         zvt_context.db_engine_map[engine_key] = db_engine
     return db_engine
+
+
+def get_providers() -> List[str]:
+    return zvt_context.providers
 
 
 def get_schemas(provider: str) -> List[DeclarativeMeta]:
@@ -99,6 +106,7 @@ def get_db_session(provider: str, db_name: str = None, data_schema: object = Non
         return get_db_session_factory(provider, db_name, data_schema)()
 
     session = zvt_context.sessions.get(session_key)
+    # FIXME: should not maintain global session
     if not session:
         session = get_db_session_factory(provider, db_name, data_schema)()
         zvt_context.sessions[session_key] = session
@@ -123,6 +131,9 @@ def get_db_session_factory(provider: str, db_name: str = None, data_schema: obje
         session = sessionmaker()
         zvt_context.db_session_map[session_key] = session
     return session
+
+
+DBSession = get_db_session_factory
 
 
 def get_entity_schema(entity_type: str) -> Type[TradableEntity]:
@@ -664,9 +675,11 @@ if __name__ == "__main__":
 __all__ = [
     "_get_db_name",
     "get_db_engine",
+    "get_providers",
     "get_schemas",
     "get_db_session",
     "get_db_session_factory",
+    "DBSession",
     "get_entity_schema",
     "get_schema_by_name",
     "get_schema_columns",

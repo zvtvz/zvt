@@ -3,8 +3,16 @@ from zvt.factors import ZFactor
 
 
 def test_z_factor():
-    z = ZFactor(codes=["000338"], need_persist=False)
+    z = ZFactor(
+        codes=["000338"],
+        need_persist=False,
+        provider="joinquant",
+    )
     z.draw(show=True)
 
-    z = ZFactor(codes=["000338", "601318"], need_persist=True)
+    z = ZFactor(
+        codes=["000338", "601318"],
+        need_persist=True,
+        provider="joinquant",
+    )
     z.draw(show=True)
