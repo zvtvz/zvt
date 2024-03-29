@@ -74,7 +74,7 @@ class StockTagsModel(MixinModel):
     sub_tag_reason: Union[str, None]
     sub_tags: Union[Dict[str, str], None]
 
-    active_hidden_tags: Union[List[str], None]
+    active_hidden_tags: Union[Dict[str, str], None]
     hidden_tags: Union[Dict[str, str], None]
     set_by_user: bool = False
 
@@ -85,8 +85,7 @@ class CreateStockTagsModel(BaseModel):
     tag_reason: str
     sub_tag: Union[str, None]
     sub_tag_reason: Union[str, None]
-    active_hidden_tags: Union[List[str], None]
-    hidden_tags: Union[Dict[str, str], None]
+    active_hidden_tags: Union[Dict[str, str], None]
 
 
 register_schema(providers=["zvt"], db_name="stock_tags", schema_base=StockTagsBase)

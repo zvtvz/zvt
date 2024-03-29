@@ -130,16 +130,21 @@ def create_stock_tags(stock_tags: CreateStockTagsModel):
         entity_id = stock_tags.entity_id
         tags = {}
         sub_tags = {}
+        hidden_tags = {}
         timestamp = current_date()
         datas = StockTags.query_data(
             session=session, entity_id=entity_id, order=StockTags.timestamp.desc(), limit=1, return_type="domain"
         )
         if datas:
             current_stock_tags: StockTags = datas[0]
+
             if current_stock_tags.tags:
                 tags = dict(current_stock_tags.tags)
             if current_stock_tags.sub_tags:
                 sub_tags = dict(current_stock_tags.sub_tags)
+            if current_stock_tags.hidden_tags:
+                hidden_tags = dict(current_stock_tags.hidden_tags)
+
             if is_same_date(current_stock_tags.timestamp, timestamp):
                 stock_tags_db = current_stock_tags
             else:
@@ -158,14 +163,20 @@ def create_stock_tags(stock_tags: CreateStockTagsModel):
             )
 
         update_model(stock_tags_db, stock_tags)
+
+        # append to tags
         tags[stock_tags.tag] = stock_tags.tag_reason
         if stock_tags.sub_tag:
             sub_tags[stock_tags.sub_tag] = stock_tags.sub_tag_reason
+        if stock_tags.active_hidden_tags:
+            for k, v in stock_tags.active_hidden_tags.items():
+                hidden_tags[k] = v
 
         stock_tags_db.latest = True
         # update
         stock_tags_db.tags = tags
         stock_tags_db.sub_tags = sub_tags
+        stock_tags_db.hidden_tags = hidden_tags
         session.add(stock_tags_db)
         session.commit()
         session.refresh(stock_tags_db)
