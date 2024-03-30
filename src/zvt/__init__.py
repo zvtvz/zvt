@@ -5,6 +5,7 @@ import logging
 import os
 import pkgutil
 import pprint
+import shutil
 from logging.handlers import RotatingFileHandler
 
 import pandas as pd
@@ -164,6 +165,29 @@ def init_plugins():
                 logger.warning(f"failed to load plugin {name}", e)
     logger.info(f"loaded plugins:{_plugins}")
 
+def old_db_to_provider_dir(data_path):
+    files = os.listdir(data_path)
+    for file in files:
+        if file.endswith(".db"):
+            # Split the file name to extract the provider
+            provider = file.split('_')[0]
+
+            # Define the destination directory
+            destination_dir = os.path.join(data_path, provider)
+
+            # Create the destination directory if it doesn't exist
+            if not os.path.exists(destination_dir):
+                os.makedirs(destination_dir)
+
+            # Define the source and destination paths
+            source_path = os.path.join(data_path, file)
+            destination_path = os.path.join(destination_dir, file)
+
+            # Move the file to the destination directory
+            if not os.path.exists(destination_path):
+                shutil.move(source_path, destination_path)
+                logger.info(f"Moved {file} to {destination_dir}")
+
 
 if os.getenv("TESTING_ZVT"):
     init_env(zvt_home=ZVT_TEST_HOME)
@@ -182,9 +206,10 @@ if os.getenv("TESTING_ZVT"):
 
         copyfile(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_ZIP_DATA_PATH)
         unzip(ZVT_TEST_ZIP_DATA_PATH, ZVT_TEST_DATA_PATH)
-
 else:
     init_env(zvt_home=ZVT_HOME)
+
+old_db_to_provider_dir(zvt_env["data_path"])
 
 # register to meta
 import zvt.contract as zvt_contract
