@@ -1,0 +1,11 @@
+POST http://127.0.0.1:8090/api/factor/query_factor_result
+accept: application/json
+Content-Type: application/json
+
+
+{
+  "entity_ids": [
+    "stock_sz_300133"
+  ],
+  "factor_name": "LiveOrDeadFactor"
+}

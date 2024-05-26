@@ -12,7 +12,9 @@ class Stock1wkKdata(KdataBase, StockKdataCommon):
     __tablename__ = "stock_1wk_kdata"
 
 
-register_schema(providers=["em", "joinquant"], db_name="stock_1wk_kdata", schema_base=KdataBase, entity_type="stock")
+register_schema(
+    providers=["em", "qmt", "joinquant"], db_name="stock_1wk_kdata", schema_base=KdataBase, entity_type="stock"
+)
 
 # the __all__ is generated
 __all__ = ["Stock1wkKdata"]

@@ -20,6 +20,7 @@ from zvt.domain import (
     Currency,
     CurrencyKdataCommon,
 )
+import requests
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
 from zvt.recorders.em.em_api import get_kdata
@@ -52,6 +53,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
         kdata_use_begin_time=False,
         one_day_trading_minutes=24 * 60,
         adjust_type=AdjustType.qfq,
+        return_unfinished=False,
     ) -> None:
         level = IntervalLevel(level)
         self.adjust_type = AdjustType(adjust_type)
@@ -77,10 +79,16 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
             level,
             kdata_use_begin_time,
             one_day_trading_minutes,
+            return_unfinished,
         )
 
     def record(self, entity, start, end, size, timestamps):
-        df = get_kdata(entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level)
+        if not self.http_session:
+            self.http_session = requests.Session()
+
+        df = get_kdata(
+            session=self.http_session, entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level
+        )
         if pd_is_not_null(df):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         else:

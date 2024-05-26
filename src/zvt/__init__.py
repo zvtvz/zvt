@@ -165,12 +165,13 @@ def init_plugins():
                 logger.warning(f"failed to load plugin {name}", e)
     logger.info(f"loaded plugins:{_plugins}")
 
+
 def old_db_to_provider_dir(data_path):
     files = os.listdir(data_path)
     for file in files:
         if file.endswith(".db"):
             # Split the file name to extract the provider
-            provider = file.split('_')[0]
+            provider = file.split("_")[0]
 
             # Define the destination directory
             destination_dir = os.path.join(data_path, provider)
@@ -215,5 +216,16 @@ old_db_to_provider_dir(zvt_env["data_path"])
 import zvt.contract as zvt_contract
 import zvt.recorders as zvt_recorders
 import zvt.factors as zvt_factors
+
+import platform
+
+if platform.system() == "Windows":
+    try:
+        import zvt.recorders.qmt.quotes.qmt_kdata_recorder as qmt_kdata_recorde
+    except Exception as e:
+        logger.error("QMT not work", e)
+else:
+    logger.warning("QMT need run in Windows!")
+
 
 __all__ = ["zvt_env", "zvt_config", "init_log", "init_env", "init_config", "__version__"]

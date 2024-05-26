@@ -12,7 +12,7 @@ from zvt.trader.trader import StockTrader
 # 依赖数据
 # data_schema: Stock1dHfqKdata
 # provider: joinquant
-from zvt.utils import next_date
+from zvt.utils import date_time_by_interval
 
 
 class MacdDayTrader(StockTrader):
@@ -20,7 +20,7 @@ class MacdDayTrader(StockTrader):
         self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, adjust_type=None
     ):
         # 日线策略
-        start_timestamp = next_date(start_timestamp, -50)
+        start_timestamp = date_time_by_interval(start_timestamp, -50)
         return [
             GoldCrossFactor(
                 entity_ids=entity_ids,

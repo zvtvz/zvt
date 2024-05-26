@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8090/api/trading/query_stock_quotes
+accept: application/json
+Content-Type: application/json
+
+{
+  "main_tag": "低空经济",
+  "stock_pool_name": "vol_up",
+  "limit": 500,
+  "order_by_field": "change_pct"
+}

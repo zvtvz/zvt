@@ -1,0 +1,5 @@
+GET http://127.0.0.1:8090/api/trading/get_current_trading_plan
+accept: application/json
+
+
+

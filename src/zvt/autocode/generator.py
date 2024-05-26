@@ -95,7 +95,7 @@ def fill_package(dir_path: str):
             pkg_file = os.path.join(dir_path, "__init__.py")
             if not os.path.exists(pkg_file):
                 package_template = "# -*- coding: utf-8 -*-\n"
-                with open(pkg_file, "w") as outfile:
+                with open(pkg_file, "w", encoding="utf-8") as outfile:
                     outfile.write(package_template)
 
 
@@ -118,7 +118,7 @@ def gen_exports(
         exports = []
         lines = []
         # read and generate __all__
-        with open(file) as fp:
+        with open(file, encoding="utf-8") as fp:
             line = fp.readline()
             while line:
                 if line.startswith(gen_flag):
@@ -162,7 +162,7 @@ def gen_exports(
                     lines.append("\n")
 
         # write with __all__
-        with open(file, mode="w") as fp:
+        with open(file, mode="w", encoding="utf-8") as fp:
             fp.writelines(lines)
 
 
@@ -233,7 +233,7 @@ register_schema(providers={providers_str}, db_name="{table_name}", schema_base=K
 
 """
             # generate the schema
-            with open(os.path.join(base_path, f"{table_name}.py"), "w") as outfile:
+            with open(os.path.join(base_path, f"{table_name}.py"), "w", encoding="utf-8") as outfile:
                 outfile.write(schema_template)
 
         # generate the package
@@ -241,7 +241,7 @@ register_schema(providers={providers_str}, db_name="{table_name}", schema_base=K
         if not os.path.exists(pkg_file):
             package_template = """# -*- coding: utf-8 -*-
 """
-            with open(pkg_file, "w") as outfile:
+            with open(pkg_file, "w", encoding="utf-8") as outfile:
                 outfile.write(package_template)
 
     # generate exports

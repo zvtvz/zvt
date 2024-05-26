@@ -1,0 +1,17 @@
+POST http://127.0.0.1:8090/api/work/set_stock_tags
+accept: application/json
+Content-Type: application/json
+
+{
+    "entity_id": "stock_sz_001366",
+    "name": "播恩集团",
+    "main_tag": "医药",
+    "main_tag_reason": "合成生物概念",
+    "main_tags": {
+      "农业": "来自行业:农牧饲渔"
+    },
+    "sub_tag": "生物医药",
+    "sub_tag_reason": "合成生物概念",
+    "sub_tags": null,
+    "active_hidden_tags": null
+  }

@@ -9,7 +9,7 @@ from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain.meta.fund_meta import Fund, FundStock
 from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, next_date, now_pd_timestamp, is_same_date
+from zvt.utils.time_utils import to_time_str, date_time_by_interval, now_pd_timestamp, is_same_date
 
 
 class JqChinaFundRecorder(Recorder):
@@ -38,7 +38,7 @@ class JqChinaFundRecorder(Recorder):
                 if latest:
                     start_timestamp = latest[0].timestamp
 
-                end_timestamp = min(next_date(start_timestamp, 365 * year_count), now_pd_timestamp())
+                end_timestamp = min(date_time_by_interval(start_timestamp, 365 * year_count), now_pd_timestamp())
 
                 df = run_query(
                     table="finance.FUND_MAIN_INFO",

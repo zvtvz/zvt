@@ -4,7 +4,7 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import or_, and_
 
-from examples.recorder_utils import run_data_recorder
+from zvt.utils.recorder_utils import run_data_recorder
 from examples.report_utils import inform
 from zvt import init_log
 from zvt.api import get_big_players, get_latest_kdata_date
@@ -13,7 +13,7 @@ from zvt.domain import (
     Stock1dHfqKdata,
 )
 from zvt.informer import EmailInformer
-from zvt.utils import next_date, current_date, to_pd_timestamp
+from zvt.utils import date_time_by_interval, current_date, to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +33,12 @@ def record_dragon_tiger(data_provider="em", entity_provider="em", sleeping_time=
 
     email_action = EmailInformer()
     # recent year
-    start_timestamp = next_date(current_date(), -400)
+    start_timestamp = date_time_by_interval(current_date(), -400)
     # 最近一年牛x的营业部
     players = get_big_players(start_timestamp=start_timestamp)
 
     # 最近30天有牛x的营业部上榜的个股
-    recent_date = next_date(current_date(), -30)
+    recent_date = date_time_by_interval(current_date(), -30)
     selected = []
     for player in players:
         filters = [

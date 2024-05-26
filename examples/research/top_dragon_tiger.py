@@ -9,7 +9,7 @@ from zvt.contract import TradableEntity, IntervalLevel, AdjustType
 from zvt.contract.factor import Transformer, Accumulator
 from zvt.domain import Stock
 from zvt.factors import TechnicalFactor
-from zvt.utils import pd_is_not_null, pre_month_start_date, next_date
+from zvt.utils import pd_is_not_null, pre_month_start_date, date_time_by_interval
 
 
 def top_dragon_and_tiger(data_provider="em", start_timestamp="2021-01-01", end_timestamp="2022-01-01"):
@@ -21,7 +21,7 @@ def top_dragon_and_tiger(data_provider="em", start_timestamp="2021-01-01", end_t
         for entity_id in df.index[:30]:
             players = get_players(
                 entity_id=entity_id,
-                start_timestamp=next_date(start_date, 15),
+                start_timestamp=date_time_by_interval(start_date, 15),
                 end_timestamp=end_timestamp,
                 provider=data_provider,
                 direction="in",

@@ -37,8 +37,7 @@ from .stats import __all__ as _stats_all
 __all__ += _stats_all
 
 # import all from submodule trader_info_api
-from .trader_info_api import *
-from .trader_info_api import __all__ as _trader_info_api_all
+from zvt.trader.trader_info_api import __all__ as _trader_info_api_all
 
 __all__ += _trader_info_api_all
 

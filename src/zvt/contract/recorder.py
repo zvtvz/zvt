@@ -66,6 +66,7 @@ class Recorder(OneStateService, metaclass=Meta):
 
         #: using to do db operations
         self.session = get_db_session(provider=self.provider, data_schema=self.data_schema)
+        self.http_session = None
 
     def run(self):
         raise NotImplementedError
@@ -98,6 +99,7 @@ class EntityEventRecorder(Recorder):
         day_data=False,
         entity_filters=None,
         ignore_failed=True,
+        return_unfinished=False,
     ) -> None:
         """
         :param code:
@@ -132,6 +134,7 @@ class EntityEventRecorder(Recorder):
             self.entity_ids = entity_ids
         self.entity_filters = entity_filters
         self.ignore_failed = ignore_failed
+        self.return_unfinished = return_unfinished
 
         self.entity_session: Session = None
         self.entities: List = None
@@ -191,6 +194,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         fix_duplicate_way="add",
         start_timestamp=None,
         end_timestamp=None,
+        return_unfinished=False,
     ) -> None:
         super().__init__(
             force_update,
@@ -203,6 +207,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
             day_data=day_data,
             entity_filters=entity_filters,
             ignore_failed=ignore_failed,
+            return_unfinished=return_unfinished,
         )
 
         self.real_time = real_time
@@ -392,6 +397,8 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
 
             if self.entity_session:
                 self.entity_session.close()
+            if self.http_session:
+                self.http_session.close()
         except Exception as e:
             self.logger.error(e)
 
@@ -513,6 +520,11 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                         "recording data for entity_id:{},{},error:{}".format(entity_item.id, self.data_schema, e)
                     )
                     raising_exception = e
+                    if self.return_unfinished:
+                        self.on_finish()
+                        unfinished_items = set(unfinished_items) - set(finished_items)
+                        return [item.entity_id for item in unfinished_items]
+
                     finished_items = unfinished_items
                     break
 
@@ -522,6 +534,8 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
                 break
 
         self.on_finish()
+        if self.return_unfinished:
+            return []
 
         if raising_exception:
             raise raising_exception
@@ -547,6 +561,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
         level=IntervalLevel.LEVEL_1DAY,
         kdata_use_begin_time=False,
         one_day_trading_minutes=24 * 60,
+        return_unfinished=False,
     ) -> None:
         super().__init__(
             force_update,
@@ -563,6 +578,7 @@ class FixedCycleDataRecorder(TimeSeriesDataRecorder):
             fix_duplicate_way=fix_duplicate_way,
             start_timestamp=start_timestamp,
             end_timestamp=end_timestamp,
+            return_unfinished=return_unfinished,
         )
 
         self.level = IntervalLevel(level)

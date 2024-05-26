@@ -15,7 +15,7 @@ from zvt.contract.factor import TargetType
 from zvt.contract.register import register_schema
 from zvt.domain import Stock, Stock1dHfqKdata, LimitUpInfo
 from zvt.factors import VolumeUpMaFactor
-from zvt.utils import next_date, to_time_str, TIME_FORMAT_DAY, today, count_interval, to_pd_timestamp
+from zvt.utils import date_time_by_interval, to_time_str, TIME_FORMAT_DAY, today, count_interval, to_pd_timestamp
 
 TopStocksBase = declarative_base()
 
@@ -75,7 +75,7 @@ def get_vol_up_stocks(target_date, provider="em", stock_type="small", entity_ids
         entity_provider=provider,
         provider=provider,
         entity_ids=current_entity_pool,
-        start_timestamp=next_date(target_date, -600),
+        start_timestamp=date_time_by_interval(target_date, -600),
         end_timestamp=target_date,
         adjust_type=AdjustType.hfq,
         windows=[120, 250],
@@ -143,7 +143,7 @@ def update_vol_up():
 def compute_top_stocks(provider="em"):
     latest = TopStocks.query_data(limit=1, order=TopStocks.timestamp.desc(), return_type="domain")
     if latest:
-        start = next_date(to_time_str(latest[0].timestamp, fmt=TIME_FORMAT_DAY))
+        start = date_time_by_interval(to_time_str(latest[0].timestamp, fmt=TIME_FORMAT_DAY))
     else:
         start = "2018-01-01"
     trade_days = get_trade_dates(start=start, end=today())
@@ -233,7 +233,14 @@ def get_top_stocks(target_date, return_type="short"):
     if datas:
         assert len(datas) == 1
         top_stock = datas[0]
-        if return_type == "short":
+        if return_type == "all":
+            short_stocks = json.loads(top_stock.short_stocks)
+            long_stocks = json.loads(top_stock.long_stocks)
+            small_vol_up_stocks = json.loads(top_stock.small_vol_up_stocks)
+            big_vol_up_stocks = json.loads(top_stock.big_vol_up_stocks)
+            all_stocks = list(set(short_stocks + long_stocks + small_vol_up_stocks + big_vol_up_stocks))
+            return all_stocks
+        elif return_type == "short":
             stocks = json.loads(top_stock.short_stocks)
         elif return_type == "long":
             stocks = json.loads(top_stock.long_stocks)

@@ -9,7 +9,7 @@ from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.emotion.emotion import LimitUpInfo, LimitDownInfo, Emotion
 from zvt.recorders.jqka import jqka_api
-from zvt.utils import to_time_str, next_date, current_date, to_pd_timestamp, pd_is_not_null
+from zvt.utils import to_time_str, date_time_by_interval, current_date, to_pd_timestamp, pd_is_not_null
 
 
 def _get_high_days_count(high_days_str: str):
@@ -39,7 +39,7 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
             start_date = latest_infos[0].timestamp
         else:
             # 最近一年半的数据
-            start_date = next_date(current_date(), -365 - 366 / 2)
+            start_date = date_time_by_interval(current_date(), -365 - 366 / 2)
         return pd.date_range(start=start_date, end=pd.Timestamp.now(), freq="B").tolist()
 
     def record(self, entity, start, end, size, timestamps):
@@ -102,7 +102,7 @@ class JqkaLimitDownRecorder(TimestampsDataRecorder):
             start_date = latest_infos[0].timestamp
         else:
             # 最近一年半的数据
-            start_date = next_date(current_date(), -365 - 366 / 2)
+            start_date = date_time_by_interval(current_date(), -365 - 366 / 2)
         return pd.date_range(start=start_date, end=pd.Timestamp.now(), freq="B").tolist()
 
     def record(self, entity, start, end, size, timestamps):
@@ -165,8 +165,8 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
         if latest_infos:
             start_date = latest_infos[0].timestamp
         else:
-            # 最近一年半的数据
-            start_date = next_date(current_date(), -365 - 366 / 2)
+            # 最近一年的数据
+            start_date = date_time_by_interval(current_date(), -365)
         return pd.date_range(start=start_date, end=pd.Timestamp.now(), freq="B").tolist()
 
     def record(self, entity, start, end, size, timestamps):

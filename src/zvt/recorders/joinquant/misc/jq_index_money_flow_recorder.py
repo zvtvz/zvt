@@ -34,6 +34,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
         level=IntervalLevel.LEVEL_1DAY,
         kdata_use_begin_time=False,
         one_day_trading_minutes=24 * 60,
+        return_unfinished=False,
     ) -> None:
         # 上证指数，深证成指，创业板指，科创板
         support_codes = ["000001", "399001", "399006", "000688"]
@@ -59,6 +60,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
             level,
             kdata_use_begin_time,
             one_day_trading_minutes,
+            return_unfinished,
         )
 
     def record(self, entity, start, end, size, timestamps):

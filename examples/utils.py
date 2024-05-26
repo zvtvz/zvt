@@ -2,35 +2,45 @@
 import json
 import logging
 import os
-import pprint
+import time
 
 import eastmoneypy
 import pandas as pd
-
-from zvt.api.selector import get_entity_ids_by_filter
-from zvt.api.stats import get_top_performance_entities_by_periods
-from zvt.api.tag import get_limit_up_reasons
-from zvt.contract.api import get_entities, decode_entity_id
+import requests
 from zvt.domain import StockNews, Stock, LimitUpInfo
-from zvt.utils import next_date, today
+from zvt.utils import date_time_by_interval, today
 
 logger = logging.getLogger(__name__)
 
 
 def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
-    codes = list(set(codes))
-    if over_write:
+    with requests.Session() as session:
+        codes = list(set(codes))
+        if over_write:
+            try:
+                eastmoneypy.del_group(group_name=group, session=session)
+            except:
+                pass
         try:
-            eastmoneypy.del_group(group_name=group)
+            eastmoneypy.create_group(group_name=group, session=session)
         except:
             pass
-    try:
-        eastmoneypy.create_group(group_name=group)
-    except:
-        pass
 
-    for code in codes:
-        eastmoneypy.add_to_group(code=code, entity_type=entity_type, group_name=group)
+        group_id = eastmoneypy.get_group_id(group, session=session)
+
+        for code in codes:
+            eastmoneypy.add_to_group(code=code, entity_type=entity_type, group_id=group_id, session=session)
+
+
+def clean_groups(keep=None):
+    if keep is None:
+        keep = ["自选股", "练气", "重要板块", "主线"]
+
+    with requests.Session() as session:
+        groups = eastmoneypy.get_groups(session=session)
+        groups_to_clean = [group["gid"] for group in groups if group["gname"] not in keep]
+        for gid in groups_to_clean:
+            eastmoneypy.del_group(group_id=gid, session=session)
 
 
 def get_hot_words_config():
@@ -71,7 +81,7 @@ def group_stocks_by_topic(
     :return:
     """
     if not start_timestamp:
-        start_timestamp = next_date(today(), -days_ago)
+        start_timestamp = date_time_by_interval(today(), -days_ago)
     stock_map = {}
 
     entity_ids = None
@@ -161,7 +171,7 @@ def msg_group_stocks_by_topic(
 
 def get_hot_topics(start_timestamp=None, days_ago=20, limit=15):
     if not start_timestamp:
-        start_timestamp = next_date(today(), -days_ago)
+        start_timestamp = date_time_by_interval(today(), -days_ago)
     df = LimitUpInfo.query_data(start_timestamp=start_timestamp, columns=["reason"])
     df["reason"] = df["reason"].str.split("+")
     result = df["reason"].tolist()
@@ -178,5 +188,4 @@ if __name__ == "__main__":
     # entities = get_entities(provider="em", entity_type="stock", entity_ids=ids, return_type="domain")
     #
     # print(msg_group_stocks_by_topic(entities=entities, threshold=1))
-    # get_hot_topics(days_ago=10)
-    print(get_limit_up_reasons(entity_id="stock_sz_300857"))
+    get_hot_topics(days_ago=10)

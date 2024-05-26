@@ -13,7 +13,7 @@ from zvt.contract import Mixin, AdjustType
 from zvt.contract.api import decode_entity_id, get_entity_schema, get_entity_ids
 from zvt.contract.drawer import Drawer
 from zvt.domain import FundStock, StockValuation, BlockStock, Block
-from zvt.utils import now_pd_timestamp, next_date, pd_is_not_null
+from zvt.utils import now_pd_timestamp, date_time_by_interval, pd_is_not_null
 from zvt.utils.time_utils import month_start_end_ranges, to_time_str, is_same_date
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def get_top_performance_entities_by_periods(
             kdata_schema.turnover_rate >= turnover_rate_threshold,
         ],
         provider=data_provider,
-        start_timestamp=next_date(target_date, -7),
+        start_timestamp=date_time_by_interval(target_date, -7),
         end_timestamp=target_date,
         index="entity_id",
         columns=["entity_id", "code"],
@@ -117,7 +117,7 @@ def get_top_performance_entities_by_periods(
     for i, period in enumerate(periods):
         real_period = max(real_period, period)
         while True:
-            start = next_date(target_date, -real_period)
+            start = date_time_by_interval(target_date, -real_period)
             trade_days = get_trade_dates(start=start, end=target_date)
             if not trade_days:
                 logger.info(f"no trade days in: {start} to {target_date}")
@@ -176,7 +176,7 @@ def get_top_performance_entities(
         entity_filters = []
     if list_days:
         entity_schema = get_entity_schema(entity_type=entity_type)
-        list_date = next_date(start_timestamp, -list_days)
+        list_date = date_time_by_interval(start_timestamp, -list_days)
         entity_filters += [entity_schema.list_date <= list_date]
 
     filter_entities = get_entity_ids(
@@ -236,7 +236,7 @@ def get_top_fund_holding_stocks(timestamp=None, pct=0.3, by=None):
         columns = ["entity_id", "market_cap"]
 
     entity_ids = fund_cap_df.index.tolist()
-    start_timestamp = next_date(timestamp, -30)
+    start_timestamp = date_time_by_interval(timestamp, -30)
     cap_df = StockValuation.query_data(
         entity_ids=entity_ids,
         filters=[

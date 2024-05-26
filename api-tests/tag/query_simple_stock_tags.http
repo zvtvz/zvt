@@ -1,0 +1,12 @@
+POST http://127.0.0.1:8090/api/work/query_simple_stock_tags
+accept: application/json
+Content-Type: application/json
+
+
+{
+  "entity_ids": [
+    "stock_sz_002085",
+    "stock_sz_000099",
+    "stock_sz_002130"
+  ]
+}

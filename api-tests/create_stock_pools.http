@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8090/api/work/create_stock_pools
+accept: application/json
+Content-Type: application/json
+
+{
+  "stock_pool_name": "核心资产",
+  "entity_ids": [
+    "stock_sh_600519"
+  ]
+}

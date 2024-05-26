@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import String, Column, Float
+from sqlalchemy import String, Column, Float, Integer, JSON
 
 from zvt.contract import Mixin
 
@@ -31,17 +31,30 @@ class KdataCommon(Mixin):
 
 
 class TickCommon(Mixin):
-    provider = Column(String(length=32))
-    code = Column(String(length=32))
-    name = Column(String(length=32))
-    level = Column(String(length=32))
-
-    order = Column(String(length=32))
-    price = Column(Float)
+    #: UNIX时间戳
+    time = Column(Integer)
+    #: 开盘价
+    open = Column(Float)
+    #: 收盘价/当前价格
+    close = Column(Float)
+    #: 最高价
+    high = Column(Float)
+    #: 最低价
+    low = Column(Float)
+    #: 成交量
     volume = Column(Float)
+    #: 成交金额
     turnover = Column(Float)
-    direction = Column(String(length=32))
-    order_type = Column(String(length=32))
+    #: 委卖价
+    ask_price = Column(Float)
+    #: 委买价
+    bid_price = Column(Float)
+    #: 委卖量
+    ask_vol = Column(JSON)
+    #: 委买量
+    bid_vol = Column(JSON)
+    #: 成交笔数
+    transaction_num = Column(Integer)
 
 
 class BlockKdataCommon(KdataCommon):

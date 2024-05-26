@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/create_stock_pool_info
+accept: application/json
+Content-Type: application/json
+
+{
+  "stock_pool_name": "核心资产",
+  "stock_pool_type": "custom"
+}

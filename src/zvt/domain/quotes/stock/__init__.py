@@ -67,12 +67,6 @@ from .stock_30m_hfq_kdata import __all__ as _stock_30m_hfq_kdata_all
 
 __all__ += _stock_30m_hfq_kdata_all
 
-# import all from submodule stock_l2quote_hfq_kdata
-from .stock_l2quote_hfq_kdata import *
-from .stock_l2quote_hfq_kdata import __all__ as _stock_l2quote_hfq_kdata_all
-
-__all__ += _stock_l2quote_hfq_kdata_all
-
 # import all from submodule stock_1mon_hfq_kdata
 from .stock_1mon_hfq_kdata import *
 from .stock_1mon_hfq_kdata import __all__ as _stock_1mon_hfq_kdata_all
@@ -97,12 +91,6 @@ from .stock_1h_hfq_kdata import __all__ as _stock_1h_hfq_kdata_all
 
 __all__ += _stock_1h_hfq_kdata_all
 
-# import all from submodule stock_l2quote_kdata
-from .stock_l2quote_kdata import *
-from .stock_l2quote_kdata import __all__ as _stock_l2quote_kdata_all
-
-__all__ += _stock_l2quote_kdata_all
-
 # import all from submodule stock_1m_kdata
 from .stock_1m_kdata import *
 from .stock_1m_kdata import __all__ as _stock_1m_kdata_all
@@ -120,6 +108,12 @@ from .stock_1d_hfq_kdata import *
 from .stock_1d_hfq_kdata import __all__ as _stock_1d_hfq_kdata_all
 
 __all__ += _stock_1d_hfq_kdata_all
+
+# import all from submodule stock_quote
+from .stock_quote import *
+from .stock_quote import __all__ as _stock_quote_all
+
+__all__ += _stock_quote_all
 
 # import all from submodule stock_30m_kdata
 from .stock_30m_kdata import *

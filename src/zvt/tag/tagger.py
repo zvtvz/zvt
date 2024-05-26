@@ -2,17 +2,13 @@
 import logging
 from typing import Type
 
-import pandas as pd
-
 from zvt.contract import Mixin
 from zvt.contract import TradableEntity
 from zvt.contract.api import get_db_session
-from zvt.contract.base_service import OneStateService, EntityStateService
+from zvt.contract.base_service import OneStateService
 from zvt.contract.zvt_info import TaggerState
-from zvt.domain import Stock, Index
-from zvt.tag.dataset.stock_tags import StockTags
-from zvt.utils import to_time_str, to_pd_timestamp
-from zvt.utils.time_utils import TIME_FORMAT_DAY, now_pd_timestamp
+from zvt.domain import Stock
+from zvt.tag.tag_schemas import StockTags
 
 logger = logging.getLogger(__name__)
 

@@ -246,7 +246,7 @@ pre adjusted(qfq), post adjusted(hfq), or not adjusted(bfq).
 
     In order to be compatible with historical data, the qfq is an exception, {adjust_type} is left empty
 
-The pre defined kdata schema could be found in :py:mod:`~.zvt.domain.quotes`, it's seperated by
+The pre defined kdata schema could be found in :py:mod:`~.zvt.domain.quotes`, it's separated by
 entity_schema, level, and adjust type.
 
 e.g. Stock1dHfqKdata means China Stock daily hfq quotes.

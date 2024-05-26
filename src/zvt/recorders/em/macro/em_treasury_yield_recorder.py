@@ -28,6 +28,7 @@ class EMTreasuryYieldRecorder(FixedCycleDataRecorder):
         level=IntervalLevel.LEVEL_1DAY,
         kdata_use_begin_time=False,
         one_day_trading_minutes=24 * 60,
+        return_unfinished=False,
     ) -> None:
         super().__init__(
             force_update,
@@ -47,6 +48,7 @@ class EMTreasuryYieldRecorder(FixedCycleDataRecorder):
             level,
             kdata_use_begin_time,
             one_day_trading_minutes,
+            return_unfinished,
         )
 
     def record(self, entity, start, end, size, timestamps):

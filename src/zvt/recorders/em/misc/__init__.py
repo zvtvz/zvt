@@ -11,9 +11,3 @@ from .em_stock_news_recorder import *
 from .em_stock_news_recorder import __all__ as _em_stock_news_recorder_all
 
 __all__ += _em_stock_news_recorder_all
-
-# import all from submodule em_stock_events_recorder
-from .em_stock_events_recorder import *
-from .em_stock_events_recorder import __all__ as _em_stock_events_recorder_all
-
-__all__ += _em_stock_events_recorder_all

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from zvt.api.selector import get_big_players, get_player_success_rate
 from zvt.domain import DragonAndTiger
-from zvt.utils import next_date, current_date
+from zvt.utils import date_time_by_interval, current_date
 
 if __name__ == "__main__":
     provider = "em"
     DragonAndTiger.record_data(provider=provider)
-    end_timestamp = next_date(current_date(), -60)
+    end_timestamp = date_time_by_interval(current_date(), -60)
     # recent year
-    start_timestamp = next_date(end_timestamp, -400)
+    start_timestamp = date_time_by_interval(end_timestamp, -400)
     print(f"{start_timestamp} to {end_timestamp}")
     players = get_big_players(start_timestamp=start_timestamp, end_timestamp=end_timestamp)
     print(players)

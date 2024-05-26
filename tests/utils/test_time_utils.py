@@ -2,7 +2,7 @@
 from zvt.contract import IntervalLevel
 from zvt.utils.time_utils import (
     evaluate_size_from_timestamp,
-    next_timestamp,
+    next_timestamp_on_level,
     to_pd_timestamp,
     is_finished_kdata_timestamp,
     split_time_interval,
@@ -61,9 +61,9 @@ def test_evaluate_size_from_timestamp():
 
 def test_next_timestamp():
     current = "2019-01-10 13:15"
-    assert next_timestamp(current, level=IntervalLevel.LEVEL_1MIN) == to_pd_timestamp("2019-01-10 13:16")
-    assert next_timestamp(current, level=IntervalLevel.LEVEL_5MIN) == to_pd_timestamp("2019-01-10 13:20")
-    assert next_timestamp(current, level=IntervalLevel.LEVEL_15MIN) == to_pd_timestamp("2019-01-10 13:30")
+    assert next_timestamp_on_level(current, level=IntervalLevel.LEVEL_1MIN) == to_pd_timestamp("2019-01-10 13:16")
+    assert next_timestamp_on_level(current, level=IntervalLevel.LEVEL_5MIN) == to_pd_timestamp("2019-01-10 13:20")
+    assert next_timestamp_on_level(current, level=IntervalLevel.LEVEL_15MIN) == to_pd_timestamp("2019-01-10 13:30")
 
 
 def test_is_finished_kdata_timestamp():

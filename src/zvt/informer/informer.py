@@ -11,10 +11,10 @@ import requests
 
 from zvt import zvt_config
 
+logger = logging.getLogger(__name__)
+
 
 class Informer(object):
-    logger = logging.getLogger(__name__)
-
     def send_message(self, to_user, title, body, **kwargs):
         pass
 
@@ -25,6 +25,14 @@ class EmailInformer(Informer):
         self.ssl = ssl
 
     def send_message_(self, to_user, title, body, **kwargs):
+        if (
+            not zvt_config["smtp_host"]
+            or not zvt_config["smtp_port"]
+            or not zvt_config["email_username"]
+            or not zvt_config["email_password"]
+        ):
+            logger.warning(f"Please set smtp_host/smtp_port/email_username/email_password in ~/zvt-home/config.json")
+            return
         host = zvt_config["smtp_host"]
         port = zvt_config["smtp_port"]
 
@@ -57,7 +65,7 @@ class EmailInformer(Informer):
             msg.attach(plain_text)
             smtp_client.sendmail(zvt_config["email_username"], to_user, msg.as_string())
         except Exception as e:
-            self.logger.exception("send email failed", e)
+            logger.exception("send email failed", e)
         finally:
             if smtp_client:
                 smtp_client.quit()
@@ -96,12 +104,12 @@ class WechatInformer(Informer):
 
     def refresh_token(self):
         resp = requests.get(self.GET_TOKEN_URL)
-        self.logger.info("refresh_token resp.status_code:{}, resp.text:{}".format(resp.status_code, resp.text))
+        logger.info("refresh_token resp.status_code:{}, resp.text:{}".format(resp.status_code, resp.text))
 
         if resp.status_code == 200 and resp.json() and "access_token" in resp.json():
             self.token = resp.json()["access_token"]
         else:
-            self.logger.exception("could not refresh_token")
+            logger.exception("could not refresh_token")
 
     def send_price_notification(self, to_user, security_name, current_price, change_pct):
         the_json = self._format_price_notification(to_user, security_name, current_price, change_pct)
@@ -109,10 +117,10 @@ class WechatInformer(Informer):
 
         resp = requests.post(self.SEND_MSG_URL.format(self.token), the_data)
 
-        self.logger.info("send_price_notification resp:{}".format(resp.text))
+        logger.info("send_price_notification resp:{}".format(resp.text))
 
         if resp.json() and resp.json()["errcode"] == 0:
-            self.logger.info("send_price_notification to user:{} data:{} success".format(to_user, the_json))
+            logger.info("send_price_notification to user:{} data:{} success".format(to_user, the_json))
 
     def _format_price_notification(self, to_user, security_name, current_price, change_pct):
         if change_pct > 0:

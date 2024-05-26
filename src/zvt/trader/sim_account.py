@@ -6,10 +6,10 @@ from typing import List, Optional
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 from zvt.api import get_kdata, get_kdata_schema
-from zvt.api.trader_info_api import get_trader_info, clear_trader
+from zvt.trader.trader_info_api import get_trader_info, clear_trader
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.api import get_db_session, decode_entity_id
-from zvt.domain.trader_info import AccountStats, Position, Order, TraderInfo
+from zvt.trader.trader_schemas import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignal, AccountService, OrderType, trading_signal_type_to_order_type
 from zvt.trader.errors import (
     NotEnoughMoneyError,
@@ -314,7 +314,8 @@ class SimAccountService(AccountService):
         self.account.all_value = self.account.value + self.account.cash
         self.account.closing = True
         self.account.timestamp = to_pd_timestamp(timestamp)
-        self.account.profit = (self.account.all_value - self.account.input_money) / self.account.input_money
+        self.account.profit = self.account.all_value - self.account.input_money
+        self.account.profit_rate = self.account.profit / self.account.input_money
 
         self.session.add(self.account)
         self.session.commit()

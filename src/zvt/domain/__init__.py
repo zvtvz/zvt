@@ -179,12 +179,6 @@ from .macro import __all__ as _macro_all
 
 __all__ += _macro_all
 
-# import all from submodule trader_info
-from .trader_info import *
-from .trader_info import __all__ as _trader_info_all
-
-__all__ += _trader_info_all
-
 # import all from submodule actor
 from .actor import *
 from .actor import __all__ as _actor_all

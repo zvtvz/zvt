@@ -603,6 +603,12 @@ class Factor(DataReader, EntityStateService, DataListener):
         if is_score_result_df(self.result_df):
             return self.result_df[["score_result"]]
 
+    def get_trading_signal_df(self):
+        df = self.result_df[["filter_result"]].copy()
+        df = df[~df["filter_result"].isna()]
+        df = drop_continue_duplicate(df, "filter_result")
+        return df
+
     def get_targets(
         self,
         timestamp=None,

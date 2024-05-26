@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.recorder_utils import run_data_recorder
-from zvt import init_log, zvt_config
+from zvt.utils.recorder_utils import run_data_recorder
+from zvt import init_log
 from zvt.domain import *
-from zvt.informer.informer import EmailInformer
 
 logger = logging.getLogger(__name__)
 

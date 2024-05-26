@@ -218,6 +218,7 @@ class Mixin(object):
         """
         record data by the arguments
 
+        :param entity_id:
         :param provider_index:
         :param provider:
         :param force_update:
@@ -286,12 +287,10 @@ class Mixin(object):
                     kw[k] = kwargs[k]
 
                 r = recorder_class(**kw)
-                r.run()
-                return
+                return r.run()
             else:
                 r = recorder_class(**kw)
-                r.run()
-                return
+                return r.run()
         else:
             print(f"no recorders for {cls.__name__}")
 

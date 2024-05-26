@@ -44,6 +44,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         kdata_use_begin_time=False,
         one_day_trading_minutes=24 * 60,
         adjust_type=AdjustType.qfq,
+        return_unfinished=False,
     ) -> None:
         level = IntervalLevel(level)
         adjust_type = AdjustType(adjust_type)
@@ -68,6 +69,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
             level,
             kdata_use_begin_time,
             one_day_trading_minutes,
+            return_unfinished,
         )
 
         self.adjust_type = adjust_type

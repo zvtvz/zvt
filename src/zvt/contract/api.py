@@ -375,7 +375,10 @@ def get_data(
     elif return_type == "domain":
         return query.all()
     elif return_type == "dict":
-        return [item.__dict__ for item in query.all()]
+        domains = query.all()
+        return [item.__dict__ for item in domains]
+    elif return_type == "select":
+        return query.selectable
 
 
 def data_exist(session, schema, id):
@@ -474,6 +477,7 @@ def df_to_db(
     force_update: bool = False,
     sub_size: int = 5000,
     drop_duplicates: bool = True,
+    dtype=None,
 ) -> object:
     """
     store the df to db
@@ -492,8 +496,6 @@ def df_to_db(
     if drop_duplicates and df.duplicated(subset="id").any():
         logger.warning(f"remove duplicated:{df[df.duplicated()]}")
         df = df.drop_duplicates(subset="id", keep="last")
-
-    db_engine = get_db_engine(provider, data_schema=data_schema)
 
     schema_cols = get_schema_columns(data_schema)
     cols = set(df.columns.tolist()) & set(schema_cols)
@@ -519,36 +521,36 @@ def df_to_db(
 
     saved = 0
 
-    for step in range(step_size):
-        df_current = df.iloc[sub_size * step : sub_size * (step + 1)]
+    db_engine = get_db_engine(provider, data_schema=data_schema)
+    with db_engine.connect() as conn:
+        for step in range(step_size):
+            df_current = df.iloc[sub_size * step : sub_size * (step + 1)]
 
-        session = get_db_session(provider=provider, data_schema=data_schema)
-        if force_update:
-            ids = df_current["id"].tolist()
-            if len(ids) == 1:
-                sql = text(f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"')
+            session = get_db_session(provider=provider, data_schema=data_schema)
+            if force_update:
+                ids = df_current["id"].tolist()
+                if len(ids) == 1:
+                    sql = text(f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"')
+                else:
+                    sql = text(f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}")
+
+                conn.execute(sql)
             else:
-                sql = text(f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}")
+                current = get_data(
+                    session=session,
+                    data_schema=data_schema,
+                    columns=[data_schema.id],
+                    provider=provider,
+                    ids=df_current["id"].tolist(),
+                )
+                if pd_is_not_null(current):
+                    df_current = df_current[~df_current["id"].isin(current["id"])]
+                session.commit()
 
-            session.execute(sql)
-            session.commit()
-
-        else:
-            current = get_data(
-                session=session,
-                data_schema=data_schema,
-                columns=[data_schema.id],
-                provider=provider,
-                ids=df_current["id"].tolist(),
-            )
-            if pd_is_not_null(current):
-                df_current = df_current[~df_current["id"].isin(current["id"])]
-            session.commit()
-
-        if pd_is_not_null(df_current):
-            saved = saved + len(df_current)
-            df_current.to_sql(data_schema.__tablename__, db_engine, index=False, if_exists="append")
-
+            if pd_is_not_null(df_current):
+                saved = saved + len(df_current)
+                df_current.to_sql(data_schema.__tablename__, conn, index=False, if_exists="append", dtype=dtype)
+            conn.commit()
     return saved
 
 

@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/create_hidden_tag_info
+accept: application/json
+Content-Type: application/json
+
+{
+  "tag": "中字头",
+  "tag_reason": "央企，国资委控股"
+}

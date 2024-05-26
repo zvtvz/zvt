@@ -18,12 +18,8 @@ from zvt.utils import (
     json_callback_param,
     now_timestamp,
     to_time_str,
-    now_pd_timestamp,
     current_date,
-    flatten_list,
-    is_same_date,
 )
-from zvt.utils.utils import to_str
 
 logger = logging.getLogger(__name__)
 
@@ -264,6 +260,7 @@ def generate_filters(code=None, trade_date=None, report_date=None, end_date=None
 def get_em_data(
     request_type,
     fields,
+    session=None,
     source="SECURITIES",
     filters=None,
     sort_by="",
@@ -286,7 +283,10 @@ def get_em_data(
         params=params,
     )
     print(f"current url: {url}")
-    resp = requests.get(url)
+    if session:
+        resp = session.get(url)
+    else:
+        resp = requests.get(url)
     if resp.status_code == 200:
         json_result = resp.json()
         resp.close()
@@ -304,6 +304,7 @@ def get_em_data(
             if fetch_all or fetch_count - 1 > 0:
                 if need_next:
                     next_data = get_em_data(
+                        session=session,
                         request_type=request_type,
                         fields=fields,
                         source=source,
@@ -327,6 +328,90 @@ def get_em_data(
                 return data
         return None
     raise RuntimeError(f"request em data code: {resp.status_code}, error: {resp.text}")
+
+
+def get_quotes():
+    {
+        # 市场,2 A股, 3 港股
+        "f1": 2,
+        # 最新价 660/100=6.6
+        "f2": 660,
+        # 涨幅 2000/10000=20%
+        "f3": 2000,
+        # 涨跌额 110/100=1.1
+        "f4": 110,
+        # 总手
+        "f5": 112596,
+        # 成交额
+        "f6": 74313472.2,
+        # 换手率 239/10000
+        "f8": 239,
+        # 市盈率 110
+        "f9": 11000,
+        # code
+        "f12": "300175",
+        #
+        "f13": 0,
+        # name
+        "f14": "朗源股份",
+        "f18": 550,
+        "f19": 80,
+        "f30": -215,
+        # 买入价
+        "f31": 660,
+        # 卖出价
+        "f32": None,
+        "f125": 0,
+        "f139": 5,
+        "f148": 1,
+        "f152": 2,
+    }
+    {
+        "f1": 2,
+        "f2": 1515,
+        "f3": 1002,
+        "f4": 138,
+        "f5": 547165,
+        "f6": 804705199.0,
+        "f8": 241,
+        "f9": 1575,
+        "f12": "601233",
+        "f13": 1,
+        "f14": "桐昆股份",
+        "f18": 1377,
+        "f19": 2,
+        "f30": -1281,
+        # 买入价
+        "f31": 1515,
+        # 卖出价
+        "f32": None,
+        "f125": 0,
+        "f139": 2,
+        "f148": 577,
+        "f152": 2,
+    }
+    {
+        "f1": 2,
+        "f2": 611,
+        "f3": 338,
+        "f4": 20,
+        "f5": 478746,
+        "f6": 293801314.14,
+        "f8": 803,
+        "f9": 2067,
+        "f12": "000788",
+        "f13": 0,
+        "f14": "北大医药",
+        "f18": 591,
+        "f19": 6,
+        "f30": -4015,
+        "f31": 611,
+        "f32": 612,
+        "f125": 0,
+        "f139": 2,
+        "f148": 1,
+        "f152": 2,
+    }
 
 
 # quote
@@ -359,7 +444,7 @@ def get_em_data(
 #
 # 上海
 # secid=1.512660&klt=101&fqt=1&lmt=66&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1
-def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.qfq, limit=10000):
+def get_kdata(entity_id, session=None, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.qfq, limit=10000):
     entity_type, exchange, code = decode_entity_id(entity_id)
     level = IntervalLevel(level)
 
@@ -371,7 +456,10 @@ def get_kdata(entity_id, level=IntervalLevel.LEVEL_1DAY, adjust_type=AdjustType.
     # 目前未获取
     url = f"https://push2his.eastmoney.com/api/qt/stock/kline/get?secid={sec_id}&klt={level_flag}&fqt={fq_flag}&lmt={limit}&end=20500000&iscca=1&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1"
 
-    resp = requests.get(url, headers=DEFAULT_HEADER)
+    if session:
+        resp = session.get(url, headers=DEFAULT_HEADER)
+    else:
+        resp = requests.get(url, headers=DEFAULT_HEADER)
     resp.raise_for_status()
     results = resp.json()
     resp.close()
@@ -617,47 +705,6 @@ def get_block_stocks(block_id, name=""):
     return the_list
 
 
-def get_events(entity_id, fetch_count=2000):
-    _, _, code = decode_entity_id(entity_id)
-
-    datas = get_em_data(
-        fields=None,
-        request_type="RTP_F10_DETAIL",
-        source="SECURITIES",
-        params=f"{code}.{get_exchange(code)}",
-        fetch_all=False,
-        fetch_count=fetch_count,
-    )
-    if not datas:
-        return None
-    datas = flatten_list(datas)
-    stock_events = []
-    checking_date = None
-    index = 0
-    for item in datas:
-        the_date = item["NOTICE_DATE"]
-        event_type = item["EVENT_TYPE"]
-        if checking_date == the_date:
-            index = index + 1
-            the_id = f"{entity_id}_{the_date}_{event_type}_{index}"
-        else:
-            checking_date = the_date
-            index = 0
-            the_id = f"{entity_id}_{the_date}_{event_type}"
-        event = {
-            "id": the_id,
-            "entity_id": entity_id,
-            "timestamp": to_pd_timestamp(the_date),
-            "event_type": event_type,
-            "specific_event_type": item["SPECIFIC_EVENTTYPE"],
-            "notice_date": to_pd_timestamp(the_date),
-            "level1_content": to_str(item["LEVEL1_CONTENT"]),
-            "level2_content": to_str(item["LEVEL2_CONTENT"]),
-        }
-        stock_events.append(event)
-    return stock_events
-
-
 def get_news(entity_id, ps=200, index=1, start_timestamp=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
@@ -881,7 +928,6 @@ __all__ = [
     "get_future_list",
     "get_tradable_list",
     "get_block_stocks",
-    "get_events",
     "get_news",
     "to_em_fc",
     "to_em_entity_flag",

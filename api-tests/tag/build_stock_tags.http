@@ -1,0 +1,15 @@
+POST http://127.0.0.1:8090/api/work/build_stock_tags
+accept: application/json
+Content-Type: application/json
+
+[
+  {
+    "entity_id": "stock_sz_002085",
+    "name": "万丰奥威",
+    "main_tag": "低空经济",
+    "main_tag_reason": "2023年12月27日回复称,公司钻石eDA40纯电动飞机已成功首飞;eVTOL项目已联动海外钻石技术开发团队,在绿色、智能、垂直起降等方面的设计体现未来领域应用场景。",
+    "sub_tag": "低空经济",
+    "sub_tag_reason": "2023年12月27日回复称,公司钻石eDA40纯电动飞机已成功首飞;eVTOL项目已联动海外钻石技术开发团队,在绿色、智能、垂直起降等方面的设计体现未来领域应用场景。",
+    "active_hidden_tags": null
+  }
+]

@@ -4,11 +4,19 @@ import os
 from collections import Counter
 
 from zvt.api import china_stock_code_to_id, get_china_exchange
-from zvt.api.selector import get_entity_ids_by_filter
-from zvt.api.tag import tag_stock, get_stock_tags, get_limit_up_reasons
-from zvt.contract.api import get_entities
-from zvt.domain import BlockStock, Block, Stock
-from zvt.utils import current_date, next_date, pd_is_not_null
+
+from zvt.domain import BlockStock, Block, Stock, LimitUpInfo
+
+
+def get_limit_up_reasons(entity_id):
+    info = LimitUpInfo.query_data(
+        entity_id=entity_id, order=LimitUpInfo.timestamp.desc(), limit=1, return_type="domain"
+    )
+
+    topics = []
+    if info and info[0].reason:
+        topics = topics + info[0].reason.split("+")
+    return topics
 
 
 def get_concept(code):

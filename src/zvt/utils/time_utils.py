@@ -6,6 +6,7 @@ import math
 import arrow
 import pandas as pd
 
+from zvt.common.query_models import TimeUnit
 from zvt.contract import IntervalLevel
 
 CHINA_TZ = "Asia/Shanghai"
@@ -67,6 +68,10 @@ def current_date() -> pd.Timestamp:
     return to_pd_timestamp(today().date())
 
 
+def tomorrow_date():
+    return to_pd_timestamp(date_time_by_interval(today(), 1).date())
+
+
 def to_time_str(the_time, fmt=TIME_FORMAT_DAY):
     try:
         return arrow.get(to_pd_timestamp(the_time)).format(fmt)
@@ -78,8 +83,20 @@ def now_time_str(fmt=TIME_FORMAT_DAY):
     return to_time_str(the_time=now_pd_timestamp(), fmt=fmt)
 
 
-def next_date(the_time, days=1):
-    return to_pd_timestamp(the_time) + datetime.timedelta(days=days)
+def date_time_by_interval(the_time, interval=1, unit: TimeUnit = TimeUnit.day):
+    time_delta = None
+    if unit == TimeUnit.year:
+        time_delta = datetime.timedelta(days=interval * 365)
+    elif unit == TimeUnit.month:
+        time_delta = datetime.timedelta(days=interval * 30)
+    elif unit == TimeUnit.day:
+        time_delta = datetime.timedelta(days=interval)
+    elif unit == TimeUnit.minute:
+        time_delta = datetime.timedelta(minutes=interval)
+    elif unit == TimeUnit.second:
+        time_delta = datetime.timedelta(seconds=interval)
+
+    return to_pd_timestamp(the_time) + time_delta
 
 
 def pre_month(t=now_pd_timestamp()):
@@ -162,7 +179,7 @@ def date_and_time(the_date, the_time):
     return to_pd_timestamp(time_str)
 
 
-def next_timestamp(current_timestamp: pd.Timestamp, level: IntervalLevel) -> pd.Timestamp:
+def next_timestamp_on_level(current_timestamp: pd.Timestamp, level: IntervalLevel) -> pd.Timestamp:
     current_timestamp = to_pd_timestamp(current_timestamp)
     return current_timestamp + pd.Timedelta(seconds=level.to_second())
 
@@ -230,9 +247,9 @@ def split_time_interval(start, end, method=None, interval=30, freq="D"):
     end = to_pd_timestamp(end)
     if not method:
         while start < end:
-            interval_end = min(next_date(start, interval), end)
+            interval_end = min(date_time_by_interval(start, interval), end)
             yield pd.date_range(start=start, end=interval_end, freq=freq)
-            start = next_date(interval_end, 1)
+            start = date_time_by_interval(interval_end, 1)
 
     if method == "month":
         while start <= end:
@@ -240,7 +257,7 @@ def split_time_interval(start, end, method=None, interval=30, freq="D"):
 
             interval_end = min(to_pd_timestamp(f"{start.year}-{start.month}-{day}"), end)
             yield pd.date_range(start=start, end=interval_end, freq=freq)
-            start = next_date(interval_end, 1)
+            start = date_time_by_interval(interval_end, 1)
 
 
 def count_interval(start_date, end_date):
@@ -251,7 +268,7 @@ def count_interval(start_date, end_date):
 
 
 if __name__ == "__main__":
-    print(date_and_time("2019-10-01", "10:00"))
+    print(tomorrow_date() > date_time_by_interval(today(), 2))
 # the __all__ is generated
 __all__ = [
     "CHINA_TZ",
@@ -270,7 +287,7 @@ __all__ = [
     "current_date",
     "to_time_str",
     "now_time_str",
-    "next_date",
+    "date_time_by_interval",
     "pre_month",
     "pre_month_start_date",
     "pre_month_end_date",
@@ -283,10 +300,11 @@ __all__ = [
     "day_offset_today",
     "get_year_quarters",
     "date_and_time",
-    "next_timestamp",
+    "next_timestamp_on_level",
     "evaluate_size_from_timestamp",
     "is_finished_kdata_timestamp",
     "is_in_same_interval",
     "split_time_interval",
     "count_interval",
+    "tomorrow_date",
 ]

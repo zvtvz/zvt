@@ -1,0 +1,7 @@
+POST http://127.0.0.1:8090/api/work/query_stock_tag_stats
+accept: application/json
+Content-Type: application/json
+
+{
+  "stock_pool_name": "main_line"
+}

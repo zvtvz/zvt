@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/create_sub_tag_info
+accept: application/json
+Content-Type: application/json
+
+{
+  "tag": "低空经济",
+  "tag_reason": "低空经济是飞行器和各种产业形态的融合，例如\"无人机+配送\"、\"直升机或evto载人飞行\"、\"无人机+应急救援\"、\"无人机+工业场景巡检\"等"
+}

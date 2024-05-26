@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/create_main_tag_info
+accept: application/json
+Content-Type: application/json
+
+{
+  "tag": "未知",
+  "tag_reason": "行业定位不清晰"
+}

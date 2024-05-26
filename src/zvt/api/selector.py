@@ -8,7 +8,7 @@ from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entity_ids
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo
-from zvt.utils import to_pd_timestamp, next_date, current_date, pd_is_not_null
+from zvt.utils import to_pd_timestamp, date_time_by_interval, current_date, pd_is_not_null
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +35,19 @@ def get_entity_ids_by_filter(
     entity_ids=None,
     ignore_bj=False,
 ):
-    filters = [entity_schema.timestamp.isnot(None)]
-    if not target_date:
-        target_date = current_date()
+    filters = []
     if ignore_new_stock:
-        pre_year = next_date(target_date, -365)
+        if not target_date:
+            target_date = current_date()
+        pre_year = date_time_by_interval(target_date, -365)
         filters += [entity_schema.timestamp <= pre_year]
     else:
-        filters += [entity_schema.timestamp <= target_date]
+        if target_date:
+            filters += [entity_schema.timestamp <= target_date]
     if ignore_delist:
         filters += [
             entity_schema.name.not_like("%退%"),
+            entity_schema.name.not_like("%PT%"),
         ]
 
     if ignore_st:
@@ -126,7 +128,7 @@ def get_player_performance(start_timestamp, end_timestamp=None, days=5, players=
     df = df[~df.index.duplicated(keep="first")]
     records = []
     for entity_id, timestamp in df.index:
-        end_date = next_date(timestamp, days + round(days + days * 2 / 5 + 30))
+        end_date = date_time_by_interval(timestamp, days + round(days + days * 2 / 5 + 30))
         kdata = Stock1dHfqKdata.query_data(
             entity_id=entity_id,
             start_timestamp=timestamp,
@@ -203,9 +205,9 @@ def get_players(entity_id, start_timestamp, end_timestamp, provider="em", direct
 
 
 def get_good_players(timestamp=current_date(), recent_days=400, intervals=(3, 5, 10)):
-    end_timestamp = next_date(timestamp, -intervals[-1] - 30)
+    end_timestamp = date_time_by_interval(timestamp, -intervals[-1] - 30)
     # recent year
-    start_timestamp = next_date(end_timestamp, -recent_days)
+    start_timestamp = date_time_by_interval(end_timestamp, -recent_days)
     print(f"{start_timestamp} to {end_timestamp}")
     # 最近一年牛x的营业部
     players = get_big_players(start_timestamp=start_timestamp, end_timestamp=end_timestamp)
@@ -241,7 +243,7 @@ def get_entity_list_by_cap(
         if retry_times == 0:
             return []
         return get_entity_list_by_cap(
-            timestamp=next_date(timestamp, 1),
+            timestamp=date_time_by_interval(timestamp, 1),
             cap_start=cap_start,
             cap_end=cap_end,
             entity_type=entity_type,

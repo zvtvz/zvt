@@ -7,8 +7,8 @@ from dash import html
 from dash import dash
 from dash.dependencies import Input, Output, State
 
-from zvt.api.trader_info_api import AccountStatsReader, OrderReader, get_order_securities
-from zvt.api.trader_info_api import get_trader_info
+from zvt.trader.trader_info_api import AccountStatsReader, OrderReader, get_order_securities
+from zvt.trader.trader_info_api import get_trader_info
 from zvt.contract import Mixin
 from zvt.contract import zvt_context, IntervalLevel
 from zvt.contract.api import get_entities, get_schema_by_name, get_schema_columns

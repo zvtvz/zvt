@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
-import sys
-
 from typing import List
 
 from xtquant import xtconstant, xtdata
 from xtquant.xttrader import XtQuantTrader, XtQuantTraderCallback
 from xtquant.xttype import StockAccount, XtPosition
 
-from zvt.broker.qmt import qmt_api
-from zvt.broker.qmt.qmt_api import _to_qmt_code
+
+from zvt.broker.qmt.errors import QmtError, PositionOverflowError
+from zvt.broker.qmt.qmt_quote import _to_qmt_code
+from zvt.common.trading_models import BuyPositionStrategy, PositionType, SellPositionStrategy
 from zvt.trader import AccountService, TradingSignal, OrderType, trading_signal_type_to_order_type
 from zvt.utils import now_pd_timestamp, to_pd_timestamp
 
@@ -26,15 +26,12 @@ def _to_qmt_order_type(order_type: OrderType):
 
 class MyXtQuantTraderCallback(XtQuantTraderCallback):
     def on_connected(self):
-        super().on_connected()
         logger.info("qmt on_connected")
 
     def on_smt_appointment_async_response(self, response):
-        super().on_smt_appointment_async_response(response)
         logger.info(f"qmt on_smt_appointment_async_response: {vars(response)}")
 
     def on_cancel_order_stock_async_response(self, response):
-        super().on_cancel_order_stock_async_response(response)
         logger.info(f"qmt on_cancel_order_stock_async_response: {vars(response)}")
 
     def on_disconnected(self):
@@ -50,7 +47,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param order: XtOrder对象
         :return:
         """
-        super().on_stock_order(order)
         logger.info(f"qmt on_stock_order: {vars(order)}")
 
     def on_stock_asset(self, asset):
@@ -59,7 +55,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param asset: XtAsset对象
         :return:
         """
-        super().on_stock_asset(asset)
         logger.info(f"qmt on_stock_asset: {vars(asset)}")
 
     def on_stock_trade(self, trade):
@@ -68,7 +63,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param trade: XtTrade对象
         :return:
         """
-        super().on_stock_trade(trade)
         logger.info(f"qmt on_stock_trade: {vars(trade)}")
 
     def on_stock_position(self, position):
@@ -77,7 +71,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param position: XtPosition对象
         :return:
         """
-        super().on_stock_position(position)
         logger.info(f"qmt on_stock_position: {vars(position)}")
 
     def on_order_error(self, order_error):
@@ -86,7 +79,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param order_error:XtOrderError 对象
         :return:
         """
-        super().on_order_error(order_error)
         logger.info(f"qmt on_order_error: {vars(order_error)}")
 
     def on_cancel_error(self, cancel_error):
@@ -95,7 +87,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param cancel_error: XtCancelError 对象
         :return:
         """
-        super().on_cancel_error(cancel_error)
         logger.info(f"qmt on_cancel_error: {vars(cancel_error)}")
 
     def on_order_stock_async_response(self, response):
@@ -104,7 +95,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param response: XtOrderResponse 对象
         :return:
         """
-        super().on_order_stock_async_response(response)
         logger.info(f"qmt on_order_stock_async_response: {vars(response)}")
 
     def on_account_status(self, status):
@@ -112,7 +102,6 @@ class MyXtQuantTraderCallback(XtQuantTraderCallback):
         :param response: XtAccountStatus 对象
         :return:
         """
-        logger.info("on_account_status")
         logger.info(status.account_id, status.account_type, status.status)
 
 
@@ -123,7 +112,7 @@ class QmtStockAccount(AccountService):
         self.trader_name = trader_name
         logger.info(f"path: {path}, account: {account_id}, trader_name: {trader_name}, session: {session_id}")
 
-        self.xt_trader = XtQuantTrader(path, session_id)
+        self.xt_trader = XtQuantTrader(path=path, session=session_id)
 
         # StockAccount可以用第二个参数指定账号类型，如沪港通传'HUGANGTONG'，深港通传'SHENGANGTONG'
         self.account = StockAccount(account_id=account_id, account_type="STOCK")
@@ -138,15 +127,16 @@ class QmtStockAccount(AccountService):
         # 建立交易连接，返回0表示连接成功
         connect_result = self.xt_trader.connect()
         if connect_result != 0:
-            logger.error(f"连接失败: {connect_result}")
-            sys.exit(f"连接失败: {connect_result}")
-        logger.info("建立交易连接成功！")
+            logger.error(f"qmt trader 连接失败: {connect_result}")
+            raise QmtError(f"qmt trader 连接失败: {connect_result}")
+        logger.info("qmt trader 建立交易连接成功！")
 
         # 对交易回调进行订阅，订阅后可以收到交易主推，返回0表示订阅成功
         subscribe_result = self.xt_trader.subscribe(self.account)
+
         if subscribe_result != 0:
             logger.error(f"账号订阅失败: {subscribe_result}")
-            sys.exit(f"账号订阅失败: {subscribe_result}")
+            raise QmtError(f"账号订阅失败: {subscribe_result}")
         logger.info("账号订阅成功！")
 
     def get_positions(self):
@@ -224,6 +214,80 @@ class QmtStockAccount(AccountService):
 
     def on_trading_error(self, timestamp, error):
         pass
+
+    def sell(self, position_strategy: SellPositionStrategy):
+        # account_type	int	账号类型，参见数据字典
+        # account_id	str	资金账号
+        # stock_code	str	证券代码
+        # volume	int	持仓数量
+        # can_use_volume	int	可用数量
+        # open_price	float	开仓价
+        # market_value	float	市值
+        # frozen_volume	int	冻结数量
+        # on_road_volume	int	在途股份
+        # yesterday_volume	int	昨夜拥股
+        # avg_price	float	成本价
+        # direction	int	多空方向，股票不适用；参见数据字典
+        stock_codes = [_to_qmt_code(entity_id) for entity_id in position_strategy.entity_ids]
+        for i, stock_code in enumerate(stock_codes):
+            pct = position_strategy.sell_pcts[i]
+            position = self.xt_trader.query_stock_position(self.account, stock_code)
+            fix_result_order_id = self.xt_trader.order_stock(
+                account=self.account,
+                stock_code=stock_code,
+                order_type=xtconstant.STOCK_SELL,
+                order_volume=int(position.can_use_volume * pct),
+                price_type=xtconstant.MARKET_SH_CONVERT_5_CANCEL,
+                price=0,
+                strategy_name=self.trader_name,
+                order_remark="order from zvt",
+            )
+            logger.info(f"order result id: {fix_result_order_id}")
+
+    def buy(self, position_strategy: BuyPositionStrategy):
+        # account_type	int	账号类型，参见数据字典
+        # account_id	str	资金账号
+        # cash	float	可用金额
+        # frozen_cash	float	冻结金额
+        # market_value	float	持仓市值
+        # total_asset	float	总资产
+        acc = self.get_current_account()
+        # 检查仓位
+        if position_strategy.position_type == PositionType.normal:
+            current_pct = round(acc.market_value / acc.total_asset, 2)
+            if current_pct >= position_strategy.position_pct:
+                raise PositionOverflowError(f"目前仓位为{current_pct}, 已超过请求的仓位: {position_strategy.position_pct}")
+
+            money_to_use = acc.total_asset * (position_strategy.position_pct - current_pct)
+        elif position_strategy.position_type == PositionType.cash:
+            money_to_use = acc.cash * position_strategy.position_pct
+        else:
+            assert False
+
+        stock_codes = [_to_qmt_code(entity_id) for entity_id in position_strategy.entity_ids]
+        ticks = xtdata.get_full_tick(code_list=stock_codes)
+
+        if not position_strategy.weights:
+            stocks_count = len(stock_codes)
+            money_for_stocks = [round(money_to_use / stocks_count)] * stocks_count
+        else:
+            weights_sum = sum(position_strategy.weights)
+            money_for_stocks = [round(weight / weights_sum) for weight in position_strategy.weights]
+
+        for i, stock_code in enumerate(stock_codes):
+            try_price = ticks[stock_code]["askPrice"][3]
+            volume = money_for_stocks[i] / try_price
+            fix_result_order_id = self.xt_trader.order_stock(
+                account=self.account,
+                stock_code=stock_code,
+                order_type=xtconstant.STOCK_BUY,
+                order_volume=volume,
+                price_type=xtconstant.MARKET_SH_CONVERT_5_CANCEL,
+                price=0,
+                strategy_name=self.trader_name,
+                order_remark="order from zvt",
+            )
+            logger.info(f"order result id: {fix_result_order_id}")
 
 
 if __name__ == "__main__":

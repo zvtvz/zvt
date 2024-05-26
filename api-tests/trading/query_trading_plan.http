@@ -1,0 +1,12 @@
+POST http://127.0.0.1:8090/api/trading/query_trading_plan
+accept: application/json
+Content-Type: application/json
+
+{
+  "time_range": {
+    "relative_time_range": {
+      "interval": -30,
+      "time_unit": "day"
+    }
+  }
+}

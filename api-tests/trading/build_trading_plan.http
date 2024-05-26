@@ -1,0 +1,13 @@
+POST http://127.0.0.1:8090/api/trading/build_trading_plan
+accept: application/json
+Content-Type: application/json
+
+{
+  "stock_id": "stock_sz_300133",
+  "trading_date": "2024-04-23",
+  "expected_open_pct": 0.02,
+  "buy_price": 6.9,
+  "sell_price": null,
+  "trading_reason": "主线",
+  "trading_signal_type": "open_long"
+}

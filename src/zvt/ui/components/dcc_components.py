@@ -3,7 +3,7 @@
 from dash import dcc
 
 from zvt.api.kdata import get_kdata_schema
-from zvt.api.trader_info_api import OrderReader, AccountStatsReader
+from zvt.trader.trader_info_api import OrderReader, AccountStatsReader
 from zvt.contract.api import decode_entity_id
 from zvt.contract.drawer import Drawer
 from zvt.contract.reader import DataReader

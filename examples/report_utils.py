@@ -15,7 +15,7 @@ from zvt.contract.api import get_entities, get_entity_schema
 from zvt.contract.factor import Factor, TargetType
 from zvt.domain import StockNews
 from zvt.informer import EmailInformer
-from zvt.utils import next_date
+from zvt.utils import date_time_by_interval
 
 logger = logging.getLogger("__name__")
 
@@ -154,7 +154,7 @@ def report_targets(
                 # 成交量
                 vol_df = get_top_volume_entities(
                     entity_type=entity_type,
-                    start_timestamp=next_date(target_date, -30),
+                    start_timestamp=date_time_by_interval(target_date, -30),
                     end_timestamp=target_date,
                     adjust_type=adjust_type,
                     pct=0.4,

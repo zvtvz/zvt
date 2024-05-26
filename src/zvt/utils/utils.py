@@ -243,6 +243,48 @@ def to_str(str_or_list):
         return ";".join(str_list)
 
 
+def compare_dicts(dict1, dict2):
+    # Check if both dictionaries are None
+    if dict1 is None and dict2 is None:
+        return True
+
+    # Check if only one dictionary is None
+    if dict1 is None or dict2 is None:
+        return False
+
+    # Check if the keys are the same
+    if set(dict1.keys()) != set(dict2.keys()):
+        return False
+
+    # Check if the values are the same for each key
+    for key in dict1:
+        if dict1[key] != dict2[key]:
+            return False
+
+    # If all keys and values match, return True
+    return True
+
+
+def fill_dict(src, dst):
+    """
+    Fills items from the source dictionary (src) into the destination dictionary (dst)
+    if the keys are not already present in dst.
+
+    Args:
+        src (dict): The source dictionary to copy items from.
+        dst (dict): The destination dictionary to copy items into.
+
+    Returns:
+        dict: The updated destination dictionary with new items from the source dictionary.
+    """
+    if not src:
+        return dst
+    for key, value in src.items():
+        if key not in dst:
+            dst[key] = value
+    return dst
+
+
 if __name__ == "__main__":
     url = url_unquote(
         "https://datacenter.eastmoney.com/securities/api/data/get?type=RPT_DAILYBILLBOARD_DETAILS&sty=ALL&source=DataCenter&client=WAP&p=1&ps=20&sr=-1,1&st=TRADE_DATE,SECURITY_CODE&filter=(TRADE_DATE%3E=%272022-04-01%27)(TRADE_DATE%3C=%272022-04-29%27)(MARKET=%22SH%22)&?v=05160638952989893"
@@ -271,4 +313,5 @@ __all__ = [
     "url_unquote",
     "parse_url_params",
     "flatten_list",
+    "compare_dicts",
 ]

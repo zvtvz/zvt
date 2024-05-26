@@ -3,11 +3,11 @@ import logging
 
 from zvt.api import get_top_volume_entities
 from zvt.api.stats import get_top_fund_holding_stocks
-from zvt.api.trader_info_api import clear_trader
+from zvt.trader.trader_info_api import clear_trader
 from zvt.contract import IntervalLevel
 from zvt.factors import GoldCrossFactor, BullFactor
 from zvt.trader import StockTrader
-from zvt.utils.time_utils import split_time_interval, next_date
+from zvt.utils.time_utils import split_time_interval, date_time_by_interval
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class MultipleLevelTrader(StockTrader):
     def init_factors(
         self, entity_ids, entity_schema, exchanges, codes, start_timestamp, end_timestamp, adjust_type=None
     ):
-        start_timestamp = next_date(start_timestamp, -50)
+        start_timestamp = date_time_by_interval(start_timestamp, -50)
 
         return [
             BullFactor(
@@ -24,7 +24,7 @@ class MultipleLevelTrader(StockTrader):
                 entity_schema=entity_schema,
                 exchanges=exchanges,
                 codes=codes,
-                start_timestamp=next_date(start_timestamp, -200),
+                start_timestamp=date_time_by_interval(start_timestamp, -200),
                 end_timestamp=end_timestamp,
                 provider="joinquant",
                 level=IntervalLevel.LEVEL_1WEEK,
@@ -52,7 +52,10 @@ if __name__ == "__main__":
         end_timestamp = time_interval[-1]
         # 成交量
         vol_df = get_top_volume_entities(
-            entity_type="stock", start_timestamp=next_date(start_timestamp, -50), end_timestamp=start_timestamp, pct=0.3
+            entity_type="stock",
+            start_timestamp=date_time_by_interval(start_timestamp, -50),
+            end_timestamp=start_timestamp,
+            pct=0.3,
         )
         # 机构重仓
         ii_df = get_top_fund_holding_stocks(timestamp=start_timestamp, pct=0.3, by="trading")

@@ -3,7 +3,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from examples.recorder_utils import run_data_recorder
+from zvt.utils.recorder_utils import run_data_recorder
 from examples.report_utils import inform
 from examples.utils import get_hot_topics
 from zvt import init_log, zvt_config
@@ -19,9 +19,7 @@ from zvt.domain import (
     Index,
     Index1dKdata,
     StockNews,
-    StockEvents,
     LimitUpInfo,
-    BlockStock,
 )
 from zvt.informer import EmailInformer
 from zvt.utils import current_date
@@ -44,21 +42,6 @@ def record_stock_news(data_provider="em"):
         data_provider=data_provider,
         force_update=False,
         sleeping_time=2,
-    )
-
-
-def record_stock_events(data_provider="em"):
-    normal_stock_ids = get_entity_ids_by_filter(
-        provider="em", ignore_delist=True, ignore_st=False, ignore_new_stock=False
-    )
-
-    run_data_recorder(
-        entity_ids=normal_stock_ids,
-        day_data=True,
-        domain=StockEvents,
-        data_provider=data_provider,
-        force_update=False,
-        sleeping_time=0.01,
     )
 
 
@@ -100,7 +83,7 @@ def report_hot_topics():
 
 
 @sched.scheduled_job("cron", hour=15, minute=30, day_of_week="mon-fri")
-def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=0.2):
+def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=0):
     email_action = EmailInformer()
     # 涨停数据
     run_data_recorder(domain=LimitUpInfo, data_provider=None, force_update=False)
@@ -167,6 +150,7 @@ def record_stock_data(data_provider="em", entity_provider="em", sleeping_time=0.
         entity_provider=entity_provider,
         day_data=True,
         sleeping_time=sleeping_time,
+        return_unfinished=True,
     )
 
 

@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/trading/build_query_stock_quote_setting
+accept: application/json
+Content-Type: application/json
+
+{
+  "stock_pool_name": "main_line",
+  "main_tags": ["低空经济","新能源"]
+}

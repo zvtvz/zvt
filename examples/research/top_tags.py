@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.api import get_top_performance_by_month
 from zvt.domain import Stock1dHfqKdata
-from zvt.utils import next_date, month_end_date, is_same_date
+from zvt.utils import date_time_by_interval, month_end_date, is_same_date
 
 
 # 每月涨幅前30，市值90%分布在100亿以下
@@ -26,7 +26,7 @@ def top_tags(data_provider="em", start_timestamp="2020-01-01", end_timestamp="20
                 if not kdata or kdata[0].turnover_rate == 0:
                     if is_same_date(query_timestamp, month_end_date(query_timestamp)):
                         break
-                    query_timestamp = next_date(query_timestamp)
+                    query_timestamp = date_time_by_interval(query_timestamp)
                     continue
                 cap = kdata[0].turnover / kdata[0].turnover_rate
                 break
