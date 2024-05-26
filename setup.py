@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="zvt",
-    version="0.10.5",
+    version="0.11.0",
     description="unified,modular quant framework for human beings ",
     long_description=long_description,
     url="https://github.com/zvtvz/zvt",
@@ -30,13 +30,13 @@ setup(
         "Topic :: Software Development :: Build Tools",
         "Topic :: Office/Business :: Financial :: Investment",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="quant stock finance fintech big-data zvt technical-analysis trading-platform pandas fundamental-analysis",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    python_requires=">=3.7, <4",
+    python_requires=">=3.8, <4",
     include_package_data=True,
     install_requires=[
         "requests == 2.20.1",
