@@ -2,45 +2,13 @@
 import json
 import logging
 import os
-import time
 
-import eastmoneypy
 import pandas as pd
-import requests
+
 from zvt.domain import StockNews, Stock, LimitUpInfo
 from zvt.utils import date_time_by_interval, today
 
 logger = logging.getLogger(__name__)
-
-
-def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
-    with requests.Session() as session:
-        codes = list(set(codes))
-        if over_write:
-            try:
-                eastmoneypy.del_group(group_name=group, session=session)
-            except:
-                pass
-        try:
-            eastmoneypy.create_group(group_name=group, session=session)
-        except:
-            pass
-
-        group_id = eastmoneypy.get_group_id(group, session=session)
-
-        for code in codes:
-            eastmoneypy.add_to_group(code=code, entity_type=entity_type, group_id=group_id, session=session)
-
-
-def clean_groups(keep=None):
-    if keep is None:
-        keep = ["自选股", "练气", "重要板块", "主线"]
-
-    with requests.Session() as session:
-        groups = eastmoneypy.get_groups(session=session)
-        groups_to_clean = [group["gid"] for group in groups if group["gname"] not in keep]
-        for gid in groups_to_clean:
-            eastmoneypy.del_group(group_id=gid, session=session)
 
 
 def get_hot_words_config():

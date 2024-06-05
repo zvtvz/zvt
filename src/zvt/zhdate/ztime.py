@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from examples.zhdate.zhdate import ZhDate
-
 from zvt.utils import to_pd_timestamp, current_date, count_interval
+from zvt.zhdate.zhdate import ZhDate
 
 
 def holiday_distance(timestamp=None, days=15):
@@ -65,3 +64,5 @@ if __name__ == "__main__":
     # for month in range(1, 13):
     #     holiday_distance(f"2023-{month}-15")
     #     holiday_distance(f"2023-{month}-20")
+# the __all__ is generated
+__all__ = ["holiday_distance"]

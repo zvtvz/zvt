@@ -253,6 +253,13 @@ def get_by_id(data_schema, id: str, provider: str = None, session: Session = Non
     return session.query(data_schema).get(id)
 
 
+def _row2dict(row):
+    d = {}
+    for column in row.__table__.columns:
+        d[column.name] = getattr(row, column.name)
+    return d
+
+
 def get_data(
     data_schema: Type[Mixin],
     ids: List[str] = None,
@@ -376,7 +383,7 @@ def get_data(
         return query.all()
     elif return_type == "dict":
         domains = query.all()
-        return [item.__dict__ for item in domains]
+        return [_row2dict(item) for item in domains]
     elif return_type == "select":
         return query.selectable
 

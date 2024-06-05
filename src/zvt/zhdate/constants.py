@@ -422,3 +422,5 @@ CHINESENEWYEAR = [
 """
 从1900年，至2100年每年的农历春节的公历日期
 """
+# the __all__ is generated
+__all__ = []

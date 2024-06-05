@@ -52,6 +52,7 @@ def get_sub_tag_stocks(tag="低空经济"):
 
 
 if __name__ == "__main__":
-    a = get_block_stocks()
-    b = get_sub_tag_stocks()
-    print(set(a) - set(b))
+    # a = get_block_stocks()
+    # b = get_sub_tag_stocks()
+    # print(set(a) - set(b))
+    print(Stock.query_data(provider="em", return_type="dict"))

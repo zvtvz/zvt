@@ -16,3 +16,4 @@ scikit-learn==1.2.1
 fastapi==0.110.0
 fastapi-pagination==0.12.23
 apscheduler==3.10.4
+eastmoneypy==0.1.7

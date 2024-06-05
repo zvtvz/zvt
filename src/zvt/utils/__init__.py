@@ -6,6 +6,12 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule model_utils
+from .model_utils import *
+from .model_utils import __all__ as _model_utils_all
+
+__all__ += _model_utils_all
+
 # import all from submodule str_utils
 from .str_utils import *
 from .str_utils import __all__ as _str_utils_all

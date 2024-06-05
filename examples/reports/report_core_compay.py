@@ -6,12 +6,12 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.factors.fundamental_selector import FundamentalSelector
 from examples.reports import get_subscriber_emails, stocks_with_info
-from examples.utils import add_to_eastmoney
 from zvt import init_log, zvt_config
 from zvt.contract.api import get_entities
 from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.informer import EmailInformer
+from zvt.informer.inform_utils import add_to_eastmoney
 from zvt.utils.time_utils import now_pd_timestamp, to_time_str
 
 logger = logging.getLogger(__name__)

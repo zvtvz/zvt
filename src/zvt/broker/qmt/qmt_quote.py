@@ -1,29 +1,20 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 import time
-import datetime
+
 import numpy as np
 import pandas as pd
 from xtquant import xtdata
-from sqlalchemy import text
-from zvt.api import get_recent_report_date
-from zvt.common.query_models import TimeUnit
+
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.contract.api import decode_entity_id, df_to_db, get_db_engine, get_schema_columns, get_db_session
+from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock
 from zvt.utils import (
     to_time_str,
     current_date,
     to_pd_timestamp,
-    now_time_str,
-    date_time_by_interval,
     pd_is_not_null,
-    TIME_FORMAT_DAY,
-    TIME_FORMAT_MINUTE2,
 )
-
-from sqlalchemy.dialects.sqlite import insert
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
 
@@ -247,7 +238,14 @@ def download_capital_data():
     )
 
 
+def clear_history_quote():
+    session = get_db_session("qmt", data_schema=StockQuote)
+    session.query(StockQuote).filter(StockQuote.timestamp < current_date()).delete()
+    session.commit()
+
+
 if __name__ == "__main__":
+    clear_history_quote()
     Stock.record_data(provider="em")
     stocks = get_qmt_stocks()
     print(stocks)

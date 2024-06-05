@@ -5,7 +5,7 @@ thanks to https://github.com/CutePandaSh/zhdate
 from datetime import datetime, timedelta
 from itertools import accumulate
 
-from examples.zhdate.constants import CHINESEYEARCODE, CHINESENEWYEAR
+from zvt.zhdate.constants import CHINESEYEARCODE, CHINESENEWYEAR
 
 
 class ZhDate:
@@ -255,3 +255,7 @@ class ZhDate:
             [int] -- 农历年份所对应的农历月份天数列表
         """
         return ZhDate.decode(CHINESEYEARCODE[year - 1900])
+
+
+# the __all__ is generated
+__all__ = []
