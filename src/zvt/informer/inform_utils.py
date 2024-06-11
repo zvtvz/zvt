@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import eastmoneypy
+import requests
 
 from zvt import zvt_config
 from zvt.contract.api import get_entities
 from zvt.informer import EmailInformer
-
-import requests
 
 
 def inform_email(entity_ids, entity_type, target_date, title, provider):
@@ -22,19 +21,22 @@ def inform_email(entity_ids, entity_type, target_date, title, provider):
 
 def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
     with requests.Session() as session:
-        codes = list(set(codes))
-        if over_write:
-            try:
-                eastmoneypy.del_group(group_name=group, session=session)
-            except:
-                pass
-        try:
-            eastmoneypy.create_group(group_name=group, session=session)
-        except:
-            pass
-
         group_id = eastmoneypy.get_group_id(group, session=session)
 
+        need_create_group = False
+
+        if not group_id:
+            need_create_group = True
+
+        if group_id and over_write:
+            eastmoneypy.del_group(group_name=group, session=session)
+            need_create_group = True
+
+        if need_create_group:
+            result = eastmoneypy.create_group(group_name=group, session=session)
+            group_id = result["gid"]
+
+        codes = list(set(codes))
         for code in codes:
             eastmoneypy.add_to_group(code=code, entity_type=entity_type, group_id=group_id, session=session)
 

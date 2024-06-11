@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 from fastapi_pagination import add_pagination
 
 from zvt.rest.data import data_router
@@ -11,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from zvt.sched.sched import zvt_scheduler
 
-app = FastAPI()
+app = FastAPI(default_response_class=ORJSONResponse)
 
 origins = ["*"]
 

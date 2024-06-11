@@ -146,11 +146,9 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
 
     order = eval(f"StockQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()")
 
-    quotes = StockQuote.query_data(
-        order=order, entity_ids=entity_ids, limit=query_stock_quote_model.limit, return_type="dict"
+    df = StockQuote.query_data(
+        order=order, entity_ids=entity_ids, limit=query_stock_quote_model.limit, return_type="df"
     )
-
-    df = pd.DataFrame.from_records(data=quotes)
 
     def set_tags(quote):
         entity_id = quote["entity_id"]
@@ -166,6 +164,8 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     change_pct = df["change_pct"].mean()
     limit_up_count = df["is_limit_up"].sum()
     limit_down_count = df["is_limit_down"].sum()
+
+    quotes = df.to_dict(orient="records")
 
     result = {
         "up_count": up_count,
