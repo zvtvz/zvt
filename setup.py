@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="zvt",
-    version="0.11.1",
+    version="0.11.2",
     description="unified,modular quant framework for human beings ",
     long_description=long_description,
     url="https://github.com/zvtvz/zvt",
@@ -59,6 +59,7 @@ setup(
         "fastapi-pagination==0.12.23",
         "apscheduler==3.10.4",
         "eastmoneypy==0.1.7",
+        "orjson==3.10.3",
     ],
     project_urls={  # Optional
         "Bug Reports": "https://github.com/zvtvz/zvt/issues",
