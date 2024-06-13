@@ -33,3 +33,7 @@ class RelativeTimeRage(BaseModel):
 class TimeRange(BaseModel):
     absolute_time_range: Optional[AbsoluteTimeRange] = Field(default=None)
     relative_time_range: Optional[RelativeTimeRage] = Field(default=None)
+
+
+# the __all__ is generated
+__all__ = ["OrderByType", "TimeUnit", "AbsoluteTimeRange", "RelativeTimeRage", "TimeRange"]

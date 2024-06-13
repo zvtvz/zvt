@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import String, Column, Float, Integer, JSON, Boolean
+from sqlalchemy import String, Column, Float, Integer, Boolean
 from sqlalchemy.orm import declarative_base
 
 from zvt.contract import Mixin

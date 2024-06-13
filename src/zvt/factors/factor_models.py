@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Dict, Union, List, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, field_validator, Field
-from pydantic_core.core_schema import ValidationInfo
+from pydantic import BaseModel, Field
 
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.contract.model import MixinModel
-from zvt.tag.common import StockPoolType
-from zvt.tag.tag_utils import get_main_tags, get_sub_tags, get_hidden_tags, get_stock_pool_names
 from zvt.trader import TradingSignalType
-from zvt.utils import date_time_by_interval, current_date
+from zvt.utils.time_utils import date_time_by_interval, current_date
 
 
 class FactorRequestModel(BaseModel):
@@ -52,3 +48,7 @@ class TradingSignalModel(BaseModel):
 class FactorResultModel(BaseModel):
     entity_ids: Optional[List[str]]
     tag_reason: str
+
+
+# the __all__ is generated
+__all__ = ["FactorRequestModel", "KdataRequestModel", "KdataModel", "TradingSignalModel", "FactorResultModel"]

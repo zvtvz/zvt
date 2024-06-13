@@ -50,5 +50,6 @@ class Registry(object):
 #: :class:`~.zvt.contract.context.Registry` instance
 zvt_context = Registry()
 
+
 # the __all__ is generated
-__all__ = ["Registry", "zvt_context"]
+__all__ = ["Registry"]

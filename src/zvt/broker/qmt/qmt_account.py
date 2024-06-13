@@ -7,12 +7,11 @@ from xtquant import xtconstant, xtdata
 from xtquant.xttrader import XtQuantTrader, XtQuantTraderCallback
 from xtquant.xttype import StockAccount, XtPosition
 
-
 from zvt.broker.qmt.errors import QmtError, PositionOverflowError
 from zvt.broker.qmt.qmt_quote import _to_qmt_code
 from zvt.common.trading_models import BuyPositionStrategy, PositionType, SellPositionStrategy
 from zvt.trader import AccountService, TradingSignal, OrderType, trading_signal_type_to_order_type
-from zvt.utils import now_pd_timestamp, to_pd_timestamp
+from zvt.utils.time_utils import now_pd_timestamp, to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -293,3 +292,7 @@ class QmtStockAccount(AccountService):
 if __name__ == "__main__":
     account = QmtStockAccount(path=r"D:\qmt\userdata_mini", account_id="")
     account.get_positions()
+
+
+# the __all__ is generated
+__all__ = ["MyXtQuantTraderCallback", "QmtStockAccount"]

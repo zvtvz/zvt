@@ -6,7 +6,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock, DragonAndTiger
 from zvt.recorders.em import em_api
-from zvt.utils import to_pd_timestamp, to_time_str, TIME_FORMAT_DAY, date_time_by_interval
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_DAY, date_time_by_interval
 
 {
     "TRADE_ID": "3066028",

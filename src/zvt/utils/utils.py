@@ -293,6 +293,7 @@ if __name__ == "__main__":
 
 # the __all__ is generated
 __all__ = [
+    "getcontext().prec",
     "none_values",
     "zero_values",
     "first_item_to_float",

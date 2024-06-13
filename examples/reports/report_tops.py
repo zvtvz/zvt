@@ -5,10 +5,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.report_utils import report_top_entities, inform
 from zvt import init_log
+from zvt.api.stats import TopType, get_latest_kdata_date
 from zvt.contract import AdjustType
-from zvt.api import TopType, get_latest_kdata_date
 from zvt.domain import Block, BlockCategory
-from zvt.factors.top_stocks import compute_top_stocks, get_top_stocks
+from zvt.factors.top_stocks import get_top_stocks
 from zvt.informer import EmailInformer
 
 logger = logging.getLogger(__name__)

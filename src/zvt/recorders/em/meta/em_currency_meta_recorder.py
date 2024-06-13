@@ -2,7 +2,6 @@
 
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
-from zvt.domain import Future
 from zvt.domain.meta.currency_meta import Currency
 from zvt.recorders.em import em_api
 

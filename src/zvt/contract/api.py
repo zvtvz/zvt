@@ -9,10 +9,10 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import func, exists, and_
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql.expression import text
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.sql.expression import text
 
 from zvt import zvt_env
 from zvt.contract import IntervalLevel
@@ -680,15 +680,15 @@ def get_entity_ids(
 
 if __name__ == "__main__":
     print(get_entities(entity_type="block"))
+
+
 # the __all__ is generated
 __all__ = [
-    "_get_db_name",
     "get_db_engine",
     "get_providers",
     "get_schemas",
     "get_db_session",
     "get_db_session_factory",
-    "DBSession",
     "get_entity_schema",
     "get_schema_by_name",
     "get_schema_columns",

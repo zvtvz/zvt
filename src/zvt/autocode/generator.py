@@ -5,9 +5,9 @@ from typing import List
 
 from zvt.autocode.templates import all_tpls
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.utils import now_pd_timestamp
 from zvt.utils.file_utils import list_all_files
 from zvt.utils.git_utils import get_git_user_name, get_git_user_email
+from zvt.utils.time_utils import now_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def fill_package(dir_path: str):
 def gen_exports(
     dir_path="./domain",
     gen_flag="# the __all__ is generated",
-    export_from_package=True,
+    export_from_package=False,
     export_modules=None,
     excludes=None,
     export_var=False,
@@ -131,6 +131,14 @@ def gen_exports(
                     exports.append(export)
                 line = fp.readline()
         print(f"{file}:{exports}")
+        end_empty_lines_count = 0
+        for i in range(-1, -len(lines) - 1, -1):
+            if not lines[i].isspace():
+                break
+            end_empty_lines_count = end_empty_lines_count + 1
+        lines = lines[: len(lines) - end_empty_lines_count]
+
+        lines.append("\n\n")
         lines.append(gen_flag)
         lines.append("\n")
         exports_str = f"__all__ = {exports}"

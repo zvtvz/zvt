@@ -5,15 +5,15 @@ from typing import List, Union, Type, Tuple
 
 import pandas as pd
 
-from zvt.domain import Stock
-from zvt.trader.trader_info_api import AccountStatsReader
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.drawer import Drawer
 from zvt.contract.factor import Factor, TargetType
 from zvt.contract.normal_data import NormalData
-from zvt.trader.trader_schemas import AccountStats, Position
+from zvt.domain import Stock
 from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.sim_account import SimAccountService
+from zvt.trader.trader_info_api import AccountStatsReader
+from zvt.trader.trader_schemas import AccountStats, Position
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, is_same_date, date_time_by_interval
 
 

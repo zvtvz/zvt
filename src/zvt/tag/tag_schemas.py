@@ -109,5 +109,16 @@ class TagStats(StockTagsBase, Mixin):
 
 
 register_schema(providers=["zvt"], db_name="stock_tags", schema_base=StockTagsBase)
+
+
 # the __all__ is generated
-__all__ = ["MainTagInfo", "SubTagInfo", "HiddenTagInfo", "StockTags", "StockPoolInfo", "StockPools", "TagStats"]
+__all__ = [
+    "MainTagInfo",
+    "SubTagInfo",
+    "HiddenTagInfo",
+    "StockTags",
+    "StockSystemTags",
+    "StockPoolInfo",
+    "StockPools",
+    "TagStats",
+]

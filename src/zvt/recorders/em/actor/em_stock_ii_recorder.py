@@ -10,7 +10,7 @@ from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock, ActorMeta
 from zvt.domain.actor.stock_actor import StockInstitutionalInvestorHolder
 from zvt.recorders.em.em_api import get_ii_holder_report_dates, get_ii_holder, actor_type_to_org_type
-from zvt.utils import to_pd_timestamp, to_time_str
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str
 
 
 # {'END_DATE': '2021-03-31 00:00:00',

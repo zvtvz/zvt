@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from zvt.utils import drop_continue_duplicate
+from zvt.utils.pd_utils import drop_continue_duplicate
 
 
 def test_drop_continue_duplicate():

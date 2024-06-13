@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 
 from zvt.contract.factor import Transformer
-from zvt.domain import Stock1dHfqKdata
-from zvt.factors import MaTransformer, TechnicalFactor
-from zvt.utils import to_pd_timestamp
+from zvt.factors.algorithm import MaTransformer
+from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.pd_utils import group_by_entity_id, normalize_group_compute_result, merge_filter_result
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 def _cal_state(s, df, pre, interval, col):
@@ -88,3 +88,7 @@ if __name__ == "__main__":
     # df = FallBelowTransformer().transform(df)
     # print(df["filter_result"])
     TechnicalFactor(transformer=SpecificTransformer(timestamp="2020-03-01"))
+
+
+# the __all__ is generated
+__all__ = ["CrossMaTransformer", "SpecificTransformer", "FallBelowTransformer"]

@@ -5,11 +5,9 @@ from typing import List, Optional
 
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
-from zvt.api import get_kdata, get_kdata_schema
-from zvt.trader.trader_info_api import get_trader_info, clear_trader
+from zvt.api.kdata import get_kdata, get_kdata_schema
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.api import get_db_session, decode_entity_id
-from zvt.trader.trader_schemas import AccountStats, Position, Order, TraderInfo
 from zvt.trader import TradingSignal, AccountService, OrderType, trading_signal_type_to_order_type
 from zvt.trader.errors import (
     NotEnoughMoneyError,
@@ -18,6 +16,8 @@ from zvt.trader.errors import (
     InvalidOrderParamError,
     WrongKdataError,
 )
+from zvt.trader.trader_info_api import get_trader_info, clear_trader
+from zvt.trader.trader_schemas import AccountStats, Position, Order, TraderInfo
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
 from zvt.utils.utils import fill_domain_from_dict

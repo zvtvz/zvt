@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from zvt.api import get_kdata
+from zvt.api.kdata import get_kdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.samples import MyBullTrader, StockTrader
-from zvt.utils import is_same_date
+from zvt.utils.time_utils import is_same_date
 
 buy_timestamp = "2019-05-29"
 sell_timestamp = "2020-01-06"

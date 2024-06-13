@@ -3,8 +3,8 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.orm import declarative_base
 
-from zvt.contract.schema import TradableEntity
 from zvt.contract.register import register_schema, register_entity
+from zvt.contract.schema import TradableEntity
 
 CountryMetaBase = declarative_base()
 

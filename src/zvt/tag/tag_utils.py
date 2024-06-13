@@ -5,18 +5,15 @@ from typing import List, Dict
 
 import pandas as pd
 
+from zvt import zvt_env
 from zvt.contract.api import df_to_db
 from zvt.domain import Block
 from zvt.tag.common import StockPoolType
 from zvt.tag.tag_schemas import MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo
-from zvt.utils import (
-    to_time_str,
-    flatten_list,
-)
 
 
 def get_industry_main_tag_mapping() -> Dict[str, str]:
-    with open(os.path.join(os.path.dirname(__file__), "industry_main_tag_mapping.json"), encoding="utf-8") as f:
+    with open(os.path.join(zvt_env["resource_path"], "industry_main_tag_mapping.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -30,7 +27,7 @@ def get_main_tag_industry_mapping() -> Dict[str, List[str]]:
 
 
 def get_concept_main_tag_mapping() -> Dict[str, str]:
-    with open(os.path.join(os.path.dirname(__file__), "concept_main_tag_mapping.json"), encoding="utf-8") as f:
+    with open(os.path.join(zvt_env["resource_path"], "concept_main_tag_mapping.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -218,13 +215,20 @@ if __name__ == "__main__":
     #         result[tag] = main_tag
     # with open("industry_main_tag_mapping.json", "w") as json_file:
     #     json.dump(result, json_file, indent=2, ensure_ascii=False)
-    print(list(get_concept_main_tag_mapping().keys()))
+    print(list(get_industry_list()))
 
 
 # the __all__ is generated
 __all__ = [
+    "get_industry_main_tag_mapping",
+    "get_main_tag_industry_mapping",
+    "get_concept_main_tag_mapping",
+    "get_main_tag_concept_mapping",
+    "get_initial_sub_tags",
     "get_industry_list",
     "get_concept_list",
+    "check_missed_industry",
+    "check_missed_concept",
     "get_initial_main_tag_info",
     "get_initial_sub_tag_info",
     "get_initial_stock_pool_info",

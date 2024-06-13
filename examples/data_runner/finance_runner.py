@@ -3,7 +3,6 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.utils.recorder_utils import run_data_recorder
 from zvt import init_log
 from zvt.domain import (
     Stock,
@@ -13,6 +12,7 @@ from zvt.domain import (
     IncomeStatement,
     CashFlowStatement,
 )
+from zvt.utils.recorder_utils import run_data_recorder
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from zvt.factors.ma import VolumeUpMaFactor
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from examples.report_utils import report_targets, inform
 from zvt import init_log
 from zvt.api.kdata import get_latest_kdata_date
-from zvt.api.selector import get_mini_and_small_stock, get_middle_and_big_stock
 from zvt.contract import AdjustType
-from zvt.factors import VolumeUpMaFactor
 from zvt.factors.top_stocks import get_top_stocks
 from zvt.informer import EmailInformer
 

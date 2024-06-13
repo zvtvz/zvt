@@ -5,9 +5,9 @@ import logging
 import pandas as pd
 import requests
 
-from zvt.api import china_stock_code_to_id
+from zvt.api.utils import china_stock_code_to_id
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import now_pd_timestamp
+from zvt.utils.time_utils import now_pd_timestamp
 
 logger = logging.getLogger(__name__)
 

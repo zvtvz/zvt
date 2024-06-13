@@ -7,6 +7,7 @@ import pkgutil
 import pprint
 import shutil
 from logging.handlers import RotatingFileHandler
+from typing import List
 
 import pandas as pd
 import pkg_resources
@@ -80,15 +81,20 @@ def init_env(zvt_home: str, **kwargs) -> dict:
     :param zvt_home: home path for zvt
     """
     data_path = os.path.join(zvt_home, "data")
+    resource_path = os.path.join(zvt_home, "resources")
     tmp_path = os.path.join(zvt_home, "tmp")
     if not os.path.exists(data_path):
         os.makedirs(data_path)
+
+    if not os.path.exists(resource_path):
+        os.makedirs(resource_path)
 
     if not os.path.exists(tmp_path):
         os.makedirs(tmp_path)
 
     zvt_env["zvt_home"] = zvt_home
     zvt_env["data_path"] = data_path
+    zvt_env["resource_path"] = resource_path
     zvt_env["tmp_path"] = tmp_path
 
     # path for storing ui results
@@ -105,12 +111,25 @@ def init_env(zvt_home: str, **kwargs) -> dict:
 
     pprint.pprint(zvt_env)
 
+    init_resources(resource_path=resource_path)
     # init config
     init_config(current_config=zvt_config, **kwargs)
     # init plugin
     # init_plugins()
 
     return zvt_env
+
+
+def init_resources(resource_path):
+    package_name = "zvt"
+    package_dir = pkg_resources.resource_filename(package_name, "resources")
+    from zvt.utils.file_utils import list_all_files
+
+    files: List[str] = list_all_files(package_dir, ext=None)
+    for source_file in files:
+        dst_file = os.path.join(resource_path, source_file[len(package_dir) + 1 :])
+        if not os.path.exists(dst_file):
+            shutil.copyfile(source_file, dst_file)
 
 
 def init_config(pkg_name: str = None, current_config: dict = None, **kwargs) -> dict:
@@ -129,12 +148,10 @@ def init_config(pkg_name: str = None, current_config: dict = None, **kwargs) -> 
 
     config_path = os.path.join(zvt_env["zvt_home"], config_file)
     if not os.path.exists(config_path):
-        from shutil import copyfile
-
         try:
             sample_config = pkg_resources.resource_filename(pkg_name, "config.json")
             if os.path.exists(sample_config):
-                copyfile(sample_config, config_path)
+                shutil.copyfile(sample_config, config_path)
         except Exception as e:
             logger.warning(f"could not load config.json from package {pkg_name}")
 
@@ -201,16 +218,15 @@ if os.getenv("TESTING_ZVT"):
         same = filecmp.cmp(ZVT_TEST_ZIP_DATA_PATH, DATA_SAMPLE_ZIP_PATH)
 
     if not same:
-        from shutil import copyfile
         from zvt.contract import *
         from zvt.utils.zip_utils import unzip
 
-        copyfile(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_ZIP_DATA_PATH)
+        shutil.copyfile(DATA_SAMPLE_ZIP_PATH, ZVT_TEST_ZIP_DATA_PATH)
         unzip(ZVT_TEST_ZIP_DATA_PATH, ZVT_TEST_DATA_PATH)
 else:
     init_env(zvt_home=ZVT_HOME)
 
-old_db_to_provider_dir(zvt_env["data_path"])
+# old_db_to_provider_dir(zvt_env["data_path"])
 
 # register to meta
 import zvt.contract as zvt_contract

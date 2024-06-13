@@ -2,7 +2,7 @@
 from zvt.api.intent import compare, distribute, composite, composite_all
 from zvt.contract.drawer import ChartType
 from zvt.domain import FinanceFactor, CashFlowStatement, BalanceSheet, Stock1dKdata
-from zvt.utils import to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 def test_compare_kdata():

@@ -87,15 +87,20 @@ def gen_kdata_schemas():
 
 
 if __name__ == "__main__":
-    # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)
-    # gen_exports("contract", export_modules=["schema"])
-    # gen_exports("ml")
-    gen_exports("utils", export_var=True)
-    # gen_exports('informer')
     # gen_exports("api")
+    # gen_exports("broker")
+    # gen_exports("common")
+    # gen_exports("contract", export_from_package=True, export_modules=["schema"])
+    # gen_exports("tag")
+    gen_exports("factors", export_from_package=True)
+    # gen_exports("trading")
+
+    # gen_exports("ml")
+    # gen_exports("utils", export_from_package=False, export_var=True)
+    # gen_exports('informer')
     # gen_exports('trader')
     # gen_exports('autocode')
-    gen_exports("zhdate")
-    # gen_kdata_schemas()
+    # gen_exports("zhdate")
     # gen_exports("recorders")
-    # gen_exports("tag")
+    # gen_kdata_schemas()
+    # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)

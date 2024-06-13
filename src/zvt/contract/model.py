@@ -12,3 +12,7 @@ class MixinModel(CustomModel):
     id: str
     entity_id: str
     timestamp: datetime
+
+
+# the __all__ is generated
+__all__ = ["CustomModel", "MixinModel"]

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Any, Dict
+from typing import Dict
 
-from pydantic import BaseModel, ConfigDict, Json
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Column, String, JSON
 from sqlalchemy.orm import declarative_base
 

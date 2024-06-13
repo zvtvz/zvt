@@ -66,5 +66,7 @@ if __name__ == "__main__":
     f.update_entity_ids(["stock_sz_000338", "stock_sh_600000"])
     f.move_on()
     print(f.data_df)
+
+
 # the __all__ is generated
 __all__ = ["MacdFactor", "BullFactor", "KeepBullFactor", "LiveOrDeadFactor", "GoldCrossFactor"]

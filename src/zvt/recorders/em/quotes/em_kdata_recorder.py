@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import requests
+
 from zvt.api.kdata import get_kdata_schema
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
@@ -20,11 +22,10 @@ from zvt.domain import (
     Currency,
     CurrencyKdataCommon,
 )
-import requests
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
 from zvt.recorders.em.em_api import get_kdata
-from zvt.utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 
 
 class BaseEMStockKdataRecorder(FixedCycleDataRecorder):

@@ -3,8 +3,7 @@ import json
 import os
 from collections import Counter
 
-from zvt.api import china_stock_code_to_id, get_china_exchange
-
+from zvt.api.utils import china_stock_code_to_id, get_china_exchange
 from zvt.domain import BlockStock, Block, Stock, LimitUpInfo
 
 

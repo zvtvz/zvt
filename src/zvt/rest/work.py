@@ -24,7 +24,7 @@ from zvt.tag.tag_models import (
     ActivateSubTagsModel,
 )
 from zvt.tag.tag_schemas import StockTags, MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, StockPools
-from zvt.utils import current_date, to_time_str
+from zvt.utils.time_utils import current_date, to_time_str
 
 work_router = APIRouter(
     prefix="/api/work",

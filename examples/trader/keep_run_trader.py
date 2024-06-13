@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from zvt.api import get_top_volume_entities
 from zvt.api.stats import get_top_fund_holding_stocks
-from zvt.trader.trader_info_api import clear_trader
+from zvt.api.stats import get_top_volume_entities
 from zvt.contract import IntervalLevel
-from zvt.factors import GoldCrossFactor, BullFactor
+from zvt.factors.macd.macd_factor import BullFactor
 from zvt.trader import StockTrader
+from zvt.trader.trader_info_api import clear_trader
 from zvt.utils.time_utils import split_time_interval, date_time_by_interval
 
 logger = logging.getLogger(__name__)

@@ -257,17 +257,9 @@ from .context import zvt_context
 
 zvt_context = zvt_context
 
+
 # the __all__ is generated
-__all__ = [
-    "IntervalLevel",
-    "AdjustType",
-    "ActorType",
-    "TradableType",
-    "Exchange",
-    "tradable_type_map_exchanges",
-    "get_entity_exchanges",
-    "zvt_context",
-]
+__all__ = ["IntervalLevel", "AdjustType", "ActorType", "TradableType", "Exchange", "get_entity_exchanges"]
 
 # __init__.py structure:
 # common code of the package

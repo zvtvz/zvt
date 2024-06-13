@@ -9,8 +9,7 @@ import pandas as pd
 from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.factors.algorithm import intersect
-from zvt.utils import to_time_str
-from zvt.utils.time_utils import TIME_FORMAT_ISO8601
+from zvt.utils.time_utils import TIME_FORMAT_ISO8601, to_time_str
 
 logger = logging.getLogger(__name__)
 

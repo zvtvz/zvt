@@ -29,3 +29,7 @@ class SellPositionStrategy(BaseModel):
 class TradingResult(BaseModel):
     success_entity_ids: Optional[List[str]] = Field(default=None)
     failed_entity_ids: Optional[List[str]] = Field(default=None)
+
+
+# the __all__ is generated
+__all__ = ["PositionType", "BuyPositionStrategy", "SellPositionStrategy", "TradingResult"]

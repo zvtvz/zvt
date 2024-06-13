@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from zvt.api import get_recent_report_date
+from zvt.api.utils import get_recent_report_date
 from zvt.contract import ActorType, AdjustType
 from zvt.domain import StockActorSummary, Stock1dKdata, Stock
 from zvt.trader import StockTrader

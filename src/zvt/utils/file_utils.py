@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import List
+from typing import List, Optional
 
 
 def list_all_files(
-    dir_path: str = "./domain", ext: str = ".py", excludes=None, includes=None, return_base_name=False
+    dir_path: str = "./domain", ext: Optional[str] = ".py", excludes=None, includes=None, return_base_name=False
 ) -> List[str]:
     """
     list all files with extension in specific directory recursively

@@ -5,10 +5,10 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_data, get_db_session
+from zvt.contract.drawer import Drawer
 from zvt.contract.normal_data import NormalData
 from zvt.contract.reader import DataReader
 from zvt.trader.trader_schemas import AccountStats, Order, TraderInfo, Position
-from zvt.contract.drawer import Drawer
 
 
 def clear_trader(trader_name, session=None):

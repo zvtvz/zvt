@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 import time
 from typing import List, Union, Type, Optional
@@ -284,5 +283,7 @@ if __name__ == "__main__":
     )
 
     data_reader.draw(show=True)
+
+
 # the __all__ is generated
 __all__ = ["DataListener", "DataReader"]

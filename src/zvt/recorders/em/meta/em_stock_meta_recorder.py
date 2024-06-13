@@ -7,7 +7,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import Recorder
 from zvt.domain import Stock
 from zvt.recorders.em import em_api
-from zvt.utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 
 
 class EMStockRecorder(Recorder):

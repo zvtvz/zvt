@@ -3,7 +3,7 @@ from zvt.contract import IntervalLevel
 from zvt.factors.ma.ma_factor import CrossMaFactor
 
 from zvt.contract.factor import TargetType
-from zvt.factors import BullFactor
+from zvt.factors.macd.macd_factor import BullFactor
 from ..context import init_test_context
 
 init_test_context()

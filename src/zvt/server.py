@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi_pagination import add_pagination
 
@@ -8,9 +9,6 @@ from zvt.rest.data import data_router
 from zvt.rest.factor import factor_router
 from zvt.rest.trading import trading_router
 from zvt.rest.work import work_router
-from fastapi.middleware.cors import CORSMiddleware
-
-from zvt.sched.sched import zvt_scheduler
 
 app = FastAPI(default_response_class=ORJSONResponse)
 

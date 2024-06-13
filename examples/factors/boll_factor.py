@@ -4,8 +4,8 @@ from typing import Optional, List
 import pandas as pd
 from ta.volatility import BollingerBands
 
-from zvt.contract.factor import *
-from zvt.factors import TechnicalFactor
+from zvt.contract.factor import Transformer
+from zvt.factors.technical_factor import TechnicalFactor
 
 
 class BollTransformer(Transformer):

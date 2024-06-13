@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from zvt.api.utils import get_recent_report_date
 from zvt.contract import IntervalLevel
-from zvt.api import get_kdata
-from zvt.api import to_high_level_kdata, get_recent_report_date
+from zvt.api.kdata import get_kdata, to_high_level_kdata
 from ..context import init_test_context
 
 init_test_context()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zvt.api.intent import compare
-from zvt.domain import Indexus1dKdata, Index, Indexus, Index1dKdata, Currency, Currency1dKdata
+from zvt.domain import Indexus1dKdata, Index, Indexus, Index1dKdata, Currency1dKdata
 from zvt.domain import TreasuryYield
 
 

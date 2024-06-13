@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
-from dash import dcc
 import dash_daq as daq
-from dash import html
 from dash import dash
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output, State
 
-from zvt.trader.trader_info_api import AccountStatsReader, OrderReader, get_order_securities
-from zvt.trader.trader_info_api import get_trader_info
 from zvt.contract import Mixin
 from zvt.contract import zvt_context, IntervalLevel
 from zvt.contract.api import get_entities, get_schema_by_name, get_schema_columns
 from zvt.contract.drawer import StackedDrawer
-from zvt.domain import TraderInfo
+from zvt.trader.trader_info_api import AccountStatsReader, OrderReader, get_order_securities
+from zvt.trader.trader_info_api import get_trader_info
+from zvt.trader.trader_schemas import TraderInfo
 from zvt.ui import zvt_app
 from zvt.ui.components.dcc_components import get_account_stats_figure
-from zvt.utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 
 account_readers = []
 order_readers = []

@@ -1,25 +1,23 @@
+import platform
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi_pagination import Page
 
+import zvt.contract.api as contract_api
 import zvt.trading.trading_service as trading_service
 from zvt.common.trading_models import BuyPositionStrategy, SellPositionStrategy, TradingResult
-import platform
-import zvt.contract.api as contract_api
-
 from zvt.trading.trading_models import (
     BuildTradingPlanModel,
     TradingPlanModel,
     QueryTradingPlanModel,
     QueryStockQuoteModel,
-    StockQuoteModel,
     StockQuoteStatsModel,
     QueryStockQuoteSettingModel,
     BuildQueryStockQuoteSettingModel,
 )
 from zvt.trading.trading_schemas import QueryStockQuoteSetting
-from zvt.utils import current_date
+from zvt.utils.time_utils import current_date
 
 trading_router = APIRouter(
     prefix="/api/trading",

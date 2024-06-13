@@ -3,14 +3,14 @@ import logging
 from typing import List
 
 import sqlalchemy
-from sqlalchemy import Column, inspect, MetaData
-from sqlalchemy.schema import Table
+from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.sql.ddl import CreateTable
 from sqlalchemy.sql.expression import text
+
 from zvt.contract import zvt_context
-from zvt.contract.schema import TradableEntity, Mixin
 from zvt.contract.api import get_db_engine, get_db_session_factory
+from zvt.contract.schema import TradableEntity, Mixin
 from zvt.utils.utils import add_to_map_list
 
 logger = logging.getLogger(__name__)

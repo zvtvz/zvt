@@ -2,7 +2,6 @@ import dash_bootstrap_components as dbc
 from dash import html
 from dash.dependencies import Input, Output
 
-from zvt import init_plugins
 from zvt.ui import zvt_app
 from zvt.ui.apps import factor_app
 
@@ -36,7 +35,7 @@ zvt_app.layout = serve_layout
 
 
 def main():
-    init_plugins()
+    # init_plugins()
     zvt_app.run_server(debug=True)
     # zvt_app.run_server()
 

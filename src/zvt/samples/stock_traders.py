@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.contract import IntervalLevel
-from zvt.factors import BullFactor
 from zvt.factors.ma.ma_factor import CrossMaFactor
+from zvt.factors.macd.macd_factor import BullFactor
 from zvt.trader.trader import StockTrader
 
 

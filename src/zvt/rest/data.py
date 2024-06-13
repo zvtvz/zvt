@@ -2,8 +2,8 @@
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
-import zvt.contract.api as contract_api
 import zvt.contract as contract
+import zvt.contract.api as contract_api
 
 data_router = APIRouter(
     prefix="/api/data",

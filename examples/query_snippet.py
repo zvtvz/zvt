@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from zvt.contract import Exchange
+from sqlalchemy import func
+
 from zvt.api.selector import get_entity_ids_by_filter
+from zvt.contract import Exchange
 from zvt.domain import Stock, BlockStock
 from zvt.recorders.em import em_api
 from zvt.tag import StockTags
-from sqlalchemy import func
 
 
 def query_json():

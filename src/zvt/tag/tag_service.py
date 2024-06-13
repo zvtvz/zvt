@@ -23,14 +23,8 @@ from zvt.tag.tag_utils import (
     get_concept_main_tag_mapping,
 )
 from zvt.tag.tagger import StockTagger
-from zvt.utils import (
-    to_time_str,
-    to_pd_timestamp,
-    compare_dicts,
-    flatten_list,
-    current_date,
-)
-from zvt.utils.utils import fill_dict
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date
+from zvt.utils.utils import fill_dict, compare_dicts, flatten_list
 
 logger = logging.getLogger(__name__)
 
@@ -493,11 +487,17 @@ if __name__ == "__main__":
     # build_initial_stock_pool_info()
     # StockAutoTagger().tag()
 
+
 # the __all__ is generated
 __all__ = [
     "stock_tags_need_update",
     "build_stock_tags",
     "StockAutoTagger",
-    "build_initial_stock_pool_info",
+    "build_stock_pool_info",
     "build_stock_pool",
+    "query_stock_tag_stats",
+    "refresh_main_tag_by_sub_tag",
+    "refresh_all_main_tag_by_sub_tag",
+    "activate_main_tag_by_industry",
+    "activate_main_tag_by_sub_tags",
 ]

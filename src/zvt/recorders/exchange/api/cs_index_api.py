@@ -6,7 +6,7 @@ import requests
 
 from zvt.domain import IndexCategory
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils import to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)
 

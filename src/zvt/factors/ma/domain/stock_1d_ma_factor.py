@@ -33,5 +33,7 @@ class Stock1dMaFactor(Stock1dMaFactorBase, Mixin):
 
 
 register_schema(providers=["zvt"], db_name="stock_1d_ma_factor", schema_base=Stock1dMaFactorBase)
+
+
 # the __all__ is generated
 __all__ = ["Stock1dMaFactor"]

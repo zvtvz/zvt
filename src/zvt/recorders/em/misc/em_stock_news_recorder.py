@@ -6,7 +6,7 @@ from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock
 from zvt.domain.misc.stock_news import StockNews
 from zvt.recorders.em import em_api
-from zvt.utils import to_pd_timestamp, count_interval, now_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp, count_interval, now_pd_timestamp
 
 
 class EMStockNewsRecorder(FixedCycleDataRecorder):

@@ -224,5 +224,7 @@ if __name__ == "__main__":
         col_period_threshold=None,
     )
     print(factor2.result_df)
+
+
 # the __all__ is generated
 __all__ = ["FinanceBaseFactor", "GoodCompanyFactor"]

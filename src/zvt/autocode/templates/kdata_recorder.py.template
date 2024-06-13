@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 from zvt import IntervalLevel
-from zvt.api import get_kdata_schema
+from zvt.api.kdata import get_kdata_schema
 from zvt.contract.recorder import FixedCycleDataRecorder
 
 from ${project}.domain import ${entity_class}, ${entity_class}KdataCommon

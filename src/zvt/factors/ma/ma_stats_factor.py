@@ -9,7 +9,7 @@ from zvt.contract.factor import Accumulator
 from zvt.domain import Stock
 from zvt.factors.algorithm import live_or_dead
 from zvt.factors.technical_factor import TechnicalFactor
-from zvt.utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 
 
 def get_ma_stats_factor_schema(entity_type: str, level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
@@ -217,6 +217,7 @@ if __name__ == "__main__":
 
     # distribute(f.factor_df[['area']],'area')
     f.draw(show=True)
+
 
 # the __all__ is generated
 __all__ = ["get_ma_stats_factor_schema", "MaStatsAccumulator", "MaStatsFactor", "TFactor"]

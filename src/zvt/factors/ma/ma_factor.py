@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-import argparse
 from typing import List, Union, Type
 
 import pandas as pd
 
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
-from zvt.contract.api import get_entities, get_schema_by_name
+from zvt.contract.api import get_schema_by_name
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
 from zvt.domain import Stock
@@ -259,5 +258,7 @@ if __name__ == "__main__":
     )
     selected = factor.get_targets(timestamp="2021-12-30")
     print(selected)
+
+
 # the __all__ is generated
 __all__ = ["get_ma_factor_schema", "MaFactor", "CrossMaFactor", "VolumeUpMaFactor", "CrossMaVolumeFactor"]

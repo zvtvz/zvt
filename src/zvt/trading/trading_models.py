@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Dict, Union, List, Optional
+from typing import Union, List, Optional
 
 from pydantic import BaseModel, field_validator, Field
-from pydantic_core.core_schema import ValidationInfo
 
 from zvt.common.query_models import TimeRange, OrderByType
-from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.model import MixinModel, CustomModel
-from zvt.tag.common import StockPoolType
-from zvt.tag.tag_utils import get_main_tags, get_sub_tags, get_hidden_tags, get_stock_pool_names
+from zvt.tag.tag_utils import get_stock_pool_names
 from zvt.trader import TradingSignalType
 from zvt.trading.common import ExecutionStatus
-from zvt.utils import date_time_by_interval, current_date, tomorrow_date, to_pd_timestamp
+from zvt.utils.time_utils import tomorrow_date, to_pd_timestamp
 
 
 class QueryStockQuoteSettingModel(CustomModel):
@@ -81,11 +78,17 @@ class StockQuoteModel(MixinModel):
 
 
 class StockQuoteStatsModel(CustomModel):
+    #: 涨停数
     limit_up_count: int
+    #: 跌停数
     limit_down_count: int
+    #: 上涨数
     up_count: int
+    #: 下跌数
     down_count: int
+    #: 涨幅
     change_pct: float
+    #: 成交额
     turnover: float
 
     quotes: List[StockQuoteModel]
@@ -134,3 +137,16 @@ class BuildTradingPlanModel(BaseModel):
 
 class QueryTradingPlanModel(BaseModel):
     time_range: TimeRange
+
+
+# the __all__ is generated
+__all__ = [
+    "QueryStockQuoteSettingModel",
+    "BuildQueryStockQuoteSettingModel",
+    "QueryStockQuoteModel",
+    "StockQuoteModel",
+    "StockQuoteStatsModel",
+    "TradingPlanModel",
+    "BuildTradingPlanModel",
+    "QueryTradingPlanModel",
+]

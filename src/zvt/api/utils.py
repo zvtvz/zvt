@@ -3,7 +3,7 @@ from typing import Type
 
 from zvt.contract import Mixin
 from zvt.domain import ReportPeriod
-from zvt.utils import pd_is_not_null
+from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp
 
 

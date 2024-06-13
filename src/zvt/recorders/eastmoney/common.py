@@ -6,7 +6,7 @@ import requests
 from zvt.contract.api import get_data_count, get_data
 from zvt.contract.recorder import TimestampsDataRecorder, TimeSeriesDataRecorder
 from zvt.domain import CompanyType
-from zvt.domain.meta.stock_meta import Stock, StockDetail
+from zvt.domain.meta.stock_meta import StockDetail
 from zvt.utils.time_utils import to_pd_timestamp
 
 logger = logging.getLogger(__name__)

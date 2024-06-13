@@ -3,7 +3,6 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.utils.recorder_utils import run_data_recorder
 from examples.report_utils import inform
 from examples.utils import get_hot_topics
 from zvt import init_log, zvt_config
@@ -23,6 +22,7 @@ from zvt.domain import (
 )
 from zvt.informer import EmailInformer
 from zvt.utils import current_date
+from zvt.utils.recorder_utils import run_data_recorder
 
 logger = logging.getLogger(__name__)
 

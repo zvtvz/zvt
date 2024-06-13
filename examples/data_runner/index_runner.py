@@ -3,10 +3,10 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt.utils.recorder_utils import run_data_recorder
 from zvt import init_log
 from zvt.consts import IMPORTANT_INDEX
 from zvt.domain import Index, Index1dKdata, IndexStock
+from zvt.utils.recorder_utils import run_data_recorder
 
 logger = logging.getLogger(__name__)
 

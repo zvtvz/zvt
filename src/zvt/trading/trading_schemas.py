@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, DateTime, Boolean, Float, Integer, ForeignKey, func, JSON
+from sqlalchemy import Column, Float, DateTime
+from sqlalchemy import String, JSON
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import relationship
 
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
 
 TradingBase = declarative_base()
 
@@ -38,3 +36,7 @@ class QueryStockQuoteSetting(TradingBase, Mixin):
 
 
 register_schema(providers=["zvt"], db_name="stock_trading", schema_base=TradingBase)
+
+
+# the __all__ is generated
+__all__ = ["TradingPlan", "QueryStockQuoteSetting"]

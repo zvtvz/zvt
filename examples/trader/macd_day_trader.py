@@ -5,14 +5,14 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel
 from zvt.contract.factor import Factor
-from zvt.factors import GoldCrossFactor
+from zvt.factors.macd.macd_factor import GoldCrossFactor
 from zvt.trader import TradingSignal
 from zvt.trader.trader import StockTrader
 
 # 依赖数据
 # data_schema: Stock1dHfqKdata
 # provider: joinquant
-from zvt.utils import date_time_by_interval
+from zvt.utils.time_utils import date_time_by_interval
 
 
 class MacdDayTrader(StockTrader):

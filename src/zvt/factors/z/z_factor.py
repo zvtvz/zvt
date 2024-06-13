@@ -13,7 +13,7 @@ from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.contract.factor import Accumulator
 from zvt.contract.factor import Transformer
-from zvt.domain import Stock, Index, Index1dKdata
+from zvt.domain import Stock
 from zvt.factors.shape import (
     Fenxing,
     Direction,
@@ -27,7 +27,8 @@ from zvt.factors.shape import (
     FactorStateEncoder,
 )
 from zvt.factors.technical_factor import TechnicalFactor
-from zvt.utils import pd_is_not_null, to_string
+from zvt.utils.decorator import to_string
+from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)
 
@@ -552,5 +553,7 @@ if __name__ == "__main__":
         need_persist=True,
     )
     f.draw(show=True)
+
+
 # the __all__ is generated
 __all__ = ["get_z_factor_schema", "ZState", "ZAccumulator", "ZFactor"]

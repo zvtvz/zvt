@@ -12,5 +12,7 @@ class Stock1wkZFactor(Stock1wkZFactorBase, ZFactorCommon):
 
 
 register_schema(providers=["zvt"], db_name="stock_1wk_z_factor", schema_base=Stock1wkZFactorBase, entity_type="stock")
+
+
 # the __all__ is generated
 __all__ = ["Stock1wkZFactor"]

@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
+import re
 from typing import List
 
 import pandas as pd
-import re
+
 from zvt.api.utils import china_stock_code_to_id
-from zvt.contract.api import df_to_db, get_db_session
+from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.emotion.emotion import LimitUpInfo, LimitDownInfo, Emotion
 from zvt.recorders.jqka import jqka_api
-from zvt.utils import to_time_str, date_time_by_interval, current_date, to_pd_timestamp, pd_is_not_null
+from zvt.utils.time_utils import to_time_str, date_time_by_interval, current_date, to_pd_timestamp
 
 
 def _get_high_days_count(high_days_str: str):

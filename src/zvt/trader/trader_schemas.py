@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
-from zvt.utils import to_string
+from zvt.utils.decorator import to_string
 
 TraderBase = declarative_base()
 

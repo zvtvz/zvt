@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from zvt.contract.api import decode_entity_id
 from zvt.contract.data_type import Bean
 from zvt.contract.normal_data import NormalData
-from zvt.utils import to_string
+from zvt.utils.decorator import to_string
 from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)

@@ -17,7 +17,7 @@ except ImportError:
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
@@ -31,36 +31,36 @@ except:
     requirements = [str(ir.requirement) for ir in install_reqs]
 
 setup(
-    name='${project}',
-    version='0.0.1',
-    description='unified,modular quant framework for human beings ',
+    name="${project}",
+    version="0.0.1",
+    description="unified,modular quant framework for human beings ",
     long_description=long_description,
-    url='https://github.com/zvtvz/${project}',
-    author='${user}',
-    author_email='${email}',
+    url="https://github.com/zvtvz/${project}",
+    author="${user}",
+    author_email="${email}",
     classifiers=[  # Optional
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Customer Service',
-        'Intended Audience :: Education',
-        'Intended Audience :: Financial and Insurance Industry',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Office/Business :: Financial :: Investment',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Customer Service",
+        "Intended Audience :: Education",
+        "Intended Audience :: Financial and Insurance Industry",
+        "Topic :: Software Development :: Build Tools",
+        "Topic :: Office/Business :: Financial :: Investment",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
-    keywords='quant stock finance fintech big-data zvt ma-analysis trading-platform pandas fundamental-analysis',
-    packages=find_packages(include=['${project}.*', '${project}']),
-    python_requires='>=3.5, <4',
+    keywords="quant stock finance fintech big-data zvt ma-analysis trading-platform pandas fundamental-analysis",
+    packages=find_packages(include=["${project}.*", "${project}"]),
+    python_requires=">=3.5, <4",
     include_package_data=True,
     install_requires=requirements,
     project_urls={
-        'Bug Reports': 'https://github.com/zvtvz/${project}/issues',
-        'Funding': 'https://github.com/zvtvz/${project}',
-        'Say Thanks!': 'https://saythanks.io/to/foolcage',
-        'Source': 'https://github.com/zvtvz/${project}',
+        "Bug Reports": "https://github.com/zvtvz/${project}/issues",
+        "Funding": "https://github.com/zvtvz/${project}",
+        "Say Thanks!": "https://saythanks.io/to/foolcage",
+        "Source": "https://github.com/zvtvz/${project}",
     },
-    long_description_content_type="text/markdown"
+    long_description_content_type="text/markdown",
 )

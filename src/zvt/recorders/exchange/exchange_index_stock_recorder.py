@@ -3,7 +3,6 @@
 from typing import List
 
 import pandas as pd
-import requests
 
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimestampsDataRecorder

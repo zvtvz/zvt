@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zvt.factors import ZFactor
+from zvt.factors.z.z_factor import ZFactor
 
 
 def test_z_factor():

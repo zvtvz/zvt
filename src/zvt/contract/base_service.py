@@ -4,7 +4,7 @@ from typing import Type, List
 
 from zvt.contract.api import del_data, get_db_session
 from zvt.contract.zvt_info import StateMixin
-from zvt.utils import to_snake_str
+from zvt.utils.str_utils import to_snake_str
 
 
 class StatefulService(object):

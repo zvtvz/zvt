@@ -4,7 +4,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Country, Economy
 from zvt.recorders.wb import wb_api
-from zvt.utils import current_date
+from zvt.utils.time_utils import current_date
 
 
 class WBEconomyRecorder(FixedCycleDataRecorder):

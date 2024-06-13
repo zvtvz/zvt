@@ -12,5 +12,7 @@ class Stock1dMaStatsFactor(Stock1dMaStatsFactorBase, MaStatsFactorCommon):
 
 
 register_schema(providers=["zvt"], db_name="stock_1d_ma_stats_factor", schema_base=Stock1dMaStatsFactorBase)
+
+
 # the __all__ is generated
 __all__ = ["Stock1dMaStatsFactor"]

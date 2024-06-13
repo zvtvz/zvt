@@ -7,7 +7,7 @@ import pandas as pd
 from zvt.contract import AdjustType, TradableEntity, IntervalLevel
 from zvt.contract.factor import Transformer, Accumulator
 from zvt.domain import Stock
-from zvt.factors import MacdFactor
+from zvt.factors.macd.macd_factor import MacdFactor
 from zvt.factors.transformers import CrossMaTransformer
 
 

@@ -6,7 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from examples.factors.tech_factor import BullAndUpFactor
 from examples.report_utils import report_targets
 from zvt import init_log
-from zvt.api import get_latest_kdata_date
+from zvt.api.kdata import get_latest_kdata_date
 from zvt.api.selector import get_middle_and_big_stock
 from zvt.contract import AdjustType
 from zvt.informer import EmailInformer

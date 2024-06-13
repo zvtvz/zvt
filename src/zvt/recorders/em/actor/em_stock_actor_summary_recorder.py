@@ -10,7 +10,7 @@ from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.actor.stock_actor import StockActorSummary
 from zvt.recorders.em.em_api import get_ii_holder_report_dates, actor_type_to_org_type, get_ii_summary
-from zvt.utils import to_pd_timestamp, to_time_str
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str
 
 
 # [{'CHANGE_RATIO': -1.045966694333,

@@ -2,7 +2,7 @@
 from typing import List, Tuple
 
 from zvt.contract import IntervalLevel
-from zvt.factors import GoldCrossFactor
+from zvt.factors.macd.macd_factor import GoldCrossFactor
 from zvt.trader.trader import StockTrader
 
 

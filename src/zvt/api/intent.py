@@ -6,7 +6,7 @@ import pandas as pd
 from zvt.api.kdata import get_kdata_schema
 from zvt.contract.api import decode_entity_id
 from zvt.contract.drawer import Drawer, ChartType
-from zvt.utils import to_pd_timestamp
+from zvt.utils.time_utils import to_pd_timestamp
 
 
 def compare(
@@ -200,6 +200,7 @@ if __name__ == "__main__":
         index="timestamp",
     )
     composite_df(df=df)
+
 
 # the __all__ is generated
 __all__ = ["compare", "compare_df", "distribute", "distribute_df", "composite", "composite_df", "composite_all"]

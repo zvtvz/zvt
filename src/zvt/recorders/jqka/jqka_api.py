@@ -2,7 +2,8 @@
 
 import requests
 
-from zvt.utils import now_timestamp, to_time_str, TIME_FORMAT_DAY1, chrome_copy_header_to_dict
+from zvt.utils.time_utils import now_timestamp, to_time_str, TIME_FORMAT_DAY1
+from zvt.utils.utils import chrome_copy_header_to_dict
 
 _JKQA_HEADER = chrome_copy_header_to_dict(
     """

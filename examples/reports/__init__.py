@@ -6,7 +6,7 @@ from typing import List
 
 from sqlalchemy import or_
 
-from zvt.api import float_to_pct_str
+from zvt.api.utils import float_to_pct_str
 from zvt.contract import ActorType
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, Stock, StockActorSummary
 from zvt.utils.pd_utils import pd_is_not_null
