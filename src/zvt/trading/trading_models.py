@@ -29,12 +29,18 @@ class BuildQueryStockQuoteSettingModel(BaseModel):
         return v
 
 
+class QueryTagQuoteModel(CustomModel):
+    stock_pool_name: str
+    main_tags: List[str]
+
+
 class QueryStockQuoteModel(CustomModel):
 
     main_tag: Optional[str] = Field(default=None)
     entity_ids: Optional[List[str]] = Field(default=None)
     stock_pool_name: Optional[str] = Field(default=None)
-    limit: int = Field(default=50)
+    # the amount is not huge, just ignore now
+    # limit: int = Field(default=200)
     order_by_type: Optional[OrderByType] = Field(default=OrderByType.desc)
     order_by_field: Optional[str] = Field(default="change_pct")
 
@@ -75,6 +81,22 @@ class StockQuoteModel(MixinModel):
     main_tag: str = Field(default=None)
     sub_tag: Union[str, None] = Field(default=None)
     hidden_tags: Union[List[str], None] = Field(default=None)
+
+
+class TagQuoteStatsModel(CustomModel):
+    main_tag: str
+    #: 涨停数
+    limit_up_count: int
+    #: 跌停数
+    limit_down_count: int
+    #: 上涨数
+    up_count: int
+    #: 下跌数
+    down_count: int
+    #: 涨幅
+    change_pct: float
+    #: 成交额
+    turnover: float
 
 
 class StockQuoteStatsModel(CustomModel):
@@ -141,6 +163,7 @@ class QueryTradingPlanModel(BaseModel):
 
 # the __all__ is generated
 __all__ = [
+    "QueryTagQuoteModel",
     "QueryStockQuoteSettingModel",
     "BuildQueryStockQuoteSettingModel",
     "QueryStockQuoteModel",

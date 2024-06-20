@@ -15,6 +15,8 @@ from zvt.trading.trading_models import (
     StockQuoteStatsModel,
     QueryStockQuoteSettingModel,
     BuildQueryStockQuoteSettingModel,
+    QueryTagQuoteModel,
+    TagQuoteStatsModel,
 )
 from zvt.trading.trading_schemas import QueryStockQuoteSetting
 from zvt.utils.time_utils import current_date
@@ -42,6 +44,11 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
     return trading_service.build_query_stock_quote_setting(
         build_query_stock_quote_setting_model, timestamp=current_date()
     )
+
+
+@trading_router.post("/query_tag_quotes", response_model=List[TagQuoteStatsModel])
+def query_trading_plan(query_tag_quote_model: QueryTagQuoteModel):
+    return trading_service.query_tag_quotes(query_tag_quote_model)
 
 
 @trading_router.post("/query_stock_quotes", response_model=StockQuoteStatsModel)

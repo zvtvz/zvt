@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
-
 from zvt.api.kdata import get_kdata_schema
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
@@ -84,9 +82,6 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
         )
 
     def record(self, entity, start, end, size, timestamps):
-        if not self.http_session:
-            self.http_session = requests.Session()
-
         df = get_kdata(
             session=self.http_session, entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level
         )

@@ -5,7 +5,7 @@ from zvt.api.selector import get_entity_ids_by_filter
 from zvt.contract import Exchange
 from zvt.domain import Stock, BlockStock
 from zvt.recorders.em import em_api
-from zvt.tag import StockTags
+from zvt.tag.tag_schemas import StockTags
 
 
 def query_json():

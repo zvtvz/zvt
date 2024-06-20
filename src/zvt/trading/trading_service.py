@@ -12,6 +12,7 @@ from zvt.trading.common import ExecutionStatus
 from zvt.trading.trading_models import (
     BuildTradingPlanModel,
     QueryTradingPlanModel,
+    QueryTagQuoteModel,
     QueryStockQuoteModel,
     BuildQueryStockQuoteSettingModel,
 )
@@ -108,6 +109,47 @@ def check_trading_plan():
         logger.info(f"current plans:{plans}")
 
 
+def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
+    stock_pools: List[StockPools] = StockPools.query_data(
+        filters=[StockPools.stock_pool_name == query_tag_quote_model.stock_pool_name],
+        order=StockPools.timestamp.desc(),
+        limit=1,
+        return_type="domain",
+    )
+    entity_ids = stock_pools[0].entity_ids
+
+    tag_df = StockTags.query_data(
+        entity_ids=entity_ids,
+        filters=[StockTags.main_tag.in_(query_tag_quote_model.main_tags)],
+        columns=[StockTags.entity_id, StockTags.main_tag],
+        return_type="df",
+        index="entity_id",
+    )
+
+    entity_ids = tag_df["entity_id"].tolist()
+
+    quote_df = StockQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+
+    df = pd.concat([tag_df, quote_df], axis=1)
+    print(df)
+    # print(df[df["is_limit_up"]])
+    grouped_df = (
+        df.groupby("main_tag")
+        .agg(
+            up_count=("change_pct", lambda x: (x > 0).sum()),
+            down_count=("change_pct", lambda x: (x <= 0).sum()),
+            turnover=("turnover", "sum"),
+            change_pct=("change_pct", "mean"),
+            limit_up_count=("is_limit_up", "sum"),
+            limit_down_count=("is_limit_down", lambda x: (x == True).sum()),
+            total_count=("main_tag", "size"),  # 添加计数，计算每个分组的总行数
+        )
+        .reset_index(drop=False)
+    )
+
+    return grouped_df.to_dict(orient="records")
+
+
 def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     entity_ids = None
     if query_stock_quote_model.stock_pool_name:
@@ -140,9 +182,7 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
 
     order = eval(f"StockQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()")
 
-    df = StockQuote.query_data(
-        order=order, entity_ids=entity_ids, limit=query_stock_quote_model.limit, return_type="df"
-    )
+    df = StockQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
 
     def set_tags(quote):
         entity_id = quote["entity_id"]
@@ -199,6 +239,9 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
         session.refresh(stock_pool_info)
         return stock_pool_info
 
+
+if __name__ == "__main__":
+    print(query_tag_quotes(QueryTagQuoteModel(stock_pool_name="main_line", main_tags=["低空经济", "半导体", "化工", "消费电子"])))
 
 # the __all__ is generated
 __all__ = [

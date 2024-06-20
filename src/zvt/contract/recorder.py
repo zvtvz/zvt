@@ -5,6 +5,7 @@ import uuid
 from typing import List
 
 import pandas as pd
+import requests
 from sqlalchemy.orm import Session
 
 from zvt.contract import IntervalLevel
@@ -66,7 +67,7 @@ class Recorder(OneStateService, metaclass=Meta):
 
         #: using to do db operations
         self.session = get_db_session(provider=self.provider, data_schema=self.data_schema)
-        self.http_session = None
+        self.http_session = requests.Session()
 
     def run(self):
         raise NotImplementedError

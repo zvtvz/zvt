@@ -705,10 +705,14 @@ def get_block_stocks(block_id, name=""):
     return the_list
 
 
-def get_news(entity_id, ps=200, index=1, start_timestamp=None):
+def get_news(entity_id, ps=200, index=1, start_timestamp=None, session=None, latest_code=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
-    resp = requests.get(url)
+    logger.info(f"get news from: {url}")
+    if session:
+        resp = session.get(url)
+    else:
+        resp = requests.get(url)
     # {
     #     "Art_ShowTime": "2022-02-11 14:29:25",
     #     "Art_Image": "",
@@ -728,13 +732,19 @@ def get_news(entity_id, ps=200, index=1, start_timestamp=None):
             if json_result:
                 news = [
                     {
-                        "id": f'{entity_id}_{item["Art_ShowTime"]}',
+                        "id": f'{entity_id}_{item.get("Art_ShowTime", "")}',
                         "entity_id": entity_id,
-                        "timestamp": to_pd_timestamp(item["Art_ShowTime"]),
-                        "news_title": item["Art_Title"],
+                        "timestamp": to_pd_timestamp(item.get("Art_ShowTime", "")),
+                        "news_code": item.get("Art_Code", ""),
+                        "news_url": item.get("Art_Url", ""),
+                        "news_title": item.get("Art_Title", ""),
                     }
                     for index, item in enumerate(json_result)
-                    if not start_timestamp or (to_pd_timestamp(item["Art_ShowTime"]) >= start_timestamp)
+                    if not start_timestamp
+                    or (
+                        (to_pd_timestamp(item["Art_ShowTime"]) >= start_timestamp)
+                        and (item.get("Art_Code", "") != latest_code)
+                    )
                 ]
                 if len(news) < len(json_result):
                     return news
@@ -743,6 +753,10 @@ def get_news(entity_id, ps=200, index=1, start_timestamp=None):
                     return news + next_data
                 else:
                     return news
+        else:
+            return None
+
+    logger.error(f"request em data code: {resp.status_code}, error: {resp.text}")
 
 
 # utils to transform zvt entity to em entity
@@ -871,12 +885,12 @@ if __name__ == "__main__":
     # pprint(get_free_holders(code='000338', end_date='2021-03-31'))
     # pprint(get_ii_holder(code='000338', report_date='2021-03-31',
     #                      org_type=actor_type_to_org_type(ActorType.corporation)))
-    print(
-        get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
-    )
+    # print(
+    #     get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
+    # )
     # df = get_kdata(entity_id="index_sz_399370", level="1wk")
     # df = get_tradable_list(entity_type="stockhk")
-    # df = get_news("stock_sz_300999")
+    df = get_news("stock_sz_300999", ps=1)
     # print(df)
     # print(len(df))
     # df = get_tradable_list(entity_type="block")

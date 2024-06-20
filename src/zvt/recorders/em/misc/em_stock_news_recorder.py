@@ -6,7 +6,7 @@ from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock
 from zvt.domain.misc.stock_news import StockNews
 from zvt.recorders.em import em_api
-from zvt.utils.time_utils import to_pd_timestamp, count_interval, now_pd_timestamp
+from zvt.utils.time_utils import count_interval, now_pd_timestamp, recent_year_date
 
 
 class EMStockNewsRecorder(FixedCycleDataRecorder):
@@ -19,13 +19,24 @@ class EMStockNewsRecorder(FixedCycleDataRecorder):
     provider = "em"
 
     def record(self, entity, start, end, size, timestamps):
-        if not start or (start <= to_pd_timestamp("2018-01-01")):
-            start = to_pd_timestamp("2018-01-01")
+        from_date = recent_year_date()
+        if not start or (start < from_date):
+            start = from_date
+
         if count_interval(start, now_pd_timestamp()) <= 30:
             ps = 30
         else:
             ps = 200
-        news = em_api.get_news(entity_id=entity.id, ps=ps, start_timestamp=start)
+
+        latest_news: StockNews = self.get_latest_saved_record(entity=entity)
+
+        news = em_api.get_news(
+            session=self.http_session,
+            entity_id=entity.id,
+            ps=ps,
+            start_timestamp=start,
+            latest_code=latest_news.news_code if latest_news else None,
+        )
         if news:
             df = pd.DataFrame.from_records(news)
             self.logger.info(df)
@@ -33,9 +44,9 @@ class EMStockNewsRecorder(FixedCycleDataRecorder):
 
 
 if __name__ == "__main__":
-    df = Stock.query_data(filters=[Stock.exchange == "bj"], provider="em")
-    entity_ids = df["entity_id"].tolist()
-    r = EMStockNewsRecorder(entity_ids=entity_ids, sleeping_time=0)
+    # df = Stock.query_data(filters=[Stock.exchange == "bj"], provider="em")
+    # entity_ids = df["entity_id"].tolist()
+    r = EMStockNewsRecorder(entity_ids=["stock_sh_600345"], sleeping_time=0)
     r.run()
 # the __all__ is generated
 __all__ = ["EMStockNewsRecorder"]

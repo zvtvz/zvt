@@ -83,6 +83,10 @@ def now_time_str(fmt=TIME_FORMAT_DAY):
     return to_time_str(the_time=now_pd_timestamp(), fmt=fmt)
 
 
+def recent_year_date():
+    return date_time_by_interval(current_date(), -365)
+
+
 def date_time_by_interval(the_time, interval=1, unit: TimeUnit = TimeUnit.day):
     time_delta = None
     if unit == TimeUnit.year:
@@ -290,6 +294,7 @@ __all__ = [
     "tomorrow_date",
     "to_time_str",
     "now_time_str",
+    "recent_year_date",
     "date_time_by_interval",
     "pre_month",
     "pre_month_start_date",

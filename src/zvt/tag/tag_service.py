@@ -21,6 +21,7 @@ from zvt.tag.tag_utils import (
     get_sub_tags,
     build_initial_stock_pool_info,
     get_concept_main_tag_mapping,
+    build_initial_main_tag_info,
 )
 from zvt.tag.tagger import StockTagger
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date
@@ -479,9 +480,9 @@ def activate_main_tag_by_sub_tags(activate_sub_tags_model: ActivateSubTagsModel)
 
 if __name__ == "__main__":
     # refresh_all_main_tag_by_sub_tag()
-    activate_main_tag_by_sub_tags(ActivateSubTagsModel(sub_tags=["民爆概念"]))
+    # activate_main_tag_by_sub_tags(ActivateSubTagsModel(sub_tags=["民爆概念"]))
     # activate_main_tag_by_industry(industry="电力行业")
-    # build_initial_main_tag_info()
+    build_initial_main_tag_info()
     # build_initial_sub_tag_info()
     # build_initial_hidden_tag_info()
     # build_initial_stock_pool_info()

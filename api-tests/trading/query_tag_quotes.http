@@ -1,0 +1,13 @@
+POST http://127.0.0.1:8090/api/trading/query_tag_quotes
+accept: application/json
+Content-Type: application/json
+
+{
+  "main_tags": [
+    "低空经济",
+    "半导体",
+    "化工",
+    "消费电子"
+  ],
+  "stock_pool_name": "main_line"
+}

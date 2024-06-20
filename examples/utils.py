@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 from zvt.domain import StockNews, Stock, LimitUpInfo
-from zvt.utils import date_time_by_interval, today
+from zvt.utils.time_utils import date_time_by_interval, today
 
 logger = logging.getLogger(__name__)
 

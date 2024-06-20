@@ -203,6 +203,42 @@ def get_stock_pool_names():
     return df["stock_pool_name"].tolist()
 
 
+def match_tag_by_type(alias, tag_type="main_tag"):
+    if tag_type == "main_tag":
+        tags = get_main_tags()
+    elif tag_type == "sub_tag":
+        tags = get_sub_tags()
+    else:
+        assert False
+
+    max_intersection_length = 0
+    max_tag = None
+
+    for tag in tags:
+        intersection_length = len(set(alias) & set(tag))
+        # at least 2 same chars
+        if intersection_length < 2:
+            continue
+
+        if intersection_length > max_intersection_length:
+            max_intersection_length = intersection_length
+            max_tag = tag
+
+    return max_tag
+
+
+def match_tag(alias):
+    tag = match_tag_by_type(alias, tag_type="main_tag")
+    if tag:
+        return "main_tag", tag
+
+    tag = match_tag_by_type(alias, tag_type="sub_tag")
+    if tag:
+        return "sub_tag", tag
+
+    return "new_tag", alias
+
+
 if __name__ == "__main__":
     # with open("missed_concept.json", "w") as json_file:
     #     json.dump(check_missed_concept(), json_file, indent=2, ensure_ascii=False)
@@ -215,7 +251,9 @@ if __name__ == "__main__":
     #         result[tag] = main_tag
     # with open("industry_main_tag_mapping.json", "w") as json_file:
     #     json.dump(result, json_file, indent=2, ensure_ascii=False)
-    print(list(get_industry_list()))
+    build_initial_main_tag_info()
+    build_initial_sub_tag_info()
+    print(list(get_main_tags()))
 
 
 # the __all__ is generated
@@ -242,4 +280,5 @@ __all__ = [
     "build_initial_hidden_tag_info",
     "get_hidden_tags",
     "get_stock_pool_names",
+    "match_tag",
 ]

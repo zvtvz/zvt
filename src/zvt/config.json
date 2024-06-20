@@ -10,5 +10,7 @@
   "wechat_app_id": "",
   "wechat_app_secrect": "",
   "qmt_mini_data_path": "D:\\qmt\\userdata_mini",
-  "qmt_account_id": ""
+  "qmt_account_id": "",
+  "moonshot_api_key": "",
+  "qwen_api_key": ""
 }
