@@ -53,6 +53,18 @@ class QuerySimpleStockTagsModel(BaseModel):
     entity_ids: List[str]
 
 
+class BatchSetStockMainTagModel(BaseModel):
+    entity_ids: List[str]
+    main_tag: str
+    main_tag_reason: str
+
+
+class BatchSetStockSubTagModel(BaseModel):
+    entity_ids: List[str]
+    sub_tag: str
+    sub_tag_reason: str
+
+
 class SetStockTagsModel(BaseModel):
     entity_id: str
     main_tag: str

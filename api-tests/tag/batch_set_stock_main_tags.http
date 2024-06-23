@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8090/api/work/batch_set_stock_main_tags
+accept: application/json
+Content-Type: application/json
+
+
+{
+  "main_tag": "商业航天",
+  "entity_ids": ["stock_sh_600843"],
+  "main_tag_reason": "商业航天消息刺激"
+}

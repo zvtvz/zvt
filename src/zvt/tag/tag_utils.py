@@ -208,6 +208,8 @@ def match_tag_by_type(alias, tag_type="main_tag"):
         tags = get_main_tags()
     elif tag_type == "sub_tag":
         tags = get_sub_tags()
+    elif tag_type == "industry":
+        tags = get_industry_list()
     else:
         assert False
 
@@ -235,6 +237,10 @@ def match_tag(alias):
     tag = match_tag_by_type(alias, tag_type="sub_tag")
     if tag:
         return "sub_tag", tag
+
+    tag = match_tag_by_type(alias, tag_type="industry")
+    if tag:
+        return "main_tag", industry_to_main_tag(tag)
 
     return "new_tag", alias
 

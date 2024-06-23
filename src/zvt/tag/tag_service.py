@@ -14,17 +14,18 @@ from zvt.tag.tag_models import (
     CreateStockPoolsModel,
     QueryStockTagStatsModel,
     ActivateSubTagsModel,
+    BatchSetStockMainTagModel,
+    BatchSetStockSubTagModel,
 )
 from zvt.tag.tag_schemas import StockTags, StockPools, StockPoolInfo, TagStats, StockSystemTags
 from zvt.tag.tag_utils import (
     industry_to_main_tag,
     get_sub_tags,
-    build_initial_stock_pool_info,
     get_concept_main_tag_mapping,
     build_initial_main_tag_info,
 )
 from zvt.tag.tagger import StockTagger
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date
+from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date, now_pd_timestamp
 from zvt.utils.utils import fill_dict, compare_dicts, flatten_list
 
 logger = logging.getLogger(__name__)
@@ -104,6 +105,72 @@ def build_stock_tags(
         session.commit()
         session.refresh(current_stock_tags)
         return current_stock_tags
+
+
+def batch_set_stock_main_tags(batch_set_stock_main_tag_model: BatchSetStockMainTagModel):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        main_tag = batch_set_stock_main_tag_model.main_tag
+        stock_tags: List[StockTags] = StockTags.query_data(
+            entity_ids=batch_set_stock_main_tag_model.entity_ids,
+            filters=[StockTags.main_tag != main_tag],
+            session=session,
+            return_type="domain",
+        )
+        for stock_tag in stock_tags:
+            set_stock_tags_model = SetStockTagsModel(
+                entity_id=stock_tag.entity_id,
+                main_tag=main_tag,
+                main_tag_reason=batch_set_stock_main_tag_model.main_tag_reason,
+                sub_tag=stock_tag.sub_tag,
+                sub_tag_reason=stock_tag.sub_tag_reason,
+                active_hidden_tags=stock_tag.active_hidden_tags,
+            )
+
+            build_stock_tags(
+                set_stock_tags_model=set_stock_tags_model,
+                timestamp=now_pd_timestamp(),
+                set_by_user=True,
+                keep_current=False,
+            )
+            session.refresh(stock_tag)
+        return stock_tags
+
+
+def batch_set_stock_sub_tags(batch_set_stock_sub_tag_model: BatchSetStockSubTagModel):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        sub_tag = batch_set_stock_sub_tag_model.sub_tag
+        stock_tags: List[StockTags] = StockTags.query_data(
+            entity_ids=batch_set_stock_sub_tag_model.entity_ids,
+            filters=[StockTags.sub_tag != sub_tag],
+            session=session,
+            return_type="domain",
+        )
+        for stock_tag in stock_tags:
+            if sub_tag in stock_tag.sub_tags:
+                sub_tag_reason = stock_tag.sub_tags[sub_tag]
+            else:
+                sub_tag_reason = batch_set_stock_sub_tag_model.sub_tag_reason
+
+            main_tag = get_concept_main_tag_mapping().get(sub_tag)
+            main_tag_reason = sub_tag_reason
+
+            set_stock_tags_model = SetStockTagsModel(
+                entity_id=stock_tag.entity_id,
+                main_tag=main_tag,
+                main_tag_reason=main_tag_reason,
+                sub_tag=sub_tag,
+                sub_tag_reason=sub_tag_reason,
+                active_hidden_tags=stock_tag.active_hidden_tags,
+            )
+
+            build_stock_tags(
+                set_stock_tags_model=set_stock_tags_model,
+                timestamp=now_pd_timestamp(),
+                set_by_user=True,
+                keep_current=False,
+            )
+            session.refresh(stock_tag)
+        return stock_tags
 
 
 class StockAutoTagger(StockTagger):
