@@ -176,6 +176,7 @@ def common_filter(
     filters=None,
     order=None,
     limit=None,
+    distinct=None,
     time_field="timestamp",
 ):
     """
@@ -208,6 +209,8 @@ def common_filter(
         query = query.order_by(time_col.asc())
     if limit:
         query = query.limit(limit)
+    if distinct:
+        query = query.distinct(distinct)
 
     return query
 
@@ -278,6 +281,7 @@ def get_data(
     session: Session = None,
     order=None,
     limit: int = None,
+    distinct=None,
     index: Union[str, list] = None,
     drop_index_col=False,
     time_field: str = "timestamp",
@@ -370,6 +374,7 @@ def get_data(
         filters=filters,
         order=order,
         limit=limit,
+        distinct=distinct,
         time_field=time_field,
     )
 

@@ -226,7 +226,7 @@ if os.getenv("TESTING_ZVT"):
 else:
     init_env(zvt_home=ZVT_HOME)
 
-# old_db_to_provider_dir(zvt_env["data_path"])
+old_db_to_provider_dir(zvt_env["data_path"])
 
 # register to meta
 import zvt.contract as zvt_contract

@@ -1,0 +1,18 @@
+POST http://127.0.0.1:8090/api/work/batch_set_stock_tags
+accept: application/json
+Content-Type: application/json
+
+
+{
+  "tag": "脑机接口",
+  "tag_type": "sub_tag",
+  "entity_ids": [
+      "stock_sh_600775",
+      "stock_sz_002173",
+      "stock_sz_301293",
+      "stock_sz_300753",
+      "stock_sz_300430",
+      "stock_sz_002243"
+    ],
+  "tag_reason": "脑机接口消息刺激"
+}

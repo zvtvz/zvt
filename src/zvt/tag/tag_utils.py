@@ -127,7 +127,7 @@ def get_initial_stock_pool_info():
             "stock_pool_type": StockPoolType.system.value,
             "stock_pool_name": stock_pool_name,
         }
-        for stock_pool_name in ["main_line", "vol_up"]
+        for stock_pool_name in ["main_line", "vol_up", "all"]
     ]
 
 
@@ -257,6 +257,7 @@ if __name__ == "__main__":
     #         result[tag] = main_tag
     # with open("industry_main_tag_mapping.json", "w") as json_file:
     #     json.dump(result, json_file, indent=2, ensure_ascii=False)
+    build_initial_stock_pool_info()
     build_initial_main_tag_info()
     build_initial_sub_tag_info()
     print(list(get_main_tags()))

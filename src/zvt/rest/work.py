@@ -22,8 +22,7 @@ from zvt.tag.tag_models import (
     QuerySimpleStockTagsModel,
     ActivateSubTagsResultModel,
     ActivateSubTagsModel,
-    BatchSetStockMainTagModel,
-    BatchSetStockSubTagModel,
+    BatchSetStockTagsModel,
 )
 from zvt.tag.tag_schemas import StockTags, MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, StockPools
 from zvt.utils.time_utils import current_date, to_time_str
@@ -227,11 +226,6 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
     return tag_service.activate_main_tag_by_sub_tags(activate_sub_tags_model=activate_sub_tags_model)
 
 
-@work_router.post("/batch_set_stock_main_tags", response_model=List[StockTagsModel])
-def batch_set_stock_main_tags(batch_set_stock_main_tags_model: BatchSetStockMainTagModel):
-    return tag_service.batch_set_stock_main_tags(batch_set_stock_main_tag_model=batch_set_stock_main_tags_model)
-
-
-@work_router.post("/batch_set_stock_sub_tags", response_model=List[StockTagsModel])
-def batch_set_stock_main_tags(batch_set_stock_sub_tags_model: BatchSetStockSubTagModel):
-    return tag_service.batch_set_stock_sub_tags(batch_set_stock_sub_tag_model=batch_set_stock_sub_tags_model)
+@work_router.post("/batch_set_stock_tags", response_model=List[StockTagsModel])
+def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
+    return tag_service.batch_set_stock_tags(batch_set_stock_tags_model=batch_set_stock_tags_model)

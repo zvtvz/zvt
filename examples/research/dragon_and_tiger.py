@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from zvt.api.selector import get_big_players, get_player_success_rate
 from zvt.domain import DragonAndTiger
-from zvt.utils import date_time_by_interval, current_date
+from zvt.utils.time_utils import date_time_by_interval, current_date
 
 if __name__ == "__main__":
     provider = "em"

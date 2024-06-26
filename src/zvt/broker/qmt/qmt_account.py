@@ -9,7 +9,7 @@ from xtquant.xttype import StockAccount, XtPosition
 
 from zvt.broker.qmt.errors import QmtError, PositionOverflowError
 from zvt.broker.qmt.qmt_quote import _to_qmt_code
-from zvt.common.trading_models import BuyPositionStrategy, PositionType, SellPositionStrategy
+from zvt.common.trading_models import BuyParameter, PositionType, SellParameter
 from zvt.trader import AccountService, TradingSignal, OrderType, trading_signal_type_to_order_type
 from zvt.utils.time_utils import now_pd_timestamp, to_pd_timestamp
 
@@ -214,7 +214,7 @@ class QmtStockAccount(AccountService):
     def on_trading_error(self, timestamp, error):
         pass
 
-    def sell(self, position_strategy: SellPositionStrategy):
+    def sell(self, position_strategy: SellParameter):
         # account_type	int	账号类型，参见数据字典
         # account_id	str	资金账号
         # stock_code	str	证券代码
@@ -243,7 +243,7 @@ class QmtStockAccount(AccountService):
             )
             logger.info(f"order result id: {fix_result_order_id}")
 
-    def buy(self, position_strategy: BuyPositionStrategy):
+    def buy(self, buy_parameter: BuyParameter):
         # account_type	int	账号类型，参见数据字典
         # account_id	str	资金账号
         # cash	float	可用金额
@@ -251,27 +251,34 @@ class QmtStockAccount(AccountService):
         # market_value	float	持仓市值
         # total_asset	float	总资产
         acc = self.get_current_account()
-        # 检查仓位
-        if position_strategy.position_type == PositionType.normal:
-            current_pct = round(acc.market_value / acc.total_asset, 2)
-            if current_pct >= position_strategy.position_pct:
-                raise PositionOverflowError(f"目前仓位为{current_pct}, 已超过请求的仓位: {position_strategy.position_pct}")
 
-            money_to_use = acc.total_asset * (position_strategy.position_pct - current_pct)
-        elif position_strategy.position_type == PositionType.cash:
-            money_to_use = acc.cash * position_strategy.position_pct
+        # 优先使用金额下单
+        if buy_parameter.money_to_use:
+            money_to_use = buy_parameter.money_to_use
+            if acc.cash < money_to_use:
+                raise QmtError(f"可用余额不足 {acc.cash} < {money_to_use}")
         else:
-            assert False
+            # 检查仓位
+            if buy_parameter.position_type == PositionType.normal:
+                current_pct = round(acc.market_value / acc.total_asset, 2)
+                if current_pct >= buy_parameter.position_pct:
+                    raise PositionOverflowError(f"目前仓位为{current_pct}, 已超过请求的仓位: {buy_parameter.position_pct}")
 
-        stock_codes = [_to_qmt_code(entity_id) for entity_id in position_strategy.entity_ids]
+                money_to_use = acc.total_asset * (buy_parameter.position_pct - current_pct)
+            elif buy_parameter.position_type == PositionType.cash:
+                money_to_use = acc.cash * buy_parameter.position_pct
+            else:
+                assert False
+
+        stock_codes = [_to_qmt_code(entity_id) for entity_id in buy_parameter.entity_ids]
         ticks = xtdata.get_full_tick(code_list=stock_codes)
 
-        if not position_strategy.weights:
+        if not buy_parameter.weights:
             stocks_count = len(stock_codes)
             money_for_stocks = [round(money_to_use / stocks_count)] * stocks_count
         else:
-            weights_sum = sum(position_strategy.weights)
-            money_for_stocks = [round(weight / weights_sum) for weight in position_strategy.weights]
+            weights_sum = sum(buy_parameter.weights)
+            money_for_stocks = [round(weight / weights_sum) for weight in buy_parameter.weights]
 
         for i, stock_code in enumerate(stock_codes):
             try_price = ticks[stock_code]["askPrice"][3]

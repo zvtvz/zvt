@@ -5,7 +5,8 @@ from zvt.api.utils import get_recent_report_date
 from zvt.contract import ActorType, AdjustType
 from zvt.domain import StockActorSummary, Stock1dKdata, Stock
 from zvt.trader import StockTrader
-from zvt.utils import pd_is_not_null, is_same_date, to_pd_timestamp
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import is_same_date, to_pd_timestamp
 
 
 class FollowIITrader(StockTrader):

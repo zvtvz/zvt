@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
 from typing import Dict, Union, List, Optional
 
-from pydantic import BaseModel, field_validator, Field
+from pydantic import field_validator, Field
 from pydantic_core.core_schema import ValidationInfo
 
-from zvt.contract.model import MixinModel
-from zvt.tag.common import StockPoolType
+from zvt.contract.model import MixinModel, CustomModel
+from zvt.tag.common import StockPoolType, TagType
 from zvt.tag.tag_utils import get_main_tags, get_sub_tags, get_hidden_tags, get_stock_pool_names
 
 
 class TagInfoModel(MixinModel):
     tag: str
-    tag_reason: str
+    tag_reason: Optional[str] = None
 
 
-class CreateTagInfoModel(BaseModel):
+class CreateTagInfoModel(CustomModel):
     tag: str
-    tag_reason: str
+    tag_reason: Optional[str] = None
 
 
 class StockTagsModel(MixinModel):
     main_tag: str
-    main_tag_reason: str
+    main_tag_reason: Optional[str] = None
     main_tags: Dict[str, str]
 
     sub_tag: Union[str, None]
-    sub_tag_reason: Union[str, None]
+    sub_tag_reason: Optional[str] = None
     sub_tags: Union[Dict[str, str], None]
 
     active_hidden_tags: Union[Dict[str, str], None]
@@ -33,44 +33,46 @@ class StockTagsModel(MixinModel):
     set_by_user: bool = False
 
 
-class SimpleStockTagsModel(BaseModel):
+class SimpleStockTagsModel(CustomModel):
     entity_id: str
     name: str
     main_tag: str
-    main_tag_reason: str
+    main_tag_reason: Optional[str] = None
     main_tags: Dict[str, str]
     sub_tag: Union[str, None]
-    sub_tag_reason: Union[str, None]
+    sub_tag_reason: Optional[str] = None
     sub_tags: Union[Dict[str, str], None]
     active_hidden_tags: Union[Dict[str, str], None]
 
 
-class QueryStockTagsModel(BaseModel):
+class QueryStockTagsModel(CustomModel):
     entity_ids: List[str]
 
 
-class QuerySimpleStockTagsModel(BaseModel):
+class QuerySimpleStockTagsModel(CustomModel):
     entity_ids: List[str]
 
 
-class BatchSetStockMainTagModel(BaseModel):
+class BatchSetStockTagsModel(CustomModel):
     entity_ids: List[str]
+    tag: str
+    tag_reason: Optional[str] = None
+    tag_type: TagType
+
+
+class TagParameter(CustomModel):
     main_tag: str
-    main_tag_reason: str
+    main_tag_reason: Optional[str] = None
+    sub_tag: Optional[str] = None
+    sub_tag_reason: Optional[str] = None
 
 
-class BatchSetStockSubTagModel(BaseModel):
-    entity_ids: List[str]
-    sub_tag: str
-    sub_tag_reason: str
-
-
-class SetStockTagsModel(BaseModel):
+class SetStockTagsModel(CustomModel):
     entity_id: str
     main_tag: str
-    main_tag_reason: str
+    main_tag_reason: Optional[str] = None
     sub_tag: Union[str, None]
-    sub_tag_reason: Union[str, None]
+    sub_tag_reason: Optional[str] = None
     active_hidden_tags: Union[Dict[str, str], None]
 
     @field_validator("main_tag")
@@ -107,7 +109,7 @@ class StockPoolInfoModel(MixinModel):
     stock_pool_name: str
 
 
-class CreateStockPoolInfoModel(BaseModel):
+class CreateStockPoolInfoModel(CustomModel):
     stock_pool_type: StockPoolType
     stock_pool_name: str
 
@@ -124,7 +126,7 @@ class StockPoolsModel(MixinModel):
     entity_ids: List[str]
 
 
-class CreateStockPoolsModel(BaseModel):
+class CreateStockPoolsModel(CustomModel):
     stock_pool_name: str
     entity_ids: List[str]
 
@@ -137,7 +139,7 @@ class CreateStockPoolsModel(BaseModel):
         return v
 
 
-class QueryStockTagStatsModel(BaseModel):
+class QueryStockTagStatsModel(CustomModel):
     stock_pool_name: Optional[str] = None
     entity_ids: Optional[List[str]] = None
 
@@ -167,7 +169,7 @@ class QueryStockTagStatsModel(BaseModel):
         return v
 
 
-class StockTagDetailsModel(BaseModel):
+class StockTagDetailsModel(CustomModel):
     entity_id: str
     main_tag: str
     sub_tag: Union[str, None]
@@ -212,11 +214,11 @@ class StockTagStatsModel(MixinModel):
     stock_details: List[StockTagDetailsModel]
 
 
-class ActivateSubTagsModel(BaseModel):
+class ActivateSubTagsModel(CustomModel):
     sub_tags: List[str]
 
 
-class ActivateSubTagsResultModel(BaseModel):
+class ActivateSubTagsResultModel(CustomModel):
     tag_entity_ids: Dict[str, Union[List[str], None]]
 
 

@@ -21,7 +21,7 @@ from zvt.domain import (
     LimitUpInfo,
 )
 from zvt.informer import EmailInformer
-from zvt.utils import current_date
+from zvt.utils.time_utils import current_date
 from zvt.utils.recorder_utils import run_data_recorder
 
 logger = logging.getLogger(__name__)

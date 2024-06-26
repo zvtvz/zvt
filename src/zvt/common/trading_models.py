@@ -14,14 +14,15 @@ class PositionType(Enum):
     cash = "cash"
 
 
-class BuyPositionStrategy(BaseModel):
+class BuyParameter(BaseModel):
     entity_ids: List[str]
     position_type: PositionType = Field(default=PositionType.normal)
-    position_pct: float
+    position_pct: Optional[float] = Field(default=None)
     weights: Optional[List[float]] = Field(default=None)
+    money_to_use: Optional[float] = Field(default=None)
 
 
-class SellPositionStrategy(BaseModel):
+class SellParameter(BaseModel):
     entity_ids: List[str]
     sell_pcts: Optional[List[float]] = Field(default=None)
 
@@ -32,4 +33,4 @@ class TradingResult(BaseModel):
 
 
 # the __all__ is generated
-__all__ = ["PositionType", "BuyPositionStrategy", "SellPositionStrategy", "TradingResult"]
+__all__ = ["PositionType", "BuyParameter", "SellParameter", "TradingResult"]

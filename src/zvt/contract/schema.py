@@ -117,6 +117,7 @@ class Mixin(object):
         session: Session = None,
         order=None,
         limit: int = None,
+        distinct=None,
         index: Union[str, list] = None,
         drop_index_col=False,
         time_field: str = "timestamp",
@@ -170,6 +171,7 @@ class Mixin(object):
             order=order,
             limit=limit,
             index=index,
+            distinct=distinct,
             drop_index_col=drop_index_col,
             time_field=time_field,
         )

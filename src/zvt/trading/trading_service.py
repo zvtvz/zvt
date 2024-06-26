@@ -106,7 +106,7 @@ def check_trading_plan():
             return_type="domain",
         )
 
-        logger.info(f"current plans:{plans}")
+        logger.debug(f"current plans:{plans}")
 
 
 def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
@@ -131,8 +131,6 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
     quote_df = StockQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
 
     df = pd.concat([tag_df, quote_df], axis=1)
-    print(df)
-    # print(df[df["is_limit_up"]])
     grouped_df = (
         df.groupby("main_tag")
         .agg(
@@ -210,8 +208,6 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
         "limit_down_count": limit_down_count,
         "quotes": quotes,
     }
-    print(result)
-
     return result
 
 

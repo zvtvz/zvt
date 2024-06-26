@@ -10,7 +10,7 @@ from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, current_date, to_pd_timestamp
+from zvt.utils.time_utils import to_time_str, current_date, to_pd_timestamp, now_pd_timestamp
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
 
@@ -240,13 +240,29 @@ def clear_history_quote():
     session.commit()
 
 
-if __name__ == "__main__":
+def record_tick():
     clear_history_quote()
     Stock.record_data(provider="em")
     stocks = get_qmt_stocks()
     print(stocks)
     xtdata.subscribe_whole_quote(stocks, callback=tick_to_quote())
-    xtdata.run()
+
+    """阻塞线程接收行情回调"""
+    import time
+
+    client = xtdata.get_client()
+    while True:
+        time.sleep(3)
+        if not client.is_connected():
+            raise Exception("行情服务连接断开")
+        current_timestamp = now_pd_timestamp()
+        if current_timestamp.hour == 15 and current_timestamp.minute == 10:
+            logger.info(f"record tick finished at: {current_timestamp}")
+            break
+
+
+if __name__ == "__main__":
+    record_tick()
 
 
 # the __all__ is generated

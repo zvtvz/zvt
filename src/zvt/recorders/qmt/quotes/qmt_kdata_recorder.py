@@ -10,7 +10,8 @@ from zvt.domain import (
     Stock,
     StockKdataCommon,
 )
-from zvt.utils.pd_utils import pd_is_not_null, current_date, to_time_str
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import current_date, to_time_str
 
 
 class BaseQmtKdataRecorder(FixedCycleDataRecorder):

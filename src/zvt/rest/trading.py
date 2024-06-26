@@ -6,7 +6,7 @@ from fastapi_pagination import Page
 
 import zvt.contract.api as contract_api
 import zvt.trading.trading_service as trading_service
-from zvt.common.trading_models import BuyPositionStrategy, SellPositionStrategy, TradingResult
+from zvt.common.trading_models import BuyParameter, SellParameter, TradingResult
 from zvt.trading.trading_models import (
     BuildTradingPlanModel,
     TradingPlanModel,
@@ -77,7 +77,7 @@ def get_future_trading_plan():
 
 
 @trading_router.post("/buy", response_model=TradingResult)
-def buy(buy_position_strategy: BuyPositionStrategy):
+def buy(buy_position_strategy: BuyParameter):
     if platform.system() == "Windows":
         from zvt.broker.qmt.context import qmt_context
 
@@ -87,7 +87,7 @@ def buy(buy_position_strategy: BuyPositionStrategy):
 
 
 @trading_router.post("/sell", response_model=TradingResult)
-def sell(sell_position_strategy: SellPositionStrategy):
+def sell(sell_position_strategy: SellParameter):
     if platform.system() == "Windows":
         from zvt.broker.qmt.context import qmt_context
 

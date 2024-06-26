@@ -8,14 +8,15 @@ from sqlalchemy import func
 import zvt.contract.api as contract_api
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.domain import BlockStock, Block, Stock
+from zvt.tag.common import TagType
 from zvt.tag.tag_models import (
     SetStockTagsModel,
     CreateStockPoolInfoModel,
     CreateStockPoolsModel,
     QueryStockTagStatsModel,
     ActivateSubTagsModel,
-    BatchSetStockMainTagModel,
-    BatchSetStockSubTagModel,
+    BatchSetStockTagsModel,
+    TagParameter,
 )
 from zvt.tag.tag_schemas import StockTags, StockPools, StockPoolInfo, TagStats, StockSystemTags
 from zvt.tag.tag_utils import (
@@ -107,59 +108,66 @@ def build_stock_tags(
         return current_stock_tags
 
 
-def batch_set_stock_main_tags(batch_set_stock_main_tag_model: BatchSetStockMainTagModel):
+def build_tag_parameter(tag_type: TagType, tag, tag_reason, stock_tag: StockTags):
+    if tag_type == TagType.main_tag:
+        main_tag = tag
+        if main_tag in stock_tag.main_tags:
+            main_tag_reason = stock_tag.main_tags.get(main_tag, tag_reason)
+        else:
+            main_tag_reason = tag_reason
+        sub_tag = stock_tag.sub_tag
+        sub_tag_reason = stock_tag.sub_tag_reason
+    elif tag_type == TagType.sub_tag:
+        sub_tag = tag
+        if sub_tag in stock_tag.sub_tags:
+            sub_tag_reason = stock_tag.sub_tags.get(sub_tag, tag_reason)
+        else:
+            sub_tag_reason = tag_reason
+        main_tag = stock_tag.main_tag
+        main_tag_reason = stock_tag.main_tag_reason
+    else:
+        assert False
+
+    return TagParameter(
+        main_tag=main_tag, main_tag_reason=main_tag_reason, sub_tag=sub_tag, sub_tag_reason=sub_tag_reason
+    )
+
+
+def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
+    if not batch_set_stock_tags_model.entity_ids:
+        return []
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
-        main_tag = batch_set_stock_main_tag_model.main_tag
-        stock_tags: List[StockTags] = StockTags.query_data(
-            entity_ids=batch_set_stock_main_tag_model.entity_ids,
-            filters=[StockTags.main_tag != main_tag],
-            session=session,
-            return_type="domain",
-        )
-        for stock_tag in stock_tags:
-            set_stock_tags_model = SetStockTagsModel(
-                entity_id=stock_tag.entity_id,
-                main_tag=main_tag,
-                main_tag_reason=batch_set_stock_main_tag_model.main_tag_reason,
-                sub_tag=stock_tag.sub_tag,
-                sub_tag_reason=stock_tag.sub_tag_reason,
-                active_hidden_tags=stock_tag.active_hidden_tags,
+        tag_type = batch_set_stock_tags_model.tag_type
+        if tag_type == TagType.main_tag:
+            main_tag = batch_set_stock_tags_model.tag
+            stock_tags: List[StockTags] = StockTags.query_data(
+                entity_ids=batch_set_stock_tags_model.entity_ids,
+                filters=[StockTags.main_tag != main_tag],
+                session=session,
+                return_type="domain",
+            )
+        elif tag_type == TagType.sub_tag:
+            sub_tag = batch_set_stock_tags_model.tag
+            stock_tags: List[StockTags] = StockTags.query_data(
+                entity_ids=batch_set_stock_tags_model.entity_ids,
+                filters=[StockTags.sub_tag != sub_tag],
+                session=session,
+                return_type="domain",
             )
 
-            build_stock_tags(
-                set_stock_tags_model=set_stock_tags_model,
-                timestamp=now_pd_timestamp(),
-                set_by_user=True,
-                keep_current=False,
-            )
-            session.refresh(stock_tag)
-        return stock_tags
-
-
-def batch_set_stock_sub_tags(batch_set_stock_sub_tag_model: BatchSetStockSubTagModel):
-    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
-        sub_tag = batch_set_stock_sub_tag_model.sub_tag
-        stock_tags: List[StockTags] = StockTags.query_data(
-            entity_ids=batch_set_stock_sub_tag_model.entity_ids,
-            filters=[StockTags.sub_tag != sub_tag],
-            session=session,
-            return_type="domain",
-        )
         for stock_tag in stock_tags:
-            if sub_tag in stock_tag.sub_tags:
-                sub_tag_reason = stock_tag.sub_tags[sub_tag]
-            else:
-                sub_tag_reason = batch_set_stock_sub_tag_model.sub_tag_reason
-
-            main_tag = get_concept_main_tag_mapping().get(sub_tag)
-            main_tag_reason = sub_tag_reason
-
+            tag_parameter: TagParameter = build_tag_parameter(
+                tag_type=tag_type,
+                tag=batch_set_stock_tags_model.tag,
+                tag_reason=batch_set_stock_tags_model.tag_reason,
+                stock_tag=stock_tag,
+            )
             set_stock_tags_model = SetStockTagsModel(
                 entity_id=stock_tag.entity_id,
-                main_tag=main_tag,
-                main_tag_reason=main_tag_reason,
-                sub_tag=sub_tag,
-                sub_tag_reason=sub_tag_reason,
+                main_tag=tag_parameter.main_tag,
+                main_tag_reason=tag_parameter.main_tag_reason,
+                sub_tag=tag_parameter.sub_tag,
+                sub_tag_reason=tag_parameter.sub_tag_reason,
                 active_hidden_tags=stock_tag.active_hidden_tags,
             )
 
@@ -547,7 +555,7 @@ def activate_main_tag_by_sub_tags(activate_sub_tags_model: ActivateSubTagsModel)
 
 if __name__ == "__main__":
     # refresh_all_main_tag_by_sub_tag()
-    # activate_main_tag_by_sub_tags(ActivateSubTagsModel(sub_tags=["民爆概念"]))
+    activate_main_tag_by_sub_tags(ActivateSubTagsModel(sub_tags=["无人驾驶"]))
     # activate_main_tag_by_industry(industry="电力行业")
     build_initial_main_tag_info()
     # build_initial_sub_tag_info()
