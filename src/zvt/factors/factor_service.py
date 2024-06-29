@@ -4,8 +4,8 @@ import pandas as pd
 from zvt.api import kdata as kdata_api
 from zvt.contract import zvt_context
 from zvt.domain import Stock
-from zvt.factors.technical_factor import TechnicalFactor
 from zvt.factors.factor_models import FactorRequestModel, KdataRequestModel
+from zvt.factors.technical_factor import TechnicalFactor
 from zvt.trader import TradingSignalType
 from zvt.utils.pd_utils import pd_is_not_null
 
@@ -20,13 +20,7 @@ def query_kdata(kdata_request_model: KdataRequestModel):
         adjust_type=kdata_request_model.adjust_type,
     )
     if pd_is_not_null(kdata_df):
-        #     entity_id: str
-        #     code: str
-        #     name: str
-        #     level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
-        #     data: List[float]
-        kdata_df["timestamp"] = pd.to_datetime(kdata_df["timestamp"])
-        kdata_df["timestamp"] = kdata_df["timestamp"].astype(int) // 10 ** 9
+        kdata_df["timestamp"] = kdata_df["timestamp"].apply(lambda x: int(x.timestamp()))
         kdata_df["data"] = kdata_df.apply(
             lambda x: x[
                 ["timestamp", "open", "high", "low", "close", "volume", "turnover", "change_pct", "turnover_rate"]
@@ -40,7 +34,6 @@ def query_kdata(kdata_request_model: KdataRequestModel):
             datas=("data", lambda data: list(data)),
         )
         df = df.reset_index(drop=False)
-        print(df)
         return df.to_dict(orient="records")
 
 

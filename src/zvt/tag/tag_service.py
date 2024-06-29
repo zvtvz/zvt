@@ -366,7 +366,7 @@ def query_stock_tag_stats(query_stock_tag_stats_model: QueryStockTagStatsModel):
             return_type="domain",
         )
         if not datas:
-            return None
+            return []
 
         target_date = datas[0].timestamp
 

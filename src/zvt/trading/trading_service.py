@@ -116,7 +116,10 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
         limit=1,
         return_type="domain",
     )
-    entity_ids = stock_pools[0].entity_ids
+    if stock_pools:
+        entity_ids = stock_pools[0].entity_ids
+    else:
+        entity_ids = None
 
     tag_df = StockTags.query_data(
         entity_ids=entity_ids,
@@ -237,7 +240,8 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
 
 
 if __name__ == "__main__":
-    print(query_tag_quotes(QueryTagQuoteModel(stock_pool_name="main_line", main_tags=["低空经济", "半导体", "化工", "消费电子"])))
+    print(query_tag_quotes(QueryTagQuoteModel(stock_pool_name="all", main_tags=["低空经济", "半导体", "化工", "消费电子"])))
+    print(query_stock_quotes(QueryStockQuoteModel(stock_pool_name="all", main_tag="半导体")))
 
 # the __all__ is generated
 __all__ = [
