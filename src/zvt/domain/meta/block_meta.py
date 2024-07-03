@@ -23,5 +23,7 @@ class BlockStock(BlockMetaBase, PortfolioStock):
 
 
 register_schema(providers=["em", "eastmoney", "sina"], db_name="block_meta", schema_base=BlockMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Block", "BlockStock"]

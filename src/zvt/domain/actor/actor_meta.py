@@ -14,5 +14,7 @@ class ActorMeta(ActorMetaBase, ActorEntity):
 
 
 register_schema(providers=["em"], db_name="actor_meta", schema_base=ActorMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["ActorMeta"]

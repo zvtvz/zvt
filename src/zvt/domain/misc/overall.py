@@ -69,5 +69,6 @@ class CrossMarketSummary(OverallBase, Mixin):
 
 register_schema(providers=["joinquant", "exchange"], db_name="overall", schema_base=OverallBase, entity_type="stock")
 
+
 # the __all__ is generated
 __all__ = ["StockSummary", "MarginTradingSummary", "CrossMarketSummary"]

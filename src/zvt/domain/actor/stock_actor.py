@@ -78,5 +78,6 @@ class StockActorSummary(StockActorBase, TradableMeetActor):
 
 register_schema(providers=["em"], db_name="stock_actor", schema_base=StockActorBase, entity_type="stock")
 
+
 # the __all__ is generated
 __all__ = ["StockTopTenFreeHolder", "StockTopTenHolder", "StockInstitutionalInvestorHolder", "StockActorSummary"]

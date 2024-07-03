@@ -173,6 +173,8 @@ if __name__ == "__main__":
         level=IntervalLevel.LEVEL_1DAY, entity_ids=entity_ids, sleeping_time=0, adjust_type=AdjustType.hfq
     )
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = [
     "BaseEMStockKdataRecorder",

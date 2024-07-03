@@ -18,5 +18,7 @@ class WBCountryRecorder(Recorder):
 if __name__ == "__main__":
     recorder = WBCountryRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["WBCountryRecorder"]

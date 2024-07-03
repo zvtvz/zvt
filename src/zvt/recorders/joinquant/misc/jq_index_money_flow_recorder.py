@@ -129,5 +129,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
 
 if __name__ == "__main__":
     JoinquantIndexMoneyFlowRecorder(start_timestamp="2020-12-01").run()
+
+
 # the __all__ is generated
 __all__ = ["JoinquantIndexMoneyFlowRecorder"]

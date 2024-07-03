@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 import zvt.contract.api as contract_api
 import zvt.tag.tag_service as tag_service
 from zvt.domain import Stock
+from zvt.tag.common import TagType
 from zvt.tag.tag_models import (
     TagInfoModel,
     CreateTagInfoModel,
@@ -25,7 +26,7 @@ from zvt.tag.tag_models import (
     BatchSetStockTagsModel,
 )
 from zvt.tag.tag_schemas import StockTags, MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, StockPools
-from zvt.utils.time_utils import current_date, to_time_str
+from zvt.utils.time_utils import current_date
 
 work_router = APIRouter(
     prefix="/api/work",
@@ -96,53 +97,19 @@ def get_hidden_tag_info():
         return tags_info
 
 
-def _create_tag_info(tags_info: CreateTagInfoModel, tags_info_type="main_tag"):
-    """
-    Create tags info
-    """
-    if tags_info_type == "main_tag":
-        data_schema = MainTagInfo
-    elif tags_info_type == "sub_tag":
-        data_schema = SubTagInfo
-    elif tags_info_type == "hidden_tag":
-        data_schema = HiddenTagInfo
-    else:
-        assert False
-
-    with contract_api.DBSession(provider="zvt", data_schema=data_schema)() as session:
-        current_tags_info = data_schema.query_data(
-            session=session, filters=[data_schema.tag == tags_info.tag], return_type="domain"
-        )
-        if current_tags_info:
-            raise HTTPException(status_code=409, detail=f"This tag has been registered in {tags_info_type}")
-        timestamp = current_date()
-        entity_id = "admin"
-        tags_info_db = data_schema(
-            id=f"admin_{to_time_str(timestamp)}_{tags_info.tag}",
-            entity_id=entity_id,
-            timestamp=timestamp,
-            tag=tags_info.tag,
-            tag_reason=tags_info.tag_reason,
-        )
-        session.add(tags_info_db)
-        session.commit()
-        session.refresh(tags_info_db)
-        return tags_info_db
-
-
 @work_router.post("/create_main_tag_info", response_model=TagInfoModel)
 def create_main_tag_info(tag_info: CreateTagInfoModel):
-    return _create_tag_info(tag_info, tags_info_type="main_tag")
+    return tag_service.build_tag_info(tag_info, tag_type=TagType.main_tag)
 
 
 @work_router.post("/create_sub_tag_info", response_model=TagInfoModel)
 def create_sub_tag_info(tag_info: CreateTagInfoModel):
-    return _create_tag_info(tag_info, tags_info_type="sub_tag")
+    return tag_service.build_tag_info(tag_info, TagType.sub_tag)
 
 
 @work_router.post("/create_hidden_tag_info", response_model=TagInfoModel)
 def create_hidden_tag_info(tag_info: CreateTagInfoModel):
-    return _create_tag_info(tag_info, tags_info_type="hidden_tag")
+    return tag_service.build_tag_info(tag_info, TagType.hidden_tag)
 
 
 @work_router.post("/query_stock_tags", response_model=List[StockTagsModel])

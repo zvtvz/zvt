@@ -28,5 +28,7 @@ class IndexStock(IndexMetaBase, PortfolioStockHistory):
 
 
 register_schema(providers=["em", "exchange"], db_name="index_meta", schema_base=IndexMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Index", "IndexStock"]

@@ -24,5 +24,7 @@ class Indexus(IndexusMetaBase, Portfolio):
 
 
 register_schema(providers=["em"], db_name="indexus_meta", schema_base=IndexusMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Indexus"]

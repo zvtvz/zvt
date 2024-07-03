@@ -48,5 +48,7 @@ if __name__ == "__main__":
     # entity_ids = df["entity_id"].tolist()
     r = EMStockNewsRecorder(entity_ids=["stock_sh_600345"], sleeping_time=0)
     r.run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockNewsRecorder"]

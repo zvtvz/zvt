@@ -40,7 +40,7 @@ class QueryStockQuoteModel(CustomModel):
     entity_ids: Optional[List[str]] = Field(default=None)
     stock_pool_name: Optional[str] = Field(default=None)
     # the amount is not huge, just ignore now
-    # limit: int = Field(default=200)
+    limit: int = Field(default=100)
     order_by_type: Optional[OrderByType] = Field(default=OrderByType.desc)
     order_by_field: Optional[str] = Field(default="change_pct")
 

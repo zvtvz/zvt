@@ -111,5 +111,7 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
 if __name__ == "__main__":
     # JqChinaEtfRecorder().run()
     JqChinaStockEtfPortfolioRecorder(codes=["510050"]).run()
+
+
 # the __all__ is generated
 __all__ = ["BaseJqChinaMetaRecorder", "JqChinaStockRecorder", "JqChinaEtfRecorder", "JqChinaStockEtfPortfolioRecorder"]

@@ -88,5 +88,7 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
 
 if __name__ == "__main__":
     MarginTradingSummaryRecorder().run()
+
+
 # the __all__ is generated
 __all__ = ["MarginTradingSummaryRecorder"]

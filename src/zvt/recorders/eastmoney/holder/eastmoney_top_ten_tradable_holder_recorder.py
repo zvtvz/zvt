@@ -18,5 +18,7 @@ if __name__ == "__main__":
     # init_log('top_ten_tradable_holder.log')
 
     TopTenTradableHolderRecorder(codes=["002572"]).run()
+
+
 # the __all__ is generated
 __all__ = ["TopTenTradableHolderRecorder"]

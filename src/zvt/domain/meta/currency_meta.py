@@ -14,5 +14,7 @@ class Currency(CurrencyMetaBase, TradableEntity):
 
 
 register_schema(providers=["em"], db_name="currency_meta", schema_base=CurrencyMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Currency"]

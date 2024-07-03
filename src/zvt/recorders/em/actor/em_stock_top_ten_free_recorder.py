@@ -120,5 +120,7 @@ class EMStockTopTenFreeRecorder(TimestampsDataRecorder):
 
 if __name__ == "__main__":
     EMStockTopTenFreeRecorder(codes=["000338"]).run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockTopTenFreeRecorder"]

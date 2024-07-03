@@ -17,5 +17,7 @@ class Stockhk(StockhkMetaBase, TradableEntity):
 
 
 register_schema(providers=["em"], db_name="stockhk_meta", schema_base=StockhkMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Stockhk"]

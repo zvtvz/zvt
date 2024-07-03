@@ -70,5 +70,7 @@ def get_cn_index_stock(code, timestamp, name=None):
 if __name__ == "__main__":
     df = get_cn_index_stock(timestamp="2021-08-01", code="399370", name="国证成长")
     print(df)
+
+
 # the __all__ is generated
 __all__ = ["get_cn_index_stock"]

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+
 # the __all__ is generated
 __all__ = []
 
@@ -17,6 +19,12 @@ from .em_stockus_meta_recorder import *
 from .em_stockus_meta_recorder import __all__ as _em_stockus_meta_recorder_all
 
 __all__ += _em_stockus_meta_recorder_all
+
+# import all from submodule em_cbond_meta_recorder
+from .em_cbond_meta_recorder import *
+from .em_cbond_meta_recorder import __all__ as _em_cbond_meta_recorder_all
+
+__all__ += _em_cbond_meta_recorder_all
 
 # import all from submodule em_currency_meta_recorder
 from .em_currency_meta_recorder import *

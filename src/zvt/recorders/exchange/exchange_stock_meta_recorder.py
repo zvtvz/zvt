@@ -83,5 +83,7 @@ __all__ = ["ExchangeStockMetaRecorder"]
 if __name__ == "__main__":
     recorder = ExchangeStockMetaRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["ExchangeStockMetaRecorder"]

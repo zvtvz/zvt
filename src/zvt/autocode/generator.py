@@ -138,6 +138,9 @@ def gen_exports(
             end_empty_lines_count = end_empty_lines_count + 1
         lines = lines[: len(lines) - end_empty_lines_count]
 
+        if not lines:
+            lines.append("# -*- coding: utf-8 -*-#")
+
         lines.append("\n\n")
         lines.append(gen_flag)
         lines.append("\n")

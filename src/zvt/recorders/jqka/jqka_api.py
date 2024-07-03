@@ -98,5 +98,7 @@ if __name__ == "__main__":
     # print(result)
     result = get_continuous_limit_up(date="20210716")
     print(result)
+
+
 # the __all__ is generated
 __all__ = ["get_continuous_limit_up", "get_limit_stats", "get_limit_up", "get_limit_down", "get_jkqa_data"]

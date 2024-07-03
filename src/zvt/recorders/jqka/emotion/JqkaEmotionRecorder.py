@@ -207,5 +207,6 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
 if __name__ == "__main__":
     JqkaLimitUpRecorder().run()
 
+
 # the __all__ is generated
 __all__ = ["JqkaLimitUpRecorder", "JqkaLimitDownRecorder", "JqkaEmotionRecorder"]

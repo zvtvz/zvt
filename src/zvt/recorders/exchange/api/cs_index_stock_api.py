@@ -45,5 +45,7 @@ def get_cs_index_stock(code, timestamp, name=None):
 if __name__ == "__main__":
     df = get_cs_index_stock(code="000001", name="上证指数", timestamp=now_pd_timestamp())
     print(df)
+
+
 # the __all__ is generated
 __all__ = ["get_cs_index_stock"]

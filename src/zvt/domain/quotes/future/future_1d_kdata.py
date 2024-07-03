@@ -14,5 +14,6 @@ class Future1dKdata(KdataBase, FutureKdataCommon):
 
 register_schema(providers=["em"], db_name="future_1d_kdata", schema_base=KdataBase, entity_type="future")
 
+
 # the __all__ is generated
 __all__ = ["Future1dKdata"]

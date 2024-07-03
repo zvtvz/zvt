@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_system_stock_pools():
-    for stock_pool_name in ["main_line", "vol_up"]:
+    for stock_pool_name in ["main_line", "vol_up", "大局"]:
         datas = StockPools.query_data(
             limit=1,
             filters=[StockPools.stock_pool_name == stock_pool_name],
@@ -32,7 +32,7 @@ def build_system_stock_pools():
         df = TopStocks.query_data(start_timestamp=start, columns=[TopStocks.timestamp], order=TopStocks.timestamp.asc())
         if not pd_is_not_null(df):
             logger.info(f"no data for top_stocks {start}")
-            return
+            continue
         dates = df["timestamp"].tolist()
         for target_date in dates:
             logger.info(f"build_system_stock_pools {stock_pool_name} to {target_date}")
@@ -44,6 +44,8 @@ def build_system_stock_pools():
                 small_stocks = get_top_stocks(target_date=target_date, return_type="small_vol_up")
                 big_stocks = get_top_stocks(target_date=target_date, return_type="big_vol_up")
                 entity_ids = list(set(small_stocks + big_stocks))
+            elif stock_pool_name == "大局":
+                entity_ids = get_top_stocks(target_date=target_date, return_type="all")
             else:
                 assert False
 

@@ -24,5 +24,7 @@ class StockNews(NewsBase, Mixin):
 
 
 register_schema(providers=["em"], db_name="stock_news", schema_base=NewsBase, entity_type="stock")
+
+
 # the __all__ is generated
 __all__ = ["StockNews"]

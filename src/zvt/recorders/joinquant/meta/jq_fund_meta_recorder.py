@@ -146,5 +146,7 @@ class JqChinaFundStockRecorder(TimeSeriesDataRecorder):
 if __name__ == "__main__":
     # JqChinaFundRecorder().run()
     JqChinaFundStockRecorder(codes=["000053"]).run()
+
+
 # the __all__ is generated
 __all__ = ["JqChinaFundRecorder", "JqChinaFundStockRecorder"]

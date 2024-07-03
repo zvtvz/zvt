@@ -15,5 +15,7 @@ class Stockus(StockusMetaBase, TradableEntity):
 
 
 register_schema(providers=["em"], db_name="stockus_meta", schema_base=StockusMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Stockus"]

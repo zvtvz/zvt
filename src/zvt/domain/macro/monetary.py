@@ -24,5 +24,7 @@ class TreasuryYield(MonetaryBase, Mixin):
 
 
 register_schema(providers=["em"], db_name="monetary", schema_base=MonetaryBase)
+
+
 # the __all__ is generated
 __all__ = ["TreasuryYield"]

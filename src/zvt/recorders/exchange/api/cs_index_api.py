@@ -103,5 +103,7 @@ def get_cs_index(index_type="sh"):
 if __name__ == "__main__":
     df = get_cs_index()
     print(df)
+
+
 # the __all__ is generated
 __all__ = ["get_cs_index"]

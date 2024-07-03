@@ -3,12 +3,13 @@ import logging
 from typing import List
 
 import pandas as pd
+from fastapi import HTTPException
 from sqlalchemy import func
 
 import zvt.contract.api as contract_api
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.domain import BlockStock, Block, Stock
-from zvt.tag.common import TagType
+from zvt.tag.common import TagType, TagStatsQueryType
 from zvt.tag.tag_models import (
     SetStockTagsModel,
     CreateStockPoolInfoModel,
@@ -17,8 +18,18 @@ from zvt.tag.tag_models import (
     ActivateSubTagsModel,
     BatchSetStockTagsModel,
     TagParameter,
+    CreateTagInfoModel,
 )
-from zvt.tag.tag_schemas import StockTags, StockPools, StockPoolInfo, TagStats, StockSystemTags
+from zvt.tag.tag_schemas import (
+    StockTags,
+    StockPools,
+    StockPoolInfo,
+    TagStats,
+    StockSystemTags,
+    MainTagInfo,
+    SubTagInfo,
+    HiddenTagInfo,
+)
 from zvt.tag.tag_utils import (
     industry_to_main_tag,
     get_sub_tags,
@@ -136,6 +147,11 @@ def build_tag_parameter(tag_type: TagType, tag, tag_reason, stock_tag: StockTags
 def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
     if not batch_set_stock_tags_model.entity_ids:
         return []
+
+    tag_info = CreateTagInfoModel(tag=batch_set_stock_tags_model.tag, tag_reason=batch_set_stock_tags_model.tag_reason)
+    if not is_tag_info_existed(tag_info=tag_info, tag_type=batch_set_stock_tags_model.tag_type):
+        build_tag_info(tag_info=tag_info, tag_type=batch_set_stock_tags_model.tag_type)
+
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
         tag_type = batch_set_stock_tags_model.tag_type
         if tag_type == TagType.main_tag:
@@ -313,6 +329,54 @@ class StockAutoTagger(StockTagger):
         self.build_sub_tags()
 
 
+def get_tag_info_schema(tag_type: TagType):
+    if tag_type == TagType.main_tag:
+        data_schema = MainTagInfo
+    elif tag_type == TagType.sub_tag:
+        data_schema = SubTagInfo
+    elif tag_type == TagType.hidden_tag:
+        data_schema = HiddenTagInfo
+    else:
+        assert False
+
+    return data_schema
+
+
+def is_tag_info_existed(tag_info: CreateTagInfoModel, tag_type: TagType):
+    data_schema = get_tag_info_schema(tag_type=tag_type)
+    with contract_api.DBSession(provider="zvt", data_schema=data_schema)() as session:
+        current_tags_info = data_schema.query_data(
+            session=session, filters=[data_schema.tag == tag_info.tag], return_type="domain"
+        )
+        if current_tags_info:
+            return True
+        return False
+
+
+def build_tag_info(tag_info: CreateTagInfoModel, tag_type: TagType):
+    """
+    Create tags info
+    """
+    if is_tag_info_existed(tag_info=tag_info, tag_type=tag_type):
+        raise HTTPException(status_code=409, detail=f"This tag has been registered in {tag_type}")
+
+    data_schema = get_tag_info_schema(tag_type=tag_type)
+    with contract_api.DBSession(provider="zvt", data_schema=data_schema)() as session:
+        timestamp = current_date()
+        entity_id = "admin"
+        tag_info_db = data_schema(
+            id=f"admin_{to_time_str(timestamp)}_{tag_info.tag}",
+            entity_id=entity_id,
+            timestamp=timestamp,
+            tag=tag_info.tag,
+            tag_reason=tag_info.tag_reason,
+        )
+        session.add(tag_info_db)
+        session.commit()
+        session.refresh(tag_info_db)
+        return tag_info_db
+
+
 def build_stock_pool_info(create_stock_pool_info_model: CreateStockPoolInfoModel, timestamp):
     with contract_api.DBSession(provider="zvt", data_schema=StockPoolInfo)() as session:
         stock_pool_info = StockPoolInfo(
@@ -379,6 +443,10 @@ def query_stock_tag_stats(query_stock_tag_stats_model: QueryStockTagStatsModel):
             return_type="dict",
             order=TagStats.position.asc(),
         )
+
+        if query_stock_tag_stats_model.query_type == TagStatsQueryType.simple:
+            return tag_stats_list
+
         entity_ids = flatten_list([tag_stats["entity_ids"] for tag_stats in tag_stats_list])
 
         # get stocks meta
@@ -568,7 +636,12 @@ if __name__ == "__main__":
 __all__ = [
     "stock_tags_need_update",
     "build_stock_tags",
+    "build_tag_parameter",
+    "batch_set_stock_tags",
     "StockAutoTagger",
+    "get_tag_info_schema",
+    "is_tag_info_existed",
+    "build_tag_info",
     "build_stock_pool_info",
     "build_stock_pool",
     "query_stock_tag_stats",

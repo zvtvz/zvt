@@ -69,5 +69,7 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
 
 if __name__ == "__main__":
     CrossMarketSummaryRecorder().run()
+
+
 # the __all__ is generated
 __all__ = ["CrossMarketSummaryRecorder"]

@@ -171,5 +171,7 @@ if __name__ == "__main__":
     # init_log('income_statement.log')
     recorder = ChinaStockIncomeStatementRecorder(codes=["002572"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["ChinaStockIncomeStatementRecorder"]

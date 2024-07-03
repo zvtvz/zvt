@@ -47,5 +47,6 @@ if __name__ == "__main__":
     # init_log('china_stock_category.log')
     ExchangeIndexRecorder().run()
 
+
 # the __all__ is generated
 __all__ = ["ExchangeIndexRecorder"]

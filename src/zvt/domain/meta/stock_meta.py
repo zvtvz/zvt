@@ -49,5 +49,7 @@ class StockDetail(StockMetaBase, TradableEntity):
 register_schema(
     providers=["exchange", "joinquant", "eastmoney", "em", "qmt"], db_name="stock_meta", schema_base=StockMetaBase
 )
+
+
 # the __all__ is generated
 __all__ = ["Stock", "StockDetail"]

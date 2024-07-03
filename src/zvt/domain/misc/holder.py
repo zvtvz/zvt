@@ -95,5 +95,6 @@ class InstitutionalInvestorHolder(HolderBase, Mixin):
 
 register_schema(providers=["eastmoney", "joinquant"], db_name="holder", schema_base=HolderBase, entity_type="stock")
 
+
 # the __all__ is generated
 __all__ = ["HkHolder", "TopTenTradableHolder", "TopTenHolder", "InstitutionalInvestorHolder"]

@@ -71,5 +71,7 @@ class EMTreasuryYieldRecorder(FixedCycleDataRecorder):
 if __name__ == "__main__":
     r = EMTreasuryYieldRecorder()
     r.run()
+
+
 # the __all__ is generated
 __all__ = ["EMTreasuryYieldRecorder"]

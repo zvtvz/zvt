@@ -160,6 +160,9 @@ class TradableType(Enum):
     #: A股(中国)
     #: China stock
     stock = "stock"
+    #: 可转债(中国)
+    #: China convertible Bond
+    cbond = "cbond"
     #: A股指数(中国)
     #: China index
     index = "index"
@@ -239,6 +242,7 @@ tradable_type_map_exchanges = {
     TradableType.block: [Exchange.cn],
     TradableType.index: [Exchange.sh, Exchange.sz],
     TradableType.stock: [Exchange.sh, Exchange.sz, Exchange.bj],
+    TradableType.cbond: [Exchange.sh, Exchange.sz],
     TradableType.stockhk: [Exchange.hk],
     TradableType.stockus: [Exchange.nasdaq, Exchange.nyse],
     TradableType.indexus: [Exchange.us],

@@ -208,5 +208,7 @@ __all__ = ["ChinaETFListSpider"]
 if __name__ == "__main__":
     spider = ChinaETFListSpider(provider="exchange")
     spider.run()
+
+
 # the __all__ is generated
 __all__ = ["ChinaETFListSpider"]

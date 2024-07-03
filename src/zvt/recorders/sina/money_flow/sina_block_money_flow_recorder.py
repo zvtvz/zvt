@@ -84,5 +84,7 @@ class SinaBlockMoneyFlowRecorder(FixedCycleDataRecorder):
 if __name__ == "__main__":
     SinaBlockMoneyFlowRecorder(codes=["new_fjzz"]).run()
     # SinaIndexMoneyFlowRecorder().run()
+
+
 # the __all__ is generated
 __all__ = ["SinaBlockMoneyFlowRecorder"]

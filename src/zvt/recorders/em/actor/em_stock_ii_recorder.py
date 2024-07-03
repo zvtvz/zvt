@@ -107,5 +107,7 @@ class EMStockIIRecorder(TimestampsDataRecorder):
 
 if __name__ == "__main__":
     EMStockIIRecorder(codes=["000562"]).run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockIIRecorder"]

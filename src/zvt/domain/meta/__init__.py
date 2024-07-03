@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-#
+
 # the __all__ is generated
 __all__ = []
 
@@ -28,6 +30,12 @@ from .country_meta import *
 from .country_meta import __all__ as _country_meta_all
 
 __all__ += _country_meta_all
+
+# import all from submodule cbond_meta
+from .cbond_meta import *
+from .cbond_meta import __all__ as _cbond_meta_all
+
+__all__ += _cbond_meta_all
 
 # import all from submodule index_meta
 from .index_meta import *

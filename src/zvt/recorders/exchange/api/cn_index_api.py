@@ -116,5 +116,7 @@ def get_cn_index(index_type="cni", category=IndexCategory.style):
 if __name__ == "__main__":
     df = get_cn_index()
     print(df)
+
+
 # the __all__ is generated
 __all__ = ["get_cn_index"]

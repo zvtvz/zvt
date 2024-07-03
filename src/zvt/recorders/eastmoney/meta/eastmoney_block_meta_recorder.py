@@ -101,5 +101,7 @@ if __name__ == "__main__":
 
     recorder = EastmoneyBlockStockRecorder(code="BK1144")
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EastmoneyBlockRecorder", "EastmoneyBlockStockRecorder"]

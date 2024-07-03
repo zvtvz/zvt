@@ -58,5 +58,7 @@ if __name__ == "__main__":
     print(len(stocks))
 
     JqChinaStockValuationRecorder(entity_ids=["stock_sz_300999"], force_update=True).run()
+
+
 # the __all__ is generated
 __all__ = ["JqChinaStockValuationRecorder"]

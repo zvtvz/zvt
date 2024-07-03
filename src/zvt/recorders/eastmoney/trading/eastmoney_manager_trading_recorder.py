@@ -37,5 +37,7 @@ if __name__ == "__main__":
 
     recorder = ManagerTradingRecorder(codes=["002572"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["ManagerTradingRecorder"]

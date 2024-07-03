@@ -182,5 +182,6 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
 if __name__ == "__main__":
     Stock1wkHfqKdata.record_data(codes=["300999"])
 
+
 # the __all__ is generated
 __all__ = ["JqChinaStockKdataRecorder"]

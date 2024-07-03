@@ -34,5 +34,7 @@ class Country(CountryMetaBase, TradableEntity):
 
 
 register_schema(providers=["wb"], db_name="country_meta", schema_base=CountryMetaBase)
+
+
 # the __all__ is generated
 __all__ = ["Country"]

@@ -19,5 +19,7 @@ class EMStockusRecorder(Recorder):
 if __name__ == "__main__":
     recorder = EMStockusRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockusRecorder"]

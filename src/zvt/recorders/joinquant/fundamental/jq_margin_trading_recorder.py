@@ -40,5 +40,7 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
 
 if __name__ == "__main__":
     MarginTradingRecorder(codes=["000004"]).run()
+
+
 # the __all__ is generated
 __all__ = ["MarginTradingRecorder"]

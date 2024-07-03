@@ -37,5 +37,7 @@ class EMBlockStockRecorder(TimeSeriesDataRecorder):
 if __name__ == "__main__":
     recorder = EMBlockStockRecorder(day_data=True, sleeping_time=0)
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EMBlockRecorder", "EMBlockStockRecorder"]

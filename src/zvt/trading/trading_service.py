@@ -147,8 +147,9 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
         )
         .reset_index(drop=False)
     )
+    sorted_df = grouped_df.sort_values(by=["turnover", "total_count"], ascending=[False, False])
 
-    return grouped_df.to_dict(orient="records")
+    return sorted_df.to_dict(orient="records")
 
 
 def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
@@ -209,7 +210,7 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
         "change_pct": change_pct,
         "limit_up_count": limit_up_count,
         "limit_down_count": limit_down_count,
-        "quotes": quotes,
+        "quotes": quotes[: query_stock_quote_model.limit],
     }
     return result
 
@@ -222,7 +223,7 @@ def sell_stocks():
     pass
 
 
-def build_query_stock_quote_setting(build_query_stock_quote_setting_model: BuildQueryStockQuoteSettingModel, timestamp):
+def build_query_stock_quote_setting(build_query_stock_quote_setting_model: BuildQueryStockQuoteSettingModel):
     with contract_api.DBSession(provider="zvt", data_schema=QueryStockQuoteSetting)() as session:
         the_id = "admin_setting"
         datas = QueryStockQuoteSetting.query_data(ids=[the_id], session=session, return_type="domain")
@@ -230,7 +231,7 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
             stock_pool_info = datas[0]
         else:
             stock_pool_info = QueryStockQuoteSetting(entity_id="admin", id=the_id)
-        stock_pool_info.timestamp = to_pd_timestamp(timestamp)
+        stock_pool_info.timestamp = current_date()
         stock_pool_info.stock_pool_name = build_query_stock_quote_setting_model.stock_pool_name
         stock_pool_info.main_tags = build_query_stock_quote_setting_model.main_tags
         session.add(stock_pool_info)

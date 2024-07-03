@@ -14,5 +14,6 @@ class Index1wkKdata(KdataBase, IndexKdataCommon):
 
 register_schema(providers=["em", "sina"], db_name="index_1wk_kdata", schema_base=KdataBase, entity_type="index")
 
+
 # the __all__ is generated
 __all__ = ["Index1wkKdata"]

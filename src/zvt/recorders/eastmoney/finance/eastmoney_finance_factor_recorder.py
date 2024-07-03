@@ -156,5 +156,7 @@ if __name__ == "__main__":
     # init_log('finance_factor.log')
     recorder = ChinaStockFinanceFactorRecorder(codes=["000001"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["ChinaStockFinanceFactorRecorder"]

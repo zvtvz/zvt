@@ -54,5 +54,7 @@ if __name__ == "__main__":
 
     recorder = SPODetailRecorder(codes=["000999"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["SPODetailRecorder"]

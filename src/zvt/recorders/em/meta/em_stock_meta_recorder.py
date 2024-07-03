@@ -32,5 +32,7 @@ class EMStockRecorder(Recorder):
 if __name__ == "__main__":
     recorder = EMStockRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockRecorder"]

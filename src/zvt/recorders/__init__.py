@@ -65,6 +65,7 @@ def init_main_index(provider="exchange"):
 
 init_main_index(provider="exchange")
 
+
 # the __all__ is generated
 __all__ = ["init_main_index"]
 

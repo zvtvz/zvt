@@ -194,5 +194,7 @@ class EMDragonAndTigerRecorder(FixedCycleDataRecorder):
 
 if __name__ == "__main__":
     EMDragonAndTigerRecorder(sleeping_time=0.1, exchanges=["sh"]).run()
+
+
 # the __all__ is generated
 __all__ = ["EMDragonAndTigerRecorder"]

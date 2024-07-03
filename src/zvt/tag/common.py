@@ -11,8 +11,12 @@ class TagType(Enum):
     main_tag = "main_tag"
     sub_tag = "sub_tag"
     hidden_tag = "hidden_tag"
-    undefined = "undefined"
+
+
+class TagStatsQueryType(Enum):
+    simple = "simple"
+    details = "details"
 
 
 # the __all__ is generated
-__all__ = ["StockPoolType", "TagType"]
+__all__ = ["StockPoolType", "TagType", "TagStatsQueryType"]

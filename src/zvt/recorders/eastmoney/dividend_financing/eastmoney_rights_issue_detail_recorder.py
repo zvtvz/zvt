@@ -56,5 +56,7 @@ if __name__ == "__main__":
 
     recorder = RightsIssueDetailRecorder(codes=SAMPLE_STOCK_CODES)
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["RightsIssueDetailRecorder"]

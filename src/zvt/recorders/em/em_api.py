@@ -606,6 +606,13 @@ def get_tradable_list(
         elif entity_type == TradableType.indexus:
             # 纳斯达克，道琼斯，标普500，美元指数
             entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX,i:100.UDI"
+        elif entity_type == TradableType.cbond:
+            if exchange == Exchange.sz:
+                entity_flag = "fs=m:0+e:11"
+            elif exchange == Exchange.sh:
+                entity_flag = "fs=m:1+e:11"
+            else:
+                assert False
         # m为交易所代码，t为交易类型
         elif entity_type in [TradableType.block, TradableType.stock, TradableType.stockus, TradableType.stockhk]:
             if exchange == Exchange.sh:
@@ -889,8 +896,9 @@ if __name__ == "__main__":
     #     get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
     # )
     # df = get_kdata(entity_id="index_sz_399370", level="1wk")
-    # df = get_tradable_list(entity_type="stockhk")
-    df = get_news("stock_sz_300999", ps=1)
+    df = get_tradable_list(entity_type="cbond")
+    print(df)
+    # df = get_news("stock_sz_300999", ps=1)
     # print(df)
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
@@ -919,6 +927,7 @@ if __name__ == "__main__":
     # events = get_events(entity_id="stock_sz_300684")
     # print(events)
 
+
 # the __all__ is generated
 __all__ = [
     "get_treasury_yield",
@@ -937,6 +946,7 @@ __all__ = [
     "actor_type_to_org_type",
     "generate_filters",
     "get_em_data",
+    "get_quotes",
     "get_kdata",
     "get_basic_info",
     "get_future_list",

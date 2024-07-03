@@ -94,5 +94,7 @@ class ExchangeStockSummaryRecorder(TimestampsDataRecorder):
 
 if __name__ == "__main__":
     ExchangeStockSummaryRecorder().run()
+
+
 # the __all__ is generated
 __all__ = ["ExchangeStockSummaryRecorder"]

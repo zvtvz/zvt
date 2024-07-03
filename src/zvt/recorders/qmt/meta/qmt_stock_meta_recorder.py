@@ -19,5 +19,7 @@ class QMTStockRecorder(Recorder):
 if __name__ == "__main__":
     recorder = QMTStockRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["QMTStockRecorder"]

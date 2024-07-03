@@ -104,5 +104,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
 
 if __name__ == "__main__":
     JoinquantHkHolderRecorder(sleeping_time=10).run()
+
+
 # the __all__ is generated
 __all__ = ["JoinquantHkHolderRecorder"]

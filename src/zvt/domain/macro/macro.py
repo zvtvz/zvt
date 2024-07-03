@@ -39,5 +39,7 @@ class Economy(MacroBase, Mixin):
 
 
 register_schema(providers=["wb"], db_name="macro", schema_base=MacroBase)
+
+
 # the __all__ is generated
 __all__ = ["Economy"]

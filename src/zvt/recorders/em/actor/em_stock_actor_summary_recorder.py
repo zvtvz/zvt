@@ -79,5 +79,7 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
 
 if __name__ == "__main__":
     EMStockActorSummaryRecorder(codes=["000338"]).run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockActorSummaryRecorder"]

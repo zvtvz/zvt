@@ -19,5 +19,7 @@ class EMFutureRecorder(Recorder):
 if __name__ == "__main__":
     recorder = EMFutureRecorder(force_update=True)
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EMFutureRecorder"]

@@ -43,5 +43,6 @@ class StockQuote(StockQuoteBase, Mixin):
 
 register_schema(providers=["qmt"], db_name="stock_quote", schema_base=StockQuoteBase, entity_type="stock")
 
+
 # the __all__ is generated
 __all__ = ["StockQuote"]

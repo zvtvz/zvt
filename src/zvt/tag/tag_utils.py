@@ -127,7 +127,7 @@ def get_initial_stock_pool_info():
             "stock_pool_type": StockPoolType.system.value,
             "stock_pool_name": stock_pool_name,
         }
-        for stock_pool_name in ["main_line", "vol_up", "all"]
+        for stock_pool_name in ["main_line", "vol_up", "大局", "all"]
     ]
 
 
@@ -287,5 +287,6 @@ __all__ = [
     "build_initial_hidden_tag_info",
     "get_hidden_tags",
     "get_stock_pool_names",
+    "match_tag_by_type",
     "match_tag",
 ]

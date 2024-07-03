@@ -14,5 +14,6 @@ class Indexus1dKdata(KdataBase, IndexusKdataCommon):
 
 register_schema(providers=["em"], db_name="indexus_1d_kdata", schema_base=KdataBase, entity_type="indexus")
 
+
 # the __all__ is generated
 __all__ = ["Indexus1dKdata"]

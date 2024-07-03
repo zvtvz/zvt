@@ -60,5 +60,7 @@ class StockTradeDayRecorder(TimeSeriesDataRecorder):
 if __name__ == "__main__":
     r = StockTradeDayRecorder()
     r.run()
+
+
 # the __all__ is generated
 __all__ = ["StockTradeDayRecorder"]

@@ -73,5 +73,6 @@ register_schema(
     providers=["eastmoney"], db_name="dividend_financing", schema_base=DividendFinancingBase, entity_type="stock"
 )
 
+
 # the __all__ is generated
 __all__ = ["DividendFinancing", "DividendDetail", "SpoDetail", "RightsIssueDetail"]

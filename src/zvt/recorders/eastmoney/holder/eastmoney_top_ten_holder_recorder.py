@@ -49,5 +49,7 @@ if __name__ == "__main__":
     # init_log('top_ten_holder.log')
 
     TopTenHolderRecorder(codes=["002572"]).run()
+
+
 # the __all__ is generated
 __all__ = ["TopTenHolderRecorder"]

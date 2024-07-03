@@ -55,5 +55,7 @@ if __name__ == "__main__":
 
     recorder = DividendFinancingRecorder(codes=["000999"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["DividendFinancingRecorder"]

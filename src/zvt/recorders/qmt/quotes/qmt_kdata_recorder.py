@@ -104,5 +104,7 @@ class EMStockKdataRecorder(BaseQmtKdataRecorder):
 if __name__ == "__main__":
     # Stock.record_data(provider="exchange")
     EMStockKdataRecorder(entity_id="stock_sz_000338", adjust_type=AdjustType.hfq).run()
+
+
 # the __all__ is generated
 __all__ = ["BaseQmtKdataRecorder", "EMStockKdataRecorder"]

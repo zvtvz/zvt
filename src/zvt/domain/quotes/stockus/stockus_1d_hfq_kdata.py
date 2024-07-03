@@ -14,5 +14,6 @@ class Stockus1dHfqKdata(KdataBase, StockusKdataCommon):
 
 register_schema(providers=["em"], db_name="stockus_1d_hfq_kdata", schema_base=KdataBase, entity_type="stockus")
 
+
 # the __all__ is generated
 __all__ = ["Stockus1dHfqKdata"]

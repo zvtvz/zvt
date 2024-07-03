@@ -188,5 +188,7 @@ if __name__ == "__main__":
     # init_log('cash_flow.log')
     recorder = ChinaStockCashFlowRecorder(codes=["002572"])
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["ChinaStockCashFlowRecorder"]

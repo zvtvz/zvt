@@ -160,5 +160,7 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
 if __name__ == "__main__":
     JoinquantStockMoneyFlowRecorder(codes=["000578"]).run()
+
+
 # the __all__ is generated
 __all__ = ["JoinquantStockMoneyFlowRecorder"]

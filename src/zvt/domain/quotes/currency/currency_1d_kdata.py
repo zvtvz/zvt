@@ -14,5 +14,6 @@ class Currency1dKdata(KdataBase, CurrencyKdataCommon):
 
 register_schema(providers=["em"], db_name="currency_1d_kdata", schema_base=KdataBase, entity_type="currency")
 
+
 # the __all__ is generated
 __all__ = ["Currency1dKdata"]

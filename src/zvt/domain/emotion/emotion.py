@@ -83,5 +83,7 @@ class Emotion(EmotionBase, Mixin):
 
 
 register_schema(providers=["jqka"], db_name="emotion", schema_base=EmotionBase)
+
+
 # the __all__ is generated
 __all__ = ["LimitUpInfo", "LimitDownInfo", "Emotion"]

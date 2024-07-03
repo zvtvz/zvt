@@ -16,5 +16,6 @@ register_schema(
     providers=["em", "qmt", "joinquant"], db_name="stock_30m_hfq_kdata", schema_base=KdataBase, entity_type="stock"
 )
 
+
 # the __all__ is generated
 __all__ = ["Stock30mHfqKdata"]

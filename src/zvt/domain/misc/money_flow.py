@@ -110,5 +110,6 @@ class IndexMoneyFlow(MoneyFlowBase, Mixin):
 
 register_schema(providers=["joinquant", "sina"], db_name="money_flow", schema_base=MoneyFlowBase, entity_type="stock")
 
+
 # the __all__ is generated
 __all__ = ["BlockMoneyFlow", "StockMoneyFlow", "IndexMoneyFlow"]

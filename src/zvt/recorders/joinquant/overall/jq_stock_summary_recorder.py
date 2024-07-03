@@ -96,5 +96,7 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
 
 if __name__ == "__main__":
     StockSummaryRecorder().run()
+
+
 # the __all__ is generated
 __all__ = ["StockSummaryRecorder"]

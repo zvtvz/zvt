@@ -26,5 +26,7 @@ if __name__ == "__main__":
     entity_ids = ["country_galaxy_CN", "country_galaxy_US"]
     r = WBEconomyRecorder(entity_ids=entity_ids)
     r.run()
+
+
 # the __all__ is generated
 __all__ = ["WBEconomyRecorder"]

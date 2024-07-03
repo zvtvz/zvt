@@ -36,7 +36,7 @@ zvt_app.layout = serve_layout
 
 def main():
     # init_plugins()
-    zvt_app.run_server(debug=True)
+    zvt_app.run_server(debug=True, host="0.0.0.0")
     # zvt_app.run_server()
 
 

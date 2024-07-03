@@ -14,5 +14,6 @@ class Block1dKdata(KdataBase, BlockKdataCommon):
 
 register_schema(providers=["em"], db_name="block_1d_kdata", schema_base=KdataBase, entity_type="block")
 
+
 # the __all__ is generated
 __all__ = ["Block1dKdata"]

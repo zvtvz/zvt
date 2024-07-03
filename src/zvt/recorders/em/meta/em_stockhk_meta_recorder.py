@@ -26,5 +26,7 @@ class EMStockhkRecorder(Recorder):
 if __name__ == "__main__":
     recorder = EMStockhkRecorder()
     recorder.run()
+
+
 # the __all__ is generated
 __all__ = ["EMStockhkRecorder"]

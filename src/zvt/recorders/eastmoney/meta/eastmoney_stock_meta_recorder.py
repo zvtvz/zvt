@@ -100,5 +100,7 @@ if __name__ == "__main__":
     recorder = EastmoneyStockRecorder()
     recorder.run()
     StockDetail.record_data(codes=["000338", "000777"], provider="eastmoney")
+
+
 # the __all__ is generated
 __all__ = ["EastmoneyStockRecorder", "EastmoneyStockDetailRecorder"]

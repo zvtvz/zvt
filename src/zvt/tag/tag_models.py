@@ -5,7 +5,7 @@ from pydantic import field_validator, Field
 from pydantic_core.core_schema import ValidationInfo
 
 from zvt.contract.model import MixinModel, CustomModel
-from zvt.tag.common import StockPoolType, TagType
+from zvt.tag.common import StockPoolType, TagType, TagStatsQueryType
 from zvt.tag.tag_utils import get_main_tags, get_sub_tags, get_hidden_tags, get_stock_pool_names
 
 
@@ -142,6 +142,7 @@ class CreateStockPoolsModel(CustomModel):
 class QueryStockTagStatsModel(CustomModel):
     stock_pool_name: Optional[str] = None
     entity_ids: Optional[List[str]] = None
+    query_type: Optional[TagStatsQueryType] = Field(default=TagStatsQueryType.details)
 
     @field_validator("stock_pool_name", "entity_ids")
     @classmethod
@@ -205,13 +206,13 @@ class StockTagDetailsModel(CustomModel):
 
 class StockTagStatsModel(MixinModel):
     main_tag: str
-    turnover: float
-    entity_count: int
-    position: int
-    is_main_line: bool
-    main_line_continuous_days: int
-    entity_ids: List[str]
-    stock_details: List[StockTagDetailsModel]
+    turnover: Optional[float] = Field(default=None)
+    entity_count: Optional[int] = Field(default=None)
+    position: Optional[int] = Field(default=None)
+    is_main_line: Optional[bool] = Field(default=None)
+    main_line_continuous_days: Optional[int] = Field(default=None)
+    entity_ids: Optional[List[str]] = Field(default=None)
+    stock_details: Optional[List[StockTagDetailsModel]] = Field(default=None)
 
 
 class ActivateSubTagsModel(CustomModel):
@@ -230,6 +231,8 @@ __all__ = [
     "SimpleStockTagsModel",
     "QueryStockTagsModel",
     "QuerySimpleStockTagsModel",
+    "BatchSetStockTagsModel",
+    "TagParameter",
     "SetStockTagsModel",
     "StockPoolModel",
     "StockPoolInfoModel",

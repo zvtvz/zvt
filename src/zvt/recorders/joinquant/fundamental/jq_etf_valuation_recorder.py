@@ -115,5 +115,7 @@ class JqChinaEtfValuationRecorder(TimeSeriesDataRecorder):
 if __name__ == "__main__":
     # 上证50
     JqChinaEtfValuationRecorder(codes=["512290"]).run()
+
+
 # the __all__ is generated
 __all__ = ["JqChinaEtfValuationRecorder"]
