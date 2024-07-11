@@ -71,9 +71,9 @@ class SetStockTagsModel(CustomModel):
     entity_id: str
     main_tag: str
     main_tag_reason: Optional[str] = None
-    sub_tag: Union[str, None]
+    sub_tag: Optional[str] = None
     sub_tag_reason: Optional[str] = None
-    active_hidden_tags: Union[Dict[str, str], None]
+    active_hidden_tags: Optional[Dict[str, str]] = None
 
     @field_validator("main_tag")
     @classmethod
@@ -85,7 +85,7 @@ class SetStockTagsModel(CustomModel):
     @field_validator("sub_tag")
     @classmethod
     def sub_tag_must_be_in(cls, v: str) -> str:
-        if v not in get_sub_tags():
+        if v and (v not in get_sub_tags()):
             raise ValueError(f"sub_tag: {v} must be created at sub_tag_info at first")
         return v
 

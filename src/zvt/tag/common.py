@@ -8,6 +8,7 @@ class StockPoolType(Enum):
 
 
 class TagType(Enum):
+    #: A tag is a main tag due to its extensive capacity.
     main_tag = "main_tag"
     sub_tag = "sub_tag"
     hidden_tag = "hidden_tag"

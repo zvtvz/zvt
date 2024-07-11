@@ -190,7 +190,7 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
     Activate sub tags
     """
 
-    return tag_service.activate_main_tag_by_sub_tags(activate_sub_tags_model=activate_sub_tags_model)
+    return tag_service.activate_sub_tags(activate_sub_tags_model=activate_sub_tags_model)
 
 
 @work_router.post("/batch_set_stock_tags", response_model=List[StockTagsModel])
