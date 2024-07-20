@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="zvt",
-    version="0.11.5",
+    version="0.11.6",
     description="unified,modular quant framework for human beings ",
     long_description=long_description,
     url="https://github.com/zvtvz/zvt",
