@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8090/api/event/ignore_stock_news
+accept: application/json
+Content-Type: application/json
+
+{
+  "news_id": "stock_sz_000034_2024-07-17 16:08:17"
+}
+
+
+

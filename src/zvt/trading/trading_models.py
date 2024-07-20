@@ -17,7 +17,7 @@ class QueryStockQuoteSettingModel(CustomModel):
     main_tags: Optional[List[str]] = Field(default=None)
 
 
-class BuildQueryStockQuoteSettingModel(BaseModel):
+class BuildQueryStockQuoteSettingModel(CustomModel):
     stock_pool_name: str
     main_tags: Optional[List[str]] = Field(default=None)
 

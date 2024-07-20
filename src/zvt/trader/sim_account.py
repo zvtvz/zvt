@@ -3,8 +3,6 @@ import logging
 import math
 from typing import List, Optional
 
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-
 from zvt.api.kdata import get_kdata, get_kdata_schema
 from zvt.contract import IntervalLevel, TradableEntity, AdjustType
 from zvt.contract.api import get_db_session, decode_entity_id
@@ -17,27 +15,11 @@ from zvt.trader.errors import (
     WrongKdataError,
 )
 from zvt.trader.trader_info_api import get_trader_info, clear_trader
+from zvt.trader.trader_models import AccountStatsModel, PositionModel
 from zvt.trader.trader_schemas import AccountStats, Position, Order, TraderInfo
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
 from zvt.utils.utils import fill_domain_from_dict
-
-
-# FIXME:better way for schema<->domain,now just dump to schema and use dict['field'] for operation
-class AccountDayStatsSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = AccountStats
-        include_relationships = True
-
-
-class PositionSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Position
-        include_relationships = True
-
-
-account_stats_schema = AccountDayStatsSchema()
-position_schema = PositionSchema()
 
 
 class SimAccountService(AccountService):
@@ -77,7 +59,6 @@ class SimAccountService(AccountService):
         self.real_time = real_time
         self.kdata_use_begin_time = kdata_use_begin_time
 
-        self.account = None
         self.account = self.init_account()
 
         account_info = (
@@ -149,20 +130,16 @@ class SimAccountService(AccountService):
         latest_record: AccountStats = records[0]
 
         # create new orm object from latest record
-        account_dict = account_stats_schema.dump(latest_record)
-        del account_dict["id"]
-        del account_dict["positions"]
+        account_stats_model = AccountStatsModel.from_orm(latest_record)
         account = AccountStats()
-        fill_domain_from_dict(account, account_dict)
+        fill_domain_from_dict(account, account_stats_model.model_dump(exclude={"id", "positions"}))
 
         positions: List[Position] = []
         for position_domain in latest_record.positions:
-            position_dict = position_schema.dump(position_domain)
-            self.logger.debug("current position:{}".format(position_dict))
-            del position_dict["id"]
-            del position_dict["account_stats"]
+            position_model = PositionModel.from_orm(position_domain)
+            self.logger.debug("current position:{}".format(position_model))
             position = Position()
-            fill_domain_from_dict(position, position_dict)
+            fill_domain_from_dict(position, position_model.model_dump())
             positions.append(position)
 
         account.positions = positions
@@ -571,4 +548,4 @@ class SimAccountService(AccountService):
 
 
 # the __all__ is generated
-__all__ = ["AccountDayStatsSchema", "PositionSchema", "AccountService", "SimAccountService"]
+__all__ = ["AccountService", "SimAccountService"]

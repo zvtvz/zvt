@@ -745,6 +745,7 @@ def get_news(entity_id, ps=200, index=1, start_timestamp=None, session=None, lat
                         "news_code": item.get("Art_Code", ""),
                         "news_url": item.get("Art_Url", ""),
                         "news_title": item.get("Art_Title", ""),
+                        "ignore_by_user": False,
                     }
                     for index, item in enumerate(json_result)
                     if not start_timestamp

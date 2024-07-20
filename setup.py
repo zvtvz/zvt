@@ -47,8 +47,6 @@ setup(
         "arrow==1.2.3",
         "openpyxl==3.1.1",
         "demjson3==3.0.6",
-        "marshmallow-sqlalchemy==1.0.0",
-        "marshmallow==3.21.1",
         "plotly==5.13.0",
         "dash==2.8.1",
         "jqdatapy==0.1.8",

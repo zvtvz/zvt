@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, String, JSON
+from sqlalchemy import Column, String, JSON, Boolean
 from sqlalchemy.orm import declarative_base
 
 from zvt.contract import Mixin
@@ -21,6 +21,8 @@ class StockNews(NewsBase, Mixin):
     news_content = Column(String)
     #: 新闻解读
     news_analysis = Column(JSON)
+    #: 用户设置为忽略
+    ignore_by_user = Column(Boolean, default=False)
 
 
 register_schema(providers=["em"], db_name="stock_news", schema_base=NewsBase, entity_type="stock")
