@@ -96,15 +96,15 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             self.logger.info(f"no kdata for {entity.id}")
 
 
-class EMStockKdataRecorder(BaseQmtKdataRecorder):
+class QMTStockKdataRecorder(BaseQmtKdataRecorder):
     entity_schema = Stock
     data_schema = StockKdataCommon
 
 
 if __name__ == "__main__":
     # Stock.record_data(provider="exchange")
-    EMStockKdataRecorder(entity_id="stock_sz_000338", adjust_type=AdjustType.hfq).run()
+    QMTStockKdataRecorder(entity_id="stock_sz_000338", adjust_type=AdjustType.hfq).run()
 
 
 # the __all__ is generated
-__all__ = ["BaseQmtKdataRecorder", "EMStockKdataRecorder"]
+__all__ = ["BaseQmtKdataRecorder", "QMTStockKdataRecorder"]

@@ -24,6 +24,7 @@ from zvt.tag.tag_models import (
     ActivateSubTagsResultModel,
     ActivateSubTagsModel,
     BatchSetStockTagsModel,
+    StockTagOptions,
 )
 from zvt.tag.tag_schemas import StockTags, MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, StockPools
 from zvt.utils.time_utils import current_date
@@ -150,6 +151,14 @@ def query_simple_stock_tags(query_simple_stock_tags_model: QuerySimpleStockTagsM
             tag["name"] = stocks_map.get(entity_id).name
             result_tags.append(tag)
         return result_tags
+
+
+@work_router.get("/get_stock_tag_options", response_model=StockTagOptions)
+def get_stock_tag_options(entity_id: str):
+    """
+    Get stock tag options
+    """
+    return tag_service.get_stock_tag_options(entity_id=entity_id)
 
 
 @work_router.post("/set_stock_tags", response_model=StockTagsModel)

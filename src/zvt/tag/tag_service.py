@@ -19,6 +19,7 @@ from zvt.tag.tag_models import (
     BatchSetStockTagsModel,
     TagParameter,
     CreateTagInfoModel,
+    StockTagOptions,
 )
 from zvt.tag.tag_schemas import (
     StockTags,
@@ -53,10 +54,60 @@ def stock_tags_need_update(stock_tags: StockTags, set_stock_tags_model: SetStock
     return False
 
 
+def get_stock_tag_options(entity_id):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        datas: List[StockTags] = StockTags.query_data(
+            entity_id=entity_id, order=StockTags.timestamp.desc(), limit=1, return_type="domain", session=session
+        )
+        main_tag_options = []
+        sub_tag_options = []
+        main_tag = None
+        sub_tag = None
+        stock_tags = None
+        if datas:
+            stock_tags = datas[0]
+            main_tag = stock_tags.main_tag
+            sub_tag = stock_tags.sub_tag
+            main_tag_options = [
+                CreateTagInfoModel(tag=tag, tag_reason=tag_reason) for tag, tag_reason in stock_tags.main_tags.items()
+            ]
+            sub_tag_options = [
+                CreateTagInfoModel(tag=tag, tag_reason=tag_reason) for tag, tag_reason in stock_tags.sub_tags.items()
+            ]
+
+        main_tags_info: List[MainTagInfo] = MainTagInfo.query_data(session=session, return_type="domain")
+        main_tag_options = main_tag_options + [
+            CreateTagInfoModel(tag=item.tag, tag_reason=item.tag_reason)
+            for item in main_tags_info
+            if not stock_tags or (item.tag not in stock_tags.main_tags)
+        ]
+
+        sub_tags_info: List[SubTagInfo] = SubTagInfo.query_data(session=session, return_type="domain")
+        sub_tag_options = sub_tag_options + [
+            CreateTagInfoModel(tag=item.tag, tag_reason=item.tag_reason)
+            for item in sub_tags_info
+            if not stock_tags or (item.tag not in stock_tags.sub_tags)
+        ]
+        return StockTagOptions(
+            main_tag=main_tag, sub_tag=sub_tag, main_tag_options=main_tag_options, sub_tag_options=sub_tag_options
+        )
+
+
 def build_stock_tags(
     set_stock_tags_model: SetStockTagsModel, timestamp: pd.Timestamp, set_by_user: bool, keep_current=False
 ):
     logger.info(set_stock_tags_model)
+
+    main_tag_info = CreateTagInfoModel(
+        tag=set_stock_tags_model.main_tag, tag_reason=set_stock_tags_model.main_tag_reason
+    )
+    if not is_tag_info_existed(tag_info=main_tag_info, tag_type=TagType.main_tag):
+        build_tag_info(tag_info=main_tag_info, tag_type=TagType.main_tag)
+
+    sub_tag_info = CreateTagInfoModel(tag=set_stock_tags_model.sub_tag, tag_reason=set_stock_tags_model.sub_tag_reason)
+    if not is_tag_info_existed(tag_info=sub_tag_info, tag_type=TagType.sub_tag):
+        build_tag_info(tag_info=sub_tag_info, tag_type=TagType.sub_tag)
+
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
         entity_id = set_stock_tags_model.entity_id
         main_tags = {}
@@ -608,6 +659,7 @@ if __name__ == "__main__":
 # the __all__ is generated
 __all__ = [
     "stock_tags_need_update",
+    "get_stock_tag_options",
     "build_stock_tags",
     "build_tag_parameter",
     "batch_set_stock_tags",

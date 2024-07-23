@@ -41,8 +41,29 @@ class StockQuote(StockQuoteBase, Mixin):
     total_cap = Column(Float)
 
 
+class Stock1mQuote(StockQuoteBase, Mixin):
+    __tablename__ = "stock_1m_quote"
+    code = Column(String(length=32))
+    name = Column(String(length=32))
+
+    #: UNIX时间戳
+    time = Column(Integer)
+    #: 最新价
+    price = Column(Float)
+    #: 均价
+    avg_price = Column(Float)
+    # 涨跌幅
+    change_pct = Column(Float)
+    # 成交量
+    volume = Column(Float)
+    # 成交金额
+    turnover = Column(Float)
+    # 换手率
+    turnover_rate = Column(Float)
+
+
 register_schema(providers=["qmt"], db_name="stock_quote", schema_base=StockQuoteBase, entity_type="stock")
 
 
 # the __all__ is generated
-__all__ = ["StockQuote"]
+__all__ = ["StockQuote", "Stock1mQuote"]

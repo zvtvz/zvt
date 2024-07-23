@@ -9,8 +9,9 @@ from xtquant import xtdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock
+from zvt.domain.quotes.stock.stock_quote import Stock1mQuote
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, current_date, to_pd_timestamp, now_pd_timestamp
+from zvt.utils.time_utils import to_time_str, current_date, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
 
@@ -197,6 +198,8 @@ def tick_to_quote():
             lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"])), axis=1
         )
 
+        df["volume"] = df["pvolume"]
+        df["avg_price"] = df["turnover"] / df["volume"]
         # 换手率
         df["turnover_rate"] = df["pvolume"] / df["float_volume"]
         # 涨跌幅
@@ -223,6 +226,11 @@ def tick_to_quote():
         df_to_db(df, data_schema=StockQuote, provider="qmt", force_update=True, drop_duplicates=False)
         cost_time = time.time() - start_time
         logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
+
+        df["id"] = df[["entity_id", "timestamp"]].apply(
+            lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE)), axis=1
+        )
+        df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
 
     return on_data
 
@@ -256,13 +264,19 @@ def record_tick():
         if not client.is_connected():
             raise Exception("行情服务连接断开")
         current_timestamp = now_pd_timestamp()
-        if current_timestamp.hour == 15 and current_timestamp.minute == 10:
+        if current_timestamp.hour >= 15 and current_timestamp.minute >= 10:
             logger.info(f"record tick finished at: {current_timestamp}")
             break
 
 
 if __name__ == "__main__":
+    from apscheduler.schedulers.background import BackgroundScheduler
+
+    sched = BackgroundScheduler()
     record_tick()
+    sched.add_job(func=record_tick, trigger="cron", hour=9, minute=18, day_of_week="mon-fri")
+    sched.start()
+    sched._thread.join()
 
 
 # the __all__ is generated

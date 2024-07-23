@@ -1,0 +1,4 @@
+GET http://127.0.0.1:8090/api/work/get_stock_tag_options?entity_id=stock_sh_600733
+accept: application/json
+
+

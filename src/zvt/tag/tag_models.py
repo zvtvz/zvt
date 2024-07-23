@@ -6,7 +6,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from zvt.contract.model import MixinModel, CustomModel
 from zvt.tag.common import StockPoolType, TagType, TagStatsQueryType
-from zvt.tag.tag_utils import get_main_tags, get_sub_tags, get_hidden_tags, get_stock_pool_names
+from zvt.tag.tag_utils import get_stock_pool_names
 
 
 class TagInfoModel(MixinModel):
@@ -67,6 +67,13 @@ class TagParameter(CustomModel):
     sub_tag_reason: Optional[str] = None
 
 
+class StockTagOptions(CustomModel):
+    main_tag: Optional[str] = None
+    sub_tag: Optional[str] = None
+    main_tag_options: List[CreateTagInfoModel]
+    sub_tag_options: List[CreateTagInfoModel]
+
+
 class SetStockTagsModel(CustomModel):
     entity_id: str
     main_tag: str
@@ -75,28 +82,28 @@ class SetStockTagsModel(CustomModel):
     sub_tag_reason: Optional[str] = None
     active_hidden_tags: Optional[Dict[str, str]] = None
 
-    @field_validator("main_tag")
-    @classmethod
-    def main_tag_must_be_in(cls, v: str) -> str:
-        if v not in get_main_tags():
-            raise ValueError(f"main_tag: {v} must be created at main_tag_info at first")
-        return v
-
-    @field_validator("sub_tag")
-    @classmethod
-    def sub_tag_must_be_in(cls, v: str) -> str:
-        if v and (v not in get_sub_tags()):
-            raise ValueError(f"sub_tag: {v} must be created at sub_tag_info at first")
-        return v
-
-    @field_validator("active_hidden_tags")
-    @classmethod
-    def hidden_tag_must_be_in(cls, v: Union[Dict[str, str], None]) -> Union[Dict[str, str], None]:
-        if v:
-            for item in v.keys():
-                if item not in get_hidden_tags():
-                    raise ValueError(f"hidden_tag: {v} must be created at hidden_tag_info at first")
-        return v
+    # @field_validator("main_tag")
+    # @classmethod
+    # def main_tag_must_be_in(cls, v: str) -> str:
+    #     if v not in get_main_tags():
+    #         raise ValueError(f"main_tag: {v} must be created at main_tag_info at first")
+    #     return v
+    #
+    # @field_validator("sub_tag")
+    # @classmethod
+    # def sub_tag_must_be_in(cls, v: str) -> str:
+    #     if v and (v not in get_sub_tags()):
+    #         raise ValueError(f"sub_tag: {v} must be created at sub_tag_info at first")
+    #     return v
+    #
+    # @field_validator("active_hidden_tags")
+    # @classmethod
+    # def hidden_tag_must_be_in(cls, v: Union[Dict[str, str], None]) -> Union[Dict[str, str], None]:
+    #     if v:
+    #         for item in v.keys():
+    #             if item not in get_hidden_tags():
+    #                 raise ValueError(f"hidden_tag: {v} must be created at hidden_tag_info at first")
+    #     return v
 
 
 class StockPoolModel(MixinModel):
@@ -233,6 +240,7 @@ __all__ = [
     "QuerySimpleStockTagsModel",
     "BatchSetStockTagsModel",
     "TagParameter",
+    "StockTagOptions",
     "SetStockTagsModel",
     "StockPoolModel",
     "StockPoolInfoModel",
