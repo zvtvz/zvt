@@ -16,3 +16,4 @@ fastapi-pagination==0.12.23
 apscheduler==3.10.4
 eastmoneypy==0.1.7
 orjson==3.10.3
+numpy==1.26.4
