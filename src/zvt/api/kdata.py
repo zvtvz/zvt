@@ -9,10 +9,17 @@ from zvt.contract import IntervalLevel, AdjustType, Mixin
 from zvt.contract.api import decode_entity_id, get_schema_by_name
 from zvt.domain import Index1dKdata
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601, to_pd_timestamp
+from zvt.utils.time_utils import (
+    to_time_str,
+    TIME_FORMAT_DAY,
+    TIME_FORMAT_ISO8601,
+    to_pd_timestamp,
+    date_time_by_interval,
+    current_date,
+)
 
 
-def get_trade_dates(start, end):
+def get_trade_dates(start, end=None):
     df = Index1dKdata.query_data(
         entity_id="index_sh_000001",
         provider="em",
@@ -23,6 +30,12 @@ def get_trade_dates(start, end):
         return_type="df",
     )
     return df["timestamp"].tolist()
+
+
+def get_recent_trade_dates(days_count=5):
+    max_start = date_time_by_interval(current_date(), -days_count - 15)
+    dates = get_trade_dates(start=max_start)
+    return dates[-days_count:]
 
 
 def get_latest_kdata_date(
@@ -185,9 +198,14 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
     return df
 
 
+if __name__ == "__main__":
+    print(get_recent_trade_dates())
+
+
 # the __all__ is generated
 __all__ = [
     "get_trade_dates",
+    "get_recent_trade_dates",
     "get_latest_kdata_date",
     "get_kdata_schema",
     "get_kdata",

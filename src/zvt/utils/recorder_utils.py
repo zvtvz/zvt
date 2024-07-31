@@ -3,15 +3,15 @@ import logging
 import time
 from typing import Type
 
+import zvt as zvt
 from zvt import zvt_config
-from zvt.contract import Mixin
 from zvt.informer import EmailInformer
 
 logger = logging.getLogger("__name__")
 
 
 def run_data_recorder(
-    domain: Type[Mixin],
+    domain: Type["zvt.contract.Mixin"],
     entity_provider=None,
     data_provider=None,
     entity_ids=None,

@@ -5,6 +5,17 @@ from enum import Enum
 class StockPoolType(Enum):
     system = "system"
     custom = "custom"
+    dynamic = "dynamic"
+
+
+class DynamicPoolType(Enum):
+    limit_up = "limit_up"
+    limit_down = "limit_down"
+
+
+class InsertMode(Enum):
+    overwrite = "overwrite"
+    append = "append"
 
 
 class TagType(Enum):
@@ -20,4 +31,4 @@ class TagStatsQueryType(Enum):
 
 
 # the __all__ is generated
-__all__ = ["StockPoolType", "TagType", "TagStatsQueryType"]
+__all__ = ["StockPoolType", "DynamicPoolType", "TagType", "TagStatsQueryType"]

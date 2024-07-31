@@ -1,15 +1,70 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Union, List, Optional
+from typing import List, Optional
+from typing import Union
 
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field
+from pydantic import field_validator
 
 from zvt.common.query_models import TimeRange, OrderByType
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.model import MixinModel, CustomModel
 from zvt.tag.tag_utils import get_stock_pool_names
 from zvt.trader import TradingSignalType
 from zvt.trading.common import ExecutionStatus
+from zvt.utils.time_utils import date_time_by_interval, current_date
 from zvt.utils.time_utils import tomorrow_date, to_pd_timestamp
+
+
+class KdataRequestModel(BaseModel):
+    entity_ids: List[str]
+    data_provider: str = Field(default="qmt")
+    start_timestamp: datetime = Field(default=date_time_by_interval(current_date(), -500))
+    end_timestamp: Optional[datetime] = Field(default=None)
+    level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
+    adjust_type: AdjustType = Field(default=AdjustType.qfq)
+
+
+class KdataModel(BaseModel):
+    entity_id: str
+    code: str
+    name: str
+    level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
+    datas: List
+
+
+class TSRequestModel(BaseModel):
+    entity_ids: List[str]
+    data_provider: str = Field(default="qmt")
+    days_count: int = Field(default=5)
+
+
+class TSModel(BaseModel):
+    entity_id: str
+    code: str
+    name: str
+    datas: List
+
+
+class QuoteStatsModel(BaseModel):
+    #: UNIX时间戳
+    time: int
+    #: 涨停数
+    limit_up_count: int
+    #: 跌停数
+    limit_down_count: int
+    #: 上涨数
+    up_count: int
+    #: 下跌数
+    down_count: int
+    #: 涨幅
+    change_pct: float
+    #: 成交额
+    turnover: float
+    #: 昨日成交额
+    pre_turnover: Optional[float] = Field(default=None)
+    #: 同比
+    turnover_change: Optional[float] = Field(default=None)
 
 
 class QueryStockQuoteSettingModel(CustomModel):

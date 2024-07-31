@@ -5,8 +5,10 @@ from typing import List
 import pandas as pd
 from fastapi_pagination.ext.sqlalchemy import paginate
 
+import zvt.api.kdata as kdata_api
 import zvt.contract.api as contract_api
-from zvt.domain import Stock, StockQuote
+from zvt.common.query_models import TimeUnit
+from zvt.domain import Stock, StockQuote, Stock1mQuote
 from zvt.tag.tag_schemas import StockTags, StockPools
 from zvt.trading.common import ExecutionStatus
 from zvt.trading.trading_models import (
@@ -15,11 +17,70 @@ from zvt.trading.trading_models import (
     QueryTagQuoteModel,
     QueryStockQuoteModel,
     BuildQueryStockQuoteSettingModel,
+    KdataRequestModel,
+    TSRequestModel,
 )
 from zvt.trading.trading_schemas import TradingPlan, QueryStockQuoteSetting
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp, now_pd_timestamp, date_time_by_interval, current_date
+from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import (
+    to_time_str,
+    to_pd_timestamp,
+    now_pd_timestamp,
+    date_time_by_interval,
+    current_date,
+    date_and_time,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def query_kdata(kdata_request_model: KdataRequestModel):
+    kdata_df = kdata_api.get_kdata(
+        entity_ids=kdata_request_model.entity_ids,
+        provider=kdata_request_model.data_provider,
+        start_timestamp=kdata_request_model.start_timestamp,
+        end_timestamp=kdata_request_model.end_timestamp,
+        adjust_type=kdata_request_model.adjust_type,
+    )
+    if pd_is_not_null(kdata_df):
+        kdata_df["timestamp"] = kdata_df["timestamp"].apply(lambda x: int(x.timestamp()))
+        kdata_df["data"] = kdata_df.apply(
+            lambda x: x[
+                ["timestamp", "open", "high", "low", "close", "volume", "turnover", "change_pct", "turnover_rate"]
+            ].values.tolist(),
+            axis=1,
+        )
+        df = kdata_df.groupby("entity_id").agg(
+            code=("code", "first"),
+            name=("name", "first"),
+            level=("level", "first"),
+            datas=("data", lambda data: list(data)),
+        )
+        df = df.reset_index(drop=False)
+        return df.to_dict(orient="records")
+
+
+def query_ts(ts_request_model: TSRequestModel):
+    trading_dates = kdata_api.get_recent_trade_dates(days_count=ts_request_model.days_count)
+    ts_df = Stock1mQuote.query_data(
+        entity_ids=ts_request_model.entity_ids,
+        provider=ts_request_model.data_provider,
+        start_timestamp=trading_dates[0],
+    )
+    if pd_is_not_null(ts_df):
+        ts_df["data"] = ts_df.apply(
+            lambda x: x[
+                ["time", "price", "avg_price", "change_pct", "volume", "turnover", "turnover_rate"]
+            ].values.tolist(),
+            axis=1,
+        )
+        df = ts_df.groupby("entity_id").agg(
+            code=("code", "first"),
+            name=("name", "first"),
+            datas=("data", lambda data: list(data)),
+        )
+        df = df.reset_index(drop=False)
+        return df.to_dict(orient="records")
 
 
 def build_trading_plan(build_trading_plan_model: BuildTradingPlanModel):
@@ -107,6 +168,65 @@ def check_trading_plan():
         )
 
         logger.debug(f"current plans:{plans}")
+
+
+def query_quote_stats():
+    quote_df = StockQuote.query_data(
+        return_type="df",
+        filters=[StockQuote.change_pct >= -0.31, StockQuote.change_pct <= 0.31],
+        columns=["timestamp", "entity_id", "time", "change_pct", "turnover", "is_limit_up", "is_limit_down"],
+    )
+    current_stats = cal_quote_stats(quote_df)
+    start_timestamp = current_stats["timestamp"]
+
+    pre_date_df = Stock1mQuote.query_data(
+        filters=[Stock1mQuote.timestamp < to_time_str(start_timestamp)],
+        order=Stock1mQuote.timestamp.desc(),
+        limit=1,
+        columns=["timestamp"],
+    )
+    pre_date = pre_date_df["timestamp"].tolist()[0]
+
+    if start_timestamp.hour >= 15:
+        start_timestamp = date_and_time(pre_date, "15:00")
+    else:
+        start_timestamp = date_and_time(pre_date, f"{start_timestamp.hour}:{start_timestamp.minute}")
+    end_timestamp = date_time_by_interval(start_timestamp, 1, TimeUnit.minute)
+
+    pre_df = Stock1mQuote.query_data(
+        return_type="df",
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        filters=[Stock1mQuote.change_pct >= -0.31, Stock1mQuote.change_pct <= 0.31],
+        columns=["timestamp", "entity_id", "time", "change_pct", "turnover", "is_limit_up", "is_limit_down"],
+    )
+
+    if pd_is_not_null(pre_df):
+        pre_stats = cal_quote_stats(pre_df)
+        current_stats["pre_turnover"] = pre_stats["turnover"]
+        current_stats["turnover_change"] = current_stats["turnover"] - current_stats["pre_turnover"]
+    return current_stats
+
+
+def cal_quote_stats(quote_df):
+    quote_df["ss"] = 1
+
+    df = (
+        quote_df.groupby("ss")
+        .agg(
+            timestamp=("timestamp", "last"),
+            time=("time", "last"),
+            up_count=("change_pct", lambda x: (x > 0).sum()),
+            down_count=("change_pct", lambda x: (x <= 0).sum()),
+            turnover=("turnover", "sum"),
+            change_pct=("change_pct", "mean"),
+            limit_up_count=("is_limit_up", "sum"),
+            limit_down_count=("is_limit_down", lambda x: (x == True).sum()),
+        )
+        .reset_index(drop=True)
+    )
+
+    return df.to_dict(orient="records")[0]
 
 
 def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
@@ -241,9 +361,9 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
 
 
 if __name__ == "__main__":
-    print(query_tag_quotes(QueryTagQuoteModel(stock_pool_name="all", main_tags=["低空经济", "半导体", "化工", "消费电子"])))
-    print(query_stock_quotes(QueryStockQuoteModel(stock_pool_name="all", main_tag="半导体")))
-
+    # print(query_tag_quotes(QueryTagQuoteModel(stock_pool_name="all", main_tags=["低空经济", "半导体", "化工", "消费电子"])))
+    # print(query_stock_quotes(QueryStockQuoteModel(stock_pool_name="all", main_tag="半导体")))
+    print(query_quote_stats())
 # the __all__ is generated
 __all__ = [
     "build_trading_plan",

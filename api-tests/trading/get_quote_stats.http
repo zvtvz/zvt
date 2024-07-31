@@ -1,0 +1,2 @@
+GET http://127.0.0.1:8090/api/trading/get_quote_stats
+accept: application/json

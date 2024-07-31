@@ -10,6 +10,7 @@ from fastapi_pagination import add_pagination
 from zvt import zvt_env
 from zvt.rest.data import data_router
 from zvt.rest.factor import factor_router
+from zvt.rest.misc import misc_router
 from zvt.rest.trading import trading_router
 from zvt.rest.work import work_router
 
@@ -35,6 +36,7 @@ app.include_router(data_router)
 app.include_router(factor_router)
 app.include_router(work_router)
 app.include_router(trading_router)
+app.include_router(misc_router)
 
 add_pagination(app)
 

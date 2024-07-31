@@ -1,11 +1,13 @@
-POST http://127.0.0.1:8090/api/factor/query_kdata
+POST http://127.0.0.1:8090/api/trading/query_kdata
 accept: application/json
 Content-Type: application/json
 
 
 {
+  "data_provider": "em",
   "entity_ids": [
     "stock_sz_002085",
     "stock_sz_300133"
-  ]
+  ],
+  "adjust_type": "hfq"
 }

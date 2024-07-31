@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from zvt.contract import IntervalLevel, AdjustType
+from zvt.contract import IntervalLevel
 from zvt.trader import TradingSignalType
 from zvt.utils.time_utils import date_time_by_interval, current_date
 
@@ -15,23 +15,6 @@ class FactorRequestModel(BaseModel):
     data_provider: str = Field(default="em")
     start_timestamp: datetime = Field(default=date_time_by_interval(current_date(), -365))
     level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
-
-
-class KdataRequestModel(BaseModel):
-    entity_ids: List[str]
-    data_provider: str = Field(default="em")
-    start_timestamp: datetime = Field(default=date_time_by_interval(current_date(), -365))
-    end_timestamp: Optional[datetime] = Field(default=None)
-    level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
-    adjust_type: AdjustType = Field(default=AdjustType.hfq)
-
-
-class KdataModel(BaseModel):
-    entity_id: str
-    code: str
-    name: str
-    level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
-    datas: List
 
 
 class TradingSignalModel(BaseModel):
@@ -51,4 +34,4 @@ class FactorResultModel(BaseModel):
 
 
 # the __all__ is generated
-__all__ = ["FactorRequestModel", "KdataRequestModel", "KdataModel", "TradingSignalModel", "FactorResultModel"]
+__all__ = ["FactorRequestModel", "TradingSignalModel", "FactorResultModel"]

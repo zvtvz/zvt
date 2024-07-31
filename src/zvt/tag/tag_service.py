@@ -9,7 +9,7 @@ from sqlalchemy import func
 import zvt.contract.api as contract_api
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.domain import BlockStock, Block, Stock
-from zvt.tag.common import TagType, TagStatsQueryType
+from zvt.tag.common import TagType, TagStatsQueryType, StockPoolType, InsertMode
 from zvt.tag.tag_models import (
     SetStockTagsModel,
     CreateStockPoolInfoModel,
@@ -35,6 +35,7 @@ from zvt.tag.tag_utils import (
     industry_to_main_tag,
     get_sub_tags,
     get_concept_main_tag_mapping,
+    get_stock_pool_names,
 )
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date, now_pd_timestamp
 from zvt.utils.utils import fill_dict, compare_dicts, flatten_list
@@ -432,10 +433,18 @@ def build_stock_pool_info(create_stock_pool_info_model: CreateStockPoolInfoModel
         return stock_pool_info
 
 
-def build_stock_pool(create_stock_pools_model: CreateStockPoolsModel, target_date):
+def build_stock_pool(create_stock_pools_model: CreateStockPoolsModel, target_date=current_date()):
     with contract_api.DBSession(provider="zvt", data_schema=StockPools)() as session:
+        if create_stock_pools_model.stock_pool_name not in get_stock_pool_names():
+            build_stock_pool_info(
+                CreateStockPoolInfoModel(
+                    stock_pool_type=StockPoolType.custom, stock_pool_name=create_stock_pools_model.stock_pool_name
+                ),
+                timestamp=target_date,
+            )
+        # one instance per day
         stock_pool_id = f"admin_{to_time_str(target_date)}_{create_stock_pools_model.stock_pool_name}"
-        datas = StockPools.query_data(
+        datas: List[StockPools] = StockPools.query_data(
             session=session,
             filters=[
                 StockPools.timestamp == to_pd_timestamp(target_date),
@@ -445,7 +454,10 @@ def build_stock_pool(create_stock_pools_model: CreateStockPoolsModel, target_dat
         )
         if datas:
             stock_pool = datas[0]
-            stock_pool.entity_ids = create_stock_pools_model.entity_ids
+            if create_stock_pools_model.insert_model == InsertMode.overwrite:
+                stock_pool.entity_ids = create_stock_pools_model.entity_ids
+            else:
+                stock_pool.entity_ids = list(set(stock_pool.entity_ids + create_stock_pools_model.entity_ids))
         else:
             stock_pool = StockPools(
                 entity_id="admin",

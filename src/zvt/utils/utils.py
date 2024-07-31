@@ -2,12 +2,9 @@
 import logging
 import numbers
 from decimal import *
-from enum import Enum
 from urllib import parse
 
 import pandas as pd
-
-from zvt.utils.time_utils import to_time_str
 
 getcontext().prec = 16
 
@@ -129,16 +126,6 @@ def read_csv(f, encoding, sep=None, na_values=None):
             f.seek(0)
             continue
     return None
-
-
-def marshal_object_for_ui(object):
-    if isinstance(object, Enum):
-        return object.value
-
-    if isinstance(object, pd.Timestamp):
-        return to_time_str(object)
-
-    return object
 
 
 def chrome_copy_header_to_dict(src):
@@ -293,7 +280,6 @@ if __name__ == "__main__":
 
 # the __all__ is generated
 __all__ = [
-    "getcontext().prec",
     "none_values",
     "zero_values",
     "first_item_to_float",
@@ -305,7 +291,6 @@ __all__ = [
     "fill_domain_from_dict",
     "SUPPORT_ENCODINGS",
     "read_csv",
-    "marshal_object_for_ui",
     "chrome_copy_header_to_dict",
     "to_positive_number",
     "multiple_number",

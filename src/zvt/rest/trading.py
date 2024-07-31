@@ -17,6 +17,11 @@ from zvt.trading.trading_models import (
     BuildQueryStockQuoteSettingModel,
     QueryTagQuoteModel,
     TagQuoteStatsModel,
+    KdataModel,
+    KdataRequestModel,
+    TSModel,
+    TSRequestModel,
+    QuoteStatsModel,
 )
 from zvt.trading.trading_schemas import QueryStockQuoteSetting
 
@@ -25,6 +30,21 @@ trading_router = APIRouter(
     tags=["trading"],
     responses={404: {"description": "Not found"}},
 )
+
+
+@trading_router.post("/query_kdata", response_model=Optional[List[KdataModel]])
+def query_kdata(kdata_request_model: KdataRequestModel):
+    return trading_service.query_kdata(kdata_request_model)
+
+
+@trading_router.post("/query_ts", response_model=Optional[List[TSModel]])
+def query_kdata(ts_request_model: TSRequestModel):
+    return trading_service.query_ts(ts_request_model)
+
+
+@trading_router.get("/get_quote_stats", response_model=Optional[QuoteStatsModel])
+def get_quote_stats():
+    return trading_service.query_quote_stats()
 
 
 @trading_router.get("/get_query_stock_quote_setting", response_model=Optional[QueryStockQuoteSettingModel])

@@ -13,14 +13,13 @@ from zvt.contract.api import get_db_session, get_schema_columns
 from zvt.contract.api import get_entities, get_data
 from zvt.contract.base_service import OneStateService
 from zvt.contract.schema import Mixin, TradableEntity
+from zvt.contract.utils import is_in_same_interval, evaluate_size_from_timestamp
 from zvt.contract.zvt_info import RecorderState
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     to_pd_timestamp,
     TIME_FORMAT_DAY,
     to_time_str,
-    evaluate_size_from_timestamp,
-    is_in_same_interval,
     now_pd_timestamp,
     now_time_str,
 )

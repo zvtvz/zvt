@@ -5,7 +5,7 @@ from pydantic import field_validator, Field
 from pydantic_core.core_schema import ValidationInfo
 
 from zvt.contract.model import MixinModel, CustomModel
-from zvt.tag.common import StockPoolType, TagType, TagStatsQueryType
+from zvt.tag.common import StockPoolType, TagType, TagStatsQueryType, InsertMode
 from zvt.tag.tag_utils import get_stock_pool_names
 
 
@@ -136,14 +136,15 @@ class StockPoolsModel(MixinModel):
 class CreateStockPoolsModel(CustomModel):
     stock_pool_name: str
     entity_ids: List[str]
+    insert_model: InsertMode = Field(default=InsertMode.overwrite)
 
-    @field_validator("stock_pool_name")
-    @classmethod
-    def stock_pool_name_must_be_in(cls, v: str) -> str:
-        if v:
-            if v not in get_stock_pool_names():
-                raise ValueError(f"stock_pool_name: {v} must be created at stock_pool_info at first")
-        return v
+    # @field_validator("stock_pool_name")
+    # @classmethod
+    # def stock_pool_name_must_be_in(cls, v: str) -> str:
+    #     if v:
+    #         if v not in get_stock_pool_names():
+    #             raise ValueError(f"stock_pool_name: {v} must be created at stock_pool_info at first")
+    #     return v
 
 
 class QueryStockTagStatsModel(CustomModel):

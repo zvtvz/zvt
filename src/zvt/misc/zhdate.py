@@ -5,7 +5,7 @@ thanks to https://github.com/CutePandaSh/zhdate
 from datetime import datetime, timedelta
 from itertools import accumulate
 
-from zvt.zhdate.constants import CHINESEYEARCODE, CHINESENEWYEAR
+from zvt.misc.constants import CHINESEYEARCODE, CHINESENEWYEAR
 
 
 class ZhDate:

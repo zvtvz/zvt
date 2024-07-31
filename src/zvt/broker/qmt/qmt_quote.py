@@ -9,9 +9,16 @@ from xtquant import xtdata
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock
-from zvt.domain.quotes.stock.stock_quote import Stock1mQuote
+from zvt.domain.quotes.stock.stock_quote import Stock1mQuote, StockQuoteLog
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, current_date, to_pd_timestamp, now_pd_timestamp, TIME_FORMAT_MINUTE
+from zvt.utils.time_utils import (
+    to_time_str,
+    current_date,
+    to_pd_timestamp,
+    now_pd_timestamp,
+    TIME_FORMAT_MINUTE,
+    date_time_by_interval,
+)
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
 
@@ -137,7 +144,7 @@ def get_kdata(
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
     # 保证qmt先下载数据到本地
-    xtdata.download_history_data(stock_code=code, period=period, start_time="", end_time="")
+    xtdata.download_history_data(stock_code=code, period=period)
     records = xtdata.get_market_data(
         stock_list=[code],
         period=period,
@@ -223,14 +230,22 @@ def tick_to_quote():
         df["float_cap"] = df["float_volume"] * df["price"]
         df["total_cap"] = df["total_volume"] * df["price"]
 
+        # 实时行情统计，只保留最新
         df_to_db(df, data_schema=StockQuote, provider="qmt", force_update=True, drop_duplicates=False)
-        cost_time = time.time() - start_time
-        logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
 
+        # 1分钟分时
         df["id"] = df[["entity_id", "timestamp"]].apply(
             lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE)), axis=1
         )
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
+        # 历史记录
+        # df["id"] = df[["entity_id", "timestamp"]].apply(
+        #     lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
+        # )
+        # df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
+
+        cost_time = time.time() - start_time
+        logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
 
     return on_data
 
@@ -245,6 +260,9 @@ def download_capital_data():
 def clear_history_quote():
     session = get_db_session("qmt", data_schema=StockQuote)
     session.query(StockQuote).filter(StockQuote.timestamp < current_date()).delete()
+    start_date = date_time_by_interval(current_date(), -20)
+    session.query(Stock1mQuote).filter(Stock1mQuote.timestamp < start_date).delete()
+    session.query(StockQuoteLog).filter(StockQuoteLog.timestamp < start_date).delete()
     session.commit()
 
 
@@ -253,7 +271,7 @@ def record_tick():
     Stock.record_data(provider="em")
     stocks = get_qmt_stocks()
     print(stocks)
-    xtdata.subscribe_whole_quote(stocks, callback=tick_to_quote())
+    sid = xtdata.subscribe_whole_quote(stocks, callback=tick_to_quote())
 
     """阻塞线程接收行情回调"""
     import time
@@ -267,6 +285,7 @@ def record_tick():
         if current_timestamp.hour >= 15 and current_timestamp.minute >= 10:
             logger.info(f"record tick finished at: {current_timestamp}")
             break
+    xtdata.unsubscribe_quote(sid)
 
 
 if __name__ == "__main__":
@@ -277,7 +296,6 @@ if __name__ == "__main__":
     sched.add_job(func=record_tick, trigger="cron", hour=9, minute=18, day_of_week="mon-fri")
     sched.start()
     sched._thread.join()
-
 
 # the __all__ is generated
 __all__ = [
