@@ -52,40 +52,59 @@ class EastmoneyStockDetailRecorder(Recorder):
                 fc = "{}02".format(security_item.code)
 
             # 基本资料
-            param = {"color": "w", "fc": fc, "SecurityCode": "SZ300059"}
-            resp = requests.post("https://emh5.eastmoney.com/api/GongSiGaiKuang/GetJiBenZiLiao", json=param)
+            # param = {"color": "w", "fc": fc, "SecurityCode": "SZ300059"}
+
+            securities_code = f"{security_item.code}.{security_item.exchange.upper()}"
+            param = {
+                "type": "RPT_F10_ORG_BASICINFO",
+                "sty": "ORG_PROFIE,MAIN_BUSINESS,FOUND_DATE,EM2016,BLGAINIAN,REGIONBK",
+                "filter": f"(SECUCODE=\"{securities_code}\")",
+                "client": "app",
+                "source": "SECURITIES",
+                "pageNumber": 1,
+                "pageSize": 1
+            }
+            resp = requests.get("https://datacenter.eastmoney.com/securities/api/data/get", params=param)
             resp.encoding = "utf8"
 
-            resp_json = resp.json()["Result"]["JiBenZiLiao"]
+            resp_json = resp.json()["result"]["data"][0]
 
-            security_item.profile = resp_json["CompRofile"]
-            security_item.main_business = resp_json["MainBusiness"]
-            security_item.date_of_establishment = to_pd_timestamp(resp_json["FoundDate"])
+            security_item.profile = resp_json["ORG_PROFIE"]
+            security_item.main_business = resp_json["MAIN_BUSINESS"]
+            security_item.date_of_establishment = to_pd_timestamp(resp_json["FOUND_DATE"])
 
             # 关联行业
-            industries = ",".join(resp_json["Industry"].split("-"))
+            industries = ",".join(resp_json["EM2016"].split("-"))
             security_item.industries = industries
 
             # 关联概念
-            security_item.concept_indices = resp_json["Block"]
+            security_item.concept_indices = resp_json["BLGAINIAN"]
 
             # 关联地区
-            security_item.area_indices = resp_json["Provice"]
+            security_item.area_indices = resp_json["REGIONBK"]
 
             self.sleep()
 
             # 发行相关
-            param = {"color": "w", "fc": fc}
-            resp = requests.post("https://emh5.eastmoney.com/api/GongSiGaiKuang/GetFaXingXiangGuan", json=param)
+            param = {
+                "reportName": "RPT_F10_ORG_ISSUEINFO",
+                "columns": "AFTER_ISSUE_PE,ISSUE_PRICE,TOTAL_ISSUE_NUM,NET_RAISE_FUNDS,ONLINE_ISSUE_LWR",
+                "filter": f"(SECUCODE=\"{securities_code}\")(TYPENEW=\"4\")",
+                "client": "app",
+                "source": "SECURITIES",
+                "pageNumber": 1,
+                "pageSize": 1
+            }
+            resp = requests.get("https://datacenter.eastmoney.com/securities/api/data/v1/get", params=param)
             resp.encoding = "utf8"
 
-            resp_json = resp.json()["Result"]["FaXingXiangGuan"]
+            resp_json = resp.json()["result"]["data"][0]
 
-            security_item.issue_pe = to_float(resp_json["PEIssued"])
-            security_item.price = to_float(resp_json["IssuePrice"])
-            security_item.issues = to_float(resp_json["ShareIssued"])
-            security_item.raising_fund = to_float((resp_json["NetCollection"]))
-            security_item.net_winning_rate = pct_to_float(resp_json["LotRateOn"])
+            security_item.issue_pe = resp_json["AFTER_ISSUE_PE"]
+            security_item.price = resp_json["ISSUE_PRICE"]
+            security_item.issues = resp_json["TOTAL_ISSUE_NUM"]
+            security_item.raising_fund = resp_json.get("NET_RAISE_FUNDS")
+            security_item.net_winning_rate = resp_json["ONLINE_ISSUE_LWR"]
 
             self.session.commit()
 
