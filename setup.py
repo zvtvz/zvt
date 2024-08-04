@@ -48,7 +48,7 @@ setup(
         "openpyxl==3.1.1",
         "demjson3==3.0.6",
         "plotly==5.13.0",
-        "dash==2.8.1",
+        "dash==2.15.0",
         "jqdatapy==0.1.8",
         "dash-bootstrap-components==1.3.1",
         "dash_daq==0.5.0",
