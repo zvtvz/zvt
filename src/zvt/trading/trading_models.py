@@ -133,7 +133,7 @@ class StockQuoteModel(MixinModel):
     #: 总市值
     total_cap: float
 
-    main_tag: str = Field(default=None)
+    main_tag: Optional[str] = Field(default=None)
     sub_tag: Union[str, None] = Field(default=None)
     hidden_tags: Union[List[str], None] = Field(default=None)
 

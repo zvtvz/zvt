@@ -8,7 +8,7 @@ from xtquant import xtdata
 
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
-from zvt.domain import StockQuote, Stock
+from zvt.domain import StockQuote, Stock, Stock1dKdata
 from zvt.domain.quotes.stock.stock_quote import Stock1mQuote, StockQuoteLog
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
@@ -198,6 +198,7 @@ def tick_to_quote():
         )
 
         df = df.rename(columns={"lastPrice": "price", "amount": "turnover"})
+        df["close"] = df["price"]
 
         df["timestamp"] = df["time"].apply(to_pd_timestamp)
 
@@ -230,8 +231,11 @@ def tick_to_quote():
         df["float_cap"] = df["float_volume"] * df["price"]
         df["total_cap"] = df["total_volume"] * df["price"]
 
+        df["provider"] = "qmt"
         # 实时行情统计，只保留最新
         df_to_db(df, data_schema=StockQuote, provider="qmt", force_update=True, drop_duplicates=False)
+        df["level"] = "1d"
+        df_to_db(df, data_schema=Stock1dKdata, provider="qmt", force_update=True, drop_duplicates=False)
 
         # 1分钟分时
         df["id"] = df[["entity_id", "timestamp"]].apply(

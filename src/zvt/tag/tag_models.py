@@ -11,21 +11,21 @@ from zvt.tag.tag_utils import get_stock_pool_names
 
 class TagInfoModel(MixinModel):
     tag: str
-    tag_reason: Optional[str] = None
+    tag_reason: Optional[str] = Field(default=None)
 
 
 class CreateTagInfoModel(CustomModel):
     tag: str
-    tag_reason: Optional[str] = None
+    tag_reason: Optional[str] = Field(default=None)
 
 
 class StockTagsModel(MixinModel):
-    main_tag: str
-    main_tag_reason: Optional[str] = None
+    main_tag: Optional[str] = Field(default=None)
+    main_tag_reason: Optional[str] = Field(default=None)
     main_tags: Dict[str, str]
 
-    sub_tag: Union[str, None]
-    sub_tag_reason: Optional[str] = None
+    sub_tag: Optional[str] = Field(default=None)
+    sub_tag_reason: Optional[str] = Field(default=None)
     sub_tags: Union[Dict[str, str], None]
 
     active_hidden_tags: Union[Dict[str, str], None]
@@ -36,11 +36,11 @@ class StockTagsModel(MixinModel):
 class SimpleStockTagsModel(CustomModel):
     entity_id: str
     name: str
-    main_tag: str
-    main_tag_reason: Optional[str] = None
+    main_tag: Optional[str] = Field(default=None)
+    main_tag_reason: Optional[str] = Field(default=None)
     main_tags: Dict[str, str]
     sub_tag: Union[str, None]
-    sub_tag_reason: Optional[str] = None
+    sub_tag_reason: Optional[str] = Field(default=None)
     sub_tags: Union[Dict[str, str], None]
     active_hidden_tags: Union[Dict[str, str], None]
 
@@ -56,20 +56,20 @@ class QuerySimpleStockTagsModel(CustomModel):
 class BatchSetStockTagsModel(CustomModel):
     entity_ids: List[str]
     tag: str
-    tag_reason: Optional[str] = None
+    tag_reason: Optional[str] = Field(default=None)
     tag_type: TagType
 
 
 class TagParameter(CustomModel):
     main_tag: str
-    main_tag_reason: Optional[str] = None
-    sub_tag: Optional[str] = None
-    sub_tag_reason: Optional[str] = None
+    main_tag_reason: Optional[str] = Field(default=None)
+    sub_tag: Optional[str] = Field(default=None)
+    sub_tag_reason: Optional[str] = Field(default=None)
 
 
 class StockTagOptions(CustomModel):
-    main_tag: Optional[str] = None
-    sub_tag: Optional[str] = None
+    main_tag: Optional[str] = Field(default=None)
+    sub_tag: Optional[str] = Field(default=None)
     main_tag_options: List[CreateTagInfoModel]
     sub_tag_options: List[CreateTagInfoModel]
 
@@ -77,10 +77,10 @@ class StockTagOptions(CustomModel):
 class SetStockTagsModel(CustomModel):
     entity_id: str
     main_tag: str
-    main_tag_reason: Optional[str] = None
-    sub_tag: Optional[str] = None
-    sub_tag_reason: Optional[str] = None
-    active_hidden_tags: Optional[Dict[str, str]] = None
+    main_tag_reason: Optional[str] = Field(default=None)
+    sub_tag: Optional[str] = Field(default=None)
+    sub_tag_reason: Optional[str] = Field(default=None)
+    active_hidden_tags: Optional[Dict[str, str]] = Field(default=None)
 
     # @field_validator("main_tag")
     # @classmethod
@@ -148,8 +148,8 @@ class CreateStockPoolsModel(CustomModel):
 
 
 class QueryStockTagStatsModel(CustomModel):
-    stock_pool_name: Optional[str] = None
-    entity_ids: Optional[List[str]] = None
+    stock_pool_name: Optional[str] = Field(default=None)
+    entity_ids: Optional[List[str]] = Field(default=None)
     query_type: Optional[TagStatsQueryType] = Field(default=TagStatsQueryType.details)
 
     @field_validator("stock_pool_name", "entity_ids")
@@ -180,8 +180,8 @@ class QueryStockTagStatsModel(CustomModel):
 
 class StockTagDetailsModel(CustomModel):
     entity_id: str
-    main_tag: str
-    sub_tag: Union[str, None]
+    main_tag: Optional[str] = Field(default=None)
+    sub_tag: Optional[str] = Field(default=None)
     hidden_tags: Union[List[str], None]
 
     #: 代码

@@ -4,25 +4,17 @@ from sqlalchemy.orm import declarative_base
 
 from zvt.contract import Mixin
 from zvt.contract.register import register_schema
+from zvt.domain.quotes import StockKdataCommon
 
 StockQuoteBase = declarative_base()
 
 
-class StockQuote(StockQuoteBase, Mixin):
+class StockQuote(StockQuoteBase, StockKdataCommon):
     __tablename__ = "stock_quote"
-    code = Column(String(length=32))
-    name = Column(String(length=32))
-
     #: UNIX时间戳
     time = Column(Integer)
     #: 最新价
     price = Column(Float)
-    # 涨跌幅
-    change_pct = Column(Float)
-    # 成交金额
-    turnover = Column(Float)
-    # 换手率
-    turnover_rate = Column(Float)
     #: 是否涨停
     is_limit_up = Column(Boolean)
     #: 封涨停金额
@@ -41,21 +33,12 @@ class StockQuote(StockQuoteBase, Mixin):
     total_cap = Column(Float)
 
 
-class StockQuoteLog(StockQuoteBase, Mixin):
+class StockQuoteLog(StockQuoteBase, StockKdataCommon):
     __tablename__ = "stock_quote_log"
-    code = Column(String(length=32))
-    name = Column(String(length=32))
-
     #: UNIX时间戳
     time = Column(Integer)
     #: 最新价
     price = Column(Float)
-    # 涨跌幅
-    change_pct = Column(Float)
-    # 成交金额
-    turnover = Column(Float)
-    # 换手率
-    turnover_rate = Column(Float)
     #: 是否涨停
     is_limit_up = Column(Boolean)
     #: 封涨停金额
