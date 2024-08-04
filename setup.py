@@ -52,7 +52,7 @@ setup(
         "jqdatapy==0.1.8",
         "dash-bootstrap-components==1.3.1",
         "dash_daq==0.5.0",
-        "scikit-learn==1.2.1",
+        "scikit-learn==1.5.0",
         "fastapi==0.110.0",
         "fastapi-pagination==0.12.23",
         "apscheduler==3.10.4",
