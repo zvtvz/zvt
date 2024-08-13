@@ -31,6 +31,10 @@ python3 -m pip install -U zvt
 ### 使用展示
 
 #### 主界面
+
+#### Dash & Plotly UI
+> 适用于回测和研究，不太适用于实时行情和用户交互
+
 安装完成后，在命令行下输入 zvt
 ```shell
 zvt
@@ -45,6 +49,43 @@ zvt
 > 系统的核心概念是可视化的，界面的名称与其一一对应，因此也是统一可扩展的。
 
 > 你可以在你喜欢的ide里编写和运行策略，然后运行界面查看其相关的标的，因子，信号和净值展示。
+
+#### 前后端分离的UI
+> 更灵活和可扩展，更适合于处理实时行情和用户交互，结合ZVT的动态tag系统，提供了一种量化结合主观的交易方式
+- 安装 uvicorn
+```shell
+pip install uvicorn
+```
+- 运行 zvt server
+
+安装完成后，在命令行下输入 zvt_server
+```shell
+zvt_server
+```
+或者从代码运行:
+https://github.com/zvtvz/zvt/blob/master/src/zvt/zvt_server.py
+
+- api 文档 
+
+open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
+
+- 部署前端
+
+前端代码: https://github.com/zvtvz/zvt_ui
+
+https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
+设置 {your server IP}
+
+```angular2html
+const instance = createInstance<keyof typeof apis>({
+  domain: 'http://{your server IP}:8090',
+  apis,
+});
+```
+
+打开 [http://127.0.0.1:3000/trade](http://127.0.0.1:3000/trade)
+
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/big-picture.jpg'/></p>
 
 #### 见证奇迹的时刻
 ```

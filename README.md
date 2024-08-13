@@ -20,6 +20,10 @@ python3 -m pip install -U zvt
 
 ### Main ui
 
+#### Dash & Plotly UI
+
+> It's good for backtest and research, but it is not applicable for real-time market data and user interaction.
+
 After the installation is complete, enter zvt on the command line
 ```shell
 zvt
@@ -34,6 +38,43 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 > The core concept of the system is visual, and the name of the interface corresponds to it one-to-one, so it is also uniform and extensible.
 
 > You can write and run the strategy in your favorite ide, and then view its related targets, factor, signal and performance on the UI.
+
+#### Rest api and standalone UI
+> It is more flexible and more scalable, more suitable for handling real-time market data and user interaction. 
+> Combined with the dynamic tag system provided by ZVT, it offers a trading approach that combines AI with human intervention.
+
+- Install uvicorn
+```shell
+pip install uvicorn
+```
+- Run zvt server
+
+After the installation is complete, enter zvt_server on the command line
+```shell
+zvt_server
+```
+Or run it from source code:
+https://github.com/zvtvz/zvt/blob/master/src/zvt/zvt_server.py
+
+- Check the api docs 
+
+open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
+
+- Deploy the front end service
+
+Front end source code: https://github.com/zvtvz/zvt_ui
+
+Set {your server IP} in https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
+```angular2html
+const instance = createInstance<keyof typeof apis>({
+  domain: 'http://{your server IP}:8090',
+  apis,
+});
+```
+
+open [http://127.0.0.1:3000/trade](http://127.0.0.1:3000/trade)
+
+<p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/big-picture.jpg'/></p>
 
 ### Behold, the power of zvt:
 ```

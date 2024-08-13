@@ -69,6 +69,7 @@ setup(
     entry_points={
         "console_scripts": [
             "zvt = zvt.main:main",
+            "zvt_server = zvt.zvt_server:main",
             "zvt_plugin = zvt.plugin:main",
             "zvt_export = zvt.plugin:export",
         ],
