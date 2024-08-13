@@ -70,6 +70,9 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
         )
 
     def record(self, entity, start, end, size, timestamps):
+        if start and (self.level == IntervalLevel.LEVEL_1DAY):
+            start = start.date()
+
         # 判断是否需要重新计算之前保存的前复权数据
         if start and (self.adjust_type == AdjustType.qfq):
             check_df = qmt_quote.get_kdata(
@@ -78,24 +81,26 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
                 end_timestamp=start,
                 adjust_type=self.adjust_type,
                 level=self.level,
+                download_history=False,
             )
-            current_df = get_kdata(
-                entity_id=entity.id,
-                provider=self.provider,
-                start_timestamp=start,
-                end_timestamp=start,
-                limit=1,
-                level=self.level,
-                adjust_type=self.adjust_type,
-            )
-            if pd_is_not_null(current_df):
-                old = current_df.iloc[0, :]["close"]
-                new = check_df["close"][0]
-                # 相同时间的close不同，表明前复权需要重新计算
-                if round(old, 2) != round(new, 2):
-                    # 删掉重新获取
-                    self.session.query(self.data_schema).filter(self.data_schema.entity_id == entity.id).delete()
-                    start = "2005-01-01"
+            if pd_is_not_null(check_df):
+                current_df = get_kdata(
+                    entity_id=entity.id,
+                    provider=self.provider,
+                    start_timestamp=start,
+                    end_timestamp=start,
+                    limit=1,
+                    level=self.level,
+                    adjust_type=self.adjust_type,
+                )
+                if pd_is_not_null(current_df):
+                    old = current_df.iloc[0, :]["close"]
+                    new = check_df["close"][0]
+                    # 相同时间的close不同，表明前复权需要重新计算
+                    if round(old, 2) != round(new, 2):
+                        # 删掉重新获取
+                        self.session.query(self.data_schema).filter(self.data_schema.entity_id == entity.id).delete()
+                        start = "2005-01-01"
 
         if not start:
             start = "2005-01-01"
@@ -108,6 +113,7 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             end_timestamp=end,
             adjust_type=self.adjust_type,
             level=self.level,
+            download_history=False,
         )
         if pd_is_not_null(df):
             df["entity_id"] = entity.id
@@ -131,9 +137,8 @@ class QMTStockKdataRecorder(BaseQmtKdataRecorder):
 
 
 if __name__ == "__main__":
-    Stock.record_data(provider="qmt")
-    QMTStockKdataRecorder(entity_id="stock_sz_000338", adjust_type=AdjustType.qfq).run()
-
+    # Stock.record_data(provider="qmt")
+    QMTStockKdataRecorder(entity_id="stock_sz_301611", adjust_type=AdjustType.qfq).run()
 
 # the __all__ is generated
 __all__ = ["BaseQmtKdataRecorder", "QMTStockKdataRecorder"]

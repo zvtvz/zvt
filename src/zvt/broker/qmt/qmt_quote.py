@@ -140,11 +140,13 @@ def get_kdata(
     end_timestamp,
     level=IntervalLevel.LEVEL_1DAY,
     adjust_type=AdjustType.qfq,
+    download_history=True,
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
-    # 保证qmt先下载数据到本地
-    xtdata.download_history_data(stock_code=code, period=period)
+    # download比较耗时，建议单独定时任务来做
+    if download_history:
+        xtdata.download_history_data(stock_code=code, period=period)
     records = xtdata.get_market_data(
         stock_list=[code],
         period=period,
@@ -159,7 +161,9 @@ def get_kdata(
         df = records[col].T
         df.columns = [col]
         dfs.append(df)
-    return pd.concat(dfs, axis=1)
+    df = pd.concat(dfs, axis=1)
+    df["volume"] = df["volume"] * 100
+    return df
 
 
 def tick_to_quote():
@@ -185,6 +189,8 @@ def tick_to_quote():
         start_time = time.time()
 
         tick_df = pd.DataFrame.from_records(data=[datas[code] for code in datas], index=list(datas.keys()))
+        # 过滤无效tick,一般是退市的
+        tick_df = tick_df[tick_df["lastPrice"] != 0]
         tick_df.index = tick_df.index.map(_to_zvt_entity_id)
 
         df = pd.concat(

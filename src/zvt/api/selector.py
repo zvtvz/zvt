@@ -7,7 +7,7 @@ from sqlalchemy import or_, and_
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entity_ids
-from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo
+from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date
 
@@ -288,6 +288,30 @@ def get_middle_and_big_stock(timestamp, provider="em"):
     return get_entity_list_by_cap(
         timestamp=timestamp, cap_start=MIDDLE_CAP, cap_end=None, entity_type="stock", provider=provider
     )
+
+
+def get_limit_up_today():
+    df = StockQuote.query_data(filters=[StockQuote.is_limit_up], columns=[StockQuote.entity_id])
+    if pd_is_not_null(df):
+        return df["entity_id"].to_list()
+
+
+def get_top_up_today(n=100):
+    df = StockQuote.query_data(columns=[StockQuote.entity_id], order=StockQuote.change_pct.desc(), limit=n)
+    if pd_is_not_null(df):
+        return df["entity_id"].to_list()
+
+
+def get_top_down_today(n=100):
+    df = StockQuote.query_data(columns=[StockQuote.entity_id], order=StockQuote.change_pct.asc(), limit=n)
+    if pd_is_not_null(df):
+        return df["entity_id"].to_list()
+
+
+def get_limit_down_today():
+    df = StockQuote.query_data(filters=[StockQuote.is_limit_down], columns=[StockQuote.entity_id])
+    if pd_is_not_null(df):
+        return df["entity_id"].to_list()
 
 
 if __name__ == "__main__":

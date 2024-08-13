@@ -12,7 +12,7 @@ class QMTStockRecorder(Recorder):
 
     def run(self):
         df = qmt_quote.get_entity_list()
-        self.logger.info(df)
+        self.logger.info(df.tail())
         df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=True)
 
 

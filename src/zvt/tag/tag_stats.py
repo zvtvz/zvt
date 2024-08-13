@@ -5,14 +5,17 @@ from typing import List
 import pandas as pd
 import sqlalchemy
 
+from zvt.api.kdata import get_kdata_schema
+from zvt.contract import AdjustType, IntervalLevel
 from zvt.contract.api import df_to_db, get_db_session
-from zvt.domain import Stock1dHfqKdata
+from zvt.domain.quotes import Stock1dHfqKdata, KdataCommon
 from zvt.factors.top_stocks import TopStocks, get_top_stocks
+from zvt.tag.common import InsertMode
 from zvt.tag.tag_models import CreateStockPoolsModel
 from zvt.tag.tag_schemas import TagStats, StockTags, StockPools
 from zvt.tag.tag_service import build_stock_pool
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval
+from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date
 
 logger = logging.getLogger(__name__)
 
@@ -65,14 +68,16 @@ def build_system_stock_pools():
             build_stock_pool(create_stock_pools_model, target_date=target_date)
 
 
-def build_stock_pool_tag_stats(stock_pool_name, force_rebuild_latest=False):
+def build_stock_pool_tag_stats(
+    stock_pool_name, force_rebuild_latest=False, target_date=None, adjust_type=AdjustType.hfq, provider="em"
+):
     datas = TagStats.query_data(
         limit=1,
         filters=[TagStats.stock_pool_name == stock_pool_name],
         order=TagStats.timestamp.desc(),
         return_type="domain",
     )
-    start = None
+    start = target_date
     current_df = None
     if datas:
         if force_rebuild_latest:
@@ -105,11 +110,14 @@ def build_stock_pool_tag_stats(stock_pool_name, force_rebuild_latest=False):
 
         entity_ids = stock_pool.entity_ids
         tags_df = StockTags.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
-        kdata_df = Stock1dHfqKdata.query_data(
-            provider="em",
+        kdata_schema: KdataCommon = get_kdata_schema(
+            entity_type="stock", level=IntervalLevel.LEVEL_1DAY, adjust_type=adjust_type
+        )
+        kdata_df = kdata_schema.query_data(
+            provider=provider,
             entity_ids=entity_ids,
-            filters=[Stock1dHfqKdata.timestamp == to_pd_timestamp(target_date)],
-            columns=[Stock1dHfqKdata.entity_id, Stock1dHfqKdata.name, Stock1dHfqKdata.turnover],
+            filters=[kdata_schema.timestamp == to_pd_timestamp(target_date)],
+            columns=[kdata_schema.entity_id, kdata_schema.name, kdata_schema.turnover],
             index="entity_id",
         )
 
@@ -158,6 +166,29 @@ def build_stock_pool_tag_stats(stock_pool_name, force_rebuild_latest=False):
         current_df = sorted_df
 
 
+def build_stock_pool_and_tag_stats(
+    stock_pool_name,
+    entity_ids,
+    insert_mode=InsertMode.append,
+    target_date=current_date(),
+    provider="em",
+    adjust_type=AdjustType.hfq,
+):
+    create_stock_pools_model: CreateStockPoolsModel = CreateStockPoolsModel(
+        stock_pool_name=stock_pool_name, entity_ids=entity_ids, insert_mode=insert_mode
+    )
+
+    build_stock_pool(create_stock_pools_model, target_date=target_date)
+
+    build_stock_pool_tag_stats(
+        stock_pool_name=stock_pool_name,
+        force_rebuild_latest=True,
+        target_date=target_date,
+        adjust_type=adjust_type,
+        provider=provider,
+    )
+
+
 if __name__ == "__main__":
     # build_system_stock_pools()
     build_stock_pool_tag_stats(stock_pool_name="main_line", force_rebuild_latest=True)
@@ -165,4 +196,4 @@ if __name__ == "__main__":
 
 
 # the __all__ is generated
-__all__ = ["build_system_stock_pools", "build_stock_pool_tag_stats"]
+__all__ = ["build_system_stock_pools", "build_stock_pool_tag_stats", "build_stock_pool_and_tag_stats"]

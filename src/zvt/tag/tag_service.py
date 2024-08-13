@@ -664,8 +664,8 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
 
 
 if __name__ == "__main__":
-    activate_default_main_tag(industry="半导体")
-    # activate_sub_tags(ActivateSubTagsModel(sub_tags=["无人驾驶"]))
+    # activate_default_main_tag(industry="半导体")
+    activate_sub_tags(ActivateSubTagsModel(sub_tags=["航天概念", "天基互联", "北斗导航", "通用航空"]))
 
 
 # the __all__ is generated
