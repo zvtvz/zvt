@@ -8,6 +8,9 @@
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 
+**The origin of ZVT**
+
+[The Three Major Principles of Stock Trading](https://mp.weixin.qq.com/s/FoFR63wFSQIE_AyFubkZ6Q)
 
 **Read this in other languages: [中文](README-cn.md).**  
 
@@ -65,7 +68,7 @@ open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
 Front end source code: https://github.com/zvtvz/zvt_ui
 
 Set {your server IP} in https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
-```angular2html
+```typescript
 const instance = createInstance<keyof typeof apis>({
   domain: 'http://{your server IP}:8090',
   apis,
@@ -433,7 +436,7 @@ Two modes to write strategy:
 
 At a certain time, calculate conditions according to the events, buy and sell
 
-* formal (正式的)
+* formal
 
 The calculation model of the two-dimensional index and multi-entity
 
@@ -615,21 +618,14 @@ Combining the stock picker and backtesting, the whole process is as follows:
 ```
 >  config others this way: init_config(current_config=zvt_config, **kv)
 
-### History data（optional）
-baidu: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ code: yb6c
+### History data
 
-google drive: https://drive.google.com/drive/folders/17Bxijq-PHJYrLDpyvFAm5P6QyhKL-ahn?usp=sharing
+ZVT supports incremental data updates, and sharing historical data among users is encouraged for time-saving efficiency
 
-It contains daily/weekly post-restoration data, stock valuations, fund and its holdings data, financial data and other data.
+#### Data providers
+> The new UI's real-time quotes are based on the QMT data source. To obtain access, please contact the author.
 
-Unzip the downloaded data to the data_path of the your environment (all db files are placed in this directory, there is no hierarchical structure)
-
-The data could be updated incrementally. Downloading historical data is just to save time. It is also possible to update all by yourself.
-
-#### Joinquant(optional)
 the data could be updated from different provider, this make the system stable.
-
-https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
 
 > add other providers， [Data extension tutorial](https://zvtvz.github.io/zvt/#/data_extending)
 
@@ -641,7 +637,7 @@ https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4
 git clone https://github.com/zvtvz/zvt.git
 ```
 
-set up virtual env(python>=3.6),install requirements
+set up virtual env(python>=3.8),install requirements
 ```
 pip3 install -r requirements.txt
 pip3 install pytest
@@ -649,7 +645,7 @@ pip3 install pytest
 
 ### Tests
 ```shell
-pytest ./tests
+pytest ./tests --ignore=tests/recorders/ 
 ```
 
 <p align="center"><img src='https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/pytest.jpg'/></p>

@@ -8,6 +8,10 @@
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
 
+**缘起**
+
+[炒股的三大原理](https://mp.weixin.qq.com/s/FoFR63wFSQIE_AyFubkZ6Q)
+
 **Read this in other languages: [English](README-cn.md).**  
 
 **详细文档:[https://zvt.readthedocs.io/en/latest/](https://zvt.readthedocs.io/en/latest/)**
@@ -76,7 +80,7 @@ open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
 https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
 设置 {your server IP}
 
-```angular2html
+```typescript
 const instance = createInstance<keyof typeof apis>({
   domain: 'http://{your server IP}:8090',
   apis,
@@ -624,18 +628,13 @@ filter_result 为 True 或 False, score_result 取值为 0 到 1。
 ```
 > 通用的配置方式为: init_config(current_config=zvt_config, **kv)
 
-### 下载历史数据（可选）
-百度网盘: https://pan.baidu.com/s/1kHAxGSxx8r5IBHe5I7MAmQ 提取码: yb6c
+### 历史数据
 
-google drive: https://drive.google.com/drive/folders/17Bxijq-PHJYrLDpyvFAm5P6QyhKL-ahn?usp=sharing
+ZVT支持数据增量更新，用户之间可以共享历史数据，这样可以节省很多时间。
 
-里面包含joinquant的日/周线后复权数据，个股估值，基金及其持仓数据，eastmoney的财务等数据。
+#### 数据源
+> 新UI实时行情的计算基于QMT数据源，需要开通的同学可联系作者。
 
-把下载的数据解压到正式环境的data_path（所有db文件放到该目录下，没有层级结构）
-
-数据的更新是增量的，下载历史数据只是为了节省时间，全部自己更新也是可以的。
-
-#### 注册聚宽(可选)
 项目数据支持多provider，在数据schema一致性的基础上，可根据需要进行选择和扩展，目前支持新浪，东财，交易所等免费数据。
 
 #### 数据的设计上是让provider来适配schema,而不是反过来，这样即使某provider不可用了，换一个即可，不会影响整个系统的使用。
@@ -643,8 +642,6 @@ google drive: https://drive.google.com/drive/folders/17Bxijq-PHJYrLDpyvFAm5P6Qyh
 但免费数据的缺点是显而易见的:不稳定，爬取清洗数据耗时耗力，维护代价巨大，且随时可能不可用。  
 个人建议：如果只是学习研究，可以使用免费数据；如果是真正有意投身量化，还是选一家可靠的数据提供商。
 
-项目支持聚宽的数据，可戳以下链接申请使用（目前可免费使用一年）  
-https://www.joinquant.com/default/index/sdk?channelId=953cbf5d1b8683f81f0c40c9d4265c0d
 
 > 项目中大部分的免费数据目前都是比较稳定的，且做过严格测试，特别是东财的数据，可放心使用
 
