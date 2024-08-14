@@ -32,11 +32,15 @@ def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
             eastmoneypy.del_group(group_name=group, session=session)
             need_create_group = True
 
+        codes = set(codes)
         if need_create_group:
             result = eastmoneypy.create_group(group_name=group, session=session)
             group_id = result["gid"]
+        else:
+            current_codes = eastmoneypy.list_entities(group_id=group_id, session=session)
+            if current_codes:
+                codes = codes - set(current_codes)
 
-        codes = list(set(codes))
         for code in codes:
             eastmoneypy.add_to_group(code=code, entity_type=entity_type, group_id=group_id, session=session)
 
