@@ -56,6 +56,16 @@ zvt
 
 #### 前后端分离的UI
 > 更灵活和可扩展，更适合于处理实时行情和用户交互，结合ZVT的动态tag系统，提供了一种量化结合主观的交易方式
+
+- 初始化tag系统
+
+运行以下脚本:
+
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/init_tag_system.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/stock_pool_runner.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/qmt_data_runner.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/qmt_tick_runner.py
+
 - 安装 uvicorn
 ```shell
 pip install uvicorn

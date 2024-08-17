@@ -46,6 +46,14 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 > It is more flexible and more scalable, more suitable for handling real-time market data and user interaction. 
 > Combined with the dynamic tag system provided by ZVT, it offers a trading approach that combines AI with human intervention.
 
+- Init tag system
+
+run following scripts:
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/init_tag_system.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/stock_pool_runner.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/qmt_data_runner.py
+https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/qmt_tick_runner.py
+
 - Install uvicorn
 ```shell
 pip install uvicorn

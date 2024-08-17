@@ -151,12 +151,15 @@ def update_vol_up():
         print(f"finish {target_date}")
 
 
-def compute_top_stocks(provider="em"):
-    latest = TopStocks.query_data(limit=1, order=TopStocks.timestamp.desc(), return_type="domain")
-    if latest:
-        start = date_time_by_interval(to_time_str(latest[0].timestamp, fmt=TIME_FORMAT_DAY))
+def compute_top_stocks(provider="em", target_date=None):
+    if target_date:
+        start = target_date
     else:
-        start = "2018-01-01"
+        latest = TopStocks.query_data(limit=1, order=TopStocks.timestamp.desc(), return_type="domain")
+        if latest:
+            start = date_time_by_interval(to_time_str(latest[0].timestamp, fmt=TIME_FORMAT_DAY))
+        else:
+            start = "2018-01-01"
     trade_days = get_trade_dates(start=start, end=today())
 
     for target_date in trade_days:

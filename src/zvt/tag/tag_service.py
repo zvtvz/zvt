@@ -105,9 +105,12 @@ def build_stock_tags(
     if not is_tag_info_existed(tag_info=main_tag_info, tag_type=TagType.main_tag):
         build_tag_info(tag_info=main_tag_info, tag_type=TagType.main_tag)
 
-    sub_tag_info = CreateTagInfoModel(tag=set_stock_tags_model.sub_tag, tag_reason=set_stock_tags_model.sub_tag_reason)
-    if not is_tag_info_existed(tag_info=sub_tag_info, tag_type=TagType.sub_tag):
-        build_tag_info(tag_info=sub_tag_info, tag_type=TagType.sub_tag)
+    if set_stock_tags_model.sub_tag:
+        sub_tag_info = CreateTagInfoModel(
+            tag=set_stock_tags_model.sub_tag, tag_reason=set_stock_tags_model.sub_tag_reason
+        )
+        if not is_tag_info_existed(tag_info=sub_tag_info, tag_type=TagType.sub_tag):
+            build_tag_info(tag_info=sub_tag_info, tag_type=TagType.sub_tag)
 
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
         entity_id = set_stock_tags_model.entity_id
