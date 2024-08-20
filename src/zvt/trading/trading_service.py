@@ -348,16 +348,23 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
         the_id = "admin_setting"
         datas = QueryStockQuoteSetting.query_data(ids=[the_id], session=session, return_type="domain")
         if datas:
-            stock_pool_info = datas[0]
+            query_setting = datas[0]
         else:
-            stock_pool_info = QueryStockQuoteSetting(entity_id="admin", id=the_id)
-        stock_pool_info.timestamp = current_date()
-        stock_pool_info.stock_pool_name = build_query_stock_quote_setting_model.stock_pool_name
-        stock_pool_info.main_tags = build_query_stock_quote_setting_model.main_tags
-        session.add(stock_pool_info)
+            query_setting = QueryStockQuoteSetting(entity_id="admin", id=the_id)
+        query_setting.timestamp = current_date()
+        query_setting.stock_pool_name = build_query_stock_quote_setting_model.stock_pool_name
+        query_setting.main_tags = build_query_stock_quote_setting_model.main_tags
+        session.add(query_setting)
         session.commit()
-        session.refresh(stock_pool_info)
-        return stock_pool_info
+        session.refresh(query_setting)
+        return query_setting
+
+
+def build_default_query_stock_quote_setting():
+    datas = QueryStockQuoteSetting.query_data(ids=["admin_setting"], return_type="domain")
+    if datas:
+        return
+    build_query_stock_quote_setting(BuildQueryStockQuoteSettingModel(stock_pool_name="all"))
 
 
 if __name__ == "__main__":

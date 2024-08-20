@@ -48,7 +48,8 @@ open [http://127.0.0.1:8050/](http://127.0.0.1:8050/)
 
 - Init tag system
 
-run following scripts:
+run following scripts:  
+
 https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/init_tag_system.py
 https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/stock_pool_runner.py
 https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/qmt_data_runner.py
@@ -75,13 +76,16 @@ open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
 
 Front end source code: https://github.com/zvtvz/zvt_ui
 
-Set {your server IP} in https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
-```typescript
-const instance = createInstance<keyof typeof apis>({
-  domain: 'http://{your server IP}:8090',
-  apis,
-});
+Change the env file:
+https://github.com/zvtvz/zvt_ui/blob/main/.env
+
+Set {your server IP} to zvt_server IP
+
+```text
+NEXT_PUBLIC_SERVER = {your server IP}
 ```
+
+Then refer to the frontend's README to start the frontend service.
 
 open [http://127.0.0.1:3000/trade](http://127.0.0.1:3000/trade)
 

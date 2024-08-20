@@ -4,9 +4,7 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import zvt_config
-from zvt.api.kdata import get_latest_kdata_date
 from zvt.api.selector import get_entity_ids_by_filter
-from zvt.contract import AdjustType
 from zvt.domain import (
     Stock,
     Stock1dHfqKdata,
@@ -118,14 +116,12 @@ def record_data_and_build_stock_pools():
     # 获取 涨停 指数 板块(概念) 个股行情数据
     record_stock_data()
 
-    target_date = get_latest_kdata_date(provider="em", entity_type="stock", adjust_type=AdjustType.hfq)
-
     # 计算短期/中期最强 放量突破年线半年线个股
-    compute_top_stocks(target_date=target_date)
+    compute_top_stocks()
     # 放入股票池
     build_system_stock_pools()
     for stock_pool_name in ["main_line", "vol_up", "大局"]:
-        build_stock_pool_tag_stats(stock_pool_name=stock_pool_name, target_date=target_date, force_rebuild_latest=True)
+        build_stock_pool_tag_stats(stock_pool_name=stock_pool_name, force_rebuild_latest=True)
 
 
 if __name__ == "__main__":

@@ -59,7 +59,7 @@ zvt
 
 - 初始化tag系统
 
-运行以下脚本:
+运行以下脚本:  
 
 https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/init_tag_system.py
 https://github.com/zvtvz/zvt/blob/master/src/zvt/tasks/stock_pool_runner.py
@@ -87,15 +87,16 @@ open [http://127.0.0.1:8090/docs](http://127.0.0.1:8090/docs)
 
 前端代码: https://github.com/zvtvz/zvt_ui
 
-https://github.com/zvtvz/zvt_ui/blob/main/src/services/index.ts
-设置 {your server IP}
+修改前端环境文件:
+https://github.com/zvtvz/zvt_ui/blob/main/.env
 
-```typescript
-const instance = createInstance<keyof typeof apis>({
-  domain: 'http://{your server IP}:8090',
-  apis,
-});
+设置 {your server IP}, 即zvt_server服务的地址
+
+```text
+NEXT_PUBLIC_SERVER = {your server IP}
 ```
+
+然后参考前端的readme启动前端服务
 
 打开 [http://127.0.0.1:3000/trade](http://127.0.0.1:3000/trade)
 
