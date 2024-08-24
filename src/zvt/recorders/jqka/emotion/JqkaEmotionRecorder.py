@@ -39,8 +39,8 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
         if latest_infos:
             start_date = latest_infos[0].timestamp
         else:
-            # 最近一年半的数据
-            start_date = date_time_by_interval(current_date(), -365 - 366 / 2)
+            # 最近一年的数据
+            start_date = date_time_by_interval(current_date(), -360)
         return pd.date_range(start=start_date, end=pd.Timestamp.now(), freq="B").tolist()
 
     def record(self, entity, start, end, size, timestamps):
@@ -102,8 +102,8 @@ class JqkaLimitDownRecorder(TimestampsDataRecorder):
         if latest_infos:
             start_date = latest_infos[0].timestamp
         else:
-            # 最近一年半的数据
-            start_date = date_time_by_interval(current_date(), -365 - 366 / 2)
+            # 最近一年的数据
+            start_date = date_time_by_interval(current_date(), -360)
         return pd.date_range(start=start_date, end=pd.Timestamp.now(), freq="B").tolist()
 
     def record(self, entity, start, end, size, timestamps):
