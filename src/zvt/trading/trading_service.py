@@ -364,7 +364,7 @@ def build_default_query_stock_quote_setting():
     datas = QueryStockQuoteSetting.query_data(ids=["admin_setting"], return_type="domain")
     if datas:
         return
-    build_query_stock_quote_setting(BuildQueryStockQuoteSettingModel(stock_pool_name="all"))
+    build_query_stock_quote_setting(BuildQueryStockQuoteSettingModel(stock_pool_name="all", main_tags=["消费电子"]))
 
 
 if __name__ == "__main__":
