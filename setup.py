@@ -40,7 +40,7 @@ setup(
     python_requires=">=3.8, <4",
     include_package_data=True,
     install_requires=[
-        "requests==2.31.0",
+        "requests==2.32.2",
         "SQLAlchemy==2.0.28",
         "pandas==2.0.3",
         "pydantic==2.6.4",
