@@ -336,13 +336,16 @@ class TradableEntity(Entity):
         return pd.date_range(start_date, end_date, freq="B")
 
     @classmethod
-    def get_trading_intervals(cls):
+    def get_trading_intervals(cls, include_bidding_time=False):
         """
         overwrite it to get the trading intervals of the entity
 
         :return: list of time intervals, in format [(start,end)]
         """
-        return [("09:20", "11:30"), ("13:00", "15:00")]
+        if include_bidding_time:
+            return [("09:20", "11:30"), ("13:00", "15:00")]
+        else:
+            return [("09:30", "11:30"), ("13:00", "15:00")]
 
     @classmethod
     def in_real_trading_time(cls, timestamp=None):
@@ -350,7 +353,7 @@ class TradableEntity(Entity):
             timestamp = now_pd_timestamp()
         else:
             timestamp = pd.Timestamp(timestamp)
-        for open_close in cls.get_trading_intervals():
+        for open_close in cls.get_trading_intervals(include_bidding_time=True):
             open_time = date_and_time(the_date=timestamp.date(), the_time=open_close[0])
             close_time = date_and_time(the_date=timestamp.date(), the_time=open_close[1])
             if open_time <= timestamp <= close_time:
@@ -365,8 +368,12 @@ class TradableEntity(Entity):
             timestamp = now_pd_timestamp()
         else:
             timestamp = pd.Timestamp(timestamp)
-        open_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[0][0])
-        close_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[-1][1])
+        open_time = date_and_time(
+            the_date=timestamp.date(), the_time=cls.get_trading_intervals(include_bidding_time=True)[0][0]
+        )
+        close_time = date_and_time(
+            the_date=timestamp.date(), the_time=cls.get_trading_intervals(include_bidding_time=True)[-1][1]
+        )
         return open_time <= timestamp <= close_time
 
     @classmethod
