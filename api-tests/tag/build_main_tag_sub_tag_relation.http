@@ -1,0 +1,13 @@
+POST http://127.0.0.1:8090/api/work/build_main_tag_sub_tag_relation
+accept: application/json
+Content-Type: application/json
+
+{
+  "main_tag": "华为",
+  "sub_tag_list": [
+    "华为汽车",
+    "华为概念",
+    "华为欧拉",
+    "华为昇腾"
+  ]
+}

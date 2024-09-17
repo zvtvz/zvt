@@ -6,18 +6,30 @@ from typing import Union
 import demjson3
 import pandas as pd
 import requests
+import sqlalchemy
+from requests import Session
+from sqlalchemy import func
 
 from zvt.api.kdata import generate_kdata_id
 from zvt.api.utils import value_to_pct, china_stock_code_to_id
-from zvt.contract import ActorType, AdjustType, IntervalLevel, Exchange, TradableType, get_entity_exchanges
-from zvt.contract.api import decode_entity_id
-from zvt.domain import BlockCategory
+from zvt.contract import (
+    ActorType,
+    AdjustType,
+    IntervalLevel,
+    Exchange,
+    TradableType,
+    get_entity_exchanges,
+    tradable_type_map_exchanges,
+)
+from zvt.contract.api import decode_entity_id, df_to_db
+from zvt.domain import BlockCategory, StockHotTopic
 from zvt.recorders.consts import DEFAULT_HEADER
 from zvt.utils.time_utils import (
     to_pd_timestamp,
     now_timestamp,
     to_time_str,
     current_date,
+    now_pd_timestamp,
 )
 from zvt.utils.utils import to_float, json_callback_param
 
@@ -716,6 +728,76 @@ def get_block_stocks(block_id, name="", session=None):
     return the_list
 
 
+def market_code_to_entity_id(market, code):
+    if market in (0, 1):
+        return china_stock_code_to_id(code)
+    elif market == 105:
+        return f"stockus_nasdaq_{code}"
+    elif market == 106:
+        return f"stockus_nyse_{code}"
+    elif market == 116:
+        return f"stockhk_hk_{code}"
+    else:
+        for exchange, flag in exchange_map_em_flag.items():
+            if flag == market:
+                for entity_type, exchanges in tradable_type_map_exchanges.items():
+                    if exchange in exchanges:
+                        return f"{entity_type.value}_{exchange.value}_{code}"
+    return code
+
+
+def get_hot_topic(session: Session = None):
+    url = "https://emcreative.eastmoney.com/FortuneApi/GuBaApi/common"
+    data = {
+        "url": "newctopic/api/Topic/HomeTopicRead?deviceid=IPHONE&version=10001000&product=Guba&plat=Iphone&p=1&ps=20&needPkPost=true",
+        "type": "get",
+        "parm": "",
+    }
+    logger.info(f"get hot topic from: {url}")
+    if session:
+        resp = session.post(url=url, json=data, headers=DEFAULT_HEADER)
+    else:
+        resp = requests.post(url=url, json=data, headers=DEFAULT_HEADER)
+
+    if resp.status_code == 200:
+        data_list = resp.json().get("re")
+        if data_list:
+            hot_topics = []
+            for position, data in enumerate(data_list):
+                entity_ids = [
+                    market_code_to_entity_id(market=stock["qMarket"], code=stock["qCode"])
+                    for stock in data["stockList"]
+                ]
+                topic_id = data["topicid"]
+                entity_id = f"hot_topic_{topic_id}"
+                hot_topics.append(
+                    {
+                        "id": entity_id,
+                        "entity_id": entity_id,
+                        "timestamp": now_pd_timestamp(),
+                        "created_timestamp": to_pd_timestamp(data["cTime"]),
+                        "position": position,
+                        "entity_ids": entity_ids,
+                        "news_code": topic_id,
+                        "news_title": data["name"],
+                        "news_content": data["summary"],
+                    }
+                )
+            return hot_topics
+
+    logger.error(f"request em data code: {resp.status_code}, error: {resp.text}")
+
+
+def record_hot_topic():
+    hot_topics = get_hot_topic()
+    logger.info(hot_topics)
+    if hot_topics:
+        df = pd.DataFrame.from_records(hot_topics)
+        df_to_db(
+            df=df, data_schema=StockHotTopic, provider="em", force_update=True, dtype={"entity_ids": sqlalchemy.JSON}
+        )
+
+
 def get_news(entity_id, ps=200, index=1, start_timestamp=None, session=None, latest_code=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
@@ -901,8 +983,8 @@ if __name__ == "__main__":
     #     get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
     # )
     # df = get_kdata(entity_id="index_sz_399370", level="1wk")
-    df = get_tradable_list(entity_type="cbond")
-    print(df)
+    # df = get_tradable_list(entity_type="cbond")
+    # print(df)
     # df = get_news("stock_sz_300999", ps=1)
     # print(df)
     # print(len(df))
@@ -931,6 +1013,12 @@ if __name__ == "__main__":
     # print(get_controlling_shareholder(code="000338"))
     # events = get_events(entity_id="stock_sz_300684")
     # print(events)
+    # print(get_hot_topic())
+    # record_hot_topic()
+    df = StockHotTopic.query_data(
+        filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
+    )
+    print(df)
 
 
 # the __all__ is generated

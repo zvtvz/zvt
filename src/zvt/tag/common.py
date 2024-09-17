@@ -31,4 +31,4 @@ class TagStatsQueryType(Enum):
 
 
 # the __all__ is generated
-__all__ = ["StockPoolType", "DynamicPoolType", "TagType", "TagStatsQueryType"]
+__all__ = ["StockPoolType", "DynamicPoolType", "InsertMode", "TagType", "TagStatsQueryType"]

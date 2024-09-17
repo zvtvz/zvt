@@ -1,0 +1,19 @@
+POST http://127.0.0.1:8090/api/event/create_stock_topic
+accept: application/json
+Content-Type: application/json
+
+{
+  "name": "特斯拉FSD入华",
+  "desc": "Tesla Al在社交媒体平台“X”上发帖称，特斯拉计划明年第一季度在中国和欧洲推出被其称为“全自动驾驶”(Full Self Driving)的高级驾驶辅助系统，目前正在等待监管部门的批准。",
+  "created_timestamp": "2024-09-05 09:00:00",
+  "trigger_date": "2024-09-05",
+  "due_date": "2025-01-01",
+  "main_tag": "车路云",
+  "sub_tag_list": [
+    "自动驾驶",
+    "车路云"
+  ]
+}
+
+
+

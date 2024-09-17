@@ -7,9 +7,9 @@ from sqlalchemy import or_, and_
 from zvt.api.kdata import default_adjust_type, get_kdata_schema
 from zvt.contract import IntervalLevel
 from zvt.contract.api import get_entity_ids
-from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote
+from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, StockQuoteLog
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date
+from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date, now_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -300,6 +300,39 @@ def get_top_up_today(n=100):
     df = StockQuote.query_data(columns=[StockQuote.entity_id], order=StockQuote.change_pct.desc(), limit=n)
     if pd_is_not_null(df):
         return df["entity_id"].to_list()
+
+
+def get_shoot_today(up_change_pct=0.03, down_change_pct=-0.03, interval=2):
+    current_time = now_timestamp()
+    latest = StockQuoteLog.query_data(
+        columns=[StockQuoteLog.time], return_type="df", limit=1, order=StockQuoteLog.time.desc()
+    )
+    latest_time = int(latest["time"][0])
+    print(latest_time)
+
+    delay = (current_time - latest_time) / (60 * 1000)
+    if delay > 2:
+        logger.warning(f"delay {delay} minutes")
+
+    # interval minutes
+    start_time = latest_time - (interval * 60 * 1000)
+    filters = [StockQuoteLog.time > start_time]
+    df = StockQuoteLog.query_data(
+        filters=filters, columns=[StockQuoteLog.entity_id, StockQuoteLog.time, StockQuoteLog.price], return_type="df"
+    )
+    if pd_is_not_null(df):
+        df.sort_values(by=["entity_id", "time"], inplace=True)
+
+        g_df = df.groupby("entity_id").agg(
+            first_price=("price", "first"),
+            last_price=("price", "last"),
+            last_time=("time", "last"),
+            change_pct=("price", lambda x: (x.iloc[-1] - x.iloc[0]) / x.iloc[0]),
+        )
+        print(g_df.sort_values(by=["change_pct"]))
+        up = g_df[g_df["change_pct"] > up_change_pct]
+        down = g_df[g_df["change_pct"] < down_change_pct]
+        return up.index.tolist(), down.index.tolist()
 
 
 def get_top_down_today(n=100):

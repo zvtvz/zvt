@@ -342,7 +342,22 @@ class TradableEntity(Entity):
 
         :return: list of time intervals, in format [(start,end)]
         """
-        return [("09:30", "11:30"), ("13:00", "15:00")]
+        return [("09:20", "11:30"), ("13:00", "15:00")]
+
+    @classmethod
+    def in_real_trading_time(cls, timestamp=None):
+        if not timestamp:
+            timestamp = now_pd_timestamp()
+        else:
+            timestamp = pd.Timestamp(timestamp)
+        for open_close in cls.get_trading_intervals():
+            open_time = date_and_time(the_date=timestamp.date(), the_time=open_close[0])
+            close_time = date_and_time(the_date=timestamp.date(), the_time=open_close[1])
+            if open_time <= timestamp <= close_time:
+                return True
+            else:
+                continue
+        return False
 
     @classmethod
     def in_trading_time(cls, timestamp=None):
@@ -352,7 +367,7 @@ class TradableEntity(Entity):
             timestamp = pd.Timestamp(timestamp)
         open_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[0][0])
         close_time = date_and_time(the_date=timestamp.date(), the_time=cls.get_trading_intervals()[-1][1])
-        return open_time < timestamp < close_time
+        return open_time <= timestamp <= close_time
 
     @classmethod
     def get_close_hour_and_minute(cls):

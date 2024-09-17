@@ -9,16 +9,16 @@ from zvt import zvt_env
 from zvt.contract.api import df_to_db
 from zvt.domain import Block
 from zvt.tag.common import StockPoolType
-from zvt.tag.tag_schemas import MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo
+from zvt.tag.tag_schemas import MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, IndustryInfo
 
 
-def get_industry_main_tag_mapping() -> Dict[str, str]:
+def _get_default_industry_main_tag_mapping() -> Dict[str, str]:
     with open(os.path.join(zvt_env["resource_path"], "industry_main_tag_mapping.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
-def get_main_tag_industry_mapping() -> Dict[str, List[str]]:
-    mapping = get_industry_main_tag_mapping()
+def _get_default_main_tag_industry_mapping() -> Dict[str, List[str]]:
+    mapping = _get_default_industry_main_tag_mapping()
     result = {}
     for industry, main_tag in mapping.items():
         result.setdefault(main_tag, [])
@@ -26,13 +26,13 @@ def get_main_tag_industry_mapping() -> Dict[str, List[str]]:
     return result
 
 
-def get_concept_main_tag_mapping() -> Dict[str, str]:
+def _get_default_concept_main_tag_mapping() -> Dict[str, str]:
     with open(os.path.join(zvt_env["resource_path"], "concept_main_tag_mapping.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
-def get_main_tag_concept_mapping() -> Dict[str, List[str]]:
-    mapping = get_concept_main_tag_mapping()
+def _get_default_main_tag_concept_mapping() -> Dict[str, List[str]]:
+    mapping = _get_default_concept_main_tag_mapping()
     result = {}
     for concept, main_tag in mapping.items():
         result.setdefault(main_tag, [])
@@ -40,18 +40,18 @@ def get_main_tag_concept_mapping() -> Dict[str, List[str]]:
     return result
 
 
-def get_initial_sub_tags() -> List[str]:
-    return list(get_concept_main_tag_mapping().keys())
+def _get_initial_sub_tags() -> List[str]:
+    return list(_get_default_concept_main_tag_mapping().keys())
 
 
-def get_industry_list():
+def _get_industry_list():
     df = Block.query_data(
         filters=[Block.category == "industry"], columns=[Block.name], return_type="df", order=Block.timestamp.desc()
     )
     return df["name"].tolist()
 
 
-def get_concept_list():
+def _get_concept_list():
     df = Block.query_data(
         filters=[Block.category == "concept"], columns=[Block.name], return_type="df", order=Block.timestamp.desc()
     )
@@ -59,17 +59,17 @@ def get_concept_list():
     return df["name"].tolist()
 
 
-def check_missed_industry():
-    current_industry_list = get_industry_main_tag_mapping().keys()
-    return list(set(get_industry_list()) - set(current_industry_list))
+def _check_missed_industry():
+    current_industry_list = _get_default_industry_main_tag_mapping().keys()
+    return list(set(_get_industry_list()) - set(current_industry_list))
 
 
-def check_missed_concept():
-    current_concept_list = get_concept_main_tag_mapping().keys()
-    return list(set(get_concept_list()) - set(current_concept_list))
+def _check_missed_concept():
+    current_concept_list = _get_default_concept_main_tag_mapping().keys()
+    return list(set(_get_concept_list()) - set(current_concept_list))
 
 
-def get_initial_main_tag_info():
+def _get_initial_main_tag_info():
     timestamp = "2024-03-25"
     entity_id = "admin"
 
@@ -81,12 +81,12 @@ def get_initial_main_tag_info():
             "tag": main_tag,
             "tag_reason": f"来自这些行业:{industry}",
         }
-        for industry, main_tag in get_industry_main_tag_mapping().items()
+        for main_tag, industry in _get_default_main_tag_industry_mapping().items()
     ]
 
     from_concept = []
-    for tag, concepts in get_main_tag_concept_mapping().items():
-        if tag not in get_main_tag_industry_mapping():
+    for tag, concepts in _get_default_main_tag_concept_mapping().items():
+        if tag not in _get_default_main_tag_industry_mapping():
             from_concept.append(
                 {
                     "id": f"{entity_id}_{tag}",
@@ -100,23 +100,41 @@ def get_initial_main_tag_info():
     return from_industry + from_concept
 
 
-def get_initial_sub_tag_info():
+def _get_initial_industry_info():
+    timestamp = "2024-03-25"
+    entity_id = "admin"
+    industry_info = [
+        {
+            "id": f"{entity_id}_{industry}",
+            "entity_id": entity_id,
+            "timestamp": timestamp,
+            "industry_name": industry,
+            "description": industry,
+            "main_tag": main_tag,
+        }
+        for industry, main_tag in _get_default_industry_main_tag_mapping().items()
+    ]
+    return industry_info
+
+
+def _get_initial_sub_tag_info():
     timestamp = "2024-03-25"
     entity_id = "admin"
 
     return [
         {
-            "id": f"{entity_id}_{tag}",
+            "id": f"{entity_id}_{sub_tag}",
             "entity_id": entity_id,
             "timestamp": timestamp,
-            "tag": tag,
-            "tag_reason": tag,
+            "tag": sub_tag,
+            "tag_reason": sub_tag,
+            "main_tag": main_tag,
         }
-        for tag in get_initial_sub_tags()
+        for sub_tag, main_tag in _get_default_concept_main_tag_mapping().items()
     ]
 
 
-def get_initial_stock_pool_info():
+def _get_initial_stock_pool_info():
     timestamp = "2024-03-25"
     entity_id = "admin"
     return [
@@ -140,7 +158,7 @@ _hidden_tags = {
 }
 
 
-def get_initial_hidden_tag_info():
+def _get_initial_hidden_tag_info():
     timestamp = "2024-03-25"
     entity_id = "admin"
     return [
@@ -155,14 +173,34 @@ def get_initial_hidden_tag_info():
     ]
 
 
-def industry_to_main_tag(industry):
-    return get_industry_main_tag_mapping().get(industry)
-
-
 def build_initial_main_tag_info():
-    main_tag_info_list = get_initial_main_tag_info()
+    main_tag_info_list = _get_initial_main_tag_info()
     df = pd.DataFrame.from_records(main_tag_info_list)
     df_to_db(df=df, data_schema=MainTagInfo, provider="zvt", force_update=False)
+
+
+def build_initial_industry_info():
+    initial_industry_info = _get_initial_industry_info()
+    df = pd.DataFrame.from_records(initial_industry_info)
+    df_to_db(df=df, data_schema=IndustryInfo, provider="zvt", force_update=False)
+
+
+def build_initial_sub_tag_info(force_update=False):
+    sub_tag_info_list = _get_initial_sub_tag_info()
+    df = pd.DataFrame.from_records(sub_tag_info_list)
+    df_to_db(df=df, data_schema=SubTagInfo, provider="zvt", force_update=force_update)
+
+
+def build_initial_stock_pool_info():
+    stock_pool_info_list = _get_initial_stock_pool_info()
+    df = pd.DataFrame.from_records(stock_pool_info_list)
+    df_to_db(df=df, data_schema=StockPoolInfo, provider="zvt", force_update=False)
+
+
+def build_initial_hidden_tag_info():
+    hidden_tag_info_list = _get_initial_hidden_tag_info()
+    df = pd.DataFrame.from_records(hidden_tag_info_list)
+    df_to_db(df=df, data_schema=HiddenTagInfo, provider="zvt", force_update=False)
 
 
 def get_main_tags():
@@ -170,27 +208,27 @@ def get_main_tags():
     return df["tag"].tolist()
 
 
-def build_initial_sub_tag_info():
-    sub_tag_info_list = get_initial_sub_tag_info()
-    df = pd.DataFrame.from_records(sub_tag_info_list)
-    df_to_db(df=df, data_schema=SubTagInfo, provider="zvt", force_update=False)
+def get_main_tag_by_sub_tag(sub_tag):
+    datas: List[SubTagInfo] = SubTagInfo.query_data(filters=[SubTagInfo.tag == sub_tag], return_type="domain")
+    if datas:
+        return datas[0].main_tag
+    else:
+        return _get_default_concept_main_tag_mapping().get(sub_tag, "其他")
 
 
-def build_initial_stock_pool_info():
-    stock_pool_info_list = get_initial_stock_pool_info()
-    df = pd.DataFrame.from_records(stock_pool_info_list)
-    df_to_db(df=df, data_schema=StockPoolInfo, provider="zvt", force_update=False)
+def get_main_tag_by_industry(industry_name):
+    datas: List[IndustryInfo] = IndustryInfo.query_data(
+        filters=[IndustryInfo.industry_name == industry_name], return_type="domain"
+    )
+    if datas:
+        return datas[0].main_tag
+    else:
+        _get_default_industry_main_tag_mapping().get(industry_name, "其他")
 
 
 def get_sub_tags():
     df = SubTagInfo.query_data(columns=[SubTagInfo.tag])
     return df["tag"].tolist()
-
-
-def build_initial_hidden_tag_info():
-    hidden_tag_info_list = get_initial_hidden_tag_info()
-    df = pd.DataFrame.from_records(hidden_tag_info_list)
-    df_to_db(df=df, data_schema=HiddenTagInfo, provider="zvt", force_update=False)
 
 
 def get_hidden_tags():
@@ -209,7 +247,7 @@ def match_tag_by_type(alias, tag_type="main_tag"):
     elif tag_type == "sub_tag":
         tags = get_sub_tags()
     elif tag_type == "industry":
-        tags = get_industry_list()
+        tags = _get_industry_list()
     else:
         assert False
 
@@ -240,7 +278,7 @@ def match_tag(alias):
 
     tag = match_tag_by_type(alias, tag_type="industry")
     if tag:
-        return "main_tag", industry_to_main_tag(tag)
+        return "main_tag", get_main_tag_by_industry(tag)
 
     return "new_tag", alias
 
@@ -257,34 +295,23 @@ if __name__ == "__main__":
     #         result[tag] = main_tag
     # with open("industry_main_tag_mapping.json", "w") as json_file:
     #     json.dump(result, json_file, indent=2, ensure_ascii=False)
-    build_initial_stock_pool_info()
-    build_initial_main_tag_info()
-    build_initial_sub_tag_info()
-    print(list(get_main_tags()))
+    # build_initial_stock_pool_info()
+    # build_initial_main_tag_info()
+    build_initial_sub_tag_info(force_update=True)
+    build_initial_industry_info()
 
 
 # the __all__ is generated
 __all__ = [
-    "get_industry_main_tag_mapping",
-    "get_main_tag_industry_mapping",
-    "get_concept_main_tag_mapping",
-    "get_main_tag_concept_mapping",
-    "get_initial_sub_tags",
-    "get_industry_list",
-    "get_concept_list",
-    "check_missed_industry",
-    "check_missed_concept",
-    "get_initial_main_tag_info",
-    "get_initial_sub_tag_info",
-    "get_initial_stock_pool_info",
-    "get_initial_hidden_tag_info",
-    "industry_to_main_tag",
     "build_initial_main_tag_info",
-    "get_main_tags",
+    "build_initial_industry_info",
     "build_initial_sub_tag_info",
     "build_initial_stock_pool_info",
-    "get_sub_tags",
     "build_initial_hidden_tag_info",
+    "get_main_tags",
+    "get_main_tag_by_sub_tag",
+    "get_main_tag_by_industry",
+    "get_sub_tags",
     "get_hidden_tags",
     "get_stock_pool_names",
     "match_tag_by_type",

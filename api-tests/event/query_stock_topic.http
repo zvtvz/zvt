@@ -1,0 +1,10 @@
+POST http://127.0.0.1:8090/api/event/query_stock_topic
+accept: application/json
+Content-Type: application/json
+
+{
+  "limit": 20
+}
+
+
+

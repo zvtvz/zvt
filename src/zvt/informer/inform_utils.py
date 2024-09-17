@@ -47,7 +47,7 @@ def add_to_eastmoney(codes, group, entity_type="stock", over_write=True):
 
 def clean_groups(keep):
     if keep is None:
-        keep = ["自选股", "练气", "重要板块", "主线"]
+        keep = ["自选股"]
 
     with requests.Session() as session:
         groups = eastmoneypy.get_groups(session=session)

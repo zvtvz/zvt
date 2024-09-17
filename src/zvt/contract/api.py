@@ -491,6 +491,7 @@ def df_to_db(
     drop_duplicates: bool = True,
     dtype=None,
     session=None,
+    need_check=True,
 ) -> object:
     """
     store the df to db
@@ -540,24 +541,25 @@ def df_to_db(
     for step in range(step_size):
         df_current = df.iloc[sub_size * step : sub_size * (step + 1)]
 
-        if force_update:
-            ids = df_current["id"].tolist()
-            if len(ids) == 1:
-                sql = text(f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"')
-            else:
-                sql = text(f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}")
+        if need_check:
+            if force_update:
+                ids = df_current["id"].tolist()
+                if len(ids) == 1:
+                    sql = text(f'delete from `{data_schema.__tablename__}` where id = "{ids[0]}"')
+                else:
+                    sql = text(f"delete from `{data_schema.__tablename__}` where id in {tuple(ids)}")
 
-            session.execute(sql)
-        else:
-            current = get_data(
-                session=session,
-                data_schema=data_schema,
-                columns=[data_schema.id],
-                provider=provider,
-                ids=df_current["id"].tolist(),
-            )
-            if pd_is_not_null(current):
-                df_current = df_current[~df_current["id"].isin(current["id"])]
+                session.execute(sql)
+            else:
+                current = get_data(
+                    session=session,
+                    data_schema=data_schema,
+                    columns=[data_schema.id],
+                    provider=provider,
+                    ids=df_current["id"].tolist(),
+                )
+                if pd_is_not_null(current):
+                    df_current = df_current[~df_current["id"].isin(current["id"])]
 
         if pd_is_not_null(df_current):
             saved = saved + len(df_current)

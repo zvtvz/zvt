@@ -64,12 +64,12 @@ def build_query_stock_quote_setting(build_query_stock_quote_setting_model: Build
 
 
 @trading_router.post("/query_tag_quotes", response_model=List[TagQuoteStatsModel])
-def query_trading_plan(query_tag_quote_model: QueryTagQuoteModel):
+def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
     return trading_service.query_tag_quotes(query_tag_quote_model)
 
 
-@trading_router.post("/query_stock_quotes", response_model=StockQuoteStatsModel)
-def query_trading_plan(query_stock_quote_model: QueryStockQuoteModel):
+@trading_router.post("/query_stock_quotes", response_model=Optional[StockQuoteStatsModel])
+def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     return trading_service.query_stock_quotes(query_stock_quote_model)
 
 

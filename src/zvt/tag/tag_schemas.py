@@ -9,6 +9,15 @@ from zvt.contract.register import register_schema
 StockTagsBase = declarative_base()
 
 
+class IndustryInfo(StockTagsBase, Mixin):
+    __tablename__ = "industry_info"
+
+    industry_name = Column(String, unique=True)
+    description = Column(String)
+    # related main tag
+    main_tag = Column(String)
+
+
 class MainTagInfo(StockTagsBase, Mixin):
     __tablename__ = "main_tag_info"
 
@@ -21,6 +30,9 @@ class SubTagInfo(StockTagsBase, Mixin):
 
     tag = Column(String, unique=True)
     tag_reason = Column(String)
+
+    # related main tag
+    main_tag = Column(String)
 
 
 class HiddenTagInfo(StockTagsBase, Mixin):
@@ -113,6 +125,7 @@ register_schema(providers=["zvt"], db_name="stock_tags", schema_base=StockTagsBa
 
 # the __all__ is generated
 __all__ = [
+    "IndustryInfo",
     "MainTagInfo",
     "SubTagInfo",
     "HiddenTagInfo",

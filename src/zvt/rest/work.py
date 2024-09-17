@@ -25,8 +25,19 @@ from zvt.tag.tag_models import (
     ActivateSubTagsModel,
     BatchSetStockTagsModel,
     StockTagOptions,
+    MainTagIndustryRelation,
+    MainTagSubTagRelation,
+    IndustryInfoModel,
 )
-from zvt.tag.tag_schemas import StockTags, MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, StockPools
+from zvt.tag.tag_schemas import (
+    StockTags,
+    MainTagInfo,
+    SubTagInfo,
+    HiddenTagInfo,
+    StockPoolInfo,
+    StockPools,
+    IndustryInfo,
+)
 from zvt.utils.time_utils import current_date
 
 work_router = APIRouter(
@@ -86,6 +97,26 @@ def get_sub_tag_info():
     with contract_api.DBSession(provider="zvt", data_schema=SubTagInfo)() as session:
         tags_info: List[SubTagInfo] = SubTagInfo.query_data(session=session, return_type="domain")
         return tags_info
+
+
+@work_router.get("/get_main_tag_sub_tag_relation", response_model=MainTagSubTagRelation)
+def get_main_tag_sub_tag_relation(main_tag):
+    return tag_service.get_main_tag_sub_tag_relation(main_tag=main_tag)
+
+
+@work_router.get("/get_industry_info", response_model=List[IndustryInfoModel])
+def get_industry_info():
+    """
+    Get sub_tag info
+    """
+    with contract_api.DBSession(provider="zvt", data_schema=IndustryInfo)() as session:
+        industry_info: List[IndustryInfo] = IndustryInfo.query_data(session=session, return_type="domain")
+        return industry_info
+
+
+@work_router.get("/get_main_tag_industry_relation", response_model=MainTagIndustryRelation)
+def get_main_tag_industry_relation(main_tag):
+    return tag_service.get_main_tag_industry_relation(main_tag=main_tag)
 
 
 @work_router.get("/get_hidden_tag_info", response_model=List[TagInfoModel])
@@ -205,3 +236,17 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
 @work_router.post("/batch_set_stock_tags", response_model=List[StockTagsModel])
 def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
     return tag_service.batch_set_stock_tags(batch_set_stock_tags_model=batch_set_stock_tags_model)
+
+
+@work_router.post("/build_main_tag_industry_relation", response_model=str)
+def build_main_tag_industry_relation(relation: MainTagIndustryRelation):
+    tag_service.build_main_tag_industry_relation(main_tag_industry_relation=relation)
+    tag_service.activate_industry_list(industry_list=relation.industry_list)
+    return "success"
+
+
+@work_router.post("/build_main_tag_sub_tag_relation", response_model=str)
+def build_main_tag_sub_tag_relation(relation: MainTagSubTagRelation):
+    tag_service.build_main_tag_sub_tag_relation(main_tag_sub_tag_relation=relation)
+    tag_service.activate_sub_tags(activate_sub_tags_model=ActivateSubTagsModel(sub_tags=relation.sub_tag_list))
+    return "success"

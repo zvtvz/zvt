@@ -20,6 +20,8 @@ from zvt.tag.tag_models import (
     TagParameter,
     CreateTagInfoModel,
     StockTagOptions,
+    MainTagIndustryRelation,
+    MainTagSubTagRelation,
 )
 from zvt.tag.tag_schemas import (
     StockTags,
@@ -30,12 +32,13 @@ from zvt.tag.tag_schemas import (
     MainTagInfo,
     SubTagInfo,
     HiddenTagInfo,
+    IndustryInfo,
 )
 from zvt.tag.tag_utils import (
-    industry_to_main_tag,
     get_sub_tags,
-    get_concept_main_tag_mapping,
     get_stock_pool_names,
+    get_main_tag_by_sub_tag,
+    get_main_tag_by_industry,
 )
 from zvt.utils.time_utils import to_pd_timestamp, to_time_str, current_date, now_pd_timestamp
 from zvt.utils.utils import fill_dict, compare_dicts, flatten_list
@@ -69,25 +72,36 @@ def get_stock_tag_options(entity_id):
             stock_tags = datas[0]
             main_tag = stock_tags.main_tag
             sub_tag = stock_tags.sub_tag
-            main_tag_options = [
-                CreateTagInfoModel(tag=tag, tag_reason=tag_reason) for tag, tag_reason in stock_tags.main_tags.items()
-            ]
-            sub_tag_options = [
-                CreateTagInfoModel(tag=tag, tag_reason=tag_reason) for tag, tag_reason in stock_tags.sub_tags.items()
-            ]
+
+            if stock_tags.main_tags:
+                main_tag_options = [
+                    CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
+                    for tag, tag_reason in stock_tags.main_tags.items()
+                ]
+
+            if stock_tags.sub_tags:
+                sub_tag_options = [
+                    CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
+                    for tag, tag_reason in stock_tags.sub_tags.items()
+                ]
 
         main_tags_info: List[MainTagInfo] = MainTagInfo.query_data(session=session, return_type="domain")
+        if not main_tag:
+            main_tag = main_tags_info[0].tag
+
         main_tag_options = main_tag_options + [
             CreateTagInfoModel(tag=item.tag, tag_reason=item.tag_reason)
             for item in main_tags_info
-            if not stock_tags or (item.tag not in stock_tags.main_tags)
+            if not stock_tags or (not stock_tags.main_tags) or (item.tag not in stock_tags.main_tags)
         ]
 
         sub_tags_info: List[SubTagInfo] = SubTagInfo.query_data(session=session, return_type="domain")
+        if not sub_tag:
+            sub_tag = sub_tags_info[0].tag
         sub_tag_options = sub_tag_options + [
             CreateTagInfoModel(tag=item.tag, tag_reason=item.tag_reason)
             for item in sub_tags_info
-            if not stock_tags or (item.tag not in stock_tags.sub_tags)
+            if not stock_tags or (not stock_tags.sub_tags) or (item.tag not in stock_tags.sub_tags)
         ]
         return StockTagOptions(
             main_tag=main_tag, sub_tag=sub_tag, main_tag_options=main_tag_options, sub_tag_options=sub_tag_options
@@ -286,11 +300,11 @@ def build_default_main_tag(entity_ids=None, force_rebuild=False):
 
         block_stock: BlockStock = entity_id_block_mapping.get(entity_id)
         if block_stock:
-            main_tag = industry_to_main_tag(industry=block_stock.name)
+            main_tag = get_main_tag_by_industry(industry_name=block_stock.name)
             main_tag_reason = f"来自行业:{block_stock.name}"
         else:
-            main_tag = "未知"
-            main_tag_reason = "未知"
+            main_tag = "其他"
+            main_tag_reason = "其他"
 
         build_stock_tags(
             set_stock_tags_model=SetStockTagsModel(
@@ -350,9 +364,9 @@ def build_default_sub_tags(entity_ids=None):
             if sub_tag in get_sub_tags():
                 sub_tag_reason = f"来自概念:{sub_tag}"
 
-                main_tag = get_concept_main_tag_mapping().get(sub_tag)
+                main_tag = get_main_tag_by_sub_tag(sub_tag)
                 main_tag_reason = sub_tag_reason
-                if main_tag == "其他":
+                if (main_tag == "其他" or not main_tag) and current_stock_tags.main_tag:
                     main_tag = current_stock_tags.main_tag
                     main_tag_reason = current_stock_tags.main_tag_reason
 
@@ -409,7 +423,7 @@ def build_tag_info(tag_info: CreateTagInfoModel, tag_type: TagType):
         timestamp = current_date()
         entity_id = "admin"
         tag_info_db = data_schema(
-            id=f"admin_{to_time_str(timestamp)}_{tag_info.tag}",
+            id=f"admin_{tag_info.tag}",
             entity_id=entity_id,
             timestamp=timestamp,
             tag=tag_info.tag,
@@ -457,7 +471,7 @@ def build_stock_pool(create_stock_pools_model: CreateStockPoolsModel, target_dat
         )
         if datas:
             stock_pool = datas[0]
-            if create_stock_pools_model.insert_model == InsertMode.overwrite:
+            if create_stock_pools_model.insert_mode == InsertMode.overwrite:
                 stock_pool.entity_ids = create_stock_pools_model.entity_ids
             else:
                 stock_pool.entity_ids = list(set(stock_pool.entity_ids + create_stock_pools_model.entity_ids))
@@ -550,7 +564,7 @@ def query_stock_tag_stats(query_stock_tag_stats_model: QueryStockTagStatsModel):
         return tag_stats_list
 
 
-def refresh_main_tag_by_sub_tag(stock_tag: StockTags) -> StockTags:
+def refresh_main_tag_by_sub_tag(stock_tag: StockTags, set_by_user=False) -> StockTags:
     if not stock_tag.sub_tags:
         logger.warning(f"{stock_tag.entity_id} has no sub_tags yet")
         return stock_tag
@@ -558,7 +572,7 @@ def refresh_main_tag_by_sub_tag(stock_tag: StockTags) -> StockTags:
     sub_tag = stock_tag.sub_tag
     sub_tag_reason = stock_tag.sub_tags[sub_tag]
 
-    main_tag = get_concept_main_tag_mapping().get(sub_tag)
+    main_tag = get_main_tag_by_sub_tag(sub_tag)
     main_tag_reason = sub_tag_reason
     if main_tag == "其他":
         main_tag = stock_tag.main_tag
@@ -577,7 +591,7 @@ def refresh_main_tag_by_sub_tag(stock_tag: StockTags) -> StockTags:
     return build_stock_tags(
         set_stock_tags_model=set_stock_tags_model,
         timestamp=stock_tag.timestamp,
-        set_by_user=False,
+        set_by_user=set_by_user,
         keep_current=False,
     )
 
@@ -605,30 +619,18 @@ def reset_to_default_main_tag(current_main_tag: str):
     build_default_main_tag(entity_ids=entity_ids, force_rebuild=True)
 
 
-def activate_default_main_tag(industry: str):
-    main_tag = industry_to_main_tag(industry=industry)
-    df = StockTags.query_data(
-        filters=[StockTags.main_tag != main_tag],
-        columns=[StockTags.entity_id],
-        return_type="df",
-    )
-    entity_ids = df["entity_id"].tolist()
-
-    if not entity_ids:
-        logger.info(f"all stocks with main_tag: {main_tag} has been activated")
-        return
-
-    df_block = Block.query_data(provider="em", filters=[Block.category == "industry", Block.name == industry])
+def activate_industry_list(industry_list: List[str]):
+    df_block = Block.query_data(provider="em", filters=[Block.category == "industry", Block.name.in_(industry_list)])
     industry_codes = df_block["code"].tolist()
     block_stocks: List[BlockStock] = BlockStock.query_data(
         provider="em",
-        filters=[BlockStock.code.in_(industry_codes), BlockStock.stock_id.in_(entity_ids)],
+        filters=[BlockStock.code.in_(industry_codes)],
         return_type="domain",
     )
     entity_ids = [block_stock.stock_id for block_stock in block_stocks]
 
     if not entity_ids:
-        logger.info(f"all stocks with main_tag: {main_tag} has been activated")
+        logger.info(f"No stocks in {industry_list}")
         return
 
     build_default_main_tag(entity_ids=entity_ids, force_rebuild=True)
@@ -662,8 +664,88 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
                 stock_tag.sub_tag = sub_tag
                 session.commit()
                 session.refresh(stock_tag)
-                result[stock_tag.entity_id] = refresh_main_tag_by_sub_tag(stock_tag)
+                result[stock_tag.entity_id] = refresh_main_tag_by_sub_tag(stock_tag, set_by_user=True)
         return result
+
+
+def _create_main_tag_if_not_existed(main_tag, main_tag_reason):
+    main_tag_info = CreateTagInfoModel(tag=main_tag, tag_reason=main_tag_reason)
+    if not is_tag_info_existed(tag_info=main_tag_info, tag_type=TagType.main_tag):
+        build_tag_info(tag_info=main_tag_info, tag_type=TagType.main_tag)
+
+
+def get_main_tag_industry_relation(main_tag):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        df = IndustryInfo.query_data(
+            session=session,
+            columns=[IndustryInfo.industry_name],
+            filters=[IndustryInfo.main_tag == main_tag],
+            return_type="df",
+        )
+        return {"main_tag": main_tag, "industry_list": df["industry_name"].tolist()}
+
+
+def get_main_tag_sub_tag_relation(main_tag):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        df = SubTagInfo.query_data(
+            session=session,
+            columns=[SubTagInfo.tag],
+            filters=[SubTagInfo.main_tag == main_tag],
+            return_type="df",
+        )
+        return {"main_tag": main_tag, "sub_tag_list": df["tag"].tolist()}
+
+
+def build_main_tag_industry_relation(main_tag_industry_relation: MainTagIndustryRelation):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        main_tag = main_tag_industry_relation.main_tag
+        _create_main_tag_if_not_existed(main_tag=main_tag, main_tag_reason=main_tag)
+
+        industry_list = main_tag_industry_relation.industry_list
+
+        datas: List[IndustryInfo] = IndustryInfo.query_data(
+            session=session,
+            filters=[IndustryInfo.main_tag == main_tag, IndustryInfo.industry_name.notin_(industry_list)],
+            return_type="domain",
+        )
+        for data in datas:
+            data.main_tag = "其他"
+        session.commit()
+
+        industry_info_list: List[IndustryInfo] = IndustryInfo.query_data(
+            session=session,
+            filters=[IndustryInfo.industry_name.in_(industry_list)],
+            return_type="domain",
+        )
+        for industry_info in industry_info_list:
+            industry_info.main_tag = main_tag
+        session.commit()
+
+
+def build_main_tag_sub_tag_relation(main_tag_sub_tag_relation: MainTagSubTagRelation):
+    with contract_api.DBSession(provider="zvt", data_schema=SubTagInfo)() as session:
+        main_tag = main_tag_sub_tag_relation.main_tag
+        _create_main_tag_if_not_existed(main_tag=main_tag, main_tag_reason=main_tag)
+
+        sub_tag_list = main_tag_sub_tag_relation.sub_tag_list
+
+        datas: List[SubTagInfo] = SubTagInfo.query_data(
+            session=session,
+            filters=[SubTagInfo.main_tag == main_tag, SubTagInfo.tag.notin_(sub_tag_list)],
+            return_type="domain",
+        )
+        for data in datas:
+            data.main_tag = "其他"
+        session.commit()
+
+        sub_tag_info_list: List[SubTagInfo] = SubTagInfo.query_data(
+            session=session,
+            filters=[SubTagInfo.tag.in_(sub_tag_list)],
+            return_type="domain",
+        )
+        for sub_tag_info in sub_tag_info_list:
+            sub_tag_info.main_tag = main_tag
+        session.commit()
 
 
 if __name__ == "__main__":
@@ -689,6 +771,6 @@ __all__ = [
     "refresh_main_tag_by_sub_tag",
     "refresh_all_main_tag_by_sub_tag",
     "reset_to_default_main_tag",
-    "activate_default_main_tag",
+    "activate_industry_list",
     "activate_sub_tags",
 ]

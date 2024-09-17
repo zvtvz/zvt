@@ -12,11 +12,29 @@ from zvt.tag.tag_utils import get_stock_pool_names
 class TagInfoModel(MixinModel):
     tag: str
     tag_reason: Optional[str] = Field(default=None)
+    main_tag: Optional[str] = Field(default=None)
 
 
 class CreateTagInfoModel(CustomModel):
     tag: str
     tag_reason: Optional[str] = Field(default=None)
+
+
+class IndustryInfoModel(MixinModel):
+    industry_name: str
+    description: str
+    # related main tag
+    main_tag: str
+
+
+class MainTagIndustryRelation(CustomModel):
+    main_tag: str
+    industry_list: List[str]
+
+
+class MainTagSubTagRelation(CustomModel):
+    main_tag: str
+    sub_tag_list: List[str]
 
 
 class StockTagsModel(MixinModel):
@@ -136,7 +154,7 @@ class StockPoolsModel(MixinModel):
 class CreateStockPoolsModel(CustomModel):
     stock_pool_name: str
     entity_ids: List[str]
-    insert_model: InsertMode = Field(default=InsertMode.overwrite)
+    insert_mode: InsertMode = Field(default=InsertMode.overwrite)
 
     # @field_validator("stock_pool_name")
     # @classmethod

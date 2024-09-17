@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/build_main_tag_industry_relation
+accept: application/json
+Content-Type: application/json
+
+{
+  "main_tag": "华为",
+  "industry_list": ["通信设备"]
+}

@@ -293,7 +293,7 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
             return_type="dict",
         )
         if not tags_dict:
-            return []
+            return None
         entity_ids = [item["entity_id"] for item in tags_dict]
     else:
         tags_dict = StockTags.query_data(
@@ -305,6 +305,9 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     order = eval(f"StockQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()")
 
     df = StockQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
+
+    if not pd_is_not_null(df):
+        return None
 
     def set_tags(quote):
         entity_id = quote["entity_id"]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import String, Column, Float, Integer, Boolean
+from sqlalchemy import String, Column, Float, Integer, Boolean, JSON
 from sqlalchemy.orm import declarative_base
 
 from zvt.contract import Mixin
@@ -7,6 +7,35 @@ from zvt.contract.register import register_schema
 from zvt.domain.quotes import StockKdataCommon
 
 StockQuoteBase = declarative_base()
+
+
+class StockTick(StockQuoteBase, Mixin):
+    __tablename__ = "stock_tick"
+
+    code = Column(String(length=32))
+
+    #: UNIX时间戳
+    time = Column(Integer)
+    #: 最新价
+    lastPrice = Column(Float)
+
+    # 开盘价
+    open = Column(Float)
+    # 最高价
+    high = Column(Float)
+    # 最低价
+    low = Column(Float)
+    # 上日收盘价
+    lastClose = Column(Float)
+
+    amount = Column(Float)
+    volume = Column(Float)
+    pvolume = Column(Float)
+
+    askPrice = Column(JSON)
+    askVol = Column(JSON)
+    bidPrice = Column(JSON)
+    bidVol = Column(JSON)
 
 
 class StockQuote(StockQuoteBase, StockKdataCommon):

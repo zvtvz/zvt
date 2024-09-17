@@ -18,6 +18,8 @@ from zvt.utils.time_utils import (
     now_pd_timestamp,
     TIME_FORMAT_MINUTE,
     date_time_by_interval,
+    TIME_FORMAT_MINUTE2,
+    now_timestamp,
 )
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
@@ -188,7 +190,17 @@ def tick_to_quote():
     def on_data(datas, stock_df=entity_df):
         start_time = time.time()
 
+        for code in datas:
+            delay = (now_timestamp() - datas[code]["time"]) / (60 * 1000)
+            logger.info(f"check delay for {code}")
+            if delay < 2:
+                break
+            else:
+                logger.warning(f"delay {delay} minutes, ignore {len(datas.keys())} stocks")
+                return
+
         tick_df = pd.DataFrame.from_records(data=[datas[code] for code in datas], index=list(datas.keys()))
+
         # 过滤无效tick,一般是退市的
         tick_df = tick_df[tick_df["lastPrice"] != 0]
         tick_df.index = tick_df.index.map(_to_zvt_entity_id)
@@ -249,10 +261,10 @@ def tick_to_quote():
         )
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
         # 历史记录
-        # df["id"] = df[["entity_id", "timestamp"]].apply(
-        #     lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
-        # )
-        # df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
+        df["id"] = df[["entity_id", "timestamp"]].apply(
+            lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
+        )
+        df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
 
         cost_time = time.time() - start_time
         logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
