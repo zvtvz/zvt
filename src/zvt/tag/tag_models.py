@@ -37,6 +37,11 @@ class MainTagSubTagRelation(CustomModel):
     sub_tag_list: List[str]
 
 
+class ChangeMainTagModel(CustomModel):
+    current_main_tag: str
+    new_main_tag: str
+
+
 class StockTagsModel(MixinModel):
     main_tag: Optional[str] = Field(default=None)
     main_tag_reason: Optional[str] = Field(default=None)

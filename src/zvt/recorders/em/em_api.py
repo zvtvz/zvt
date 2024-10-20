@@ -569,12 +569,16 @@ def get_future_list():
             entity["exchange"] = "cffex"
             entity["code"] = to_zvt_code(entity["code"])
         else:
-            entity["exchange"] = Exchange(entity["exchange"].lower()).value
-            if entity["code"][-1].lower() == "m":
-                entity["code"] = entity["code"][:-1]
-            else:
-                assert False
-            entity["code"] = entity["code"].upper()
+            try:
+                entity["exchange"] = Exchange(entity["exchange"].lower()).value
+                if entity["code"][-1].lower() == "m":
+                    entity["code"] = entity["code"][:-1]
+                else:
+                    assert False
+                entity["code"] = entity["code"].upper()
+            except Exception as e:
+                logger.error(f"wrong item: {item}", e)
+                continue
 
         entity["entity_type"] = "future"
         entity["name"] = item["name"]
@@ -764,10 +768,13 @@ def get_hot_topic(session: Session = None):
         if data_list:
             hot_topics = []
             for position, data in enumerate(data_list):
-                entity_ids = [
-                    market_code_to_entity_id(market=stock["qMarket"], code=stock["qCode"])
-                    for stock in data["stockList"]
-                ]
+                if data["stockList"]:
+                    entity_ids = [
+                        market_code_to_entity_id(market=stock["qMarket"], code=stock["qCode"])
+                        for stock in data["stockList"]
+                    ]
+                else:
+                    entity_ids = []
                 topic_id = data["topicid"]
                 entity_id = f"hot_topic_{topic_id}"
                 hot_topics.append(

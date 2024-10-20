@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8090/api/work/change_main_tag
+accept: application/json
+Content-Type: application/json
+
+{
+  "current_main_tag": "医疗器械",
+  "new_main_tag": "医药"
+}

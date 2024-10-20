@@ -232,6 +232,9 @@ class Exchange(Enum):
     #: 上海国际能源交易中心
     ine = "ine"
 
+    #: 广州期货所
+    gfex = "gfex"
+
     #: 外汇交易所(虚拟)
     #: currency exchange(virtual)
     forex = "forex"

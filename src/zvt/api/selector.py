@@ -4,8 +4,8 @@ import logging
 import pandas as pd
 from sqlalchemy import or_, and_
 
-from zvt.api.kdata import default_adjust_type, get_kdata_schema
-from zvt.contract import IntervalLevel
+from zvt.api.kdata import default_adjust_type, get_kdata_schema, get_latest_kdata_date
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import get_entity_ids
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, StockQuoteLog
 from zvt.utils.pd_utils import pd_is_not_null
@@ -335,6 +335,34 @@ def get_shoot_today(up_change_pct=0.03, down_change_pct=-0.03, interval=2):
         return up.index.tolist(), down.index.tolist()
 
 
+def get_top_vol(
+    entity_ids,
+    target_date=None,
+    limit=500,
+    provider="qmt",
+):
+    if provider == "qmt":
+        df = StockQuote.query_data(
+            entity_ids=entity_ids,
+            columns=[StockQuote.entity_id],
+            order=StockQuote.turnover.desc(),
+            limit=limit,
+        )
+        return df["entity_id"].to_list()
+    else:
+        if not target_date:
+            target_date = get_latest_kdata_date(provider="em", entity_type="stock", adjust_type=AdjustType.hfq)
+        df = Stock1dHfqKdata.query_data(
+            provider="em",
+            filters=[Stock1dHfqKdata.timestamp == to_pd_timestamp(target_date)],
+            entity_ids=entity_ids,
+            columns=[Stock1dHfqKdata.entity_id],
+            order=Stock1dHfqKdata.turnover.desc(),
+            limit=limit,
+        )
+        return df["entity_id"].to_list()
+
+
 def get_top_down_today(n=100):
     df = StockQuote.query_data(columns=[StockQuote.entity_id], order=StockQuote.change_pct.asc(), limit=n)
     if pd_is_not_null(df):
@@ -348,22 +376,8 @@ def get_limit_down_today():
 
 
 if __name__ == "__main__":
-    # target_date = get_latest_kdata_date(provider="em", entity_type="stock", adjust_type=AdjustType.hfq)
-    # big = get_big_cap_stock(timestamp=target_date)
-    # print(len(big))
-    # print(big)
-    # middle = get_middle_cap_stock(timestamp=target_date)
-    # print(len(middle))
-    # print(middle)
-    # small = get_small_cap_stock(timestamp=target_date)
-    # print(len(small))
-    # print(small)
-    # mini = get_mini_cap_stock(timestamp=target_date)
-    # print(len(mini))
-    # print(mini)
-    # df = get_player_performance(start_timestamp="2022-01-01")
-    # print((get_entity_ids_by_filter(ignore_new_stock=False)))
-    print(get_limit_up_stocks(timestamp="2023-12-2"))
+    stocks = get_top_vol(entity_ids=None, provider="em")
+    assert len(stocks) == 500
 
 
 # the __all__ is generated

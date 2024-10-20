@@ -22,6 +22,7 @@ from zvt.tag.tag_models import (
     StockTagOptions,
     MainTagIndustryRelation,
     MainTagSubTagRelation,
+    ChangeMainTagModel,
 )
 from zvt.tag.tag_schemas import (
     StockTags,
@@ -748,9 +749,45 @@ def build_main_tag_sub_tag_relation(main_tag_sub_tag_relation: MainTagSubTagRela
         session.commit()
 
 
+def change_main_tag(change_main_tag_model: ChangeMainTagModel):
+    new_main_tag = change_main_tag_model.new_main_tag
+    _create_main_tag_if_not_existed(main_tag=new_main_tag, main_tag_reason=new_main_tag)
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        stock_tags: List[StockTags] = StockTags.query_data(
+            filters=[StockTags.main_tag == change_main_tag_model.current_main_tag],
+            session=session,
+            return_type="domain",
+        )
+
+        for stock_tag in stock_tags:
+            tag_parameter: TagParameter = build_tag_parameter(
+                tag_type=TagType.main_tag,
+                tag=new_main_tag,
+                tag_reason=new_main_tag,
+                stock_tag=stock_tag,
+            )
+            set_stock_tags_model = SetStockTagsModel(
+                entity_id=stock_tag.entity_id,
+                main_tag=tag_parameter.main_tag,
+                main_tag_reason=tag_parameter.main_tag_reason,
+                sub_tag=tag_parameter.sub_tag,
+                sub_tag_reason=tag_parameter.sub_tag_reason,
+                active_hidden_tags=stock_tag.active_hidden_tags,
+            )
+
+            build_stock_tags(
+                set_stock_tags_model=set_stock_tags_model,
+                timestamp=now_pd_timestamp(),
+                set_by_user=True,
+                keep_current=False,
+            )
+            session.refresh(stock_tag)
+        return stock_tags
+
+
 if __name__ == "__main__":
-    # activate_default_main_tag(industry="半导体")
-    activate_sub_tags(ActivateSubTagsModel(sub_tags=["航天概念", "天基互联", "北斗导航", "通用航空"]))
+    activate_industry_list(industry_list=["半导体"])
+    # activate_sub_tags(ActivateSubTagsModel(sub_tags=["航天概念", "天基互联", "北斗导航", "通用航空"]))
 
 
 # the __all__ is generated

@@ -28,6 +28,7 @@ from zvt.tag.tag_models import (
     MainTagIndustryRelation,
     MainTagSubTagRelation,
     IndustryInfoModel,
+    ChangeMainTagModel,
 )
 from zvt.tag.tag_schemas import (
     StockTags,
@@ -250,3 +251,8 @@ def build_main_tag_sub_tag_relation(relation: MainTagSubTagRelation):
     tag_service.build_main_tag_sub_tag_relation(main_tag_sub_tag_relation=relation)
     tag_service.activate_sub_tags(activate_sub_tags_model=ActivateSubTagsModel(sub_tags=relation.sub_tag_list))
     return "success"
+
+
+@work_router.post("/change_main_tag", response_model=List[StockTagsModel])
+def change_main_tag(change_main_tag_model: ChangeMainTagModel):
+    return tag_service.change_main_tag(change_main_tag_model=change_main_tag_model)
