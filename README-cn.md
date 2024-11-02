@@ -380,7 +380,7 @@ zvt_context.schemas为系统支持的schema,schema即表结构，即数据，其
 
 * 源码
 
-[domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)里的文件为schema的定义，查看相应字段的注释即可。
+[domain](https://github.com/zvtvz/zvt/tree/master/src/zvt/domain)里的文件为schema的定义，查看相应字段的注释即可。
 
 通过以上的例子，你应该掌握了统一的记录数据的方法：
 
@@ -529,8 +529,8 @@ if __name__ == '__main__':
 
 下面以技术因子为例对**计算流程**进行说明:
 ```
-In [7]: from zvt.factors.technical_factor import *
-In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer())
+In [7]: from zvt.factors import *
+In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer(count_live_dead=True))
 ```
 ### data_df
 data_df为factor的原始数据，即通过query_data从数据库读取到的数据,为一个**二维索引**DataFrame
@@ -555,7 +555,7 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 ```
 
 ### factor_df
-factor_df为transformer对data_df进行计算后得到的数据，设计因子即对[transformer](https://github.com/zvtvz/zvt/blob/master/zvt/factors/factor.py#L18)进行扩展，例子中用的是MacdTransformer()。
+factor_df为transformer对data_df进行计算后得到的数据，设计因子即对[transformer](https://github.com/zvtvz/zvt/blob/master/src/zvt/contract/factor.py#L34)进行扩展，例子中用的是MacdTransformer()。
 
 ```
 In [12]: factor.factor_df
@@ -579,7 +579,7 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 
 ### result_df
 result_df为可用于选股器的**二维索引**DataFrame，通过对data_df或factor_df计算来实现。
-该例子在计算macd之后，利用factor_df,黄白线在0轴上为True,否则为False，[具体代码](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_factor.py#L56)
+该例子在计算macd之后，利用factor_df,黄白线在0轴上为True,否则为False，[具体代码](https://github.com/zvtvz/zvt/blob/master/src/zvt/factors/technical_factor.py#L56)
 
 ```
 In [14]: factor.result_df
