@@ -113,7 +113,7 @@ class JqkaLimitDownRecorder(TimestampsDataRecorder):
             limit_downs = jqka_api.get_limit_down(date=the_date)
             if limit_downs:
                 records = []
-                for data in limit_downs:
+                for idx, data in enumerate(limit_downs):
                     entity_id = china_stock_code_to_id(code=data["code"])
                     record = {
                         "id": "{}_{}".format(entity_id, the_date),
@@ -205,7 +205,7 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
 
 
 if __name__ == "__main__":
-    JqkaLimitUpRecorder().run()
+    JqkaLimitDownRecorder().run()
 
 
 # the __all__ is generated

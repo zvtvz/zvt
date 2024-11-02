@@ -51,13 +51,13 @@ def get_limit_stats(date: str):
 
 def get_limit_up(date: str):
     date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
-    url = f"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date_str}"
+    url = f"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=199112&order_type=0&date={date_str}"
     return get_jkqa_data(url=url)
 
 
 def get_limit_down(date: str):
     date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
-    url = f"https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date_str}"
+    url = f"https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=199112&order_type=0&date={date_str}"
     return get_jkqa_data(url=url)
 
 
