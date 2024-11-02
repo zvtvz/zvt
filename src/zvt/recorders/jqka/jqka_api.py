@@ -57,27 +57,30 @@ def get_limit_up(date: str):
 
 def get_limit_down(date: str):
     date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
-    url = f"https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?page=1&limit=15&field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date_str}"
+    url = f"https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=330324&order_type=0&date={date_str}"
     return get_jkqa_data(url=url)
 
 
 def get_jkqa_data(url, pn=1, ps=200, fetch_all=True, headers=_JKQA_HEADER):
-    url = url + f"&page={pn}&limit={ps}&_={now_timestamp()}"
-    print(url)
-    resp = requests.get(url, headers=headers)
+    requesting_url = url + f"&page={pn}&limit={ps}&_={now_timestamp()}"
+    print(requesting_url)
+    resp = requests.get(requesting_url, headers=headers)
     if resp.status_code == 200:
         json_result = resp.json()
         if json_result and json_result["data"]:
             data: list = json_result["data"]["info"]
             if fetch_all:
-                if pn < json_result["data"]["page"]["page"]:
+                if pn < json_result["data"]["page"]["count"]:
                     next_data = get_jkqa_data(
                         pn=pn + 1,
                         ps=ps,
+                        url=url,
                         fetch_all=fetch_all,
                     )
                     if next_data:
                         data = data + next_data
+                        if pn == 1 and len(data) != json_result["data"]["page"]["total"]:
+                            raise RuntimeError(f"Assertion failed, the total length of data should be {json_result['data']['page']['total']}, only {len(data)} fetched")
                         return data
                     else:
                         return data
