@@ -36,7 +36,7 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
         latest_infos = LimitUpInfo.query_data(
             provider=self.provider, order=LimitUpInfo.timestamp.desc(), limit=1, return_type="domain"
         )
-        if latest_infos:
+        if latest_infos and not self.force_update:
             start_date = latest_infos[0].timestamp
         else:
             # 最近一年的数据
@@ -99,7 +99,7 @@ class JqkaLimitDownRecorder(TimestampsDataRecorder):
         latest_infos = LimitDownInfo.query_data(
             provider=self.provider, order=LimitDownInfo.timestamp.desc(), limit=1, return_type="domain"
         )
-        if latest_infos:
+        if latest_infos  and not self.force_update:
             start_date = latest_infos[0].timestamp
         else:
             # 最近一年的数据
@@ -163,7 +163,7 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
         latest_infos = Emotion.query_data(
             provider=self.provider, order=Emotion.timestamp.desc(), limit=1, return_type="domain"
         )
-        if latest_infos:
+        if latest_infos and not self.force_update:
             start_date = latest_infos[0].timestamp
         else:
             # 最近一年的数据
@@ -205,8 +205,8 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
 
 
 if __name__ == "__main__":
-    JqkaLimitDownRecorder().run()
-
+    # JqkaLimitDownRecorder().run()
+    LimitDownInfo.record_data(start_timestamp="2024-02-02", end_timestamp="2024-02-16", force_update=True)
 
 # the __all__ is generated
 __all__ = ["JqkaLimitUpRecorder", "JqkaLimitDownRecorder", "JqkaEmotionRecorder"]
