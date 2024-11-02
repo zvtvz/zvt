@@ -12,7 +12,7 @@ from zvt.utils.time_utils import to_pd_timestamp
 logger = logging.getLogger(__name__)
 
 original_page_url = "http://www.cnindex.com.cn/zh_indices/sese/index.html?act_menu=1&index_type=-1"
-url = "http://www.cnindex.net.cn/index/indexList?channelCode={}&rows=1000&pageNum=1"
+url = "http://www.cnindex.com.cn/index/indexList?channelCode={}&rows=1000&pageNum=1"
 
 # 中证指数 抓取 风格指数 行业指数 规模指数 基金指数
 cni_category_map_url = {
@@ -80,7 +80,7 @@ def get_cn_index(index_type="cni", category=IndexCategory.style):
     for i, result in enumerate(results):
         logger.info(f"to {i}/{len(results)}")
         code = result["indexcode"]
-        info_resp = requests_session.get(f"http://www.cnindex.net.cn/index-intro?indexcode={code}")
+        info_resp = requests_session.get(f"http://www.cnindex.com.cn/index-intro?indexcode={code}")
         # fbrq: "2010-01-04"
         # jd: 1000
         # jr: "2002-12-31"

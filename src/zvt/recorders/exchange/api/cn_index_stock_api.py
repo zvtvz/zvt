@@ -11,7 +11,7 @@ from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_MON
 logger = logging.getLogger(__name__)
 
 original_page_url = "http://www.cnindex.com.cn/module/index-detail.html?act_menu=1&indexCode=399001"
-url = "http://www.cnindex.net.cn/sample-detail/detail?indexcode={}&dateStr={}&pageNum=1&rows=5000"
+url = "http://www.cnindex.com.cn/sample-detail/detail?indexcode={}&dateStr={}&pageNum=1&rows=5000"
 
 
 def _get_resp_data(resp: requests.Response):
