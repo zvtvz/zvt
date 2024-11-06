@@ -365,7 +365,7 @@ type the schema. and press tab to show its fields or .help()
 
 * source code
 
-Schemas defined in [domain](https://github.com/zvtvz/zvt/tree/master/zvt/domain)
+Schemas defined in [domain](https://github.com/zvtvz/zvt/tree/master/src/zvt/domain)
 
 From above examples, you should know the unified way of recording data:
 
@@ -519,8 +519,8 @@ Now it's time to introduce the two-dimensional index multi-entity calculation mo
 
 Takes technical factors as an example to illustrate the **calculation process**:
 ```
-In [7]: from zvt.factors.technical_factor import *
-In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer())
+In [7]: from zvt.factors import *
+In [8]: factor = BullFactor(codes=['000338','601318'],start_timestamp='2019-01-01',end_timestamp='2019-06-10', transformer=MacdTransformer(count_live_dead=True))
 ```
 ### data_df
 
@@ -546,7 +546,7 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 ```
 
 ### factor_df
-**two-dimensional index** DataFrame which calculating using data_df by [transformer](https://github.com/zvtvz/zvt/blob/master/zvt/factors/factor.py#L18)
+**two-dimensional index** DataFrame which calculating using data_df by [transformer](https://github.com/zvtvz/zvt/blob/master/src/zvt/contract/factor.py#L34)
 e.g., MacdTransformer.
 ```
 In [12]: factor.factor_df
@@ -572,7 +572,7 @@ stock_sz_000338 2019-06-03    1d  11.04  stock_sz_000338_2019-06-03  stock_sz_00
 **two-dimensional index** DataFrame which calculating using factor_df or(and) data_df.
 It's used by TargetSelector.
 
-e.g.,[macd](https://github.com/zvtvz/zvt/blob/master/zvt/factors/technical_factor.py#L56)
+e.g.,[macd](https://github.com/zvtvz/zvt/blob/master/src/zvt/factors/technical_factor.py#L56)
 
 ```
 In [14]: factor.result_df
