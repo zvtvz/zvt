@@ -7,6 +7,7 @@
 [![Documentation Status](https://readthedocs.org/projects/zvt/badge/?version=latest)](https://zvt.readthedocs.io/en/latest/?badge=latest)
 [![codecov.io](https://codecov.io/github/zvtvz/zvt/coverage.svg?branch=master)](https://codecov.io/github/zvtvz/zvt)
 [![Downloads](https://pepy.tech/badge/zvt/month)](https://pepy.tech/project/zvt)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20ZVT%20Guru-006BFF)](https://gurubase.io/g/zvt)
 
 **The origin of ZVT**
 
