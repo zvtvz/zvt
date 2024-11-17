@@ -12,6 +12,12 @@
 
 [The Three Major Principles of Stock Trading](https://mp.weixin.qq.com/s/FoFR63wFSQIE_AyFubkZ6Q)
 
+**Declaration**
+
+This project does not currently guarantee any backward compatibility, so please upgrade with caution.    
+As the author's thoughts evolve, some things that were once considered important may become less so, and thus may not be maintained.    
+Whether the addition of some new elements will be useful to you needs to be assessed by yourself.
+
 **Read this in other languages: [中文](README-cn.md).**  
 
 **Read the docs:[https://zvt.readthedocs.io/en/latest/](https://zvt.readthedocs.io/en/latest/)**

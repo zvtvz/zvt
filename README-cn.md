@@ -12,6 +12,13 @@
 
 [炒股的三大原理](https://mp.weixin.qq.com/s/FoFR63wFSQIE_AyFubkZ6Q)
 
+**声明**
+
+本项目目前不保证任何向后兼容性，请谨慎升级。  
+随着作者思想的变化，一些以前觉得重要的东西可能也变得不重要，从而可能不会进行维护。  
+而一些新的东西的加入对你是否有用，需要自己去评估。
+
+
 **Read this in other languages: [English](README-cn.md).**  
 
 **详细文档:[https://zvt.readthedocs.io/en/latest/](https://zvt.readthedocs.io/en/latest/)**

@@ -282,7 +282,7 @@ def download_capital_data():
 def clear_history_quote():
     session = get_db_session("qmt", data_schema=StockQuote)
     session.query(StockQuote).filter(StockQuote.timestamp < current_date()).delete()
-    start_date = date_time_by_interval(current_date(), -20)
+    start_date = date_time_by_interval(current_date(), -10)
     session.query(Stock1mQuote).filter(Stock1mQuote.timestamp < start_date).delete()
     session.query(StockQuoteLog).filter(StockQuoteLog.timestamp < start_date).delete()
     session.commit()

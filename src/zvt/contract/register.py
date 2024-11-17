@@ -108,7 +108,10 @@ def register_schema(
             added_columns = [c for c in table.columns if c.name not in existing_columns]
             index_list = []
             with engine.connect() as con:
-                con.execute(text("PRAGMA journal_mode=WAL;"))
+                # FIXME: close WAL mode for saving space, most of time no need to write in multiple process
+                if db_name in ("zvt_info","stock_news","stock_tags"):
+                    con.execute(text("PRAGMA journal_mode=WAL;"))
+
                 rs = con.execute(text("PRAGMA INDEX_LIST('{}')".format(table_name)))
                 for row in rs:
                     index_list.append(row[1])

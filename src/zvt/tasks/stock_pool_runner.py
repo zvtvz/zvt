@@ -3,7 +3,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from zvt import zvt_config
+from zvt import zvt_config, init_log
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.domain import (
     Stock,
@@ -125,6 +125,7 @@ def record_data_and_build_stock_pools():
 
 
 if __name__ == "__main__":
+    init_log("sotck_pool_runner.log")
     record_data_and_build_stock_pools()
     sched.add_job(func=record_data_and_build_stock_pools, trigger="cron", hour=16, minute=00, day_of_week="mon-fri")
     sched.start()

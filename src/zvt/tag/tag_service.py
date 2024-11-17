@@ -651,6 +651,7 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
             # entity_ids = df["entity_id"].tolist()
             entity_ids = None
 
+            # stock_tag with sub_tag but not set to related main_tag yet
             stock_tags = StockTags.query_data(
                 session=session,
                 entity_ids=entity_ids,

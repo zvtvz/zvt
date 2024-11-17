@@ -8,7 +8,6 @@ import pandas as pd
 import requests
 import sqlalchemy
 from requests import Session
-from sqlalchemy import func
 
 from zvt.api.kdata import generate_kdata_id
 from zvt.api.utils import value_to_pct, china_stock_code_to_id
@@ -589,6 +588,61 @@ def get_future_list():
     return df
 
 
+def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None, return_quote=False):
+    url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
+    resp = requests.get(url, headers=DEFAULT_HEADER)
+
+    resp.raise_for_status()
+
+    result = json_callback_param(resp.text)
+    resp.close()
+    data = result["data"]["diff"]
+    df = pd.DataFrame.from_records(data=data)
+
+    if return_quote:
+        df = df[
+            [
+                "f12",
+                "f14",
+                "f2",
+                "f3",
+            ]
+        ]
+        df.columns = ["code", "name", "price", "change_pct"]
+    else:
+        if entity_type == TradableType.stock:
+            df = df[["f12", "f13", "f14", "f20", "f21", "f9", "f23"]]
+            df.columns = ["code", "exchange", "name", "cap", "cap1", "pe", "pb"]
+            df[["cap", "cap1", "pe", "pb"]] = df[["cap", "cap1", "pe", "pb"]].apply(pd.to_numeric, errors="coerce")
+        else:
+            df = df[["f12", "f13", "f14"]]
+            df.columns = ["code", "exchange", "name"]
+        if exchange:
+            df["exchange"] = exchange.value
+        df["entity_type"] = entity_type.value
+        df["id"] = df[["entity_type", "exchange", "code"]].apply(lambda x: "_".join(x.astype(str)), axis=1)
+        df["entity_id"] = df["id"]
+
+    return df
+
+
+def get_top_stocks(limit=100):
+    # 沪深和北交所
+    entity_flag = "fs=m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:81+s:2048"
+    fields = "f2,f3,f12,f14"
+    return get_top_tradable_list(
+        entity_type=TradableType.stock, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
+    )
+
+
+def get_top_stockhks(limit=20):
+    entity_flag = "fs=b:DLMK0144,b:DLMK0146"
+    fields = "f2,f3,f12,f14"
+    return get_top_tradable_list(
+        entity_type=TradableType.stockhk, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
+    )
+
+
 def get_tradable_list(
     entity_type: Union[TradableType, str] = "stock",
     exchange: Union[Exchange, str] = None,
@@ -665,31 +719,15 @@ def get_tradable_list(
                 else:
                     assert False
 
+        # f2, f3, f4, f12, f13, f14, f19, f111, f148
         fields = "f1,f2,f3,f4,f12,f13,f14"
         if entity_type == TradableType.stock:
             # 市值,流通市值,pe,pb
             fields = fields + ",f20,f21,f9,f23"
-        url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
-        resp = requests.get(url, headers=DEFAULT_HEADER)
 
-        resp.raise_for_status()
-
-        result = json_callback_param(resp.text)
-        resp.close()
-        data = result["data"]["diff"]
-        df = pd.DataFrame.from_records(data=data)
-        if entity_type == TradableType.stock:
-            df = df[["f12", "f13", "f14", "f20", "f21", "f9", "f23"]]
-            df.columns = ["code", "exchange", "name", "cap", "cap1", "pe", "pb"]
-            df[["cap", "cap1", "pe", "pb"]] = df[["cap", "cap1", "pe", "pb"]].apply(pd.to_numeric, errors="coerce")
-        else:
-            df = df[["f12", "f13", "f14"]]
-            df.columns = ["code", "exchange", "name"]
-
-        df["exchange"] = exchange.value
-        df["entity_type"] = entity_type.value
-        df["id"] = df[["entity_type", "exchange", "code"]].apply(lambda x: "_".join(x.astype(str)), axis=1)
-        df["entity_id"] = df["id"]
+        df = get_top_tradable_list(
+            entity_type=entity_type, fields=fields, limit=limit, entity_flag=entity_flag, exchange=exchange
+        )
         if entity_type == TradableType.block:
             df["category"] = block_category.value
 
@@ -996,11 +1034,14 @@ if __name__ == "__main__":
     # print(df)
     # print(len(df))
     # df = get_tradable_list(entity_type="block")
-    # df = get_tradable_list(entity_type="indexus")
-    # df = get_tradable_list(entity_type="currency")
-    # df = get_tradable_list(entity_type="index")
-    # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # print(df)
+    # df = get_tradable_list(entity_type="indexus")
+    # print(df)
+    # df = get_tradable_list(entity_type="currency")
+    # print(df)
+    # df = get_tradable_list(entity_type="index")
+    # print(df)
+    # df = get_kdata(entity_id="index_us_SPX", level="1d")
     # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
     # print(df)
     # df = get_future_list()
@@ -1022,10 +1063,12 @@ if __name__ == "__main__":
     # print(events)
     # print(get_hot_topic())
     # record_hot_topic()
-    df = StockHotTopic.query_data(
-        filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
-    )
-    print(df)
+    # df = StockHotTopic.query_data(
+    #     filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
+    # )
+    # print(df)
+    print(get_top_stocks())
+    print(get_top_stockhks())
 
 
 # the __all__ is generated
