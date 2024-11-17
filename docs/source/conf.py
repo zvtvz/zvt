@@ -23,7 +23,7 @@ copyright = "2022, foolcage"
 author = "foolcage"
 
 # The full version, including alpha/beta/rc tags
-release = "0.10.5"
+release = "0.13.0"
 
 
 # -- General configuration ---------------------------------------------------
