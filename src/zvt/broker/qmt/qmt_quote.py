@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import pandas as pd
+from pandas.core.tools.times import to_time
 from xtquant import xtdata
 
 from zvt.contract import IntervalLevel, AdjustType
@@ -148,6 +149,7 @@ def get_kdata(
     period = level.value
     # download比较耗时，建议单独定时任务来做
     if download_history:
+        # print(f"download from {to_time_str(start_timestamp, fmt='YYYYMMDDHHmmss')}")
         xtdata.download_history_data(stock_code=code, period=period)
     records = xtdata.get_market_data(
         stock_list=[code],

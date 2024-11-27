@@ -11,7 +11,7 @@ from zvt.domain import (
     StockKdataCommon,
 )
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import current_date, to_time_str
+from zvt.utils.time_utils import current_date, to_time_str, TIME_FORMAT_DAY, TIME_FORMAT_MINUTE
 
 
 class BaseQmtKdataRecorder(FixedCycleDataRecorder):
@@ -81,7 +81,7 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
                 end_timestamp=start,
                 adjust_type=self.adjust_type,
                 level=self.level,
-                download_history=False,
+                download_history=True,
             )
             if pd_is_not_null(check_df):
                 current_df = get_kdata(
@@ -113,12 +113,13 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             end_timestamp=end,
             adjust_type=self.adjust_type,
             level=self.level,
-            download_history=False,
+            download_history=True,
         )
+        time_str_fmt = TIME_FORMAT_DAY if self.level == IntervalLevel.LEVEL_1DAY else TIME_FORMAT_MINUTE
         if pd_is_not_null(df):
             df["entity_id"] = entity.id
             df["timestamp"] = pd.to_datetime(df.index)
-            df["id"] = df.apply(lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'])}", axis=1)
+            df["id"] = df.apply(lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'], fmt=time_str_fmt)}", axis=1)
             df["provider"] = "qmt"
             df["level"] = self.level.value
             df["code"] = entity.code
@@ -138,7 +139,7 @@ class QMTStockKdataRecorder(BaseQmtKdataRecorder):
 
 if __name__ == "__main__":
     # Stock.record_data(provider="qmt")
-    QMTStockKdataRecorder(entity_id="stock_sz_301611", adjust_type=AdjustType.qfq).run()
+    QMTStockKdataRecorder(entity_id="stock_sz_002231", adjust_type=AdjustType.qfq, level=IntervalLevel.LEVEL_1MIN).run()
 
 # the __all__ is generated
 __all__ = ["BaseQmtKdataRecorder", "QMTStockKdataRecorder"]
