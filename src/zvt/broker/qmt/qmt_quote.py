@@ -4,7 +4,6 @@ import time
 
 import numpy as np
 import pandas as pd
-from pandas.core.tools.times import to_time
 from xtquant import xtdata
 
 from zvt.contract import IntervalLevel, AdjustType
@@ -138,24 +137,31 @@ def get_entity_list():
 
 
 def get_kdata(
-    entity_id,
-    start_timestamp,
-    end_timestamp,
-    level=IntervalLevel.LEVEL_1DAY,
-    adjust_type=AdjustType.qfq,
-    download_history=True,
+        entity_id,
+        start_timestamp,
+        end_timestamp,
+        level=IntervalLevel.LEVEL_1DAY,
+        adjust_type=AdjustType.qfq,
+        download_history=True,
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
+    start_time = to_time_str(start_timestamp, fmt="YYYYMMDDHHmmss")
+    end_time = to_time_str(end_timestamp, fmt="YYYYMMDDHHmmss")
+
     # download比较耗时，建议单独定时任务来做
     if download_history:
-        # print(f"download from {to_time_str(start_timestamp, fmt='YYYYMMDDHHmmss')}")
-        xtdata.download_history_data(stock_code=code, period=period)
+        print(
+            f"download from {start_time} to {end_time}")
+        xtdata.download_history_data(
+            stock_code=code, period=period,
+            start_time=start_time, end_time=end_time
+        )
     records = xtdata.get_market_data(
         stock_list=[code],
         period=period,
-        start_time=to_time_str(start_timestamp, fmt="YYYYMMDDHHmmss"),
-        end_time=to_time_str(end_timestamp, fmt="YYYYMMDDHHmmss"),
+        start_time=start_time,
+        end_time=end_time,
         dividend_type=_to_qmt_dividend_type(adjust_type=adjust_type),
         fill_data=False,
     )
