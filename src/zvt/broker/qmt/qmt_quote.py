@@ -142,7 +142,7 @@ def get_kdata(
         end_timestamp,
         level=IntervalLevel.LEVEL_1DAY,
         adjust_type=AdjustType.qfq,
-        download_history=False,
+        download_history=True,
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
