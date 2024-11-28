@@ -72,6 +72,7 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             one_day_trading_minutes,
             return_unfinished,
         )
+        self.one_day_trading_minutes = 240
 
     def record(self, entity, start, end, size, timestamps):
         if start and (self.level == IntervalLevel.LEVEL_1DAY):
@@ -141,6 +142,22 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             self.logger.info(f"no kdata for {entity.id}")
 
     def evaluate_start_end_size_timestamps(self, entity):
+        if self.download_history_data and self.start_timestamp and self.end_timestamp:
+            # 历史数据可能碎片化，允许按照实际start和end之间有没有写满数据
+            expected_size = evaluate_size_from_timestamp(start_timestamp=self.start_timestamp,
+                                                         end_timestamp=self.end_timestamp, level=self.level,
+                                                         one_day_trading_minutes=self.one_day_trading_minutes)
+
+            recorded_size = self.session.query(self.data_schema).filter(
+                self.data_schema.entity_id == entity.id,
+                self.data_schema.timestamp >= self.start_timestamp,
+                self.data_schema.timestamp <= self.end_timestamp
+            ).count()
+
+            if expected_size != recorded_size:
+                # print(f"expected_size: {expected_size}, recorded_size: {recorded_size}")
+                return self.start_timestamp, self.end_timestamp, self.default_size, None
+
         start_timestamp, end_timestamp, size, timestamps = super().evaluate_start_end_size_timestamps(entity)
         # start_timestamp is the last updated timestamp
         if self.end_timestamp is not None:

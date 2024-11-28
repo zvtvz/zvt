@@ -142,7 +142,7 @@ def get_kdata(
         end_timestamp,
         level=IntervalLevel.LEVEL_1DAY,
         adjust_type=AdjustType.qfq,
-        download_history=True,
+        download_history=False,
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
@@ -151,8 +151,8 @@ def get_kdata(
 
     # download比较耗时，建议单独定时任务来做
     if download_history:
-        print(
-            f"download from {start_time} to {end_time}")
+        # print(
+        #     f"download from {start_time} to {end_time}")
         xtdata.download_history_data(
             stock_code=code, period=period,
             start_time=start_time, end_time=end_time
