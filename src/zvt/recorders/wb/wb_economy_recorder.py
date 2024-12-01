@@ -17,9 +17,13 @@ class WBEconomyRecorder(FixedCycleDataRecorder):
         date = None
         if start:
             date = f"{start.year}:{current_date().year}"
-        df = wb_api.get_economy_data(entity_id=entity.id, date=date)
-        df["name"] = entity.name
-        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        try:
+            df = wb_api.get_economy_data(entity_id=entity.id, date=date)
+            df["name"] = entity.name
+            df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+        # 一些地方获取不到数据会报错
+        except Exception as e:
+            print(e)s
 
 
 if __name__ == "__main__":
