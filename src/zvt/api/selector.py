@@ -375,9 +375,24 @@ def get_limit_down_today():
         return df["entity_id"].to_list()
 
 
+def get_high_days_count(entity_ids=None, target_date=current_date(), days=10):
+    recent_days = date_time_by_interval(target_date, -days)
+    df = LimitUpInfo.query_data(
+        entity_ids=entity_ids,
+        start_timestamp=recent_days,
+        columns=[LimitUpInfo.timestamp, LimitUpInfo.entity_id, LimitUpInfo.high_days, LimitUpInfo.high_days_count],
+    )
+    df_sorted = df.sort_values(by=["entity_id", "timestamp"])
+    df_latest = df_sorted.drop_duplicates(subset="entity_id", keep="last").reset_index(drop=True)
+
+    entity_id_to_high_days_map = df_latest.set_index("entity_id")["high_days"].to_dict()
+    return entity_id_to_high_days_map
+
+
 if __name__ == "__main__":
-    stocks = get_top_vol(entity_ids=None, provider="em")
-    assert len(stocks) == 500
+    # stocks = get_top_vol(entity_ids=None, provider="em")
+    # assert len(stocks) == 500
+    print(get_high_days_count())
 
 
 # the __all__ is generated

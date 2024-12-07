@@ -52,7 +52,11 @@ def _qmt_instrument_detail_to_stock(stock_detail):
     code = stock_detail["InstrumentID"]
     name = stock_detail["InstrumentName"]
     list_date = to_pd_timestamp(stock_detail["OpenDate"])
-    end_date = to_pd_timestamp(stock_detail["ExpireDate"])
+    try:
+        end_date = to_pd_timestamp(stock_detail["ExpireDate"])
+    except:
+        end_date = None
+
     pre_close = stock_detail["PreClose"]
     limit_up_price = stock_detail["UpStopPrice"]
     limit_down_price = stock_detail["DownStopPrice"]
@@ -95,7 +99,7 @@ def get_entity_list():
             code, exchange = stock.split(".")
             exchange = exchange.lower()
             entity_id = f"stock_{exchange}_{code}"
-            # get from provider exchange
+            # get from provider em
             datas = Stock.query_data(provider="em", entity_id=entity_id, return_type="dict")
             if datas:
                 entity = datas[0]
@@ -196,8 +200,8 @@ def tick_to_quote():
             if delay < 2:
                 break
             else:
-                logger.warning(f"delay {delay} minutes, ignore {len(datas.keys())} stocks")
-                return
+                logger.warning(f"delay {delay} minutes, may need to restart this script or qmt client")
+                break
 
         tick_df = pd.DataFrame.from_records(data=[datas[code] for code in datas], index=list(datas.keys()))
 
@@ -207,9 +211,7 @@ def tick_to_quote():
 
         df = pd.concat(
             [
-                stock_df.loc[
-                    tick_df.index,
-                ],
+                stock_df.loc[tick_df.index,],
                 tick_df,
             ],
             axis=1,
@@ -292,7 +294,7 @@ def record_tick():
     clear_history_quote()
     Stock.record_data(provider="em")
     stocks = get_qmt_stocks()
-    print(stocks)
+    logger.info(f"subscribe tick for {len(stocks)} stocks")
     sid = xtdata.subscribe_whole_quote(stocks, callback=tick_to_quote())
 
     """阻塞线程接收行情回调"""

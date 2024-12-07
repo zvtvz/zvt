@@ -249,7 +249,7 @@ def build_main_tag_industry_relation(relation: MainTagIndustryRelation):
 @work_router.post("/build_main_tag_sub_tag_relation", response_model=str)
 def build_main_tag_sub_tag_relation(relation: MainTagSubTagRelation):
     tag_service.build_main_tag_sub_tag_relation(main_tag_sub_tag_relation=relation)
-    tag_service.activate_sub_tags(activate_sub_tags_model=ActivateSubTagsModel(sub_tags=relation.sub_tag_list))
+    # tag_service.activate_sub_tags(activate_sub_tags_model=ActivateSubTagsModel(sub_tags=relation.sub_tag_list))
     return "success"
 
 

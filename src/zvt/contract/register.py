@@ -109,8 +109,10 @@ def register_schema(
             index_list = []
             with engine.connect() as con:
                 # FIXME: close WAL mode for saving space, most of time no need to write in multiple process
-                if db_name in ("zvt_info","stock_news","stock_tags"):
+                if db_name in ("zvt_info", "stock_news", "stock_tags"):
                     con.execute(text("PRAGMA journal_mode=WAL;"))
+                else:
+                    con.execute(text("PRAGMA journal_mode=DELETE;"))
 
                 rs = con.execute(text("PRAGMA INDEX_LIST('{}')".format(table_name)))
                 for row in rs:

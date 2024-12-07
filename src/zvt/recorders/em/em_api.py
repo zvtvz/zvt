@@ -138,6 +138,16 @@ def get_free_holder_report_dates(code):
     )
 
 
+# https://datacenter.eastmoney.com/securities/api/data/get?type=RPT_F10_EH_RELATION&sty=SECUCODE%2CHOLDER_NAME%2CRELATED_RELATION%2CHOLD_RATIO&filter=(SECUCODE%3D%22601162.SH%22)&client=APP&source=SECURITIES&p=1&ps=200&rdm=rnd_01BE6995104944ED99B70EEB7FFC0353&v=012649539724458458
+# https://datacenter.eastmoney.com/securities/api/data/get?type=RPT_F10_FREE_TOTALHOLDNUM&sty=SECUCODE%2CSECURITY_CODE%2CEND_DATE%2CHOLD_NUM_COUNT%2CHOLD_RATIO_COUNT%2CHOLD_RATIO_CHANGE&filter=(SECUCODE%3D%22601162.SH%22)(END_DATE%3D%272024-09-30%27)&client=APP&source=SECURITIES&p=1&ps=200&sr=1&st=&rdm=rnd_FA1943FA30474E3AA0CCF206EA1B5749&v=032098454407366983
+def get_controlling_shareholder(code):
+    return get_em_data(
+        request_type="RPT_F10_EH_RELATION",
+        fields="SECUCODE,CHOLDER_NAME,CRELATED_RELATION,CHOLD_RATIO",
+        filters=generate_filters(code=code),
+    )
+
+
 # 机构持仓
 def get_ii_holder(code, report_date, org_type):
     return get_em_data(
@@ -165,6 +175,35 @@ def get_free_holders(code, end_date):
     )
 
 
+def get_top_ten_free_holder_stats(code):
+    datas = get_holder_report_dates(code=code)
+    if datas:
+        end_date = to_time_str(datas[0]["END_DATE"])
+        holders = get_em_data(
+            request_type="RPT_F10_FREE_TOTALHOLDNUM",
+            fields="SECUCODE,SECURITY_CODE,END_DATE,HOLD_NUM_COUNT,HOLD_RATIO_COUNT,HOLD_RATIO_CHANGE,",
+            filters=generate_filters(code=code, end_date=end_date),
+        )
+        if holders:
+            holder = holders[0]
+            ratio = 0
+            change = 0
+            try:
+                if holder["HOLD_RATIO_COUNT"]:
+                    ratio = holder["HOLD_RATIO_COUNT"] / 100
+                if holder["HOLD_RATIO_CHANGE"]:
+                    change = holder["HOLD_RATIO_CHANGE"] / 100
+            except Exception as e:
+                logger.warning(f"Wrong holder {holder}", e)
+
+            return {
+                "code": code,
+                "timestamp": end_date,
+                "ratio": ratio,
+                "change": change,
+            }
+
+
 def get_controlling_shareholder(code):
     holders = get_em_data(
         request_type="RPT_F10_EH_RELATION",
@@ -173,12 +212,15 @@ def get_controlling_shareholder(code):
     )
 
     if holders:
-        control = {}
+        control = {"ratio": 0}
+
         for holder in holders:
             if holder["RELATED_RELATION"] == "控股股东":
                 control["holder"] = holder["HOLDER_NAME"]
             elif holder["RELATED_RELATION"] == "实际控制人":
                 control["parent"] = holder["HOLDER_NAME"]
+            if holder["HOLD_RATIO"]:
+                control["ratio"] = control["ratio"] + holder["HOLD_RATIO"]
         return control
 
 
@@ -293,7 +335,7 @@ def get_em_data(
         ps=ps,
         params=params,
     )
-    print(f"current url: {url}")
+    logger.debug(f"current url: {url}")
     if session:
         resp = session.get(url)
     else:
@@ -795,7 +837,7 @@ def get_hot_topic(session: Session = None):
         "type": "get",
         "parm": "",
     }
-    logger.info(f"get hot topic from: {url}")
+    logger.debug(f"get hot topic from: {url}")
     if session:
         resp = session.post(url=url, json=data, headers=DEFAULT_HEADER)
     else:
@@ -835,7 +877,7 @@ def get_hot_topic(session: Session = None):
 
 def record_hot_topic():
     hot_topics = get_hot_topic()
-    logger.info(hot_topics)
+    logger.debug(hot_topics)
     if hot_topics:
         df = pd.DataFrame.from_records(hot_topics)
         df_to_db(
@@ -846,7 +888,7 @@ def record_hot_topic():
 def get_news(entity_id, ps=200, index=1, start_timestamp=None, session=None, latest_code=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
     url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
-    logger.info(f"get news from: {url}")
+    logger.debug(f"get news from: {url}")
     if session:
         resp = session.get(url)
     else:
@@ -1067,8 +1109,10 @@ if __name__ == "__main__":
     #     filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
     # )
     # print(df)
-    print(get_top_stocks())
-    print(get_top_stockhks())
+    # print(get_top_stocks())
+    # print(get_top_stockhks())
+    print(get_controlling_shareholder(code="000338"))
+    print(get_top_ten_free_holder_stats(code="000338"))
 
 
 # the __all__ is generated
@@ -1083,6 +1127,7 @@ __all__ = [
     "get_ii_summary",
     "get_free_holders",
     "get_controlling_shareholder",
+    "get_top_ten_free_holder_stats",
     "get_holders",
     "get_url",
     "get_exchange",

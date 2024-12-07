@@ -13,6 +13,14 @@ StockMetaBase = declarative_base()
 @register_entity(entity_type="stock")
 class Stock(StockMetaBase, TradableEntity):
     __tablename__ = "stock"
+    #: 股东上次更新时间
+    holder_modified_date = Column(DateTime)
+    #: 控股股东
+    controlling_holder = Column(String)
+    #: 实际控制人
+    controlling_holder_parent = Column(String)
+    #: 前十大股东占比
+    top_ten_ratio = Column(Float)
 
 
 #: 个股详情

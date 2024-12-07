@@ -44,13 +44,21 @@ class ExchangeStockMetaRecorder(Recorder):
                 encoding="GB2312",
                 dtype=str,
                 parse_dates=["上市日期"],
+                date_format="%Y-m-d",
                 on_bad_lines="skip",
             )
+            print(df)
             if df is not None:
                 df = df.loc[:, ["公司代码", "公司简称", "上市日期"]]
 
         elif exchange == "sz":
-            df = pd.read_excel(io.BytesIO(response.content), sheet_name="A股列表", dtype=str, parse_dates=["A股上市日期"])
+            df = pd.read_excel(
+                io.BytesIO(response.content),
+                sheet_name="A股列表",
+                dtype=str,
+                parse_dates=["A股上市日期"],
+                date_format="%Y-m-d",
+            )
             if df is not None:
                 df = df.loc[:, ["A股代码", "A股简称", "A股上市日期"]]
 
@@ -63,6 +71,7 @@ class ExchangeStockMetaRecorder(Recorder):
             # 600996,贵广网络,2016-12-26,2016-12-26,sh,stock,stock_sh_600996,,次新股,贵州,,
             df.loc[df["code"] == "600996", "list_date"] = "2016-12-26"
             print(df[df["list_date"] == "-"])
+            print(df["list_date"])
             df["list_date"] = df["list_date"].apply(lambda x: to_pd_timestamp(x))
             df["exchange"] = exchange
             df["entity_type"] = "stock"

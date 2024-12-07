@@ -140,36 +140,36 @@ class ZAccumulator(Accumulator):
             # 笔的顶
             acc_df["bi_ding"] = False
             # 记录笔顶/底分型的值，bi_di取low,bi_ding取high,其他为None,绘图时取有值的连线即为 笔
-            acc_df["bi_value"] = np.NAN
+            acc_df["bi_value"] = np.nan
             # 笔的变化
-            acc_df["bi_change"] = np.NAN
+            acc_df["bi_change"] = np.nan
             # 笔的斜率
-            acc_df["bi_slope"] = np.NAN
+            acc_df["bi_slope"] = np.nan
             # 持续的周期
-            acc_df["bi_interval"] = np.NAN
+            acc_df["bi_interval"] = np.nan
 
             # 记录临时分型，不变
             acc_df["tmp_ding"] = False
             acc_df["tmp_di"] = False
             # 分型的力度
-            acc_df["fenxing_power"] = np.NAN
+            acc_df["fenxing_power"] = np.nan
 
             # 目前分型确定的方向
             acc_df["current_direction"] = None
-            acc_df["current_change"] = np.NAN
-            acc_df["current_interval"] = np.NAN
-            acc_df["current_slope"] = np.NAN
+            acc_df["current_change"] = np.nan
+            acc_df["current_interval"] = np.nan
+            acc_df["current_slope"] = np.nan
             # 最近的一个笔中枢
-            # acc_df['current_zhongshu'] = np.NAN
-            acc_df["current_zhongshu_change"] = np.NAN
-            acc_df["current_zhongshu_y0"] = np.NAN
-            acc_df["current_zhongshu_y1"] = np.NAN
+            # acc_df['current_zhongshu'] = np.nan
+            acc_df["current_zhongshu_change"] = np.nan
+            acc_df["current_zhongshu_y0"] = np.nan
+            acc_df["current_zhongshu_y1"] = np.nan
 
             # 目前走势的临时方向 其跟direction的的关系 确定了下一个分型
             acc_df["tmp_direction"] = None
-            acc_df["opposite_change"] = np.NAN
-            acc_df["opposite_interval"] = np.NAN
-            acc_df["opposite_slope"] = np.NAN
+            acc_df["opposite_change"] = np.nan
+            acc_df["opposite_interval"] = np.nan
+            acc_df["opposite_slope"] = np.nan
 
             acc_df["duan_state"] = "yi"
 
@@ -178,20 +178,20 @@ class ZAccumulator(Accumulator):
             # 段的顶
             acc_df["duan_ding"] = False
             # 记录段顶/底的值，为duan_di时取low,为duan_ding时取high,其他为None,绘图时取有值的连线即为 段
-            acc_df["duan_value"] = np.NAN
+            acc_df["duan_value"] = np.nan
             # 段的变化
-            acc_df["duan_change"] = np.NAN
+            acc_df["duan_change"] = np.nan
             # 段的斜率
-            acc_df["duan_slope"] = np.NAN
+            acc_df["duan_slope"] = np.nan
             # 持续的周期
-            acc_df["duan_interval"] = np.NAN
+            acc_df["duan_interval"] = np.nan
 
             # 记录在确定中枢的最后一个段的终点x1，值为Rect(x0,y0,x1,y1)
             acc_df["zhongshu"] = None
-            acc_df["zhongshu_change"] = np.NAN
+            acc_df["zhongshu_change"] = np.nan
 
             acc_df["bi_zhongshu"] = None
-            acc_df["bi_zhongshu_change"] = np.NAN
+            acc_df["bi_zhongshu_change"] = np.nan
 
             acc_df = acc_df.reset_index(drop=True)
 
@@ -448,9 +448,9 @@ class ZAccumulator(Accumulator):
                                     zen_state.fenxing_list = zen_state.fenxing_list[-1:]
                                 else:
                                     # 保持之前的状态并踢出候选
-                                    acc_df.loc[
-                                        zen_state.fenxing_list[0].index, "duan_state"
-                                    ] = zen_state.current_duan_state
+                                    acc_df.loc[zen_state.fenxing_list[0].index, "duan_state"] = (
+                                        zen_state.current_duan_state
+                                    )
                                     zen_state.fenxing_list = zen_state.fenxing_list[1:]
 
             pre_kdata = kdata

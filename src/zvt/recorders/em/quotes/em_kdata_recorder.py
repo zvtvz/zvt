@@ -22,8 +22,9 @@ from zvt.domain import (
 )
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
-from zvt.recorders.em.em_api import get_kdata
+from zvt.recorders.em import em_api
 from zvt.utils.pd_utils import pd_is_not_null
+from zvt.utils.time_utils import count_interval, now_pd_timestamp, current_date
 
 
 class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
@@ -82,7 +83,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
         )
 
     def record(self, entity, start, end, size, timestamps):
-        df = get_kdata(
+        df = em_api.get_kdata(
             session=self.http_session, entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level
         )
         if pd_is_not_null(df):
@@ -117,6 +118,24 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
 class EMStockKdataRecorder(BaseEMStockKdataRecorder):
     entity_schema = Stock
     data_schema = StockKdataCommon
+
+    def on_finish_entity(self, entity):
+        super().on_finish_entity(entity)
+        # fill holder
+        if not entity.holder_modified_date or (count_interval(entity.holder_modified_date, now_pd_timestamp()) > 30):
+            holder = em_api.get_controlling_shareholder(code=entity.code)
+            if holder:
+                entity.controlling_holder = holder.get("holder")
+                entity.controlling_holder_parent = holder.get("parent")
+                entity.holder_modified_date = current_date()
+                self.entity_session.add(entity)
+                self.entity_session.commit()
+            holder_stats = em_api.get_top_ten_free_holder_stats(code=entity.code)
+            if holder_stats:
+                entity.top_ten_ratio = holder_stats.get("ratio")
+                entity.holder_modified_date = current_date()
+                self.entity_session.add(entity)
+                self.entity_session.commit()
 
 
 class EMStockusKdataRecorder(BaseEMStockKdataRecorder):
