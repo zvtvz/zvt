@@ -4,14 +4,14 @@ import pandas as pd
 from zvt.api.kdata import get_kdata_schema, get_kdata
 from zvt.broker.qmt import qmt_quote
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.contract.api import df_to_db
+from zvt.contract.api import df_to_db, get_db_session, get_entities
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import (
     Stock,
     StockKdataCommon,
 )
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import current_date, to_time_str
+from zvt.utils.time_utils import current_date, to_time_str, now_time_str
 
 
 class BaseQmtKdataRecorder(FixedCycleDataRecorder):
@@ -67,6 +67,40 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             kdata_use_begin_time,
             one_day_trading_minutes,
             return_unfinished,
+        )
+
+    def init_entities(self):
+        """
+        init the entities which we would record data for
+
+        """
+        if self.entity_provider == self.provider and self.entity_schema == self.data_schema:
+            self.entity_session = self.session
+        else:
+            self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
+
+        if self.day_data:
+            df = self.data_schema.query_data(
+                start_timestamp=now_time_str(), columns=["entity_id", "timestamp"], provider=self.provider
+            )
+            if pd_is_not_null(df):
+                entity_ids = df["entity_id"].tolist()
+                self.logger.info(f"ignore entity_ids:{entity_ids}")
+                if self.entity_filters:
+                    self.entity_filters.append(self.entity_schema.entity_id.notin_(entity_ids))
+                else:
+                    self.entity_filters = [self.entity_schema.entity_id.notin_(entity_ids)]
+
+        #: init the entity list
+        self.entities = get_entities(
+            session=self.entity_session,
+            entity_schema=self.entity_schema,
+            exchanges=self.exchanges,
+            entity_ids=self.entity_ids,
+            codes=self.codes,
+            return_type="domain",
+            provider=self.entity_provider,
+            filters=self.entity_filters,
         )
 
     def record(self, entity, start, end, size, timestamps):

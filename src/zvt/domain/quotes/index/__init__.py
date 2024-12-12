@@ -20,3 +20,7 @@ from .index_1wk_kdata import *
 from .index_1wk_kdata import __all__ as _index_1wk_kdata_all
 
 __all__ += _index_1wk_kdata_all
+
+from .index_1m_kdata import *
+from .index_1m_kdata import __all__ as _index_1m_kdata_all
+__all__ += _index_1m_kdata_all

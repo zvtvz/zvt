@@ -6,6 +6,7 @@ import pandas as pd
 from xtquant import xtdata
 
 from zvt import init_log
+from zvt.broker.qmt.qmt_quote import get_qmt_stocks
 from zvt.contract import AdjustType
 from zvt.recorders.qmt.meta import QMTStockRecorder
 from zvt.recorders.qmt.quotes import QMTStockKdataRecorder
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 def download_data(download_tick=False):
     period = "1d"
     xtdata.download_sector_data()
-    stock_codes = xtdata.get_stock_list_in_sector("沪深A股")
+    stock_codes = get_qmt_stocks()
     stock_codes = sorted(stock_codes)
     count = len(stock_codes)
     download_status = {"ok": False}
