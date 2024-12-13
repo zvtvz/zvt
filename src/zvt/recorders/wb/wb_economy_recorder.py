@@ -23,7 +23,7 @@ class WBEconomyRecorder(FixedCycleDataRecorder):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
         # 一些地方获取不到数据会报错
         except Exception as e:
-            print(e)s
+            self.logger.warning(f"Failed to get {entity.name} economy data", e)
 
 
 if __name__ == "__main__":
