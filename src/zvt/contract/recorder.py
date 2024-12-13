@@ -196,6 +196,8 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         end_timestamp=None,
         return_unfinished=False,
     ) -> None:
+        self.start_timestamp = to_pd_timestamp(start_timestamp)
+        self.end_timestamp = to_pd_timestamp(end_timestamp)
         super().__init__(
             force_update,
             sleeping_time,
@@ -213,8 +215,6 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         self.real_time = real_time
         self.close_hour, self.close_minute = self.entity_schema.get_close_hour_and_minute()
         self.fix_duplicate_way = fix_duplicate_way
-        self.start_timestamp = to_pd_timestamp(start_timestamp)
-        self.end_timestamp = to_pd_timestamp(end_timestamp)
 
     def get_latest_saved_record(self, entity):
         order = eval("self.data_schema.{}.desc()".format(self.get_evaluated_time_field()))

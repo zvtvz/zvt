@@ -6,10 +6,12 @@ import numpy as np
 import pandas as pd
 from xtquant import xtdata
 
+from zvt.contract import Exchange
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock, Stock1dKdata
 from zvt.domain.quotes.stock.stock_quote import Stock1mQuote, StockQuoteLog
+from zvt.recorders.em import em_api
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     to_time_str,
@@ -84,7 +86,12 @@ def _qmt_instrument_detail_to_stock(stock_detail):
 
 
 def get_qmt_stocks():
-    return xtdata.get_stock_list_in_sector("沪深A股")
+    df = em_api.get_tradable_list(exchange=Exchange.bj)
+    bj_stock_list = df["entity_id"].map(_to_qmt_code).tolist()
+
+    stock_list = xtdata.get_stock_list_in_sector("沪深A股")
+    stock_list += bj_stock_list
+    return stock_list
 
 
 def get_entity_list():
@@ -127,7 +134,10 @@ def get_entity_list():
 
             tick = xtdata.get_full_tick(code_list=[stock])
             if tick and tick[stock]:
-                if code.startswith("300") or code.startswith("688"):
+                if code.startswith(("83", "87", "88", "889", "82", "920")):
+                    limit_up_price = tick[stock]["lastClose"] * 1.3
+                    limit_down_price = tick[stock]["lastClose"] * 0.7
+                elif code.startswith("300") or code.startswith("688"):
                     limit_up_price = tick[stock]["lastClose"] * 1.2
                     limit_down_price = tick[stock]["lastClose"] * 0.8
                 else:
@@ -150,9 +160,15 @@ def get_kdata(
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
+    start_time = to_time_str(start_timestamp, fmt="YYYYMMDDHHmmss")
+    end_time = to_time_str(end_timestamp, fmt="YYYYMMDDHHmmss")
     # download比较耗时，建议单独定时任务来做
     if download_history:
-        xtdata.download_history_data(stock_code=code, period=period)
+        print(f"download from {start_time} to {end_time}")
+        xtdata.download_history_data(
+            stock_code=code, period=period,
+            start_time=start_time, end_time=end_time
+        )
     records = xtdata.get_market_data(
         stock_list=[code],
         period=period,
