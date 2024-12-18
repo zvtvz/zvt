@@ -67,6 +67,11 @@ def pct_to_float(the_str, default=None):
         return default
 
 
+def float_to_pct(input_float: float) -> str:
+    # Convert the float to a percentage and format it to two decimal places
+    return f"{input_float * 100:.2f}%"
+
+
 def json_callback_param(the_str):
     json_str = the_str[the_str.index("(") + 1 : the_str.rindex(")")].replace("null", "None")
     return eval(json_str)
@@ -287,6 +292,7 @@ __all__ = [
     "add_func_to_value",
     "to_float",
     "pct_to_float",
+    "float_to_pct",
     "json_callback_param",
     "fill_domain_from_dict",
     "SUPPORT_ENCODINGS",

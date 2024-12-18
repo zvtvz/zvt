@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+
 from zvt.api.kdata import get_kdata_schema
 from zvt.broker.qmt import qmt_quote
 from zvt.consts import IMPORTANT_INDEX
@@ -20,26 +21,26 @@ class QmtIndexRecorder(FixedCycleDataRecorder):
     download_history_data = False
 
     def __init__(
-            self,
-            force_update=True,
-            sleeping_time=10,
-            exchanges=None,
-            entity_id=None,
-            entity_ids=None,
-            code=None,
-            codes=None,
-            day_data=False,
-            entity_filters=None,
-            ignore_failed=True,
-            real_time=False,
-            fix_duplicate_way="ignore",
-            start_timestamp=None,
-            end_timestamp=None,
-            level=IntervalLevel.LEVEL_1DAY,
-            kdata_use_begin_time=False,
-            one_day_trading_minutes=24 * 60,
-            return_unfinished=False,
-            download_history_data=False
+        self,
+        force_update=True,
+        sleeping_time=10,
+        exchanges=None,
+        entity_id=None,
+        entity_ids=None,
+        code=None,
+        codes=None,
+        day_data=False,
+        entity_filters=None,
+        ignore_failed=True,
+        real_time=False,
+        fix_duplicate_way="ignore",
+        start_timestamp=None,
+        end_timestamp=None,
+        level=IntervalLevel.LEVEL_1DAY,
+        kdata_use_begin_time=False,
+        one_day_trading_minutes=24 * 60,
+        return_unfinished=False,
+        download_history_data=False,
     ) -> None:
         level = IntervalLevel(level)
         self.entity_type = "index"
@@ -93,8 +94,9 @@ class QmtIndexRecorder(FixedCycleDataRecorder):
         if pd_is_not_null(df):
             df["entity_id"] = entity.id
             df["timestamp"] = pd.to_datetime(df.index)
-            df["id"] = df.apply(lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'], fmt=time_str_fmt)}",
-                                axis=1)
+            df["id"] = df.apply(
+                lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'], fmt=time_str_fmt)}", axis=1
+            )
             df["provider"] = "qmt"
             df["level"] = self.level.value
             df["code"] = entity.code
@@ -109,15 +111,22 @@ class QmtIndexRecorder(FixedCycleDataRecorder):
     def evaluate_start_end_size_timestamps(self, entity):
         if self.download_history_data and self.start_timestamp and self.end_timestamp:
             # 历史数据可能碎片化，允许按照实际start和end之间有没有写满数据
-            expected_size = evaluate_size_from_timestamp(start_timestamp=self.start_timestamp,
-                                                         end_timestamp=self.end_timestamp, level=self.level,
-                                                         one_day_trading_minutes=self.one_day_trading_minutes)
+            expected_size = evaluate_size_from_timestamp(
+                start_timestamp=self.start_timestamp,
+                end_timestamp=self.end_timestamp,
+                level=self.level,
+                one_day_trading_minutes=self.one_day_trading_minutes,
+            )
 
-            recorded_size = self.session.query(self.data_schema).filter(
-                self.data_schema.entity_id == entity.id,
-                self.data_schema.timestamp >= self.start_timestamp,
-                self.data_schema.timestamp <= self.end_timestamp
-            ).count()
+            recorded_size = (
+                self.session.query(self.data_schema)
+                .filter(
+                    self.data_schema.entity_id == entity.id,
+                    self.data_schema.timestamp >= self.start_timestamp,
+                    self.data_schema.timestamp <= self.end_timestamp,
+                )
+                .count()
+            )
 
             if expected_size != recorded_size:
                 # print(f"expected_size: {expected_size}, recorded_size: {recorded_size}")
@@ -165,9 +174,15 @@ if __name__ == "__main__":
     # init_log('china_stock_category.log')
     start_timestamp = pd.Timestamp("2024-12-01")
     end_timestamp = pd.Timestamp("2024-12-03")
-    QmtIndexRecorder(codes=IMPORTANT_INDEX, level=IntervalLevel.LEVEL_1MIN, sleeping_time=0,
-                     start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-                     download_history_data=True).run()
+    QmtIndexRecorder(
+        codes=IMPORTANT_INDEX,
+        level=IntervalLevel.LEVEL_1MIN,
+        sleeping_time=0,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+        download_history_data=True,
+    ).run()
+
 
 # the __all__ is generated
 __all__ = ["QmtIndexRecorder"]

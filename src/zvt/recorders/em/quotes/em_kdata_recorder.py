@@ -126,7 +126,10 @@ class EMStockKdataRecorder(BaseEMStockKdataRecorder):
             holder = em_api.get_controlling_shareholder(code=entity.code)
             if holder:
                 entity.controlling_holder = holder.get("holder")
-                entity.controlling_holder_parent = holder.get("parent")
+                if holder.get("parent"):
+                    entity.controlling_holder_parent = holder.get("parent")
+                else:
+                    entity.controlling_holder_parent = holder.get("holder")
                 entity.holder_modified_date = current_date()
                 self.entity_session.add(entity)
                 self.entity_session.commit()

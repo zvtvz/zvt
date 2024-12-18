@@ -174,5 +174,6 @@ if __name__ == "__main__":
     # Stock.record_data(provider="qmt")
     QMTStockKdataRecorder(entity_id="stock_sz_301611", adjust_type=AdjustType.qfq).run()
 
+
 # the __all__ is generated
 __all__ = ["BaseQmtKdataRecorder", "QMTStockKdataRecorder"]

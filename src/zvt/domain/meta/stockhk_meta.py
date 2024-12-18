@@ -15,6 +15,28 @@ class Stockhk(StockhkMetaBase, TradableEntity):
     #: 是否属于港股通
     south = Column(Boolean)
 
+    @classmethod
+    def get_trading_t(cls):
+        """
+        0 means t+0
+        1 means t+1
+
+        :return:
+        """
+        return 0
+
+    @classmethod
+    def get_trading_intervals(cls, include_bidding_time=False):
+        """
+        overwrite it to get the trading intervals of the entity
+
+        :return: list of time intervals, in format [(start,end)]
+        """
+        if include_bidding_time:
+            return [("09:15", "12:00"), ("13:00", "16:00")]
+        else:
+            return [("09:30", "12:00"), ("13:00", "16:00")]
+
 
 register_schema(providers=["em"], db_name="stockhk_meta", schema_base=StockhkMetaBase)
 

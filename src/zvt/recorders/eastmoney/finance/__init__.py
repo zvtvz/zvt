@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-#
 
+
 # the __all__ is generated
 __all__ = []
 
@@ -12,6 +13,12 @@ from .eastmoney_finance_factor_recorder import *
 from .eastmoney_finance_factor_recorder import __all__ as _eastmoney_finance_factor_recorder_all
 
 __all__ += _eastmoney_finance_factor_recorder_all
+
+# import all from submodule eastmoney_cash_flow_recorder
+from .eastmoney_cash_flow_recorder import *
+from .eastmoney_cash_flow_recorder import __all__ as _eastmoney_cash_flow_recorder_all
+
+__all__ += _eastmoney_cash_flow_recorder_all
 
 # import all from submodule eastmoney_income_statement_recorder
 from .eastmoney_income_statement_recorder import *
@@ -30,9 +37,3 @@ from .eastmoney_balance_sheet_recorder import *
 from .eastmoney_balance_sheet_recorder import __all__ as _eastmoney_balance_sheet_recorder_all
 
 __all__ += _eastmoney_balance_sheet_recorder_all
-
-# import all from submodule eastmoney_cash_flow_recorder
-from .eastmoney_cash_flow_recorder import *
-from .eastmoney_cash_flow_recorder import __all__ as _eastmoney_cash_flow_recorder_all
-
-__all__ += _eastmoney_cash_flow_recorder_all

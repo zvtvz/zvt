@@ -181,6 +181,11 @@ def query_simple_stock_tags(query_simple_stock_tags_model: QuerySimpleStockTagsM
         for entity_id in entity_ids:
             tag = entity_tag_map.get(entity_id)
             tag["name"] = stocks_map.get(entity_id).name
+            if stocks_map.get(entity_id).controlling_holder_parent:
+                tag["controlling_holder_parent"] = stocks_map.get(entity_id).controlling_holder_parent
+            else:
+                tag["controlling_holder_parent"] = stocks_map.get(entity_id).controlling_holder
+            tag["top_ten_ratio"] = stocks_map.get(entity_id).top_ten_ratio
             result_tags.append(tag)
         return result_tags
 

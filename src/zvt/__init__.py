@@ -237,7 +237,7 @@ import platform
 
 if platform.system() == "Windows":
     try:
-        import zvt.recorders.qmt.quotes.qmt_kdata_recorder as qmt_kdata_recorde
+        import zvt.recorders.qmt as qmt_recorder
     except Exception as e:
         logger.error("QMT not work", e)
 else:

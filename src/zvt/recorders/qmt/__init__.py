@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-#
 
+
 # the __all__ is generated
 __all__ = []
 
@@ -13,7 +14,7 @@ from .quotes import __all__ as _quotes_all
 
 __all__ += _quotes_all
 
-# import all from submodule money_flow
+# import all from submodule index
 from .index import *
 from .index import __all__ as _index_all
 

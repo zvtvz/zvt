@@ -73,6 +73,30 @@ __all__ = ["init_main_index"]
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule sina
+from .sina import *
+from .sina import __all__ as _sina_all
+
+__all__ += _sina_all
+
+# import all from submodule jqka
+from .jqka import *
+from .jqka import __all__ as _jqka_all
+
+__all__ += _jqka_all
+
+# import all from submodule consts
+from .consts import *
+from .consts import __all__ as _consts_all
+
+__all__ += _consts_all
+
+# import all from submodule eastmoney
+from .eastmoney import *
+from .eastmoney import __all__ as _eastmoney_all
+
+__all__ += _eastmoney_all
+
 # import all from submodule joinquant
 from .joinquant import *
 from .joinquant import __all__ as _joinquant_all
@@ -85,44 +109,14 @@ from .exchange import __all__ as _exchange_all
 
 __all__ += _exchange_all
 
-# import all from submodule em
-from .em import *
-from .em import __all__ as _em_all
-
-__all__ += _em_all
-
 # import all from submodule wb
 from .wb import *
 from .wb import __all__ as _wb_all
 
 __all__ += _wb_all
 
-# import all from submodule consts
-from .consts import *
-from .consts import __all__ as _consts_all
+# import all from submodule em
+from .em import *
+from .em import __all__ as _em_all
 
-__all__ += _consts_all
-
-# import all from submodule jqka
-from .jqka import *
-from .jqka import __all__ as _jqka_all
-
-__all__ += _jqka_all
-
-# import all from submodule eastmoney
-from .eastmoney import *
-from .eastmoney import __all__ as _eastmoney_all
-
-__all__ += _eastmoney_all
-
-# import all from submodule qmt
-from .qmt import *
-from .qmt import __all__ as _qmt_all
-
-__all__ += _qmt_all
-
-# import all from submodule sina
-from .sina import *
-from .sina import __all__ as _sina_all
-
-__all__ += _sina_all
+__all__ += _em_all

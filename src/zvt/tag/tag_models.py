@@ -66,6 +66,8 @@ class SimpleStockTagsModel(CustomModel):
     sub_tag_reason: Optional[str] = Field(default=None)
     sub_tags: Union[Dict[str, str], None]
     active_hidden_tags: Union[Dict[str, str], None]
+    controlling_holder_parent: Optional[str] = Field(default=None)
+    top_ten_ratio: Optional[float] = Field(default=None)
 
 
 class QueryStockTagsModel(CustomModel):

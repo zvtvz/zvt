@@ -103,6 +103,7 @@ def gen_exports(
     dir_path="./domain",
     gen_flag="# the __all__ is generated",
     export_from_package=False,
+    exclude_modules=None,
     export_modules=None,
     excludes=None,
     export_var=False,
@@ -160,6 +161,8 @@ def gen_exports(
                 dir_path = os.path.dirname(file)
                 modules = all_sub_modules(dir_path)
                 if modules:
+                    if exclude_modules:
+                        modules = set(modules) - set(exclude_modules)
                     if export_modules:
                         modules = set(modules) & set(export_modules)
                     lines.append(
