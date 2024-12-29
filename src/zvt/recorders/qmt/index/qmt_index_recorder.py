@@ -8,14 +8,15 @@ from zvt.contract import IntervalLevel
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.contract.utils import evaluate_size_from_timestamp
-from zvt.domain import Index, Index1mKdata
+from zvt.domain import Index, IndexKdataCommon
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import TIME_FORMAT_DAY, TIME_FORMAT_MINUTE, current_date, to_time_str
 
 
 class QmtIndexRecorder(FixedCycleDataRecorder):
     provider = "qmt"
-    data_schema = Index1mKdata
+    # class level kdata schema should always use common
+    data_schema = IndexKdataCommon
     entity_provider = "em"
     entity_schema = Index
     download_history_data = False

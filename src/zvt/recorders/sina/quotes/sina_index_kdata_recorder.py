@@ -5,9 +5,10 @@ import time
 import pandas as pd
 import requests
 
-from zvt.api.kdata import generate_kdata_id
+from zvt.api.kdata import generate_kdata_id, get_kdata_schema
+from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Index, Index1dKdata
+from zvt.domain import Index, IndexKdataCommon
 from zvt.utils.time_utils import get_year_quarters, is_same_date
 
 
@@ -16,8 +17,56 @@ class ChinaIndexDayKdataRecorder(FixedCycleDataRecorder):
     entity_schema = Index
 
     provider = "sina"
-    data_schema = Index1dKdata
+    data_schema = IndexKdataCommon
     url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vMS_MarketHistory/stockid/{}/type/S.phtml?year={}&jidu={}"
+
+    def __init__(
+        self,
+        force_update=True,
+        sleeping_time=10,
+        exchanges=None,
+        entity_id=None,
+        entity_ids=None,
+        code=None,
+        codes=None,
+        day_data=False,
+        entity_filters=None,
+        ignore_failed=True,
+        real_time=False,
+        fix_duplicate_way="ignore",
+        start_timestamp=None,
+        end_timestamp=None,
+        level=IntervalLevel.LEVEL_1DAY,
+        kdata_use_begin_time=False,
+        one_day_trading_minutes=24 * 60,
+        return_unfinished=False,
+    ) -> None:
+        level = IntervalLevel(level)
+        self.adjust_type = AdjustType.qfq
+        self.entity_type = self.entity_schema.__name__.lower()
+
+        self.data_schema = get_kdata_schema(entity_type=self.entity_type, level=level, adjust_type=self.adjust_type)
+
+        super().__init__(
+            force_update,
+            sleeping_time,
+            exchanges,
+            entity_id,
+            entity_ids,
+            code,
+            codes,
+            day_data,
+            entity_filters,
+            ignore_failed,
+            real_time,
+            fix_duplicate_way,
+            start_timestamp,
+            end_timestamp,
+            level,
+            kdata_use_begin_time,
+            one_day_trading_minutes,
+            return_unfinished,
+        )
 
     def get_data_map(self):
         return {}
