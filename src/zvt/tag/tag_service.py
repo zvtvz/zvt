@@ -66,6 +66,8 @@ def get_stock_tag_options(entity_id):
         )
         main_tag_options = []
         sub_tag_options = []
+        hidden_tag_options = []
+
         main_tag = None
         sub_tag = None
         stock_tags = None
@@ -84,6 +86,11 @@ def get_stock_tag_options(entity_id):
                 sub_tag_options = [
                     CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
                     for tag, tag_reason in stock_tags.sub_tags.items()
+                ]
+            if stock_tags.hidden_tags:
+                hidden_tag_options = [
+                    CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
+                    for tag, tag_reason in stock_tags.hidden_tags.items()
                 ]
 
         main_tags_info: List[MainTagInfo] = MainTagInfo.query_data(session=session, return_type="domain")
@@ -104,8 +111,20 @@ def get_stock_tag_options(entity_id):
             for item in sub_tags_info
             if not stock_tags or (not stock_tags.sub_tags) or (item.tag not in stock_tags.sub_tags)
         ]
+
+        hidden_tags_info: List[HiddenTagInfo] = HiddenTagInfo.query_data(session=session, return_type="domain")
+        hidden_tag_options = hidden_tag_options + [
+            CreateTagInfoModel(tag=item.tag, tag_reason=item.tag_reason)
+            for item in hidden_tags_info
+            if not stock_tags or (not stock_tags.hidden_tags) or (item.tag not in stock_tags.hidden_tags)
+        ]
+
         return StockTagOptions(
-            main_tag=main_tag, sub_tag=sub_tag, main_tag_options=main_tag_options, sub_tag_options=sub_tag_options
+            main_tag=main_tag,
+            sub_tag=sub_tag,
+            main_tag_options=main_tag_options,
+            sub_tag_options=sub_tag_options,
+            hidden_tag_options=hidden_tag_options,
         )
 
 
@@ -126,6 +145,12 @@ def build_stock_tags(
         )
         if not is_tag_info_existed(tag_info=sub_tag_info, tag_type=TagType.sub_tag):
             build_tag_info(tag_info=sub_tag_info, tag_type=TagType.sub_tag)
+
+    if set_stock_tags_model.active_hidden_tags:
+        for tag, reason in set_stock_tags_model.active_hidden_tags:
+            hidden_tag_info = CreateTagInfoModel(tag=tag, tag_reason=reason)
+            if not is_tag_info_existed(tag_info=hidden_tag_info, tag_type=TagType.hidden_tag):
+                build_tag_info(tag_info=hidden_tag_info, tag_type=TagType.hidden_tag)
 
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
         entity_id = set_stock_tags_model.entity_id

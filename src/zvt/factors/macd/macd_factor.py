@@ -64,5 +64,6 @@ if __name__ == "__main__":
     f = GoldCrossFactor(provider="em", entity_provider="em", entity_ids=["stock_sz_000338"])
     f.drawer().draw(show=True)
 
+
 # the __all__ is generated
 __all__ = ["MacdFactor", "BullFactor", "KeepBullFactor", "LiveOrDeadFactor", "GoldCrossFactor"]

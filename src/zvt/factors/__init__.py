@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-#
+
 # the __all__ is generated
 __all__ = []
 
@@ -35,11 +37,11 @@ from .macd import __all__ as _macd_all
 
 __all__ += _macd_all
 
-# import all from submodule z
-from .z import *
-from .z import __all__ as _z_all
+# import all from submodule zen
+from .zen import *
+from .zen import __all__ as _zen_all
 
-__all__ += _z_all
+__all__ += _zen_all
 
 # import all from submodule technical_factor
 from .technical_factor import *

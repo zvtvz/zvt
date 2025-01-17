@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # gen_exports("common")
     # gen_exports("contract", export_from_package=True, export_modules=["schema"])
     # gen_exports("domain", export_from_package=True)
-    # gen_exports("factors", export_from_package=True)
+    gen_exports("factors", export_from_package=True)
     # gen_exports("trading")
 
     # gen_exports("ml")
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # gen_exports('trader')
     # gen_exports('autocode')
     # gen_exports("zhdate")
-    gen_exports("recorders", export_from_package=True, exclude_modules=["qmt"])
+    # gen_exports("recorders", export_from_package=True, exclude_modules=["qmt"])
     # gen_exports("tag", export_from_package=False)
     # gen_kdata_schemas()
     # zip_dir(ZVT_TEST_DATA_PATH, zip_file_name=DATA_SAMPLE_ZIP_PATH)

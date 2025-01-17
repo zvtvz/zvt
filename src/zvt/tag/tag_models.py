@@ -97,6 +97,7 @@ class StockTagOptions(CustomModel):
     sub_tag: Optional[str] = Field(default=None)
     main_tag_options: List[CreateTagInfoModel]
     sub_tag_options: List[CreateTagInfoModel]
+    hidden_tag_options: List[CreateTagInfoModel]
 
 
 class SetStockTagsModel(CustomModel):

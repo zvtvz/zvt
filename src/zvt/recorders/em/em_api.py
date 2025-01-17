@@ -630,6 +630,28 @@ def get_future_list():
     return df
 
 
+def _calculate_limit(row):
+    code = row["code"]
+    change_pct = row["change_pct"]
+    if code.startswith(("83", "87", "88", "889", "82", "920")):
+        return change_pct >= 0.29, change_pct <= -0.29
+    elif code.startswith("300") or code.startswith("301") or code.startswith("688"):
+        return change_pct >= 0.19, change_pct <= -0.19
+    else:
+        return change_pct > 0.09, change_pct < -0.09
+
+
+def get_stock_turnover():
+    sz_url = "https://push2his.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2&fields2=f51,f57&ut=fa5fd1943c7b386f172d6893dbfba10b&iscr=0&iscca=0&secid=0.399001&time=0&ndays=2"
+    resp = requests.get(sz_url, headers=DEFAULT_HEADER)
+
+    resp.raise_for_status()
+
+    data = resp.json()["data"]["trends"]
+    resp.close()
+    return data
+
+
 def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None, return_quote=False):
     url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
     resp = requests.get(url, headers=DEFAULT_HEADER)
@@ -642,15 +664,35 @@ def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None
     df = pd.DataFrame.from_records(data=data)
 
     if return_quote:
-        df = df[
-            [
-                "f12",
-                "f14",
-                "f2",
-                "f3",
-            ]
+        df = df[["f12", "f14", "f2", "f3", "f5", "f8", "f6", "f15", "f16", "f17", "f20", "f21"]]
+        df.columns = [
+            "code",
+            "name",
+            "price",
+            "change_pct",
+            "volume",
+            "turnover_rate",
+            "turnover",
+            "high",
+            "low",
+            "open",
+            "total_cap",
+            "float_cap",
         ]
-        df.columns = ["code", "name", "price", "change_pct"]
+
+        df = df.dropna()
+        df = df[df.change_pct != "-"]
+        df = df[df.turnover_rate != "-"]
+        df = df[df.turnover != "-"]
+
+        df = df.astype({"change_pct": "float", "turnover_rate": "float", "turnover": "float", "volume": "float"})
+
+        df["change_pct"] = df["change_pct"] / 100
+        df["turnover_rate"] = df["turnover_rate"] / 100
+        df["volume"] = df["volume"] * 100
+
+        df[["is_limit_up", "is_limit_down"]] = df.apply(lambda row: _calculate_limit(row), axis=1, result_type="expand")
+
     else:
         if entity_type == TradableType.stock:
             df = df[["f12", "f13", "f14", "f20", "f21", "f9", "f23"]]
@@ -671,7 +713,8 @@ def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None
 def get_top_stocks(limit=100):
     # 沪深和北交所
     entity_flag = "fs=m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:81+s:2048"
-    fields = "f2,f3,f12,f14"
+
+    fields = "f2,f3,f5,f6,f8,f12,f14,f15,f16,f17,f20,f21"
     return get_top_tradable_list(
         entity_type=TradableType.stock, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
     )
@@ -679,7 +722,7 @@ def get_top_stocks(limit=100):
 
 def get_top_stockhks(limit=20):
     entity_flag = "fs=b:DLMK0144,b:DLMK0146"
-    fields = "f2,f3,f12,f14"
+    fields = "f2,f3,f5,f6,f8,f12,f14,f15,f16,f17,f20,f21"
     return get_top_tradable_list(
         entity_type=TradableType.stockhk, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
     )
@@ -763,7 +806,7 @@ def get_tradable_list(
 
         # f2, f3, f4, f12, f13, f14, f19, f111, f148
         fields = "f1,f2,f3,f4,f12,f13,f14"
-        if entity_type == TradableType.stock:
+        if entity_type in (TradableType.stock, TradableType.stockhk):
             # 市值,流通市值,pe,pb
             fields = fields + ",f20,f21,f9,f23"
 
@@ -1111,10 +1154,11 @@ if __name__ == "__main__":
     #     filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
     # )
     # print(df)
-    # print(get_top_stocks())
-    # print(get_top_stockhks())
-    print(get_controlling_shareholder(code="000338"))
-    print(get_top_ten_free_holder_stats(code="000338"))
+    # print(get_top_stocks(limit=10))
+    # print(get_top_stockhks(limit=10))
+    # print(get_controlling_shareholder(code="000338"))
+    # print(get_top_ten_free_holder_stats(code="000338"))
+    print(get_stock_turnover())
 
 
 # the __all__ is generated
