@@ -95,6 +95,8 @@ class TagParameter(CustomModel):
 class StockTagOptions(CustomModel):
     main_tag: Optional[str] = Field(default=None)
     sub_tag: Optional[str] = Field(default=None)
+    # hidden_tags: Optional[List[str]] = Field(default=None)
+    active_hidden_tags: Optional[Dict[str, str]] = Field(default=None)
     main_tag_options: List[CreateTagInfoModel]
     sub_tag_options: List[CreateTagInfoModel]
     hidden_tag_options: List[CreateTagInfoModel]

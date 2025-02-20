@@ -313,9 +313,14 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
         entity_id = quote["entity_id"]
         main_tag = entity_tags_map.get(entity_id, {}).get("main_tag", None)
         sub_tag = entity_tags_map.get(entity_id, {}).get("sub_tag", None)
-        return pd.Series({"main_tag": main_tag, "sub_tag": sub_tag})
+        active_hidden_tags = entity_tags_map.get(entity_id, {}).get("active_hidden_tags", None)
+        if active_hidden_tags:
+            hidden_tags = list(active_hidden_tags.keys())
+        else:
+            hidden_tags = None
+        return pd.Series({"main_tag": main_tag, "sub_tag": sub_tag, "hidden_tags": hidden_tags})
 
-    df[["main_tag", "sub_tag"]] = df.apply(set_tags, axis=1)
+    df[["main_tag", "sub_tag", "hidden_tags"]] = df.apply(set_tags, axis=1)
 
     up_count = (df["change_pct"] > 0).sum()
     down_count = (df["change_pct"] < 0).sum()

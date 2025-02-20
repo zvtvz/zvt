@@ -70,6 +70,7 @@ def get_stock_tag_options(entity_id):
 
         main_tag = None
         sub_tag = None
+        active_hidden_tags = None
         stock_tags = None
         if datas:
             stock_tags = datas[0]
@@ -87,6 +88,10 @@ def get_stock_tag_options(entity_id):
                     CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
                     for tag, tag_reason in stock_tags.sub_tags.items()
                 ]
+
+            if stock_tags.active_hidden_tags:
+                active_hidden_tags = stock_tags.active_hidden_tags
+
             if stock_tags.hidden_tags:
                 hidden_tag_options = [
                     CreateTagInfoModel(tag=tag, tag_reason=tag_reason)
@@ -122,6 +127,7 @@ def get_stock_tag_options(entity_id):
         return StockTagOptions(
             main_tag=main_tag,
             sub_tag=sub_tag,
+            active_hidden_tags=active_hidden_tags,
             main_tag_options=main_tag_options,
             sub_tag_options=sub_tag_options,
             hidden_tag_options=hidden_tag_options,
@@ -147,8 +153,8 @@ def build_stock_tags(
             build_tag_info(tag_info=sub_tag_info, tag_type=TagType.sub_tag)
 
     if set_stock_tags_model.active_hidden_tags:
-        for tag, reason in set_stock_tags_model.active_hidden_tags:
-            hidden_tag_info = CreateTagInfoModel(tag=tag, tag_reason=reason)
+        for tag in set_stock_tags_model.active_hidden_tags:
+            hidden_tag_info = CreateTagInfoModel(tag=tag, tag_reason=set_stock_tags_model.active_hidden_tags.get(tag))
             if not is_tag_info_existed(tag_info=hidden_tag_info, tag_type=TagType.hidden_tag):
                 build_tag_info(tag_info=hidden_tag_info, tag_type=TagType.hidden_tag)
 
@@ -196,8 +202,8 @@ def build_stock_tags(
                 current_stock_tags.sub_tag = set_stock_tags_model.sub_tag
             if set_stock_tags_model.sub_tag_reason:
                 current_stock_tags.sub_tag_reason = set_stock_tags_model.sub_tag_reason
-            if set_stock_tags_model.active_hidden_tags:
-                current_stock_tags.active_hidden_tags = set_stock_tags_model.active_hidden_tags
+            # could update to None
+            current_stock_tags.active_hidden_tags = set_stock_tags_model.active_hidden_tags
         # update tags
         main_tags[set_stock_tags_model.main_tag] = set_stock_tags_model.main_tag_reason
         if set_stock_tags_model.sub_tag:

@@ -6,6 +6,7 @@ API
    :template: custom-module-template.rst
    :recursive:
 
+    zvt
     zvt.api
     zvt.autocode
     zvt.consts
