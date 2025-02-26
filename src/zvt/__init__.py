@@ -69,7 +69,9 @@ pd.set_option("display.max_columns", None)
 
 zvt_env = {}
 
-zvt_config = {}
+# load default config
+with open(pkg_resources.resource_filename("zvt", "config.json")) as f:
+    zvt_config = json.load(f)
 
 _plugins = {}
 
