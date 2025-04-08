@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Float, DateTime
+from sqlalchemy import Column, Float, DateTime, Integer
 from sqlalchemy import String, JSON
 from sqlalchemy.orm import declarative_base
 
@@ -7,6 +7,18 @@ from zvt.contract import Mixin
 from zvt.contract.register import register_schema
 
 TradingBase = declarative_base()
+
+
+class TagQuoteStats(Mixin, TradingBase):
+    __tablename__ = "tag_quote_stats"
+    stock_pool_name = Column(String)
+    main_tag = Column(String)
+    limit_up_count = Column(Integer)
+    limit_down_count = Column(Integer)
+    up_count = Column(Integer)
+    down_count = Column(Integer)
+    change_pct = Column(Float)
+    turnover = Column(Float)
 
 
 class TradingPlan(TradingBase, Mixin):

@@ -156,12 +156,29 @@ class WechatInformer(Informer):
         return the_json
 
 
-if __name__ == "__main__":
-    email_action = EmailInformer()
-    email_action.send_message(["5533061@qq.com", "2315983623@qq.com"], "helo", "just a test", sub_size=20)
+class QiyeWechatBot(Informer):
+    def __init__(self, token=None) -> None:
+        self.token = token
 
+    def send_message(self, content):
+        if not self.token:
+            if not zvt_config["qiye_wechat_bot_token"]:
+                logger.warning(f"Please set qiye_wechat_bot_token in ~/zvt-home/config.json")
+                return
+            self.token = zvt_config["qiye_wechat_bot_token"]
+
+        msg = {
+            "msgtype": "text",
+            "text": {"content": content},
+        }
+        requests.post(f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={self.token}", json=msg)
+
+
+if __name__ == "__main__":
     # weixin_action = WechatInformer()
     # weixin_action.send_price_notification(to_user='oRvNP0XIb9G3g6a-2fAX9RHX5--Q', security_name='BTC/USDT',
     #                                       current_price=1000, change_pct='0.5%')
+    bot = QiyeWechatBot()
+    bot.send_message(content="test")
 # the __all__ is generated
 __all__ = ["Informer", "EmailInformer", "WechatInformer"]

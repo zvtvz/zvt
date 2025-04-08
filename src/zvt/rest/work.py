@@ -65,6 +65,11 @@ def create_stock_pools(create_stock_pools_model: CreateStockPoolsModel):
     return tag_service.build_stock_pool(create_stock_pools_model, current_date())
 
 
+@work_router.delete("/del_stock_pool", response_model=str)
+def del_stock_pool(stock_pool_name: str):
+    return tag_service.del_stock_pool(stock_pool_name=stock_pool_name)
+
+
 @work_router.get("/get_stock_pools", response_model=Optional[StockPoolsModel])
 def get_stock_pools(stock_pool_name: str):
     with contract_api.DBSession(provider="zvt", data_schema=StockPools)() as session:
@@ -261,3 +266,8 @@ def build_main_tag_sub_tag_relation(relation: MainTagSubTagRelation):
 @work_router.post("/change_main_tag", response_model=List[StockTagsModel])
 def change_main_tag(change_main_tag_model: ChangeMainTagModel):
     return tag_service.change_main_tag(change_main_tag_model=change_main_tag_model)
+
+
+@work_router.delete("/del_hidden_tag", response_model=List[StockTagsModel])
+def del_hidden_tag(tag: str):
+    return tag_service.del_hidden_tag(tag=tag)

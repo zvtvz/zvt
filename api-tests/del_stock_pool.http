@@ -1,0 +1,3 @@
+DELETE http://127.0.0.1:8090/api/work/del_stock_pool?stock_pool_name=今日弱势
+accept: application/json
+Content-Type: application/json

@@ -47,7 +47,7 @@ from zvt.utils.utils import fill_dict, compare_dicts, flatten_list
 logger = logging.getLogger(__name__)
 
 
-def stock_tags_need_update(stock_tags: StockTags, set_stock_tags_model: SetStockTagsModel):
+def _stock_tags_need_update(stock_tags: StockTags, set_stock_tags_model: SetStockTagsModel):
     if (
         stock_tags.main_tag != set_stock_tags_model.main_tag
         or stock_tags.main_tag_reason != set_stock_tags_model.main_tag_reason
@@ -59,7 +59,7 @@ def stock_tags_need_update(stock_tags: StockTags, set_stock_tags_model: SetStock
     return False
 
 
-def get_stock_tag_options(entity_id):
+def get_stock_tag_options(entity_id: str) -> StockTagOptions:
     with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
         datas: List[StockTags] = StockTags.query_data(
             entity_id=entity_id, order=StockTags.timestamp.desc(), limit=1, return_type="domain", session=session
@@ -175,7 +175,7 @@ def build_stock_tags(
             current_stock_tags: StockTags = datas[0]
 
             # nothing change
-            if not stock_tags_need_update(current_stock_tags, set_stock_tags_model):
+            if not _stock_tags_need_update(current_stock_tags, set_stock_tags_model):
                 logger.info(f"Not change stock_tags for {set_stock_tags_model.entity_id}")
                 return current_stock_tags
 
@@ -224,6 +224,9 @@ def build_stock_tags(
 
 
 def build_tag_parameter(tag_type: TagType, tag, tag_reason, stock_tag: StockTags):
+    hidden_tag = None
+    hidden_tag_reason = None
+
     if tag_type == TagType.main_tag:
         main_tag = tag
         if main_tag in stock_tag.main_tags:
@@ -240,11 +243,29 @@ def build_tag_parameter(tag_type: TagType, tag, tag_reason, stock_tag: StockTags
             sub_tag_reason = tag_reason
         main_tag = stock_tag.main_tag
         main_tag_reason = stock_tag.main_tag_reason
+    elif tag_type == TagType.hidden_tag:
+        hidden_tag = tag
+        if stock_tag.hidden_tags and (hidden_tag in stock_tag.hidden_tags):
+            hidden_tag_reason = stock_tag.hidden_tags.get(hidden_tag, tag_reason)
+        else:
+            hidden_tag_reason = tag_reason
+
+        sub_tag = stock_tag.sub_tag
+        sub_tag_reason = stock_tag.sub_tag_reason
+
+        main_tag = stock_tag.main_tag
+        main_tag_reason = stock_tag.main_tag_reason
+
     else:
         assert False
 
     return TagParameter(
-        main_tag=main_tag, main_tag_reason=main_tag_reason, sub_tag=sub_tag, sub_tag_reason=sub_tag_reason
+        main_tag=main_tag,
+        main_tag_reason=main_tag_reason,
+        sub_tag=sub_tag,
+        sub_tag_reason=sub_tag_reason,
+        hidden_tag=hidden_tag,
+        hidden_tag_reason=hidden_tag_reason,
     )
 
 
@@ -274,6 +295,15 @@ def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
                 session=session,
                 return_type="domain",
             )
+        elif tag_type == TagType.hidden_tag:
+            hidden_tag = batch_set_stock_tags_model.tag
+            stock_tags: List[StockTags] = StockTags.query_data(
+                entity_ids=batch_set_stock_tags_model.entity_ids,
+                # 需要sqlite3版本>=3.37.0
+                filters=[func.json_extract(StockTags.active_hidden_tags, f'$."{hidden_tag}"') == None],
+                session=session,
+                return_type="domain",
+            )
 
         for stock_tag in stock_tags:
             tag_parameter: TagParameter = build_tag_parameter(
@@ -282,13 +312,18 @@ def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
                 tag_reason=batch_set_stock_tags_model.tag_reason,
                 stock_tag=stock_tag,
             )
+            if tag_type == TagType.hidden_tag:
+                active_hidden_tags = {batch_set_stock_tags_model.tag: batch_set_stock_tags_model.tag_reason}
+            else:
+                active_hidden_tags = stock_tag.active_hidden_tags
+
             set_stock_tags_model = SetStockTagsModel(
                 entity_id=stock_tag.entity_id,
                 main_tag=tag_parameter.main_tag,
                 main_tag_reason=tag_parameter.main_tag_reason,
                 sub_tag=tag_parameter.sub_tag,
                 sub_tag_reason=tag_parameter.sub_tag_reason,
-                active_hidden_tags=stock_tag.active_hidden_tags,
+                active_hidden_tags=active_hidden_tags,
             )
 
             build_stock_tags(
@@ -521,6 +556,23 @@ def build_stock_pool(create_stock_pools_model: CreateStockPoolsModel, target_dat
         return stock_pool
 
 
+def del_stock_pool(stock_pool_name: str):
+    with contract_api.DBSession(provider="zvt", data_schema=StockPoolInfo)() as session:
+        stock_pool_info = StockPoolInfo.query_data(
+            session=session,
+            filters=[StockPoolInfo.stock_pool_name == stock_pool_name],
+            return_type="domain",
+        )
+
+        contract_api.del_data(data_schema=StockPools, filters=[StockPools.stock_pool_name == stock_pool_name])
+
+        if stock_pool_info:
+            session.delete(stock_pool_info[0])
+            session.commit()
+            return "success"
+        return "not found"
+
+
 def query_stock_tag_stats(query_stock_tag_stats_model: QueryStockTagStatsModel):
     with contract_api.DBSession(provider="zvt", data_schema=TagStats)() as session:
         datas = TagStats.query_data(
@@ -701,6 +753,43 @@ def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
         return result
 
 
+def remove_hidden_tag(hidden_tag: str):
+    with contract_api.DBSession(provider="zvt", data_schema=StockTags)() as session:
+        stock_tags = StockTags.query_data(
+            session=session,
+            # 需要sqlite3版本>=3.37.0
+            filters=[func.json_extract(StockTags.hidden_tags, f'$."{hidden_tag}"') != None],
+            return_type="domain",
+        )
+        if not stock_tags:
+            logger.info(f"all stocks with hidden_tag: {hidden_tag} has been removed")
+            return []
+        for stock_tag in stock_tags:
+            hidden_tags = dict(stock_tag.hidden_tags)
+            hidden_tags.pop(hidden_tag)
+            stock_tag.hidden_tags = hidden_tags
+            session.commit()
+            session.refresh(stock_tag)
+        return stock_tags
+
+
+def del_hidden_tag(tag: str):
+    with contract_api.DBSession(provider="zvt", data_schema=HiddenTagInfo)() as session:
+        hidden_tag_info = HiddenTagInfo.query_data(
+            session=session,
+            filters=[HiddenTagInfo.tag == tag],
+            return_type="domain",
+        )
+        if not hidden_tag_info:
+            logger.info(f"hidden_tag: {tag} has been removed")
+            return []
+
+        result = remove_hidden_tag(hidden_tag=tag)
+        session.delete(hidden_tag_info[0])
+        session.commit()
+        return result
+
+
 def _create_main_tag_if_not_existed(main_tag, main_tag_reason):
     main_tag_info = CreateTagInfoModel(tag=main_tag, tag_reason=main_tag_reason)
     if not is_tag_info_existed(tag_info=main_tag_info, tag_type=TagType.main_tag):
@@ -818,13 +907,13 @@ def change_main_tag(change_main_tag_model: ChangeMainTagModel):
 
 
 if __name__ == "__main__":
-    activate_industry_list(industry_list=["半导体"])
+    print(del_hidden_tag(tag="妖"))
+    # activate_industry_list(industry_list=["半导体"])
     # activate_sub_tags(ActivateSubTagsModel(sub_tags=["航天概念", "天基互联", "北斗导航", "通用航空"]))
 
 
 # the __all__ is generated
 __all__ = [
-    "stock_tags_need_update",
     "get_stock_tag_options",
     "build_stock_tags",
     "build_tag_parameter",

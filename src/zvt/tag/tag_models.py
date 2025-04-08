@@ -90,6 +90,8 @@ class TagParameter(CustomModel):
     main_tag_reason: Optional[str] = Field(default=None)
     sub_tag: Optional[str] = Field(default=None)
     sub_tag_reason: Optional[str] = Field(default=None)
+    hidden_tag: Optional[str] = Field(default=None)
+    hidden_tag_reason: Optional[str] = Field(default=None)
 
 
 class StockTagOptions(CustomModel):

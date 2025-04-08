@@ -20,7 +20,7 @@ from zvt.trading.trading_models import (
     KdataRequestModel,
     TSRequestModel,
 )
-from zvt.trading.trading_schemas import TradingPlan, QueryStockQuoteSetting
+from zvt.trading.trading_schemas import TradingPlan, QueryStockQuoteSetting, TagQuoteStats
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     to_time_str,
@@ -227,6 +227,62 @@ def cal_quote_stats(quote_df):
     )
 
     return df.to_dict(orient="records")[0]
+
+
+def cal_tag_quote_stats(stock_pool_name):
+    stock_pools: List[StockPools] = StockPools.query_data(
+        filters=[StockPools.stock_pool_name == stock_pool_name],
+        order=StockPools.timestamp.desc(),
+        limit=1,
+        return_type="domain",
+    )
+    if stock_pools:
+        entity_ids = stock_pools[0].entity_ids
+    else:
+        entity_ids = None
+
+    tag_df = StockTags.query_data(
+        entity_ids=entity_ids,
+        filters=[StockTags.main_tag.isnot(None)],
+        columns=[StockTags.entity_id, StockTags.main_tag],
+        return_type="df",
+        index="entity_id",
+    )
+
+    entity_ids = tag_df["entity_id"].tolist()
+
+    quote_df = StockQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+    timestamp = quote_df["timestamp"].tolist()[0]
+
+    df = pd.concat([tag_df, quote_df], axis=1)
+    grouped_df = (
+        df.groupby("main_tag")
+        .agg(
+            up_count=("change_pct", lambda x: (x > 0).sum()),
+            down_count=("change_pct", lambda x: (x <= 0).sum()),
+            turnover=("turnover", "sum"),
+            change_pct=("change_pct", "mean"),
+            limit_up_count=("is_limit_up", "sum"),
+            limit_down_count=("is_limit_down", lambda x: (x == True).sum()),
+            total_count=("main_tag", "size"),  # 添加计数，计算每个分组的总行数
+        )
+        .reset_index(drop=False)
+    )
+    grouped_df["stock_pool_name"] = stock_pool_name
+
+    grouped_df["entity_id"] = grouped_df[["stock_pool_name", "main_tag"]].apply(
+        lambda se: "{}_{}".format(se["stock_pool_name"], se["main_tag"]), axis=1
+    )
+    grouped_df["timestamp"] = timestamp
+    grouped_df["id"] = grouped_df[["entity_id", "timestamp"]].apply(
+        lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"])), axis=1
+    )
+
+    print(grouped_df)
+
+    contract_api.df_to_db(
+        df=grouped_df, data_schema=TagQuoteStats, provider="zvt", force_update=True, drop_duplicates=False
+    )
 
 
 def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):

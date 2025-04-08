@@ -72,6 +72,10 @@ def float_to_pct(input_float: float) -> str:
     return f"{input_float * 100:.2f}%"
 
 
+def format_number_to_yi(number):
+    return f"{number / 1e8:.2f}亿"
+
+
 def json_callback_param(the_str):
     json_str = the_str[the_str.index("(") + 1 : the_str.rindex(")")].replace("null", "None")
     return eval(json_str)
