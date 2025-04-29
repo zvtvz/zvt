@@ -80,7 +80,9 @@ def get_jkqa_data(url, pn=1, ps=200, fetch_all=True, headers=_JKQA_HEADER):
                     if next_data:
                         data = data + next_data
                         if pn == 1 and len(data) != json_result["data"]["page"]["total"]:
-                            raise RuntimeError(f"Assertion failed, the total length of data should be {json_result['data']['page']['total']}, only {len(data)} fetched")
+                            raise RuntimeError(
+                                f"Assertion failed, the total length of data should be {json_result['data']['page']['total']}, only {len(data)} fetched"
+                            )
                         return data
                     else:
                         return data

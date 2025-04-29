@@ -32,9 +32,11 @@ def get_trade_dates(start, end=None):
     return df["timestamp"].tolist()
 
 
-def get_recent_trade_dates(days_count=5):
-    max_start = date_time_by_interval(current_date(), -days_count - 15)
+def get_recent_trade_dates(target_date=current_date(), days_count=5):
+    max_start = date_time_by_interval(target_date, -days_count - 15)
     dates = get_trade_dates(start=max_start)
+    if days_count == 0:
+        return dates[-1:]
     return dates[-days_count:]
 
 

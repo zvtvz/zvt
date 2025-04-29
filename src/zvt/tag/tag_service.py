@@ -171,7 +171,6 @@ def build_stock_tags(
         )
 
         if datas:
-            assert len(datas) == 1
             current_stock_tags: StockTags = datas[0]
 
             # nothing change

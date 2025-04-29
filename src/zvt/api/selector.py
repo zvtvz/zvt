@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 from sqlalchemy import or_, and_
 
-from zvt.api.kdata import default_adjust_type, get_kdata_schema, get_latest_kdata_date
+from zvt.api.kdata import default_adjust_type, get_kdata_schema, get_latest_kdata_date, get_recent_trade_dates
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import get_entity_ids
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, StockQuoteLog
@@ -375,11 +375,20 @@ def get_limit_down_today():
         return df["entity_id"].to_list()
 
 
-def get_high_days_count(entity_ids=None, target_date=current_date(), days=10):
-    recent_days = date_time_by_interval(target_date, -days)
+def get_high_days_count(entity_ids=None, target_date=current_date(), days_count=10, high_days_count=None):
+    recent_days = get_recent_trade_dates(target_date=target_date, days_count=days_count)
+
+    if recent_days:
+        filters = [LimitUpInfo.timestamp >= recent_days[0]]
+    else:
+        filters = [LimitUpInfo.timestamp >= target_date]
+
+    if high_days_count:
+        filters = filters + [LimitUpInfo.high_days_count >= high_days_count]
+
     df = LimitUpInfo.query_data(
         entity_ids=entity_ids,
-        start_timestamp=recent_days,
+        filters=filters,
         columns=[LimitUpInfo.timestamp, LimitUpInfo.entity_id, LimitUpInfo.high_days, LimitUpInfo.high_days_count],
     )
     df_sorted = df.sort_values(by=["entity_id", "timestamp"])
@@ -392,7 +401,9 @@ def get_high_days_count(entity_ids=None, target_date=current_date(), days=10):
 if __name__ == "__main__":
     # stocks = get_top_vol(entity_ids=None, provider="em")
     # assert len(stocks) == 500
-    print(get_high_days_count())
+    # Index1dKdata.record_data(provider="em",sleeping_time=0)
+    # print(get_recent_trade_dates(days_count=10))
+    print(get_high_days_count(days_count=3, high_days_count=3))
 
 
 # the __all__ is generated
