@@ -214,13 +214,16 @@ def tick_to_quote(entity_df):
         start_time = time.time()
 
         time_tag = False
+        track_time = None
         for code in datas:
             tick_data = datas[code]
             if "timetag" in tick_data:
                 time_tag = True
-                delay = (now_timestamp_ms() - to_timestamp_ms(tick_data["timetag"])) / (60 * 1000)
+                track_time = to_timestamp_ms(tick_data["timetag"])
+                delay = (now_timestamp_ms() - track_time) / (60 * 1000)
             else:
-                delay = (now_timestamp_ms() - datas[code]["time"]) / (60 * 1000)
+                track_time = datas[code]["time"]
+                delay = (now_timestamp_ms() - track_time) / (60 * 1000)
             logger.info(f"check delay for {code}")
             if delay < 1:
                 break
@@ -252,7 +255,7 @@ def tick_to_quote(entity_df):
         df["close"] = df["price"]
 
         if stock_finished:
-            the_time = date_and_time(now_timestamp_ms(), "15:00")
+            the_time = date_and_time(track_time, "15:00")
             df["time"] = to_timestamp_ms(the_time)
 
         df["timestamp"] = df["time"].apply(to_pd_timestamp)
@@ -297,7 +300,7 @@ def tick_to_quote(entity_df):
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
 
         # 日线行情
-        df["timestamp"] = current_date()
+        df["timestamp"] = date_and_time(track_time, "00:00")
         df["id"] = df[["entity_id", "timestamp"]].apply(
             lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
         )
@@ -316,16 +319,16 @@ def tick_to_quote(entity_df):
     return on_data
 
 
-def clear_history_quote():
+def clear_history_quote(target_date):
     session = get_db_session("qmt", data_schema=StockQuote)
-    session.query(StockQuote).filter(StockQuote.timestamp < current_date()).delete()
+    session.query(StockQuote).filter(StockQuote.timestamp < target_date).delete()
     session.commit()
 
-    dates = get_recent_trade_dates(entity_type="stock", target_date=current_date(), days_count=5)
+    dates = get_recent_trade_dates(entity_type="stock", target_date=target_date, days_count=5)
     if dates:
         start_date = dates[0]
     else:
-        start_date = date_time_by_interval(current_date(), -5)
+        start_date = date_time_by_interval(target_date, -5)
 
     session.query(Stock1mQuote).filter(Stock1mQuote.timestamp < start_date).delete()
     session.query(StockQuoteLog).filter(StockQuoteLog.timestamp < start_date).delete()
@@ -333,7 +336,7 @@ def clear_history_quote():
 
 
 def record_stock_quote(subscribe=False):
-    clear_history_quote()
+    clear_history_quote(target_date=current_date())
     qmt_stocks = get_qmt_stocks()
     entity_list = _build_entity_list(qmt_stocks=qmt_stocks)
     entity_df = entity_list[
