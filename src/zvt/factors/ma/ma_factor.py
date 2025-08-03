@@ -10,7 +10,6 @@ from zvt.contract.factor import Transformer
 from zvt.domain import Stock
 from zvt.factors.algorithm import MaTransformer, MaAndVolumeTransformer
 from zvt.factors.technical_factor import TechnicalFactor
-from zvt.utils.time_utils import now_pd_timestamp
 
 
 def get_ma_factor_schema(entity_type: str, level: Union[IntervalLevel, str] = IntervalLevel.LEVEL_1DAY):
@@ -317,16 +316,33 @@ class CrossMaVolumeFactor(VolumeUpMaFactor):
 
 
 if __name__ == "__main__":
-
-    factor = CrossMaVolumeFactor(
-        entity_provider="em",
-        provider="em",
-        entity_ids=["stock_sz_000338"],
-        start_timestamp="2020-01-01",
-        end_timestamp=now_pd_timestamp(),
-        need_persist=False,
+    provider = "em"
+    target_date = get_latest_kdata_date(entity_type="stock", provider=provider, adjust_type=AdjustType.qfq)
+    factor = VolumeUpMaFactor(
+        entity_schema=Stock,
+        entity_provider=provider,
+        provider=provider,
+        entity_ids=None,
+        start_timestamp=date_time_by_interval(target_date, -600),
+        end_timestamp=target_date,
+        adjust_type=AdjustType.qfq,
+        windows=[120, 250],
+        over_mode="or",
+        up_intervals=60,
+        turnover_threshold=300000000,
+        turnover_rate_threshold=0.02,
     )
-    factor.drawer().draw(show=True)
+
+    stocks = factor.get_targets(timestamp=target_date, target_type=TargetType.positive)  # factor = CrossMaVolumeFactor(
+    print(stocks)
+    #     entity_provider="em",
+    #     provider="em",
+    #     entity_ids=["stock_sz_000338"],
+    #     start_timestamp="2020-01-01",
+    #     end_timestamp=now_pd_timestamp(),
+    #     need_persist=False,
+    # )
+    # factor.drawer().draw(show=True)
 
 
 # the __all__ is generated

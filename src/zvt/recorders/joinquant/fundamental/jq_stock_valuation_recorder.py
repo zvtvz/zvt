@@ -8,7 +8,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, StockValuation, Etf
 from zvt.recorders.joinquant.common import to_jq_entity_id
-from zvt.utils.time_utils import now_pd_timestamp, to_time_str, to_pd_timestamp
+from zvt.utils.time_utils import now_pd_timestamp, to_date_time_str, to_pd_timestamp
 
 
 class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
@@ -28,13 +28,13 @@ class JqChinaStockValuationRecorder(TimeSeriesDataRecorder):
 
         # df = get_fundamentals_continuously(q, end_date=now_time_str(), count=count.days + 1, panel=False)
         df = get_fundamentals(
-            table="valuation", code=to_jq_entity_id(entity), date=to_time_str(end), count=min(count.days, 500)
+            table="valuation", code=to_jq_entity_id(entity), date=to_date_time_str(end), count=min(count.days, 500)
         )
         df["entity_id"] = entity.id
         df["timestamp"] = pd.to_datetime(df["day"])
         df["code"] = entity.code
         df["name"] = entity.name
-        df["id"] = df["timestamp"].apply(lambda x: "{}_{}".format(entity.id, to_time_str(x)))
+        df["id"] = df["timestamp"].apply(lambda x: "{}_{}".format(entity.id, to_date_time_str(x)))
         df = df.rename(
             {"pe_ratio_lyr": "pe", "pe_ratio": "pe_ttm", "pb_ratio": "pb", "ps_ratio": "ps", "pcf_ratio": "pcf"},
             axis="columns",

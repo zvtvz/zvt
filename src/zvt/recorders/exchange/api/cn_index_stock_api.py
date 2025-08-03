@@ -6,7 +6,7 @@ import requests
 
 from zvt.api.utils import china_stock_code_to_id, value_to_pct, value_multiply
 from zvt.recorders.consts import DEFAULT_HEADER
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_MON
+from zvt.utils.time_utils import to_pd_timestamp, to_date_time_str, TIME_FORMAT_MON
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def get_cn_index_stock(code, timestamp, name=None):
     entity_type = "index"
     exchange = "sz"
     entity_id = f"{entity_type}_{exchange}_{code}"
-    data_str = to_time_str(timestamp, TIME_FORMAT_MON)
+    data_str = to_date_time_str(timestamp, TIME_FORMAT_MON)
     resp = requests.get(url.format(code, data_str), headers=DEFAULT_HEADER)
     data = _get_resp_data(resp)
     if not data:

@@ -6,7 +6,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock, DragonAndTiger
 from zvt.recorders.em import em_api
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_DAY, date_time_by_interval
+from zvt.utils.time_utils import to_pd_timestamp, to_date_time_str, TIME_FORMAT_DAY, next_date
 
 {
     "TRADE_ID": "3066028",
@@ -148,7 +148,7 @@ class EMDragonAndTigerRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         if start:
-            start_date = to_time_str(date_time_by_interval(start))
+            start_date = to_date_time_str(next_date(start))
         else:
             start_date = None
         datas = em_api.get_dragon_and_tiger(code=entity.code, start_date=start_date)
@@ -157,7 +157,9 @@ class EMDragonAndTigerRecorder(FixedCycleDataRecorder):
             for data in datas:
                 timestamp = to_pd_timestamp(data["TRADE_DATE"])
                 record = {
-                    "id": "{}_{}_{}".format(entity.id, data["TRADE_ID"], to_time_str(timestamp, fmt=TIME_FORMAT_DAY)),
+                    "id": "{}_{}_{}".format(
+                        entity.id, data["TRADE_ID"], to_date_time_str(timestamp, fmt=TIME_FORMAT_DAY)
+                    ),
                     "entity_id": entity.id,
                     "timestamp": timestamp,
                     "code": entity.code,

@@ -7,7 +7,7 @@ import time
 
 from zvt.domain import Stock1dKdata, Stock
 
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 from zvt.contract.reader import DataReader
 from zvt.contract import IntervalLevel
@@ -44,7 +44,7 @@ def test_china_stock_reader():
         df = data_reader.data_df
 
         assert ("stock_sz_002572", timestamp) in df.index
-        assert ("stock_sz_000338", to_time_str(timestamp)) in df.index
+        assert ("stock_sz_000338", to_date_time_str(timestamp)) in df.index
 
 
 def test_reader_move_on():

@@ -3,7 +3,7 @@ from jqdatapy.api import run_query
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index
 from zvt.domain import StockSummary
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 from zvt.utils.utils import multiple_number
 
 # 聚宽编码
@@ -63,7 +63,7 @@ class StockSummaryRecorder(TimeSeriesDataRecorder):
 
         df = run_query(
             table="finance.STK_EXCHANGE_TRADE_INFO",
-            conditions=f"exchange_code#=#{jq_code}&date#>=#{to_time_str(start)}",
+            conditions=f"exchange_code#=#{jq_code}&date#>=#{to_date_time_str(start)}",
             parse_dates=["date"],
         )
         print(df)

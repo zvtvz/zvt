@@ -3,6 +3,6 @@ accept: application/json
 Content-Type: application/json
 
 {
-  "tag": "未知",
-  "tag_reason": "行业定位不清晰"
+  "tag": "稳定币",
+  "tag_reason": "数字货币的一种，通常与法定货币挂钩，旨在减少价格波动。"
 }

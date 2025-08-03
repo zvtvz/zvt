@@ -1,0 +1,4 @@
+DELETE http://127.0.0.1:8090/api/work/delete_hidden_tag?tag=妖
+accept: application/json
+
+

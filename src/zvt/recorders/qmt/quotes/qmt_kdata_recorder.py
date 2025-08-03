@@ -11,7 +11,7 @@ from zvt.domain import (
     StockKdataCommon,
 )
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import current_date, to_time_str, now_time_str
+from zvt.utils.time_utils import current_date, to_date_time_str, now_date_time_str
 
 
 class BaseQmtKdataRecorder(FixedCycleDataRecorder):
@@ -81,7 +81,7 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
 
         if self.day_data:
             df = self.data_schema.query_data(
-                start_timestamp=now_time_str(), columns=["entity_id", "timestamp"], provider=self.provider
+                start_timestamp=now_date_time_str(), columns=["entity_id", "timestamp"], provider=self.provider
             )
             if pd_is_not_null(df):
                 entity_ids = df["entity_id"].tolist()
@@ -152,7 +152,7 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
         if pd_is_not_null(df):
             df["entity_id"] = entity.id
             df["timestamp"] = pd.to_datetime(df.index)
-            df["id"] = df.apply(lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'])}", axis=1)
+            df["id"] = df.apply(lambda row: f"{row['entity_id']}_{to_date_time_str(row['timestamp'])}", axis=1)
             df["provider"] = "qmt"
             df["level"] = self.level.value
             df["code"] = entity.code

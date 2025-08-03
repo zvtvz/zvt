@@ -29,6 +29,8 @@ from zvt.tag.tag_models import (
     MainTagSubTagRelation,
     IndustryInfoModel,
     ChangeMainTagModel,
+    BuildMainTagIndustryRelationModel,
+    BuildMainTagSubTagRelationModel,
 )
 from zvt.tag.tag_schemas import (
     StockTags,
@@ -44,6 +46,7 @@ from zvt.utils.time_utils import current_date
 work_router = APIRouter(
     prefix="/api/work",
     tags=["work"],
+    # dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
@@ -65,9 +68,9 @@ def create_stock_pools(create_stock_pools_model: CreateStockPoolsModel):
     return tag_service.build_stock_pool(create_stock_pools_model, current_date())
 
 
-@work_router.delete("/del_stock_pool", response_model=str)
-def del_stock_pool(stock_pool_name: str):
-    return tag_service.del_stock_pool(stock_pool_name=stock_pool_name)
+@work_router.delete("/delete_stock_pool", response_model=str)
+def delete_stock_pool(stock_pool_name: str):
+    return tag_service.delete_stock_pool(stock_pool_name=stock_pool_name)
 
 
 @work_router.get("/get_stock_pools", response_model=Optional[StockPoolsModel])
@@ -113,7 +116,7 @@ def get_main_tag_sub_tag_relation(main_tag):
 @work_router.get("/get_industry_info", response_model=List[IndustryInfoModel])
 def get_industry_info():
     """
-    Get sub_tag info
+    Get industry info
     """
     with contract_api.DBSession(provider="zvt", data_schema=IndustryInfo)() as session:
         industry_info: List[IndustryInfo] = IndustryInfo.query_data(session=session, return_type="domain")
@@ -137,17 +140,35 @@ def get_hidden_tag_info():
 
 @work_router.post("/create_main_tag_info", response_model=TagInfoModel)
 def create_main_tag_info(tag_info: CreateTagInfoModel):
-    return tag_service.build_tag_info(tag_info, tag_type=TagType.main_tag)
+    return tag_service.create_tag_info(tag_info, tag_type=TagType.main_tag)
+
+
+@work_router.delete("/delete_main_tag", response_model=str)
+def delete_main_tag(tag: str):
+    tag_service.delete_tag(tag=tag, tag_type=TagType.main_tag)
+    return "ok"
 
 
 @work_router.post("/create_sub_tag_info", response_model=TagInfoModel)
 def create_sub_tag_info(tag_info: CreateTagInfoModel):
-    return tag_service.build_tag_info(tag_info, TagType.sub_tag)
+    return tag_service.create_tag_info(tag_info, TagType.sub_tag)
+
+
+@work_router.delete("/delete_sub_tag", response_model=str)
+def delete_sub_tag(tag: str):
+    tag_service.delete_tag(tag=tag, tag_type=TagType.sub_tag)
+    return "ok"
 
 
 @work_router.post("/create_hidden_tag_info", response_model=TagInfoModel)
 def create_hidden_tag_info(tag_info: CreateTagInfoModel):
-    return tag_service.build_tag_info(tag_info, TagType.hidden_tag)
+    return tag_service.create_tag_info(tag_info, TagType.hidden_tag)
+
+
+@work_router.delete("/delete_hidden_tag", response_model=str)
+def delete_hidden_tag(tag: str):
+    tag_service.delete_tag(tag=tag, tag_type=TagType.hidden_tag)
+    return "ok"
 
 
 @work_router.post("/query_stock_tags", response_model=List[StockTagsModel])
@@ -185,6 +206,8 @@ def query_simple_stock_tags(query_simple_stock_tags_model: QuerySimpleStockTagsM
         stocks_map = {item.entity_id: item for item in stocks}
         for entity_id in entity_ids:
             tag = entity_tag_map.get(entity_id)
+            if not tag:
+                continue
             tag["name"] = stocks_map.get(entity_id).name
             if stocks_map.get(entity_id).controlling_holder_parent:
                 tag["controlling_holder_parent"] = stocks_map.get(entity_id).controlling_holder_parent
@@ -235,6 +258,15 @@ def query_stock_tag_stats(query_stock_tag_stats_model: QueryStockTagStatsModel):
     return tag_service.query_stock_tag_stats(query_stock_tag_stats_model=query_stock_tag_stats_model)
 
 
+@work_router.get("/get_main_tags_in_stock_pool", response_model=List[str])
+def get_main_tags_in_stock_pool(stock_pool_name: str):
+    """
+    Get stock tag stats
+    """
+
+    return tag_service.get_main_tags_in_stock_pool(stock_pool_name)
+
+
 @work_router.post("/activate_sub_tags", response_model=ActivateSubTagsResultModel)
 def activate_sub_tags(activate_sub_tags_model: ActivateSubTagsModel):
     """
@@ -250,24 +282,17 @@ def batch_set_stock_tags(batch_set_stock_tags_model: BatchSetStockTagsModel):
 
 
 @work_router.post("/build_main_tag_industry_relation", response_model=str)
-def build_main_tag_industry_relation(relation: MainTagIndustryRelation):
-    tag_service.build_main_tag_industry_relation(main_tag_industry_relation=relation)
-    tag_service.activate_industry_list(industry_list=relation.industry_list)
+def build_main_tag_industry_relation(build_relation_model: BuildMainTagIndustryRelationModel):
+    tag_service.build_main_tag_industry_relation(build_relation_model=build_relation_model)
     return "success"
 
 
 @work_router.post("/build_main_tag_sub_tag_relation", response_model=str)
-def build_main_tag_sub_tag_relation(relation: MainTagSubTagRelation):
-    tag_service.build_main_tag_sub_tag_relation(main_tag_sub_tag_relation=relation)
-    # tag_service.activate_sub_tags(activate_sub_tags_model=ActivateSubTagsModel(sub_tags=relation.sub_tag_list))
-    return "success"
+def build_main_tag_sub_tag_relation(build_relation_model: BuildMainTagSubTagRelationModel):
+    tag_service.build_main_tag_sub_tag_relation(build_relation_model=build_relation_model)
+    return "ok"
 
 
 @work_router.post("/change_main_tag", response_model=List[StockTagsModel])
 def change_main_tag(change_main_tag_model: ChangeMainTagModel):
     return tag_service.change_main_tag(change_main_tag_model=change_main_tag_model)
-
-
-@work_router.delete("/del_hidden_tag", response_model=List[StockTagsModel])
-def del_hidden_tag(tag: str):
-    return tag_service.del_hidden_tag(tag=tag)

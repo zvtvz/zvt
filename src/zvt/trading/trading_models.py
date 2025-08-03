@@ -18,7 +18,7 @@ from zvt.utils.time_utils import tomorrow_date, to_pd_timestamp
 
 class KdataRequestModel(BaseModel):
     entity_ids: List[str]
-    data_provider: str = Field(default="qmt")
+    data_provider: str = Field(default="em")
     start_timestamp: datetime = Field(default=date_time_by_interval(current_date(), -500))
     end_timestamp: Optional[datetime] = Field(default=None)
     level: IntervalLevel = Field(default=IntervalLevel.LEVEL_1DAY)
@@ -90,7 +90,6 @@ class QueryTagQuoteModel(CustomModel):
 
 
 class QueryStockQuoteModel(CustomModel):
-
     main_tag: Optional[str] = Field(default=None)
     entity_ids: Optional[List[str]] = Field(default=None)
     stock_pool_name: Optional[str] = Field(default=None)

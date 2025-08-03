@@ -10,7 +10,7 @@ from zvt.contract import IntervalLevel
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Etf, Etf1dKdata
 from zvt.recorders.consts import EASTMONEY_ETF_NET_VALUE_HEADER
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 
 class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
@@ -63,7 +63,7 @@ class ChinaETFDayKdataRecorder(FixedCycleDataRecorder):
         page = 1
         df = pd.DataFrame()
         while True:
-            url = query_url.format(security_item.code, page, to_time_str(start), to_time_str(end))
+            url = query_url.format(security_item.code, page, to_date_time_str(start), to_date_time_str(end))
 
             response = requests.get(url, headers=EASTMONEY_ETF_NET_VALUE_HEADER)
             response_json = demjson3.decode(response.text)

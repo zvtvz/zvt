@@ -16,7 +16,7 @@ from zvt.domain import FundStock, StockValuation, BlockStock, Block
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     month_start_end_ranges,
-    to_time_str,
+    to_date_time_str,
     is_same_date,
     now_pd_timestamp,
     date_time_by_interval,
@@ -64,9 +64,9 @@ def get_top_performance_entities_by_periods(
     data_provider,
     target_date=None,
     periods=None,
+    entity_ids=None,
     ignore_new_stock=True,
     ignore_st=True,
-    entity_ids=None,
     entity_type="stock",
     adjust_type=None,
     top_count=50,
@@ -84,14 +84,16 @@ def get_top_performance_entities_by_periods(
     if not target_date:
         target_date = get_latest_kdata_date(provider=data_provider, entity_type=entity_type, adjust_type=adjust_type)
 
-    filter_entity_ids = get_entity_ids_by_filter(
-        provider=entity_provider,
-        ignore_st=ignore_st,
-        ignore_new_stock=ignore_new_stock,
-        entity_schema=entity_schema,
-        target_date=target_date,
-        entity_ids=entity_ids,
-    )
+    if not entity_ids:
+        filter_entity_ids = get_entity_ids_by_filter(
+            provider=entity_provider,
+            ignore_st=ignore_st,
+            ignore_new_stock=ignore_new_stock,
+            entity_schema=entity_schema,
+            target_date=target_date,
+        )
+    else:
+        filter_entity_ids = entity_ids
 
     if not filter_entity_ids:
         return []
@@ -124,7 +126,7 @@ def get_top_performance_entities_by_periods(
         real_period = max(real_period, period)
         while True:
             start = date_time_by_interval(target_date, -real_period)
-            trade_days = get_trade_dates(start=start, end=target_date)
+            trade_days = get_trade_dates(entity_type=entity_type, start=start, end=target_date)
             if not trade_days:
                 logger.info(f"no trade days in: {start} to {target_date}")
                 real_period = real_period + 1
@@ -147,6 +149,7 @@ def get_top_performance_entities_by_periods(
             show_name=True,
             entity_provider=entity_provider,
             data_provider=data_provider,
+            adjust_type=adjust_type,
             return_type=return_type,
         )
 
@@ -315,7 +318,7 @@ def get_performance_stats_by_month(
             data_provider=data_provider,
         )
         if stats:
-            month_stats[f"{to_time_str(start_timestamp)}"] = stats
+            month_stats[f"{to_date_time_str(start_timestamp)}"] = stats
 
     return pd.DataFrame.from_dict(data=month_stats, orient="index")
 
@@ -578,7 +581,21 @@ def get_change_ratio(
 
 
 if __name__ == "__main__":
-    print(get_top_performance_entities_by_periods(entity_provider="em", data_provider="em"))
+    normal_stock_ids = get_entity_ids_by_filter(
+        entity_type="stockus", provider="em", ignore_delist=True, ignore_st=False, ignore_new_stock=False
+    )
+
+    print(
+        get_top_performance_entities_by_periods(
+            entity_provider="em",
+            data_provider="em",
+            entity_ids=normal_stock_ids,
+            entity_type="stockus",
+            adjust_type=AdjustType.qfq,
+            turnover_threshold=10000000,
+            turnover_rate_threshold=0,
+        )
+    )
 
 
 # the __all__ is generated

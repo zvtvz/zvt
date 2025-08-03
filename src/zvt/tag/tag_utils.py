@@ -10,11 +10,19 @@ from zvt.contract.api import df_to_db
 from zvt.domain import Block
 from zvt.tag.common import StockPoolType
 from zvt.tag.tag_schemas import MainTagInfo, SubTagInfo, HiddenTagInfo, StockPoolInfo, IndustryInfo
+from zvt.utils.time_utils import now_pd_timestamp
 
 
 def _get_default_industry_main_tag_mapping() -> Dict[str, str]:
+    result = {}
     with open(os.path.join(zvt_env["resource_path"], "industry_main_tag_mapping.json"), encoding="utf-8") as f:
-        return json.load(f)
+        result = json.load(f)
+    with open(os.path.join(zvt_env["resource_path"], "us_industry_main_tag_mapping.json"), encoding="utf-8") as f:
+        result.update(json.load(f))
+    with open(os.path.join(zvt_env["resource_path"], "hk_industry_main_tag_mapping.json"), encoding="utf-8") as f:
+        result.update(json.load(f))
+
+    return result
 
 
 def _get_default_main_tag_industry_mapping() -> Dict[str, List[str]]:
@@ -70,7 +78,7 @@ def _check_missed_concept():
 
 
 def _get_initial_main_tag_info():
-    timestamp = "2024-03-25"
+    timestamp = now_pd_timestamp()
     entity_id = "admin"
 
     from_industry = [
@@ -101,7 +109,7 @@ def _get_initial_main_tag_info():
 
 
 def _get_initial_industry_info():
-    timestamp = "2024-03-25"
+    timestamp = now_pd_timestamp()
     entity_id = "admin"
     industry_info = [
         {
@@ -118,7 +126,7 @@ def _get_initial_industry_info():
 
 
 def _get_initial_sub_tag_info():
-    timestamp = "2024-03-25"
+    timestamp = now_pd_timestamp()
     entity_id = "admin"
 
     return [
@@ -135,7 +143,7 @@ def _get_initial_sub_tag_info():
 
 
 def _get_initial_stock_pool_info():
-    timestamp = "2024-03-25"
+    timestamp = now_pd_timestamp()
     entity_id = "admin"
     return [
         {
@@ -145,7 +153,7 @@ def _get_initial_stock_pool_info():
             "stock_pool_type": StockPoolType.system.value,
             "stock_pool_name": stock_pool_name,
         }
-        for stock_pool_name in ["main_line", "vol_up", "大局", "all"]
+        for stock_pool_name in ["主线", "年线", "大局", "A股", "美股主线", "港股主线"]
     ]
 
 
@@ -159,7 +167,7 @@ _hidden_tags = {
 
 
 def _get_initial_hidden_tag_info():
-    timestamp = "2024-03-25"
+    timestamp = now_pd_timestamp()
     entity_id = "admin"
     return [
         {
@@ -173,16 +181,16 @@ def _get_initial_hidden_tag_info():
     ]
 
 
-def build_initial_main_tag_info():
+def build_initial_main_tag_info(force_update=False):
     main_tag_info_list = _get_initial_main_tag_info()
     df = pd.DataFrame.from_records(main_tag_info_list)
-    df_to_db(df=df, data_schema=MainTagInfo, provider="zvt", force_update=False)
+    df_to_db(df=df, data_schema=MainTagInfo, provider="zvt", force_update=force_update)
 
 
-def build_initial_industry_info():
+def build_initial_industry_info(force_update=False):
     initial_industry_info = _get_initial_industry_info()
     df = pd.DataFrame.from_records(initial_industry_info)
-    df_to_db(df=df, data_schema=IndustryInfo, provider="zvt", force_update=False)
+    df_to_db(df=df, data_schema=IndustryInfo, provider="zvt", force_update=force_update)
 
 
 def build_initial_sub_tag_info(force_update=False):
@@ -191,16 +199,16 @@ def build_initial_sub_tag_info(force_update=False):
     df_to_db(df=df, data_schema=SubTagInfo, provider="zvt", force_update=force_update)
 
 
-def build_initial_stock_pool_info():
+def build_initial_stock_pool_info(force_update=False):
     stock_pool_info_list = _get_initial_stock_pool_info()
     df = pd.DataFrame.from_records(stock_pool_info_list)
-    df_to_db(df=df, data_schema=StockPoolInfo, provider="zvt", force_update=False)
+    df_to_db(df=df, data_schema=StockPoolInfo, provider="zvt", force_update=force_update)
 
 
-def build_initial_hidden_tag_info():
+def build_initial_hidden_tag_info(force_update=False):
     hidden_tag_info_list = _get_initial_hidden_tag_info()
     df = pd.DataFrame.from_records(hidden_tag_info_list)
-    df_to_db(df=df, data_schema=HiddenTagInfo, provider="zvt", force_update=False)
+    df_to_db(df=df, data_schema=HiddenTagInfo, provider="zvt", force_update=force_update)
 
 
 def get_main_tags():
@@ -284,21 +292,8 @@ def match_tag(alias):
 
 
 if __name__ == "__main__":
-    # with open("missed_concept.json", "w") as json_file:
-    #     json.dump(check_missed_concept(), json_file, indent=2, ensure_ascii=False)
-    # with open("missed_industry.json", "w") as json_file:
-    #     json.dump(check_missed_industry(), json_file, indent=2, ensure_ascii=False)
-    # print(industry_to_main_tag("光伏设备"))
-    # result = {}
-    # for main_tag, concepts in get_main_tag_industry_mapping().items():
-    #     for tag in concepts:
-    #         result[tag] = main_tag
-    # with open("industry_main_tag_mapping.json", "w") as json_file:
-    #     json.dump(result, json_file, indent=2, ensure_ascii=False)
-    # build_initial_stock_pool_info()
-    # build_initial_main_tag_info()
-    build_initial_sub_tag_info(force_update=True)
-    build_initial_industry_info()
+    print(build_initial_industry_info())
+    print(build_initial_main_tag_info())
 
 
 # the __all__ is generated

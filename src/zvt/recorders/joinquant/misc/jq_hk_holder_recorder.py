@@ -7,7 +7,7 @@ from zvt.domain import Index
 from zvt.domain.misc.holder import HkHolder
 from zvt.recorders.joinquant.common import to_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY, to_pd_timestamp
+from zvt.utils.time_utils import to_date_time_str, TIME_FORMAT_DAY, to_pd_timestamp
 
 
 # 这里选择继承TimestampsDataRecorder是因为
@@ -78,7 +78,8 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
             df = run_query(
-                table="finance.STK_HK_HOLD_INFO", conditions=f"link_id#=#{entity.code}&day#=#{to_time_str(timestamp)}"
+                table="finance.STK_HK_HOLD_INFO",
+                conditions=f"link_id#=#{entity.code}&day#=#{to_date_time_str(timestamp)}",
             )
             print(df)
 
@@ -94,7 +95,7 @@ class JoinquantHkHolderRecorder(TimestampsDataRecorder):
                 # id格式为:{holder_name}_{entity_id}_{timestamp}
                 df["id"] = df[["holder_name", "entity_id", "timestamp"]].apply(
                     lambda se: "{}_{}_{}".format(
-                        se["holder_name"], se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY)
+                        se["holder_name"], se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY)
                     ),
                     axis=1,
                 )

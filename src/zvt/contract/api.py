@@ -405,7 +405,7 @@ def data_exist(session, schema, id):
     return session.query(exists().where(and_(schema.id == id))).scalar()
 
 
-def get_data_count(data_schema, filters=None, session=None):
+def get_data_count(data_schema, filters=None, provider=None, session=None):
     """
     get record count basing on the filters
 
@@ -414,6 +414,9 @@ def get_data_count(data_schema, filters=None, session=None):
     :param session:
     :return:
     """
+    if not session:
+        session = get_db_session(provider=provider, data_schema=data_schema)
+
     query = session.query(data_schema)
     if filters:
         for filter in filters:

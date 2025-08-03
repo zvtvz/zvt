@@ -9,7 +9,7 @@ from zvt.contract.recorder import Recorder, TimeSeriesDataRecorder
 from zvt.domain import EtfStock, Stock, Etf, StockDetail
 from zvt.recorders.joinquant.common import to_entity_id, jq_to_report_period
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 
 class BaseJqChinaMetaRecorder(Recorder):
@@ -79,7 +79,7 @@ class JqChinaStockEtfPortfolioRecorder(TimeSeriesDataRecorder):
     def record(self, entity, start, end, size, timestamps):
         df = run_query(
             table="finance.FUND_PORTFOLIO_STOCK",
-            conditions=f"pub_date#>=#{to_time_str(start)}&code#=#{entity.code}",
+            conditions=f"pub_date#>=#{to_date_time_str(start)}&code#=#{entity.code}",
             parse_dates=None,
         )
         if pd_is_not_null(df):

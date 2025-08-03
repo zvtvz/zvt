@@ -9,7 +9,7 @@ import pandas as pd
 from zvt.contract.data_type import Bean
 from zvt.contract.drawer import Rect
 from zvt.factors.algorithm import intersect
-from zvt.utils.time_utils import TIME_FORMAT_ISO8601, to_time_str
+from zvt.utils.time_utils import TIME_FORMAT_ISO8601, to_date_time_str
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +222,7 @@ class FactorStateEncoder(json.JSONEncoder):
         if isinstance(object, pd.Series):
             return object.to_dict()
         elif isinstance(object, pd.Timestamp):
-            return to_time_str(object, fmt=TIME_FORMAT_ISO8601)
+            return to_date_time_str(object, fmt=TIME_FORMAT_ISO8601)
         elif isinstance(object, Enum):
             return object.value
         elif isinstance(object, Bean):

@@ -13,6 +13,11 @@ StockMetaBase = declarative_base()
 @register_entity(entity_type="stock")
 class Stock(StockMetaBase, TradableEntity):
     __tablename__ = "stock"
+    #: 流通市值
+    float_cap = Column(Float)
+    #: 总市值
+    total_cap = Column(Float)
+
     #: 股东上次更新时间
     holder_modified_date = Column(DateTime)
     #: 控股股东

@@ -3,6 +3,11 @@ accept: application/json
 Content-Type: application/json
 
 {
-  "main_tag": "华为",
-  "industry_list": ["通信设备"]
+  "main_tag": "AI",
+  "industry_list": [
+    "互联网服务",
+    "软件开发",
+    "计算机设备"
+  ],
+  "activate": true
 }

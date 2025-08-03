@@ -19,9 +19,9 @@ from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     to_pd_timestamp,
     TIME_FORMAT_DAY,
-    to_time_str,
+    to_date_time_str,
     now_pd_timestamp,
-    now_time_str,
+    now_date_time_str,
 )
 from zvt.utils.utils import fill_domain_from_dict
 
@@ -97,11 +97,13 @@ class EntityEventRecorder(Recorder):
         code=None,
         codes=None,
         day_data=False,
+        end_timestamp=None,
         entity_filters=None,
         ignore_failed=True,
         return_unfinished=False,
     ) -> None:
         """
+        :param latest_trading_date:
         :param code:
         :param ignore_failed:
         :param entity_filters:
@@ -125,6 +127,7 @@ class EntityEventRecorder(Recorder):
         else:
             self.codes = codes
         self.day_data = day_data
+        self.end_timestamp = end_timestamp
 
         #: set entity_ids or (entity_type,exchanges,codes)
         self.entity_ids = None
@@ -151,8 +154,10 @@ class EntityEventRecorder(Recorder):
             self.entity_session = get_db_session(provider=self.entity_provider, data_schema=self.entity_schema)
 
         if self.day_data:
+            if not self.end_timestamp:
+                self.end_timestamp = now_date_time_str()
             df = self.data_schema.query_data(
-                start_timestamp=now_time_str(), columns=["entity_id", "timestamp"], provider=self.provider
+                start_timestamp=self.end_timestamp, columns=["entity_id", "timestamp"], provider=self.provider
             )
             if pd_is_not_null(df):
                 entity_ids = df["entity_id"].tolist()
@@ -207,6 +212,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
             code=code,
             codes=codes,
             day_data=day_data,
+            end_timestamp=self.end_timestamp,
             entity_filters=entity_filters,
             ignore_failed=ignore_failed,
             return_unfinished=return_unfinished,
@@ -305,7 +311,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
         :return:
         :rtype:
         """
-        timestamp = to_time_str(original_data[self.get_original_time_field()], fmt=time_fmt)
+        timestamp = to_date_time_str(original_data[self.get_original_time_field()], fmt=time_fmt)
         return "{}_{}".format(entity.id, timestamp)
 
     def generate_domain(self, entity, original_data):

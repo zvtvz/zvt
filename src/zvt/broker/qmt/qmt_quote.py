@@ -6,22 +6,23 @@ import numpy as np
 import pandas as pd
 from xtquant import xtdata
 
-from zvt.contract import Exchange
+from zvt.api.kdata import get_recent_trade_dates
+from zvt.api.selector import get_entity_ids_by_filter
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
 from zvt.domain import StockQuote, Stock, Stock1dKdata
 from zvt.domain.quotes.stock.stock_quote import Stock1mQuote, StockQuoteLog
-from zvt.recorders.em import em_api
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
-    to_time_str,
+    to_date_time_str,
     current_date,
     to_pd_timestamp,
     now_pd_timestamp,
     TIME_FORMAT_MINUTE,
     date_time_by_interval,
-    TIME_FORMAT_MINUTE2,
-    now_timestamp,
+    now_timestamp_ms,
+    to_timestamp_ms,
+    date_and_time,
 )
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
@@ -85,20 +86,22 @@ def _qmt_instrument_detail_to_stock(stock_detail):
     }
 
 
-def get_qmt_stocks():
-    df = em_api.get_tradable_list(exchange=Exchange.bj)
-    bj_stock_list = df["entity_id"].map(_to_qmt_code).tolist()
-
+def get_qmt_stocks(include_bj=True):
     stock_list = xtdata.get_stock_list_in_sector("沪深A股")
-    stock_list += bj_stock_list
+
+    if include_bj:
+        bj_entity_ids = get_entity_ids_by_filter(
+            provider="em", ignore_delist=True, ignore_st=False, entity_type="stock", exchange="bj"
+        )
+        bj_stock_list = map(lambda x: _to_qmt_code(x), bj_entity_ids)
+
+        stock_list += bj_stock_list
     return stock_list
 
 
-def get_entity_list():
-    stocks = get_qmt_stocks()
+def _build_entity_list(qmt_stocks):
     entity_list = []
-
-    for stock in stocks:
+    for stock in qmt_stocks:
         stock_detail = xtdata.get_instrument_detail(stock, False)
         if stock_detail:
             entity_list.append(_qmt_instrument_detail_to_stock(stock_detail))
@@ -120,6 +123,7 @@ def get_entity_list():
                     "name": "未获取",
                 }
 
+            # Do this in other task in days timely
             # xtdata.download_financial_data(stock_list=[stock], table_list=["Capital"])
             capital_datas = xtdata.get_financial_data(
                 [stock],
@@ -134,12 +138,12 @@ def get_entity_list():
 
             tick = xtdata.get_full_tick(code_list=[stock])
             if tick and tick[stock]:
-                if code.startswith(("83", "87", "88", "889", "82", "920")):
-                    limit_up_price = tick[stock]["lastClose"] * 1.3
-                    limit_down_price = tick[stock]["lastClose"] * 0.7
-                elif code.startswith("300") or code.startswith("688"):
-                    limit_up_price = tick[stock]["lastClose"] * 1.2
-                    limit_down_price = tick[stock]["lastClose"] * 0.8
+                if exchange == "bj":  # 北交所
+                    limit_up_price = tick[stock]["lastClose"] * 1.29
+                    limit_down_price = tick[stock]["lastClose"] * 0.71
+                elif code.startswith(("30", "68")):  # 创业板和科创板
+                    limit_up_price = tick[stock]["lastClose"] * 1.19
+                    limit_down_price = tick[stock]["lastClose"] * 0.81
                 else:
                     limit_up_price = tick[stock]["lastClose"] * 1.1
                     limit_down_price = tick[stock]["lastClose"] * 0.9
@@ -148,6 +152,11 @@ def get_entity_list():
             entity_list.append(entity)
 
     return pd.DataFrame.from_records(data=entity_list)
+
+
+def get_entity_list(include_bj=True):
+    stocks = get_qmt_stocks(include_bj=include_bj)
+    return _build_entity_list(qmt_stocks=stocks)
 
 
 def get_kdata(
@@ -160,20 +169,17 @@ def get_kdata(
 ):
     code = _to_qmt_code(entity_id=entity_id)
     period = level.value
-    start_time = to_time_str(start_timestamp, fmt="YYYYMMDDHHmmss")
-    end_time = to_time_str(end_timestamp, fmt="YYYYMMDDHHmmss")
+    start_time = to_date_time_str(start_timestamp, fmt="YYYYMMDDHHmmss")
+    end_time = to_date_time_str(end_timestamp, fmt="YYYYMMDDHHmmss")
     # download比较耗时，建议单独定时任务来做
     if download_history:
         print(f"download from {start_time} to {end_time}")
-        xtdata.download_history_data(
-            stock_code=code, period=period,
-            start_time=start_time, end_time=end_time
-        )
+        xtdata.download_history_data(stock_code=code, period=period, start_time=start_time, end_time=end_time)
     records = xtdata.get_market_data(
         stock_list=[code],
         period=period,
-        start_time=to_time_str(start_timestamp, fmt="YYYYMMDDHHmmss"),
-        end_time=to_time_str(end_timestamp, fmt="YYYYMMDDHHmmss"),
+        start_time=to_date_time_str(start_timestamp, fmt="YYYYMMDDHHmmss"),
+        end_time=to_date_time_str(end_timestamp, fmt="YYYYMMDDHHmmss"),
         dividend_type=_to_qmt_dividend_type(adjust_type=adjust_type),
         fill_data=False,
     )
@@ -188,13 +194,7 @@ def get_kdata(
     return df
 
 
-def tick_to_quote():
-    entity_list = get_entity_list()
-    entity_df = entity_list[
-        ["entity_id", "code", "name", "limit_up_price", "limit_down_price", "float_volume", "total_volume"]
-    ]
-    entity_df = entity_df.set_index("entity_id", drop=False)
-
+def tick_to_quote(entity_df):
     def calculate_limit_up_amount(row):
         if row["is_limit_up"]:
             return row["price"] * row["bidVol"][0] * 100
@@ -208,38 +208,57 @@ def tick_to_quote():
             return None
 
     def on_data(datas, stock_df=entity_df):
+        stock_finished = False
+        if not Stock.in_trading_time():
+            stock_finished = True
         start_time = time.time()
 
+        time_tag = False
         for code in datas:
-            delay = (now_timestamp() - datas[code]["time"]) / (60 * 1000)
+            tick_data = datas[code]
+            if "timetag" in tick_data:
+                time_tag = True
+                delay = (now_timestamp_ms() - to_timestamp_ms(tick_data["timetag"])) / (60 * 1000)
+            else:
+                delay = (now_timestamp_ms() - datas[code]["time"]) / (60 * 1000)
             logger.info(f"check delay for {code}")
-            if delay < 2:
+            if delay < 1:
                 break
             else:
                 logger.warning(f"delay {delay} minutes, may need to restart this script or qmt client")
                 break
 
         tick_df = pd.DataFrame.from_records(data=[datas[code] for code in datas], index=list(datas.keys()))
-
+        if time_tag:
+            tick_df["time"] = tick_df["timetag"].apply(to_timestamp_ms)
         # 过滤无效tick,一般是退市的
         tick_df = tick_df[tick_df["lastPrice"] != 0]
         tick_df.index = tick_df.index.map(_to_zvt_entity_id)
 
+        # tick_df = tick_df[tick_df.index.isin(stock_df.index)]
+
+        stock_df = stock_df[~stock_df.index.duplicated(keep="first")]  # 保留首次出现的行
+        tick_df = tick_df[~tick_df.index.duplicated(keep="first")]
         df = pd.concat(
             [
-                stock_df.loc[tick_df.index,],
+                stock_df,
                 tick_df,
             ],
             axis=1,
+            join="inner",
         )
 
         df = df.rename(columns={"lastPrice": "price", "amount": "turnover"})
         df["close"] = df["price"]
 
+        if stock_finished:
+            the_time = date_and_time(now_timestamp_ms(), "15:00")
+            df["time"] = to_timestamp_ms(the_time)
+
         df["timestamp"] = df["time"].apply(to_pd_timestamp)
 
         df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"])), axis=1
+            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
         )
 
         df["volume"] = df["pvolume"]
@@ -270,19 +289,26 @@ def tick_to_quote():
         df["provider"] = "qmt"
         # 实时行情统计，只保留最新
         df_to_db(df, data_schema=StockQuote, provider="qmt", force_update=True, drop_duplicates=False)
-        df["level"] = "1d"
-        df_to_db(df, data_schema=Stock1dKdata, provider="qmt", force_update=True, drop_duplicates=False)
 
         # 1分钟分时
         df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE)), axis=1
+            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], TIME_FORMAT_MINUTE)), axis=1
         )
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
-        # 历史记录
+
+        # 日线行情
+        df["timestamp"] = current_date()
         df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
+            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
         )
-        df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
+        df["level"] = "1d"
+        df_to_db(df=df, data_schema=Stock1dKdata, provider="em", force_update=True, drop_duplicates=False)
+
+        # 历史记录
+        # df["id"] = df[["entity_id", "timestamp"]].apply(
+        #     lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
+        # )
+        # df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
 
         cost_time = time.time() - start_time
         logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
@@ -290,50 +316,77 @@ def tick_to_quote():
     return on_data
 
 
-def download_capital_data():
-    stocks = get_qmt_stocks()
-    xtdata.download_financial_data2(
-        stock_list=stocks, table_list=["Capital"], start_time="", end_time="", callback=lambda x: print(x)
-    )
-
-
 def clear_history_quote():
     session = get_db_session("qmt", data_schema=StockQuote)
     session.query(StockQuote).filter(StockQuote.timestamp < current_date()).delete()
-    start_date = date_time_by_interval(current_date(), -10)
+    session.commit()
+
+    dates = get_recent_trade_dates(entity_type="stock", target_date=current_date(), days_count=5)
+    if dates:
+        start_date = dates[0]
+    else:
+        start_date = date_time_by_interval(current_date(), -5)
+
     session.query(Stock1mQuote).filter(Stock1mQuote.timestamp < start_date).delete()
     session.query(StockQuoteLog).filter(StockQuoteLog.timestamp < start_date).delete()
     session.commit()
 
 
-def record_tick():
+def record_stock_quote(subscribe=False):
     clear_history_quote()
-    Stock.record_data(provider="em")
-    stocks = get_qmt_stocks()
-    logger.info(f"subscribe tick for {len(stocks)} stocks")
-    sid = xtdata.subscribe_whole_quote(stocks, callback=tick_to_quote())
+    qmt_stocks = get_qmt_stocks()
+    entity_list = _build_entity_list(qmt_stocks=qmt_stocks)
+    entity_df = entity_list[
+        ["entity_id", "code", "name", "limit_up_price", "limit_down_price", "float_volume", "total_volume"]
+    ]
+    entity_df = entity_df.set_index("entity_id", drop=False)
+    on_data_func = tick_to_quote(entity_df=entity_df)
 
-    """阻塞线程接收行情回调"""
-    import time
+    if subscribe:
+        logger.info(f"subscribe tick for {len(qmt_stocks)} stocks")
+        sid = xtdata.subscribe_whole_quote(qmt_stocks, callback=on_data_func)
 
-    client = xtdata.get_client()
-    while True:
-        time.sleep(3)
-        if not client.is_connected():
-            raise Exception("行情服务连接断开")
-        current_timestamp = now_pd_timestamp()
-        if current_timestamp.hour >= 15 and current_timestamp.minute >= 10:
-            logger.info(f"record tick finished at: {current_timestamp}")
-            break
-    xtdata.unsubscribe_quote(sid)
+        """阻塞线程接收行情回调"""
+        import time
+
+        client = xtdata.get_client()
+        while True:
+            time.sleep(3)
+            if not client.is_connected():
+                raise Exception("行情服务连接断开")
+            current_timestamp = now_pd_timestamp()
+            if not Stock.in_real_trading_time():
+                logger.info(f"record tick finished at: {current_timestamp}")
+                break
+        xtdata.unsubscribe_quote(sid)
+    else:
+        import time
+
+        first_time = True
+        while True:
+            if not first_time and Stock.in_trading_time() and not Stock.in_real_trading_time():
+                logger.info(f"Sleeping time......")
+                time.sleep(60 * 1)
+                continue
+
+            datas = xtdata.get_full_tick(code_list=qmt_stocks)
+            on_data_func(datas=datas)
+
+            time.sleep(3)
+            current_timestamp = now_pd_timestamp()
+            if not Stock.in_trading_time():
+                logger.info(f"record tick finished at: {current_timestamp}")
+                break
+
+            first_time = False
 
 
 if __name__ == "__main__":
     from apscheduler.schedulers.background import BackgroundScheduler
 
     sched = BackgroundScheduler()
-    record_tick()
-    sched.add_job(func=record_tick, trigger="cron", hour=9, minute=18, day_of_week="mon-fri")
+    record_stock_quote()
+    sched.add_job(func=record_stock_quote, trigger="cron", hour=9, minute=18, day_of_week="mon-fri")
     sched.start()
     sched._thread.join()
 
@@ -343,6 +396,5 @@ __all__ = [
     "get_entity_list",
     "get_kdata",
     "tick_to_quote",
-    "download_capital_data",
     "clear_history_quote",
 ]

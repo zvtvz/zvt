@@ -26,9 +26,9 @@ def sched_tasks():
 
     if platform.system() == "Windows":
         try:
-            from zvt.broker.qmt.qmt_quote import record_tick
+            from zvt.broker.qmt.qmt_quote import record_stock_quote
 
-            zvt_scheduler.add_job(func=record_tick, trigger="cron", hour=9, minute=19, day_of_week="mon-fri")
+            zvt_scheduler.add_job(func=record_stock_quote, trigger="cron", hour=9, minute=19, day_of_week="mon-fri")
         except Exception as e:
             logger.error("QMT not work", e)
     else:

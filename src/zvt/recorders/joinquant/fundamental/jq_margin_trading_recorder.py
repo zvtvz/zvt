@@ -8,7 +8,7 @@ from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Stock, MarginTrading
 from zvt.recorders.joinquant.common import to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, TIME_FORMAT_DAY
+from zvt.utils.time_utils import to_date_time_str, TIME_FORMAT_DAY
 
 
 class MarginTradingRecorder(TimeSeriesDataRecorder):
@@ -21,7 +21,7 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
     data_schema = MarginTrading
 
     def record(self, entity, start, end, size, timestamps):
-        df = get_mtss(code=to_jq_entity_id(entity), date=to_time_str(start))
+        df = get_mtss(code=to_jq_entity_id(entity), date=to_date_time_str(start))
 
         if pd_is_not_null(df):
             df["entity_id"] = entity.id
@@ -29,7 +29,8 @@ class MarginTradingRecorder(TimeSeriesDataRecorder):
             df.rename(columns={"date": "timestamp"}, inplace=True)
             df["timestamp"] = pd.to_datetime(df["timestamp"])
             df["id"] = df[["entity_id", "timestamp"]].apply(
-                lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY)), axis=1
+                lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY)),
+                axis=1,
             )
 
             print(df)

@@ -49,6 +49,8 @@ class StockTags(StockTagsBase, Mixin):
 
     __tablename__ = "stock_tags"
 
+    entity_type = Column(String(length=64))
+
     code = Column(String(length=64))
     name = Column(String(length=128))
 
@@ -103,12 +105,17 @@ class StockPoolInfo(StockTagsBase, Mixin):
 
 class StockPools(StockTagsBase, Mixin):
     __tablename__ = "stock_pools"
+
+    entity_type = Column(String(length=64))
+
     stock_pool_name = Column(String)
     entity_ids = Column(JSON)
 
 
 class TagStats(StockTagsBase, Mixin):
     __tablename__ = "tag_stats"
+
+    entity_type = Column(String(length=64))
 
     stock_pool_name = Column(String)
     main_tag = Column(String)

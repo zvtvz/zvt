@@ -6,7 +6,7 @@ from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import IndexMoneyFlow, Index, StockMoneyFlow
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 
 class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
@@ -91,7 +91,7 @@ class JoinquantIndexMoneyFlowRecorder(FixedCycleDataRecorder):
             for timestamp, df in g:
                 se = pd.Series(
                     {
-                        "id": "{}_{}".format(entity.id, to_time_str(timestamp)),
+                        "id": "{}_{}".format(entity.id, to_date_time_str(timestamp)),
                         "entity_id": entity.id,
                         "timestamp": timestamp,
                         "code": entity.code,

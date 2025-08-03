@@ -122,7 +122,7 @@ def init_env(zvt_home: str, **kwargs) -> dict:
     return zvt_env
 
 
-def init_resources(resource_path):
+def init_resources(resource_path, force_overwrite=True):
     package_name = "zvt"
     package_dir = pkg_resources.resource_filename(package_name, "resources")
     from zvt.utils.file_utils import list_all_files
@@ -130,7 +130,7 @@ def init_resources(resource_path):
     files: List[str] = list_all_files(package_dir, ext=None)
     for source_file in files:
         dst_file = os.path.join(resource_path, source_file[len(package_dir) + 1 :])
-        if not os.path.exists(dst_file):
+        if force_overwrite or not os.path.exists(dst_file):
             shutil.copyfile(source_file, dst_file)
 
 

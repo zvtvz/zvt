@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Boolean
+from sqlalchemy import Column, Boolean, Float, String
 from sqlalchemy.orm import declarative_base
 
 from zvt.contract import TradableEntity
@@ -14,6 +14,12 @@ class Stockhk(StockhkMetaBase, TradableEntity):
     __tablename__ = "stockhk"
     #: 是否属于港股通
     south = Column(Boolean)
+    #: 流通市值
+    float_cap = Column(Float)
+    #: 总市值
+    total_cap = Column(Float)
+    #: 所属行业
+    industry = Column(String)
 
     @classmethod
     def get_trading_t(cls):

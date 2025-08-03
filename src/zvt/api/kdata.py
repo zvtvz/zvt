@@ -7,10 +7,10 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel, AdjustType, Mixin
 from zvt.contract.api import decode_entity_id, get_schema_by_name
-from zvt.domain import Index1dKdata
+from zvt.domain import Index1dKdata, Indexus1dKdata, Indexhk1dKdata
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
-    to_time_str,
+    to_date_time_str,
     TIME_FORMAT_DAY,
     TIME_FORMAT_ISO8601,
     to_pd_timestamp,
@@ -19,22 +19,45 @@ from zvt.utils.time_utils import (
 )
 
 
-def get_trade_dates(start, end=None):
-    df = Index1dKdata.query_data(
-        entity_id="index_sh_000001",
-        provider="em",
-        columns=["timestamp"],
-        start_timestamp=start,
-        end_timestamp=end,
-        order=Index1dKdata.timestamp.asc(),
-        return_type="df",
-    )
+def get_trade_dates(entity_type, start, end=None):
+    if entity_type == "stockus":
+        df = Indexus1dKdata.query_data(
+            entity_id="indexus_us_SPX",
+            provider="em",
+            columns=["timestamp"],
+            start_timestamp=start,
+            end_timestamp=end,
+            order=Indexus1dKdata.timestamp.asc(),
+            return_type="df",
+        )
+    elif entity_type == "stockhk":
+        df = Indexhk1dKdata.query_data(
+            entity_id="indexhk_hk_HSI",
+            provider="em",
+            columns=["timestamp"],
+            start_timestamp=start,
+            end_timestamp=end,
+            order=Indexhk1dKdata.timestamp.asc(),
+            return_type="df",
+        )
+
+    else:
+        df = Index1dKdata.query_data(
+            entity_id="index_sh_000001",
+            provider="em",
+            columns=["timestamp"],
+            start_timestamp=start,
+            end_timestamp=end,
+            order=Index1dKdata.timestamp.asc(),
+            return_type="df",
+        )
+
     return df["timestamp"].tolist()
 
 
-def get_recent_trade_dates(target_date=current_date(), days_count=5):
+def get_recent_trade_dates(entity_type, target_date=current_date(), days_count=5):
     max_start = date_time_by_interval(target_date, -days_count - 15)
-    dates = get_trade_dates(start=max_start)
+    dates = get_trade_dates(entity_type=entity_type, start=max_start)
     if days_count == 0:
         return dates[-1:]
     return dates[-days_count:]
@@ -48,8 +71,11 @@ def get_latest_kdata_date(
 ) -> pd.Timestamp:
     data_schema: Mixin = get_kdata_schema(entity_type, level=level, adjust_type=adjust_type)
 
+    filters = None
+    if entity_type == "indexus":
+        filters = [data_schema.entity_id == "indexus_us_SPX"]
     latest_data = data_schema.query_data(
-        provider=provider, order=data_schema.timestamp.desc(), limit=1, return_type="domain"
+        provider=provider, filters=filters, order=data_schema.timestamp.desc(), limit=1, return_type="domain"
     )
     return to_pd_timestamp(latest_data[0].timestamp)
 
@@ -131,9 +157,9 @@ def default_adjust_type(entity_type: str) -> AdjustType:
 
 def generate_kdata_id(entity_id, timestamp, level):
     if level >= IntervalLevel.LEVEL_1DAY:
-        return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_DAY))
+        return "{}_{}".format(entity_id, to_date_time_str(timestamp, fmt=TIME_FORMAT_DAY))
     else:
-        return "{}_{}".format(entity_id, to_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
+        return "{}_{}".format(entity_id, to_date_time_str(timestamp, fmt=TIME_FORMAT_ISO8601))
 
 
 def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
@@ -201,7 +227,7 @@ def to_high_level_kdata(kdata_df: pd.DataFrame, to_level: IntervalLevel):
 
 
 if __name__ == "__main__":
-    print(get_recent_trade_dates())
+    print(get_trade_dates(entity_type="stockhk", start="2025-07-01"))
 
 
 # the __all__ is generated

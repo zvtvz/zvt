@@ -2,7 +2,7 @@
 
 import requests
 
-from zvt.utils.time_utils import now_timestamp, to_time_str, TIME_FORMAT_DAY1
+from zvt.utils.time_utils import now_timestamp_ms, to_date_time_str, TIME_FORMAT_DAY1
 from zvt.utils.utils import chrome_copy_header_to_dict
 
 _JKQA_HEADER = chrome_copy_header_to_dict(
@@ -25,7 +25,7 @@ User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/5
 
 
 def get_continuous_limit_up(date: str):
-    date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
+    date_str = to_date_time_str(date_time=date, fmt=TIME_FORMAT_DAY1)
     url = f"https://data.10jqka.com.cn/dataapi/limit_up/continuous_limit_up?filter=HS,GEM2STAR&date={date_str}"
     resp = requests.get(url, headers=_JKQA_HEADER)
     if resp.status_code == 200:
@@ -36,8 +36,8 @@ def get_continuous_limit_up(date: str):
 
 
 def get_limit_stats(date: str):
-    date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
-    url = f"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?page=1&limit=1&field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&date={date_str}&order_field=330324&order_type=0&_={now_timestamp()}"
+    date_str = to_date_time_str(date_time=date, fmt=TIME_FORMAT_DAY1)
+    url = f"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?page=1&limit=1&field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&date={date_str}&order_field=330324&order_type=0&_={now_timestamp_ms()}"
     resp = requests.get(url, headers=_JKQA_HEADER)
     if resp.status_code == 200:
         json_result = resp.json()
@@ -50,19 +50,19 @@ def get_limit_stats(date: str):
 
 
 def get_limit_up(date: str):
-    date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
+    date_str = to_date_time_str(date_time=date, fmt=TIME_FORMAT_DAY1)
     url = f"https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=199112&order_type=0&date={date_str}"
     return get_jkqa_data(url=url)
 
 
 def get_limit_down(date: str):
-    date_str = to_time_str(the_time=date, fmt=TIME_FORMAT_DAY1)
+    date_str = to_date_time_str(date_time=date, fmt=TIME_FORMAT_DAY1)
     url = f"https://data.10jqka.com.cn/dataapi/limit_up/lower_limit_pool?field=199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004&filter=HS,GEM2STAR&order_field=199112&order_type=0&date={date_str}"
     return get_jkqa_data(url=url)
 
 
 def get_jkqa_data(url, pn=1, ps=200, fetch_all=True, headers=_JKQA_HEADER):
-    requesting_url = url + f"&page={pn}&limit={ps}&_={now_timestamp()}"
+    requesting_url = url + f"&page={pn}&limit={ps}&_={now_timestamp_ms()}"
     print(requesting_url)
     resp = requests.get(requesting_url, headers=headers)
     if resp.status_code == 200:

@@ -19,3 +19,9 @@ from .stockhk_1d_hfq_kdata import *
 from .stockhk_1d_hfq_kdata import __all__ as _stockhk_1d_hfq_kdata_all
 
 __all__ += _stockhk_1d_hfq_kdata_all
+
+# import all from submodule stockhk_quote
+from .stockhk_quote import *
+from .stockhk_quote import __all__ as _stockhk_quote_all
+
+__all__ += _stockhk_quote_all

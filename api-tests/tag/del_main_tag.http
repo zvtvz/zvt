@@ -1,0 +1,4 @@
+DELETE http://127.0.0.1:8090/api/work/delete_main_tag?tag=国企
+accept: application/json
+
+

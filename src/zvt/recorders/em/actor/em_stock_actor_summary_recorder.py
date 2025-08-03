@@ -10,7 +10,7 @@ from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.actor.stock_actor import StockActorSummary
 from zvt.recorders.em.em_api import get_ii_holder_report_dates, actor_type_to_org_type, get_ii_summary
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str
+from zvt.utils.time_utils import to_pd_timestamp, to_date_time_str
 
 
 # [{'CHANGE_RATIO': -1.045966694333,
@@ -39,7 +39,7 @@ class EMStockActorSummaryRecorder(TimestampsDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
-            the_date = to_time_str(timestamp)
+            the_date = to_date_time_str(timestamp)
             self.logger.info(f"to {entity.code} {the_date}")
             for actor_type in ActorType:
                 if actor_type == ActorType.private_equity or actor_type == ActorType.individual:

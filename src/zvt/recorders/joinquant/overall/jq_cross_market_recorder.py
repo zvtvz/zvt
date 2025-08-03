@@ -2,7 +2,7 @@ from jqdatapy.api import run_query
 
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index, CrossMarketSummary
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 from zvt.utils.utils import multiple_number
 
 
@@ -38,7 +38,9 @@ class CrossMarketSummaryRecorder(TimeSeriesDataRecorder):
         super().init_entities()
 
     def record(self, entity, start, end, size, timestamps):
-        df = run_query(table="finance.STK_ML_QUOTA", conditions=f"link_id#=#{entity.code}&day#>=#{to_time_str(start)}")
+        df = run_query(
+            table="finance.STK_ML_QUOTA", conditions=f"link_id#=#{entity.code}&day#>=#{to_date_time_str(start)}"
+        )
         print(df)
 
         json_results = []

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-#
 
+
 # the __all__ is generated
 __all__ = []
 
@@ -7,11 +8,23 @@ __all__ = []
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
 
+# import all from submodule blockus_meta
+from .blockus_meta import *
+from .blockus_meta import __all__ as _blockus_meta_all
+
+__all__ += _blockus_meta_all
+
 # import all from submodule stockus_meta
 from .stockus_meta import *
 from .stockus_meta import __all__ as _stockus_meta_all
 
 __all__ += _stockus_meta_all
+
+# import all from submodule indexhk_meta
+from .indexhk_meta import *
+from .indexhk_meta import __all__ as _indexhk_meta_all
+
+__all__ += _indexhk_meta_all
 
 # import all from submodule stockhk_meta
 from .stockhk_meta import *

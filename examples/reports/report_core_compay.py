@@ -12,7 +12,7 @@ from zvt.domain import Stock
 from zvt.factors.target_selector import TargetSelector
 from zvt.informer.inform_utils import add_to_eastmoney
 from zvt.informer.informer import EmailInformer
-from zvt.utils.time_utils import now_pd_timestamp, to_time_str
+from zvt.utils.time_utils import now_pd_timestamp, to_date_time_str
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def report_core_company():
             # FinanceFactor.record_data(provider='eastmoney')
             # BalanceSheet.record_data(provider='eastmoney')
 
-            target_date = to_time_str(now_pd_timestamp())
+            target_date = to_date_time_str(now_pd_timestamp())
 
             my_selector: TargetSelector = FundamentalSelector(start_timestamp="2016-01-01", end_timestamp=target_date)
             my_selector.run()
@@ -61,7 +61,7 @@ def report_core_company():
 
             logger.info(msg)
 
-            email_action.send_message(get_subscriber_emails(), f"{to_time_str(target_date)} 核心资产选股结果", msg)
+            email_action.send_message(get_subscriber_emails(), f"{to_date_time_str(target_date)} 核心资产选股结果", msg)
             break
         except Exception as e:
             logger.exception("report_core_company error:{}".format(e))

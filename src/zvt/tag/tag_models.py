@@ -32,9 +32,21 @@ class MainTagIndustryRelation(CustomModel):
     industry_list: List[str]
 
 
+class BuildMainTagIndustryRelationModel(CustomModel):
+    main_tag: str
+    industry_list: List[str]
+    activate: bool = Field(default=True)
+
+
 class MainTagSubTagRelation(CustomModel):
     main_tag: str
     sub_tag_list: List[str]
+
+
+class BuildMainTagSubTagRelationModel(CustomModel):
+    main_tag: str
+    sub_tag_list: List[str]
+    activate: bool = Field(default=False)
 
 
 class ChangeMainTagModel(CustomModel):
@@ -164,6 +176,7 @@ class StockPoolsModel(MixinModel):
 
 
 class CreateStockPoolsModel(CustomModel):
+    entity_type: str = Field(default="stock")
     stock_pool_name: str
     entity_ids: List[str]
     insert_mode: InsertMode = Field(default=InsertMode.overwrite)

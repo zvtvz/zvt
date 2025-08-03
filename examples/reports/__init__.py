@@ -10,7 +10,7 @@ from zvt.api.utils import float_to_pct_str
 from zvt.contract import ActorType
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, Stock, StockActorSummary
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, now_time_str
+from zvt.utils.time_utils import to_pd_timestamp, now_date_time_str
 
 
 def get_subscriber_emails():
@@ -19,7 +19,7 @@ def get_subscriber_emails():
         return json.load(f)
 
 
-def risky_company(the_date=to_pd_timestamp(now_time_str()), income_yoy=-0.1, profit_yoy=-0.1, entity_ids=None):
+def risky_company(the_date=to_pd_timestamp(now_date_time_str()), income_yoy=-0.1, profit_yoy=-0.1, entity_ids=None):
     codes = []
     start_timestamp = to_pd_timestamp(the_date) - datetime.timedelta(130)
     # 营收降，利润降,流动比率低，速动比率低

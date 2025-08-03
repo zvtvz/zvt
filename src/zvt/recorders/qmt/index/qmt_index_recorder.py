@@ -10,7 +10,7 @@ from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.contract.utils import evaluate_size_from_timestamp
 from zvt.domain import Index, IndexKdataCommon
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import TIME_FORMAT_DAY, TIME_FORMAT_MINUTE, current_date, to_time_str
+from zvt.utils.time_utils import TIME_FORMAT_DAY, TIME_FORMAT_MINUTE, current_date, to_date_time_str
 
 
 class QmtIndexRecorder(FixedCycleDataRecorder):
@@ -96,7 +96,7 @@ class QmtIndexRecorder(FixedCycleDataRecorder):
             df["entity_id"] = entity.id
             df["timestamp"] = pd.to_datetime(df.index)
             df["id"] = df.apply(
-                lambda row: f"{row['entity_id']}_{to_time_str(row['timestamp'], fmt=time_str_fmt)}", axis=1
+                lambda row: f"{row['entity_id']}_{to_date_time_str(row['timestamp'], fmt=time_str_fmt)}", axis=1
             )
             df["provider"] = "qmt"
             df["level"] = self.level.value

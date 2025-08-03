@@ -4,7 +4,7 @@ init_test_context()
 
 from zvt.domain import FinanceFactor, BalanceSheet, IncomeStatement, CashFlowStatement
 from zvt.contract.api import get_db_session
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 session = get_db_session(provider="eastmoney", db_name="finance")  # type: sqlalchemy.orm.Session
 
@@ -114,7 +114,7 @@ def test_000001_finance_factor():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: FinanceFactor = result[0]
     assert latest.basic_eps == 1.14
@@ -253,7 +253,7 @@ def test_000001_balance_sheet():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: BalanceSheet = result[0]
     assert latest.fi_cash_and_deposit_in_central_bank == 287600000000
@@ -409,7 +409,7 @@ def test_000001_income_statement():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: IncomeStatement = result[0]
 
@@ -523,7 +523,7 @@ def test_000001_cash_flow_statement():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: CashFlowStatement = result[0]
 
@@ -664,7 +664,7 @@ def test_000778_finance_factor():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: FinanceFactor = result[0]
 
@@ -804,7 +804,7 @@ def test_000778_balance_sheet():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: BalanceSheet = result[0]
 
@@ -955,7 +955,7 @@ def test_000778_income_statement():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: IncomeStatement = result[0]
 
@@ -1080,7 +1080,7 @@ def test_000778_cash_flow_statement():
         time_field="report_date",
     )
     assert len(correct_timestamps) == len(result)
-    timestamps = [to_time_str(item.report_date) for item in result]
+    timestamps = [to_date_time_str(item.report_date) for item in result]
     assert set(correct_timestamps) == set(timestamps)
     latest: CashFlowStatement = result[0]
 

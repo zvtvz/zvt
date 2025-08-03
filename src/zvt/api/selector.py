@@ -6,10 +6,10 @@ from sqlalchemy import or_, and_
 
 from zvt.api.kdata import default_adjust_type, get_kdata_schema, get_latest_kdata_date, get_recent_trade_dates
 from zvt.contract import IntervalLevel, AdjustType
-from zvt.contract.api import get_entity_ids
+from zvt.contract.api import get_entity_ids, get_entity_schema
 from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, StockQuoteLog
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date, now_timestamp
+from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date, now_timestamp_ms, next_date
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,16 @@ OUT_DEPS = ["dep_1", "dep_2", "dep_3", "dep_4", "dep_5"]
 def get_entity_ids_by_filter(
     provider="em",
     ignore_delist=True,
-    ignore_st=True,
+    ignore_st=False,
     ignore_new_stock=False,
     target_date=None,
-    entity_schema=Stock,
+    entity_type="stock",
     entity_ids=None,
     ignore_bj=False,
+    exchange=None,
 ):
+    entity_schema = get_entity_schema(entity_type=entity_type)
+
     filters = []
     if ignore_new_stock:
         if not target_date:
@@ -56,8 +59,11 @@ def get_entity_ids_by_filter(
             entity_schema.name.not_like("%ST%"),
             entity_schema.name.not_like("%*ST%"),
         ]
-    if ignore_bj:
+    if entity_schema == Stock and ignore_bj:
         filters += [entity_schema.exchange != "bj"]
+
+    if exchange:
+        filters += [entity_schema.exchange == exchange]
 
     return get_entity_ids(provider=provider, entity_schema=entity_schema, filters=filters, entity_ids=entity_ids)
 
@@ -244,7 +250,7 @@ def get_entity_list_by_cap(
         if retry_times == 0:
             return []
         return get_entity_list_by_cap(
-            timestamp=date_time_by_interval(timestamp, 1),
+            timestamp=next_date(timestamp),
             cap_start=cap_start,
             cap_end=cap_end,
             entity_type=entity_type,
@@ -254,39 +260,69 @@ def get_entity_list_by_cap(
         )
 
 
-def get_big_cap_stock(timestamp, provider="em"):
+def get_big_cap_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=BIG_CAP, cap_end=None, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=BIG_CAP,
+        cap_end=None,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
-def get_middle_cap_stock(timestamp, provider="em"):
+def get_middle_cap_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=MIDDLE_CAP, cap_end=BIG_CAP, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=MIDDLE_CAP,
+        cap_end=BIG_CAP,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
-def get_small_cap_stock(timestamp, provider="em"):
+def get_small_cap_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=SMALL_CAP, cap_end=MIDDLE_CAP, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=SMALL_CAP,
+        cap_end=MIDDLE_CAP,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
-def get_mini_cap_stock(timestamp, provider="em"):
+def get_mini_cap_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=None, cap_end=SMALL_CAP, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=None,
+        cap_end=SMALL_CAP,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
-def get_mini_and_small_stock(timestamp, provider="em"):
+def get_mini_and_small_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=None, cap_end=MIDDLE_CAP, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=None,
+        cap_end=MIDDLE_CAP,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
-def get_middle_and_big_stock(timestamp, provider="em"):
+def get_middle_and_big_stock(timestamp, provider="em", adjust_type=None):
     return get_entity_list_by_cap(
-        timestamp=timestamp, cap_start=MIDDLE_CAP, cap_end=None, entity_type="stock", provider=provider
+        timestamp=timestamp,
+        cap_start=MIDDLE_CAP,
+        cap_end=None,
+        entity_type="stock",
+        provider=provider,
+        adjust_type=adjust_type,
     )
 
 
@@ -303,7 +339,7 @@ def get_top_up_today(n=100):
 
 
 def get_shoot_today(up_change_pct=0.03, down_change_pct=-0.03, interval=2):
-    current_time = now_timestamp()
+    current_time = now_timestamp_ms()
     latest = StockQuoteLog.query_data(
         columns=[StockQuoteLog.time], return_type="df", limit=1, order=StockQuoteLog.time.desc()
     )
@@ -376,7 +412,7 @@ def get_limit_down_today():
 
 
 def get_high_days_count(entity_ids=None, target_date=current_date(), days_count=10, high_days_count=None):
-    recent_days = get_recent_trade_dates(target_date=target_date, days_count=days_count)
+    recent_days = get_recent_trade_dates(entity_type="stock", target_date=target_date, days_count=days_count)
 
     if recent_days:
         filters = [LimitUpInfo.timestamp >= recent_days[0]]

@@ -10,7 +10,7 @@ from zvt.contract.recorder import TimestampsDataRecorder
 from zvt.domain import Stock
 from zvt.domain.emotion.emotion import LimitUpInfo, LimitDownInfo, Emotion
 from zvt.recorders.jqka import jqka_api
-from zvt.utils.time_utils import to_time_str, date_time_by_interval, current_date, to_pd_timestamp
+from zvt.utils.time_utils import to_date_time_str, date_time_by_interval, current_date, to_pd_timestamp
 
 
 def _get_high_days_count(high_days_str: str):
@@ -45,7 +45,7 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
-            the_date = to_time_str(timestamp)
+            the_date = to_date_time_str(timestamp)
             self.logger.info(f"record {self.data_schema} to {the_date}")
             limit_ups = jqka_api.get_limit_up(date=the_date)
             if limit_ups:
@@ -108,7 +108,7 @@ class JqkaLimitDownRecorder(TimestampsDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
-            the_date = to_time_str(timestamp)
+            the_date = to_date_time_str(timestamp)
             self.logger.info(f"record {self.data_schema} to {the_date}")
             limit_downs = jqka_api.get_limit_down(date=the_date)
             if limit_downs:
@@ -172,7 +172,7 @@ class JqkaEmotionRecorder(TimestampsDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         for timestamp in timestamps:
-            the_date = to_time_str(timestamp)
+            the_date = to_date_time_str(timestamp)
             self.logger.info(f"record {self.data_schema} to {the_date}")
             limit_stats = jqka_api.get_limit_stats(date=the_date)
             continuous_limit_up = jqka_api.get_continuous_limit_up(date=the_date)

@@ -30,7 +30,7 @@ from zvt.factors.shape import (
 from zvt.factors.technical_factor import TechnicalFactor
 from zvt.utils.decorator import to_string
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import TIME_FORMAT_ISO8601, to_time_str
+from zvt.utils.time_utils import TIME_FORMAT_ISO8601, to_date_time_str
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class FactorStateEncoder(json.JSONEncoder):
         if isinstance(object, pd.Series):
             return object.to_dict()
         elif isinstance(object, pd.Timestamp):
-            return to_time_str(object, fmt=TIME_FORMAT_ISO8601)
+            return to_date_time_str(object, fmt=TIME_FORMAT_ISO8601)
         elif isinstance(object, Enum):
             return object.value
         elif isinstance(object, Bean):

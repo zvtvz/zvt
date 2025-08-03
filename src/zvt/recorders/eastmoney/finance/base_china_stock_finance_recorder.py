@@ -15,7 +15,7 @@ from zvt.recorders.eastmoney.common import (
 from zvt.recorders.joinquant.common import to_jq_entity_id
 from zvt.utils.pd_utils import index_df
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+from zvt.utils.time_utils import to_date_time_str, to_pd_timestamp
 
 
 def to_jq_report_period(timestamp):
@@ -113,7 +113,7 @@ class BaseChinaStockFinanceRecorder(EastmoneyTimestampsDataRecorder):
                 "corpType": company_type_flag(security_item),
                 # 0 means get all types
                 "reportDateType": 0,
-                "endDate": to_time_str(timestamps[10]),
+                "endDate": to_date_time_str(timestamps[10]),
                 "latestCount": 10,
             }
 

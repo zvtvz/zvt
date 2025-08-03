@@ -11,7 +11,7 @@ from zvt.domain import StockMoneyFlow, Stock
 from zvt.recorders.joinquant.common import to_jq_entity_id
 from zvt.recorders.joinquant.misc.jq_index_money_flow_recorder import JoinquantIndexMoneyFlowRecorder
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import TIME_FORMAT_DAY, to_time_str
+from zvt.utils.time_utils import TIME_FORMAT_DAY, to_date_time_str
 
 
 class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
@@ -76,9 +76,9 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
 
     def record(self, entity, start, end, size, timestamps):
         if not self.end_timestamp:
-            df = get_money_flow(code=to_jq_entity_id(entity), date=to_time_str(start))
+            df = get_money_flow(code=to_jq_entity_id(entity), date=to_date_time_str(start))
         else:
-            df = get_money_flow(code=to_jq_entity_id(entity), date=start, end_date=to_time_str(self.end_timestamp))
+            df = get_money_flow(code=to_jq_entity_id(entity), date=start, end_date=to_date_time_str(self.end_timestamp))
 
         df = df.dropna()
 
@@ -147,7 +147,7 @@ class JoinquantStockMoneyFlowRecorder(FixedCycleDataRecorder):
             df["code"] = entity.code
 
             def generate_kdata_id(se):
-                return "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY))
+                return "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY))
 
             df["id"] = df[["entity_id", "timestamp"]].apply(generate_kdata_id, axis=1)
 

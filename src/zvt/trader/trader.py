@@ -14,7 +14,13 @@ from zvt.trader import TradingSignal, TradingSignalType, TradingListener
 from zvt.trader.sim_account import SimAccountService
 from zvt.trader.trader_info_api import AccountStatsReader
 from zvt.trader.trader_schemas import AccountStats, Position
-from zvt.utils.time_utils import to_pd_timestamp, now_pd_timestamp, to_time_str, is_same_date, date_time_by_interval
+from zvt.utils.time_utils import (
+    to_pd_timestamp,
+    now_pd_timestamp,
+    to_date_time_str,
+    is_same_date,
+    date_time_by_interval,
+)
 
 
 class Trader(object):
@@ -345,7 +351,7 @@ class Trader(object):
         return long_targets, short_targets
 
     def in_trading_date(self, timestamp):
-        return to_time_str(timestamp) in self.trading_dates
+        return to_date_time_str(timestamp) in self.trading_dates
 
     def on_time(self, timestamp: pd.Timestamp):
         """

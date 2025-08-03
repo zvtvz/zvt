@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import random
+import time
 from typing import Union
 
 import demjson3
@@ -25,8 +26,8 @@ from zvt.domain import BlockCategory, StockHotTopic
 from zvt.recorders.consts import DEFAULT_HEADER
 from zvt.utils.time_utils import (
     to_pd_timestamp,
-    now_timestamp,
-    to_time_str,
+    now_timestamp_ms,
+    to_date_time_str,
     current_date,
     now_pd_timestamp,
 )
@@ -53,7 +54,7 @@ def get_treasury_yield(pn=1, ps=2000, fetch_all=True):
         # 中国
         yields.append(
             {
-                "id": f"country_galaxy_CN_{to_time_str(date)}",
+                "id": f"country_galaxy_CN_{to_date_time_str(date)}",
                 "entity_id": "country_galaxy_CN",
                 "timestamp": to_pd_timestamp(date),
                 "code": "CN",
@@ -65,7 +66,7 @@ def get_treasury_yield(pn=1, ps=2000, fetch_all=True):
         )
         yields.append(
             {
-                "id": f"country_galaxy_US_{to_time_str(date)}",
+                "id": f"country_galaxy_US_{to_date_time_str(date)}",
                 "entity_id": "country_galaxy_US",
                 "timestamp": to_pd_timestamp(date),
                 "code": "US",
@@ -90,10 +91,10 @@ def get_ii_holder_report_dates(code):
 
 
 def get_dragon_and_tiger_list(start_date, end_date=None):
-    start_date = to_time_str(start_date)
+    start_date = to_date_time_str(start_date)
     if not end_date:
-        end_date = now_timestamp()
-    end_date = to_time_str(end_date)
+        end_date = now_timestamp_ms()
+    end_date = to_date_time_str(end_date)
     return get_em_data(
         request_type="RPT_DAILYBILLBOARD_DETAILS",
         fields="ALL",
@@ -178,7 +179,7 @@ def get_free_holders(code, end_date):
 def get_top_ten_free_holder_stats(code):
     datas = get_holder_report_dates(code=code)
     if datas:
-        end_date = to_time_str(datas[0]["END_DATE"])
+        end_date = to_date_time_str(datas[0]["END_DATE"])
         holders = get_em_data(
             request_type="RPT_F10_FREE_TOTALHOLDNUM",
             fields="SECUCODE,SECURITY_CODE,END_DATE,HOLD_NUM_COUNT,HOLD_RATIO_COUNT,HOLD_RATIO_CHANGE,",
@@ -233,6 +234,41 @@ def get_holders(code, end_date):
     )
 
 
+def get_basic_info(entity_id, session=None):
+    entity_type, exchange, code = decode_entity_id(entity_id)
+    if entity_type == "stock":
+        request_type = "RPT_F10_ORG_BASICINFO"
+        fields = "SECUCODE,LISTING_DATE,SECURITY_CODE,SECURITY_NAME_ABBR,ORG_NAME,FORMERNAME,CSRC_INDUSTRY_NAME,STR_CODEH,STR_NAMEH,STR_CODEA,STR_NAMEA,STR_CODEB,STR_NAMEB,REGIONBK,EM2016,BLGAINIAN,CHAIRMAN,LEGAL_PERSON,PRESIDENT,SECRETARY,FOUND_DATE,REG_CAPITAL,TOTAL_NUM,TATOLNUMBER,ORG_TEL,ORG_EMAIL,ORG_WEB,ADDRESS,REG_ADDRESS,ORG_PROFIE,MAIN_BUSINESS,SECURITY_TYPE_CODE,CURRENCY,ACCOUNT_FIRM,LEGAL_ADVISER,EXPAND_NAME_ABBR,ORG_PROFILE"
+        filters = generate_filters(code=code, exchange=exchange.upper())
+    elif entity_type == "stockhk":
+        request_type = "RPT_HKF10_INFO_ORGPROFILE;RPT_HKF10_INFO_SECURITYINFO"
+        fields = "SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,ORG_NAME,CHAIRMAN,MAIN_BUSINESS,BELONG_INDUSTRY,BELONG_INDUSTRY,REG_PLACE,REG_CAPITAL,FOUND_DATE,LISTING_DATE,@SECURITY_INNER_CODE;@SECURITY_INNER_CODE,TRADE_UNIT,PAR_VALUE,ISSUE_PRICE,ISSUE_NUM"
+        filters = generate_filters(code=code, exchange="HK")
+    elif entity_type == "stockus":
+        if exchange == "nasdaq":
+            exchange_code = "O"
+        elif exchange == "nyse":
+            exchange_code = "N"
+        else:
+            raise Exception(f"unknow exchange: {exchange}")
+
+        request_type = "RPT_USF10_INFO_SECURITYINFO;RPT_USF10_INFO_ORGPROFILE"
+        fields = "SECUCODE,SECURITY_CODE,SECURITY_TYPE,LISTING_DATE,TRADE_MARKET,ISSUE_PRICE,ISSUE_NUM,@SECUCODE;@SECUCODE,ORG_NAME,ORG_EN_ABBR,BELONG_INDUSTRY,FOUND_DATE,CHAIRMAN,ADDRESS,ORG_WEB"
+        filters = generate_filters(code=code, exchange=exchange_code)
+    else:
+        raise Exception(f"unknow entity_type: {entity_type}")
+
+    datas = get_em_data(
+        session=session,
+        request_type=request_type,
+        fields=fields,
+        filters=filters,
+    )
+    if datas:
+        return datas[0]
+    return None
+
+
 def _order_param(order: str):
     if order:
         orders = order.split(",")
@@ -240,7 +276,21 @@ def _order_param(order: str):
     return order
 
 
-def get_url(type, sty, source="SECURITIES", filters=None, order_by="", order="asc", pn=1, ps=2000, params=None):
+def get_url(
+    request_type=None,
+    fields=None,
+    request_type_param_name="type",
+    fields_param_name="sty",
+    source="SECURITIES",
+    filters=None,
+    order_by="",
+    order="asc",
+    pn=1,
+    ps=2000,
+    pn_param_name="p",
+    ps_param_name="ps",
+    params=None,
+):
     # 根据 url 映射如下
     # type=RPT_F10_MAIN_ORGHOLDDETAILS
     # sty=SECURITY_CODE,SECUCODE,REPORT_DATE,ORG_TYPE,TOTAL_ORG_NUM,TOTAL_FREE_SHARES,TOTAL_MARKET_CAP,TOTAL_SHARES_RATIO,CHANGE_RATIO,IS_COMPLETE
@@ -251,9 +301,9 @@ def get_url(type, sty, source="SECURITIES", filters=None, order_by="", order="as
     v = random.randint(1000000000000000, 9000000000000000)
 
     if filters or source:
-        url = f"https://datacenter.eastmoney.com/securities/api/data/get?type={type}&sty={sty}&filter={filters}&client=APP&source={source}&p={pn}&ps={ps}&sr={sr}&st={order_by}&v=0{v}"
+        url = f"https://datacenter.eastmoney.com/securities/api/data/get?{request_type_param_name}={request_type}&{fields_param_name}={fields}&filter={filters}&client=APP&source={source}&{pn_param_name}={pn}&{ps_param_name}={ps}&sr={sr}&st={order_by}&v=0{v}"
     else:
-        url = f"https://datacenter.eastmoney.com/api/data/get?type={type}&sty={sty}&st={order_by}&sr={sr}&p={pn}&ps={ps}&_={now_timestamp()}"
+        url = f"https://datacenter.eastmoney.com/api/data/get?{request_type_param_name}={request_type}&{fields_param_name}={fields}&st={order_by}&sr={sr}&{pn_param_name}={pn}&{ps_param_name}={ps}&_={now_timestamp_ms()}"
 
     if params:
         url = url + f"&params={params}"
@@ -289,12 +339,19 @@ def actor_type_to_org_type(actor_type: ActorType):
     assert False
 
 
-def generate_filters(code=None, trade_date=None, report_date=None, end_date=None, org_type=None, field_op: dict = None):
-    args = [item for item in locals().items() if item[1] and (item[0] not in ("code", "org_type", "field_op"))]
+def generate_filters(
+    code=None, exchange=None, trade_date=None, report_date=None, end_date=None, org_type=None, field_op: dict = None
+):
+    args = [
+        item for item in locals().items() if item[1] and (item[0] not in ("code", "exchange", "org_type", "field_op"))
+    ]
 
     result = ""
     if code:
-        result += f'(SECUCODE="{code}.{get_exchange(code)}")'
+        if exchange:
+            result += f'(SECUCODE="{code}.{exchange}")'
+        else:
+            result += f'(SECUCODE="{code}.{get_exchange(code)}")'
     if org_type:
         result += f'(ORG_TYPE="{org_type}")'
 
@@ -313,6 +370,8 @@ def generate_filters(code=None, trade_date=None, report_date=None, end_date=None
 def get_em_data(
     request_type,
     fields,
+    request_type_param_name="type",
+    fields_param_name="sty",
     session=None,
     source="SECURITIES",
     filters=None,
@@ -320,22 +379,27 @@ def get_em_data(
     sort="asc",
     pn=1,
     ps=2000,
+    pn_param_name="p",
+    ps_param_name="ps",
     fetch_all=True,
     fetch_count=1,
     params=None,
 ):
     url = get_url(
-        type=request_type,
-        sty=fields,
+        request_type=request_type,
+        fields=fields,
+        request_type_param_name=request_type_param_name,
+        fields_param_name=fields_param_name,
         source=source,
         filters=filters,
         order_by=sort_by,
         order=sort,
         pn=pn,
         ps=ps,
+        pn_param_name=pn_param_name,
+        ps_param_name=ps_param_name,
         params=params,
     )
-    logger.debug(f"current url: {url}")
     if session:
         resp = session.get(url)
     else:
@@ -360,12 +424,16 @@ def get_em_data(
                         session=session,
                         request_type=request_type,
                         fields=fields,
+                        request_type_param_name=request_type_param_name,
+                        fields_param_name=fields_param_name,
                         source=source,
                         filters=filters,
                         sort_by=sort_by,
                         sort=sort,
                         pn=pn + 1,
                         ps=ps,
+                        pn_param_name=pn_param_name,
+                        ps_param_name=ps_param_name,
                         fetch_all=fetch_all,
                         fetch_count=fetch_count - 1,
                         params=params,
@@ -381,90 +449,6 @@ def get_em_data(
                 return data
         return None
     raise RuntimeError(f"request em data code: {resp.status_code}, error: {resp.text}")
-
-
-def get_quotes():
-    {
-        # 市场,2 A股, 3 港股
-        "f1": 2,
-        # 最新价 660/100=6.6
-        "f2": 660,
-        # 涨幅 2000/10000=20%
-        "f3": 2000,
-        # 涨跌额 110/100=1.1
-        "f4": 110,
-        # 总手
-        "f5": 112596,
-        # 成交额
-        "f6": 74313472.2,
-        # 换手率 239/10000
-        "f8": 239,
-        # 市盈率 110
-        "f9": 11000,
-        # code
-        "f12": "300175",
-        #
-        "f13": 0,
-        # name
-        "f14": "朗源股份",
-        "f18": 550,
-        "f19": 80,
-        "f30": -215,
-        # 买入价
-        "f31": 660,
-        # 卖出价
-        "f32": None,
-        "f125": 0,
-        "f139": 5,
-        "f148": 1,
-        "f152": 2,
-    }
-    {
-        "f1": 2,
-        "f2": 1515,
-        "f3": 1002,
-        "f4": 138,
-        "f5": 547165,
-        "f6": 804705199.0,
-        "f8": 241,
-        "f9": 1575,
-        "f12": "601233",
-        "f13": 1,
-        "f14": "桐昆股份",
-        "f18": 1377,
-        "f19": 2,
-        "f30": -1281,
-        # 买入价
-        "f31": 1515,
-        # 卖出价
-        "f32": None,
-        "f125": 0,
-        "f139": 2,
-        "f148": 577,
-        "f152": 2,
-    }
-    {
-        "f1": 2,
-        "f2": 611,
-        "f3": 338,
-        "f4": 20,
-        "f5": 478746,
-        "f6": 293801314.14,
-        "f8": 803,
-        "f9": 2067,
-        "f12": "000788",
-        "f13": 0,
-        "f14": "北大医药",
-        "f18": 591,
-        "f19": 6,
-        "f30": -4015,
-        "f31": 611,
-        "f32": 612,
-        "f125": 0,
-        "f139": 2,
-        "f148": 1,
-        "f152": 2,
-    }
 
 
 # quote
@@ -569,7 +553,7 @@ def get_kdata(entity_id, session=None, level=IntervalLevel.LEVEL_1DAY, adjust_ty
         return df
 
 
-def get_basic_info(entity_id):
+def get_basic_info1(entity_id):
     entity_type, exchange, code = decode_entity_id(entity_id)
     if entity_type == "stock":
         url = "https://emh5.eastmoney.com/api/GongSiGaiKuang/GetJiBenZiLiao"
@@ -585,7 +569,7 @@ def get_basic_info(entity_id):
 
     data = {"fc": to_em_fc(entity_id=entity_id), "color": "w"}
     resp = requests.post(url=url, json=data, headers=DEFAULT_HEADER)
-
+    resp.encoding = "utf-8"
     resp.raise_for_status()
     resp.close()
 
@@ -594,7 +578,7 @@ def get_basic_info(entity_id):
 
 def get_future_list():
     # 主连
-    url = f"https://futsseapi.eastmoney.com/list/filter/2?fid=sp_all&mktid=0&typeid=0&pageSize=1000&pageIndex=0&callbackName=jQuery34106875017735118845_1649736551642&sort=asc&orderBy=idx&_={now_timestamp()}"
+    url = f"https://futsseapi.eastmoney.com/list/filter/2?fid=sp_all&mktid=0&typeid=0&pageSize=1000&pageIndex=0&callbackName=jQuery34106875017735118845_1649736551642&sort=asc&orderBy=idx&_={now_timestamp_ms()}"
     resp = requests.get(url, headers=DEFAULT_HEADER)
     resp.raise_for_status()
     result = json_callback_param(resp.text)
@@ -652,21 +636,56 @@ def get_stock_turnover():
     return data
 
 
-def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None, return_quote=False):
-    url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn=1&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp() - 1}&_={now_timestamp()}"
+def get_top_tradable_list(entity_type, fields, limit, entity_flag, pn=1, exchange=None, return_quote=False):
+    logger.info(f"get_top_tradable_list {entity_type} exchange: {exchange} return_quote: {return_quote} to pn: {pn}")
+    url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn={pn}&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp_ms() - 1}&_={now_timestamp_ms()}"
     resp = requests.get(url, headers=DEFAULT_HEADER)
 
     resp.raise_for_status()
 
     result = json_callback_param(resp.text)
     resp.close()
+
+    if not result["data"]:
+        return None
+
+    total = result["data"]["total"]
     data = result["data"]["diff"]
+
+    if pn != 1:
+        return data
+
+    data_size = len(data)
+
+    if total != data_size and limit > data_size:
+        pn_size = int(total / data_size)
+        if total % data_size:
+            pn_size = pn_size + 1
+
+        while pn < pn_size:
+            pn = pn + 1
+            if pn % 2 == 0:
+                time.sleep(2)
+
+            append_data = get_top_tradable_list(
+                entity_type=entity_type,
+                fields=fields,
+                limit=limit,
+                entity_flag=entity_flag,
+                pn=pn,
+                exchange=exchange,
+                return_quote=return_quote,
+            )
+            if append_data:
+                data = data + append_data
+
     df = pd.DataFrame.from_records(data=data)
 
     if return_quote:
-        df = df[["f12", "f14", "f2", "f3", "f5", "f8", "f6", "f15", "f16", "f17", "f20", "f21"]]
+        df = df[["f12", "f13", "f14", "f2", "f3", "f5", "f8", "f6", "f15", "f16", "f17", "f20", "f21"]]
         df.columns = [
             "code",
+            "market_code",
             "name",
             "price",
             "change_pct",
@@ -689,15 +708,18 @@ def get_top_tradable_list(entity_type, fields, limit, entity_flag, exchange=None
 
         df["change_pct"] = df["change_pct"] / 100
         df["turnover_rate"] = df["turnover_rate"] / 100
-        df["volume"] = df["volume"] * 100
 
         df[["is_limit_up", "is_limit_down"]] = df.apply(lambda row: _calculate_limit(row), axis=1, result_type="expand")
-
+        df["entity_id"] = df[["market_code", "code"]].apply(
+            lambda row: market_code_to_entity_id(market=row["market_code"], code=row["code"]), axis=1
+        )
     else:
-        if entity_type == TradableType.stock:
+        if entity_type in (TradableType.stock, TradableType.stockhk, TradableType.stockus):
             df = df[["f12", "f13", "f14", "f20", "f21", "f9", "f23"]]
-            df.columns = ["code", "exchange", "name", "cap", "cap1", "pe", "pb"]
-            df[["cap", "cap1", "pe", "pb"]] = df[["cap", "cap1", "pe", "pb"]].apply(pd.to_numeric, errors="coerce")
+            df.columns = ["code", "exchange", "name", "total_cap", "float_cap", "pe", "pb"]
+            df[["total_cap", "float_cap", "pe", "pb"]] = df[["total_cap", "float_cap", "pe", "pb"]].apply(
+                pd.to_numeric, errors="coerce"
+            )
         else:
             df = df[["f12", "f13", "f14"]]
             df.columns = ["code", "exchange", "name"]
@@ -714,17 +736,28 @@ def get_top_stocks(limit=100):
     # 沪深和北交所
     entity_flag = "fs=m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:81+s:2048"
 
-    fields = "f2,f3,f5,f6,f8,f12,f14,f15,f16,f17,f20,f21"
+    fields = "f2,f3,f5,f6,f8,f12,f13,f14,f15,f16,f17,f20,f21"
     return get_top_tradable_list(
         entity_type=TradableType.stock, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
     )
 
 
-def get_top_stockhks(limit=20):
-    entity_flag = "fs=b:DLMK0144,b:DLMK0146"
-    fields = "f2,f3,f5,f6,f8,f12,f14,f15,f16,f17,f20,f21"
+def get_top_stockhks(limit=20, hk_south=False):
+    if hk_south:
+        entity_flag = "fs=b:DLMK0144,b:DLMK0146"
+    else:
+        entity_flag = f"fs=m:116+t:3,m:116+t:4"
+    fields = "f2,f3,f5,f6,f8,f12,f13,f14,f15,f16,f17,f20,f21"
     return get_top_tradable_list(
         entity_type=TradableType.stockhk, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
+    )
+
+
+def get_top_stockuss(limit=50):
+    entity_flag = "fs=m:105,m:106"
+    fields = "f2,f3,f5,f6,f8,f12,f13,f14,f15,f16,f17,f20,f21"
+    return get_top_tradable_list(
+        entity_type=TradableType.stockus, fields=fields, limit=limit, entity_flag=entity_flag, return_quote=True
     )
 
 
@@ -761,6 +794,9 @@ def get_tradable_list(
         elif entity_type == TradableType.indexus:
             # 纳斯达克，道琼斯，标普500，美元指数
             entity_flag = "fs=i:100.NDX,i:100.DJIA,i:100.SPX,i:100.UDI"
+        elif entity_type == TradableType.blockus:
+            # 美股板块
+            entity_flag = "fs=m:202"
         elif entity_type == TradableType.cbond:
             if exchange == Exchange.sz:
                 entity_flag = "fs=m:0+e:11"
@@ -768,6 +804,8 @@ def get_tradable_list(
                 entity_flag = "fs=m:1+e:11"
             else:
                 assert False
+        elif entity_type == TradableType.indexhk:
+            entity_flag = "fs=i:305.HSI"
         # m为交易所代码，t为交易类型
         elif entity_type in [TradableType.block, TradableType.stock, TradableType.stockus, TradableType.stockhk]:
             if exchange == Exchange.sh:
@@ -806,7 +844,7 @@ def get_tradable_list(
 
         # f2, f3, f4, f12, f13, f14, f19, f111, f148
         fields = "f1,f2,f3,f4,f12,f13,f14"
-        if entity_type in (TradableType.stock, TradableType.stockhk):
+        if entity_type in (TradableType.stock, TradableType.stockhk, TradableType.stockus):
             # 市值,流通市值,pe,pb
             fields = fields + ",f20,f21,f9,f23"
 
@@ -823,7 +861,7 @@ def get_tradable_list(
 
 def get_block_stocks(block_id, name="", session=None):
     entity_type, exchange, code = decode_entity_id(block_id)
-    category_stocks_url = f"http://48.push2.eastmoney.com/api/qt/clist/get?cb=jQuery11240710111145777397_{now_timestamp() - 1}&pn=1&pz=1000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=4668014655929990|0|1|0|web&fid=f3&fs=b:{code}+f:!50&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152,f45&_={now_timestamp()}"
+    category_stocks_url = f"http://48.push2.eastmoney.com/api/qt/clist/get?cb=jQuery11240710111145777397_{now_timestamp_ms() - 1}&pn=1&pz=1000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=4668014655929990|0|1|0|web&fid=f3&fs=b:{code}+f:!50&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152,f45&_={now_timestamp_ms()}"
     if session:
         resp = session.get(category_stocks_url, headers=DEFAULT_HEADER)
     else:
@@ -930,7 +968,7 @@ def record_hot_topic():
 
 def get_news(entity_id, ps=200, index=1, start_timestamp=None, session=None, latest_code=None):
     sec_id = to_em_sec_id(entity_id=entity_id)
-    url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp() - 1}&_={now_timestamp()}"
+    url = f"https://np-listapi.eastmoney.com/comm/wap/getListInfo?cb=callback&client=wap&type=1&mTypeAndCode={sec_id}&pageSize={ps}&pageIndex={index}&callback=jQuery1830017478247906740352_{now_timestamp_ms() - 1}&_={now_timestamp_ms()}"
     logger.debug(f"get news from: {url}")
     if session:
         resp = session.get(url)
@@ -1078,6 +1116,8 @@ def to_em_sec_id(entity_id):
         code = code + "m"
     if entity_type == "currency" and "CNYC" in code:
         return f"120.{code}"
+    if entity_type == "indexhk":
+        return f"100.{code}"
     return f"{to_em_entity_flag(exchange)}.{code}"
 
 
@@ -1104,61 +1144,7 @@ def to_zvt_code(code):
 
 
 if __name__ == "__main__":
-    # from pprint import pprint
-    # pprint(get_free_holder_report_dates(code='000338'))
-    # pprint(get_holder_report_dates(code='000338'))
-    # pprint(get_holders(code='000338', end_date='2021-03-31'))
-    # pprint(get_free_holders(code='000338', end_date='2021-03-31'))
-    # pprint(get_ii_holder(code='000338', report_date='2021-03-31',
-    #                      org_type=actor_type_to_org_type(ActorType.corporation)))
-    # print(
-    #     get_ii_summary(code="600519", report_date="2021-03-31", org_type=actor_type_to_org_type(ActorType.corporation))
-    # )
-    # df = get_kdata(entity_id="index_sz_399370", level="1wk")
-    # df = get_tradable_list(entity_type="cbond")
-    # print(df)
-    # df = get_news("stock_sz_300999", ps=1)
-    # print(df)
-    # print(len(df))
-    # df = get_tradable_list(entity_type="block")
-    # print(df)
-    # df = get_tradable_list(entity_type="indexus")
-    # print(df)
-    # df = get_tradable_list(entity_type="currency")
-    # print(df)
-    # df = get_tradable_list(entity_type="index")
-    # print(df)
-    # df = get_kdata(entity_id="index_us_SPX", level="1d")
-    # df = get_treasury_yield(pn=1, ps=50, fetch_all=False)
-    # print(df)
-    # df = get_future_list()
-    # print(df)
-    # df = get_kdata(entity_id="future_dce_I", level="1d")
-    # print(df)
-    # df = get_dragon_and_tiger(code="000989", start_date="2018-10-31")
-    # df = get_dragon_and_tiger_list(start_date="2022-04-25")
-    # # df = get_tradable_list()
-    # # df_delist = df[df["name"].str.contains("退")]
-    # print(df_delist[["id", "name"]].values.tolist())
-    # print(get_block_stocks(block_id="block_cn_BK1144"))
-    # df = get_tradable_list(entity_type="index")
-    # print(df)
-    # df = get_kdata(entity_id="stock_bj_873693", level="1d")
-    # print(df)
-    # print(get_controlling_shareholder(code="000338"))
-    # events = get_events(entity_id="stock_sz_300684")
-    # print(events)
-    # print(get_hot_topic())
-    # record_hot_topic()
-    # df = StockHotTopic.query_data(
-    #     filters=[func.json_extract(StockHotTopic.entity_ids, "$").contains("stock_sh_600809")],
-    # )
-    # print(df)
-    # print(get_top_stocks(limit=10))
-    # print(get_top_stockhks(limit=10))
-    # print(get_controlling_shareholder(code="000338"))
-    # print(get_top_ten_free_holder_stats(code="000338"))
-    print(get_stock_turnover())
+    print(get_tradable_list(entity_type="indexhk"))
 
 
 # the __all__ is generated
@@ -1176,18 +1162,20 @@ __all__ = [
     "get_top_ten_free_holder_stats",
     "get_controlling_shareholder",
     "get_holders",
+    "get_basic_info",
     "get_url",
     "get_exchange",
     "actor_type_to_org_type",
     "generate_filters",
     "get_em_data",
-    "get_quotes",
     "get_kdata",
-    "get_basic_info",
+    "get_basic_info1",
     "get_future_list",
+    "get_stock_turnover",
     "get_top_tradable_list",
     "get_top_stocks",
     "get_top_stockhks",
+    "get_top_stockuss",
     "get_tradable_list",
     "get_block_stocks",
     "market_code_to_entity_id",

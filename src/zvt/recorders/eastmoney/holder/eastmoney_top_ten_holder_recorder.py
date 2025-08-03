@@ -2,7 +2,7 @@
 from zvt.api.utils import to_report_period_type
 from zvt.domain.misc.holder import TopTenHolder
 from zvt.recorders.eastmoney.common import EastmoneyTimestampsDataRecorder, get_fc
-from zvt.utils.time_utils import to_time_str, to_pd_timestamp
+from zvt.utils.time_utils import to_date_time_str, to_pd_timestamp
 from zvt.utils.utils import to_float
 
 
@@ -36,7 +36,7 @@ class TopTenHolderRecorder(EastmoneyTimestampsDataRecorder):
         }
 
     def generate_request_param(self, security_item, start, end, size, timestamp):
-        return {"color": "w", "fc": get_fc(security_item), "BaoGaoQi": to_time_str(timestamp)}
+        return {"color": "w", "fc": get_fc(security_item), "BaoGaoQi": to_date_time_str(timestamp)}
 
     def generate_domain_id(self, entity, original_data):
         the_name = original_data.get("GuDongMingCheng")

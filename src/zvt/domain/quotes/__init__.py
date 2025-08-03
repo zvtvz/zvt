@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import String, Column, Float, Integer, JSON
+from sqlalchemy import String, Column, Float, Integer, JSON, Boolean
 
 from zvt.contract import Mixin
 
@@ -65,6 +65,10 @@ class IndexKdataCommon(KdataCommon):
     pass
 
 
+class IndexhkKdataCommon(KdataCommon):
+    pass
+
+
 class IndexusKdataCommon(KdataCommon):
     pass
 
@@ -77,11 +81,17 @@ class EtfKdataCommon(KdataCommon):
 
 
 class StockKdataCommon(KdataCommon):
-    pass
+    #: 是否涨停
+    is_limit_up = Column(Boolean)
+    #: 是否跌停
+    is_limit_down = Column(Boolean)
 
 
 class StockusKdataCommon(KdataCommon):
-    pass
+    #: 是否涨停
+    is_limit_up = Column(Boolean)
+    #: 是否跌停
+    is_limit_down = Column(Boolean)
 
 
 class StockhkKdataCommon(KdataCommon):
@@ -117,6 +127,7 @@ __all__ = [
     "TickCommon",
     "BlockKdataCommon",
     "IndexKdataCommon",
+    "IndexhkKdataCommon",
     "IndexusKdataCommon",
     "EtfKdataCommon",
     "StockKdataCommon",
@@ -129,6 +140,12 @@ __all__ = [
 # __init__.py structure:
 # common code of the package
 # export interface in __all__ which contains __all__ of its sub modules
+
+# import all from submodule indexhk
+from .indexhk import *
+from .indexhk import __all__ as _indexhk_all
+
+__all__ += _indexhk_all
 
 # import all from submodule trade_day
 from .trade_day import *

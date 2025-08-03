@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 from zvt.domain import StockNews, Stock, LimitUpInfo
-from zvt.utils.time_utils import date_time_by_interval, today
+from zvt.utils.time_utils import date_time_by_interval, now_pd_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ def group_stocks_by_topic(
     :return:
     """
     if not start_timestamp:
-        start_timestamp = date_time_by_interval(today(), -days_ago)
+        start_timestamp = date_time_by_interval(now_pd_timestamp(), -days_ago)
     stock_map = {}
 
     entity_ids = None
@@ -139,7 +139,7 @@ def msg_group_stocks_by_topic(
 
 def get_hot_topics(start_timestamp=None, days_ago=20, limit=15):
     if not start_timestamp:
-        start_timestamp = date_time_by_interval(today(), -days_ago)
+        start_timestamp = date_time_by_interval(now_pd_timestamp(), -days_ago)
     df = LimitUpInfo.query_data(start_timestamp=start_timestamp, columns=["reason"])
     df["reason"] = df["reason"].str.split("+")
     result = df["reason"].tolist()

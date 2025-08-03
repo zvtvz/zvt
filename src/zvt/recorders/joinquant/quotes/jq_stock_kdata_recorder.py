@@ -11,7 +11,7 @@ from zvt.contract.recorder import FixedCycleDataRecorder
 from zvt.domain import Stock, StockKdataCommon, Stock1wkHfqKdata
 from zvt.recorders.joinquant.common import to_jq_trading_level, to_jq_entity_id
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
+from zvt.utils.time_utils import to_date_time_str, now_pd_timestamp, TIME_FORMAT_DAY, TIME_FORMAT_ISO8601
 
 
 class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
@@ -112,7 +112,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
         if self.adjust_type == AdjustType.hfq:
             fq_ref_date = "2000-01-01"
         else:
-            fq_ref_date = to_time_str(now_pd_timestamp())
+            fq_ref_date = to_date_time_str(now_pd_timestamp())
 
         if not self.end_timestamp:
             df = get_bars(
@@ -123,7 +123,7 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
                 fq_ref_date=fq_ref_date,
             )
         else:
-            end_timestamp = to_time_str(self.end_timestamp)
+            end_timestamp = to_date_time_str(self.end_timestamp)
             df = get_bars(
                 to_jq_entity_id(entity),
                 count=size,
@@ -166,9 +166,9 @@ class JqChinaStockKdataRecorder(FixedCycleDataRecorder):
 
             def generate_kdata_id(se):
                 if self.level >= IntervalLevel.LEVEL_1DAY:
-                    return "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY))
+                    return "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_DAY))
                 else:
-                    return "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], fmt=TIME_FORMAT_ISO8601))
+                    return "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_ISO8601))
 
             df["id"] = df[["entity_id", "timestamp"]].apply(generate_kdata_id, axis=1)
 

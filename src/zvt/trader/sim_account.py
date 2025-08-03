@@ -18,7 +18,7 @@ from zvt.trader.trader_info_api import get_trader_info, clear_trader
 from zvt.trader.trader_models import AccountStatsModel, PositionModel
 from zvt.trader.trader_schemas import AccountStats, Position, Order, TraderInfo
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, to_time_str, TIME_FORMAT_ISO8601, is_same_date
+from zvt.utils.time_utils import to_pd_timestamp, to_date_time_str, TIME_FORMAT_ISO8601, is_same_date
 from zvt.utils.utils import fill_domain_from_dict
 
 
@@ -240,7 +240,7 @@ class SimAccountService(AccountService):
         ]
 
         # clear the data which need recomputing
-        the_id = "{}_{}".format(self.trader_name, to_time_str(timestamp, TIME_FORMAT_ISO8601))
+        the_id = "{}_{}".format(self.trader_name, to_date_time_str(timestamp, TIME_FORMAT_ISO8601))
 
         self.account.value = 0
         self.account.all_value = 0
@@ -282,7 +282,7 @@ class SimAccountService(AccountService):
                 )
 
             position.id = "{}_{}_{}".format(
-                self.trader_name, position.entity_id, to_time_str(timestamp, TIME_FORMAT_ISO8601)
+                self.trader_name, position.entity_id, to_date_time_str(timestamp, TIME_FORMAT_ISO8601)
             )
             position.timestamp = to_pd_timestamp(timestamp)
             position.account_stats_id = the_id
@@ -411,7 +411,7 @@ class SimAccountService(AccountService):
 
         # save the order info to db
         order_id = "{}_{}_{}_{}".format(
-            self.trader_name, order_type, current_position.entity_id, to_time_str(timestamp, TIME_FORMAT_ISO8601)
+            self.trader_name, order_type, current_position.entity_id, to_date_time_str(timestamp, TIME_FORMAT_ISO8601)
         )
         order = Order(
             id=order_id,

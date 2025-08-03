@@ -10,7 +10,7 @@ from zvt.api.selector import get_shoot_today
 from zvt.domain import Stock
 from zvt.informer.inform_utils import add_to_eastmoney
 from zvt.tag.common import InsertMode
-from zvt.tag.tag_stats import build_stock_pool_and_tag_stats
+from zvt.tag.tag_stats import refresh_stock_pool
 from zvt.utils.time_utils import now_pd_timestamp, current_date
 
 logger = logging.getLogger(__name__)
@@ -41,14 +41,12 @@ def calculate_top():
 
         shoots = shoot_up + shoot_down
         if shoots:
-            build_stock_pool_and_tag_stats(
-                entity_ids=shoots,
-                stock_pool_name="今日异动",
-                insert_mode=InsertMode.append,
-                target_date=target_date,
-                provider="qmt",
+            refresh_stock_pool(
+                entity_ids=shoots, stock_pool_name="今日异动", insert_mode=InsertMode.append, target_date=target_date
             )
-            add_to_eastmoney(codes=[entity_id.split("_")[2] for entity_id in shoots], group="今日异动", over_write=False)
+            add_to_eastmoney(
+                codes=[entity_id.split("_")[2] for entity_id in shoots], group="今日异动", over_write=False
+            )
 
         logger.info(f"Sleep 1 minutes to compute {target_date} shoots tag stats")
         time.sleep(60 * 1)

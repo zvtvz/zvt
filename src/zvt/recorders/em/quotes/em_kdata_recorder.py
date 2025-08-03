@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from zvt.api.kdata import get_kdata_schema
+from zvt.api.kdata import get_kdata_schema, get_kdata
+from zvt.api.selector import get_entity_ids_by_filter
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import df_to_db
 from zvt.contract.recorder import FixedCycleDataRecorder
@@ -19,7 +20,9 @@ from zvt.domain import (
     FutureKdataCommon,
     Currency,
     CurrencyKdataCommon,
+    IndexhkKdataCommon,
 )
+from zvt.domain.meta.indexhk_meta import Indexhk
 from zvt.domain.meta.stockhk_meta import Stockhk
 from zvt.domain.meta.stockus_meta import Stockus
 from zvt.recorders.em import em_api
@@ -82,14 +85,63 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
             return_unfinished,
         )
 
+    def need_redownload_qfq(self, entity_id, df):
+        if self.adjust_type == AdjustType.qfq and pd_is_not_null(df):
+            datas = get_kdata(
+                entity_id=entity_id,
+                provider=self.provider,
+                limit=1,
+                level=self.level,
+                adjust_type=self.adjust_type,
+                order=self.data_schema.timestamp.desc(),
+                return_type="domain",
+            )
+            if datas:
+                latest_kdata = datas[0]
+                check_df = df[df["timestamp"] == latest_kdata.timestamp]
+                if pd_is_not_null(check_df):
+                    old = latest_kdata.close
+                    new = check_df.iloc[0, :]["close"]
+                    # 相同时间的close不同，表明前复权需要重新计算
+                    if round(old, 2) != round(new, 2):
+                        # 删掉重新获取
+                        self.session.query(self.data_schema).filter(self.data_schema.entity_id == entity_id).delete()
+                        return True
+                    else:
+                        return False
+                else:
+                    raise Exception("前复权检查失败")
+        return False
+
     def record(self, entity, start, end, size, timestamps):
         df = em_api.get_kdata(
             session=self.http_session, entity_id=entity.id, limit=size, adjust_type=self.adjust_type, level=self.level
         )
+
+        if self.need_redownload_qfq(entity.id, df):
+            df = em_api.get_kdata(
+                session=self.http_session,
+                entity_id=entity.id,
+                limit=self.default_size,
+                adjust_type=self.adjust_type,
+                level=self.level,
+            )
+
+        delisted = False
         if pd_is_not_null(df):
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
+            latest_timestamp = df.iloc[-1, :]["timestamp"]
+            days = count_interval(latest_timestamp, now_pd_timestamp())
+            if days > 200:
+                delisted = True
         else:
             self.logger.info(f"no kdata for {entity.id}")
+
+        if delisted and ("退市" not in entity.name):
+            entity.name = entity.name + "退市"
+            self.logger.info(f"set {entity.id} name as {entity.name}")
+            self.entity_session.add(entity)
+            self.entity_session.commit()
 
     def on_finish_entity(self, entity):
         # fill timestamp
@@ -153,6 +205,12 @@ class EMStockhkKdataRecorder(BaseEMStockKdataRecorder):
     data_schema = StockhkKdataCommon
 
 
+class EMIndexhkKdataRecorder(BaseEMStockKdataRecorder):
+    entity_provider = "em"
+    entity_schema = Indexhk
+    data_schema = IndexhkKdataCommon
+
+
 class EMIndexKdataRecorder(BaseEMStockKdataRecorder):
     entity_provider = "em"
     entity_schema = Index
@@ -189,10 +247,14 @@ class EMCurrencyKdataRecorder(BaseEMStockKdataRecorder):
 
 
 if __name__ == "__main__":
-    df = Stock.query_data(filters=[Stock.exchange == "bj"], provider="em")
-    entity_ids = df["entity_id"].tolist()
-    recorder = EMStockKdataRecorder(
-        level=IntervalLevel.LEVEL_1DAY, entity_ids=entity_ids, sleeping_time=0, adjust_type=AdjustType.hfq
+    normal_ids = get_entity_ids_by_filter(entity_type="indexhk", provider="em")
+
+    recorder = EMIndexhkKdataRecorder(
+        entity_ids=normal_ids,
+        level=IntervalLevel.LEVEL_1DAY,
+        sleeping_time=2,
+        adjust_type=AdjustType.qfq,
+        day_data=True,
     )
     recorder.run()
 
@@ -203,6 +265,7 @@ __all__ = [
     "EMStockKdataRecorder",
     "EMStockusKdataRecorder",
     "EMStockhkKdataRecorder",
+    "EMIndexhkKdataRecorder",
     "EMIndexKdataRecorder",
     "EMIndexusKdataRecorder",
     "EMBlockKdataRecorder",

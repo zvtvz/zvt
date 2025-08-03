@@ -28,6 +28,7 @@ from zvt.trading.trading_schemas import QueryStockQuoteSetting
 trading_router = APIRouter(
     prefix="/api/trading",
     tags=["trading"],
+    # dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 

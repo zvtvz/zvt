@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from zvt.contract.api import df_to_db
+from zvt.contract.api import df_to_db, decode_entity_id
 from zvt.contract.recorder import FixedCycleDataRecorder
-from zvt.domain import Stock
+from zvt.domain import Stock, Stockus, Stockhk
 from zvt.domain.misc.stock_news import StockNews
 from zvt.recorders.em import em_api
 from zvt.utils.time_utils import count_interval, now_pd_timestamp, recent_year_date
@@ -17,6 +17,16 @@ class EMStockNewsRecorder(FixedCycleDataRecorder):
     data_schema = StockNews
     entity_provider = "em"
     provider = "em"
+
+    def init_entities(self):
+        if self.entity_ids:
+            entity_type, _, _ = decode_entity_id(self.entity_ids[0])
+            if entity_type == "stockus":
+                self.entity_schema = Stockus
+            elif entity_type == "stockhk":
+                self.entity_schema = Stockhk
+
+        super().init_entities()
 
     def record(self, entity, start, end, size, timestamps):
         from_date = recent_year_date()

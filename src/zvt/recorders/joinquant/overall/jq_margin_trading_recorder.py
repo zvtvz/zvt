@@ -2,7 +2,7 @@ from jqdatapy.api import run_query
 
 from zvt.contract.recorder import TimeSeriesDataRecorder
 from zvt.domain import Index, MarginTradingSummary
-from zvt.utils.time_utils import to_time_str
+from zvt.utils.time_utils import to_date_time_str
 
 # 聚宽编码
 # XSHG-上海证券交易所
@@ -56,7 +56,7 @@ class MarginTradingSummaryRecorder(TimeSeriesDataRecorder):
 
         df = run_query(
             table="finance.STK_MT_TOTAL",
-            conditions=f"exchange_code#=#{jq_code}&date#>=#{to_time_str(start)}",
+            conditions=f"exchange_code#=#{jq_code}&date#>=#{to_date_time_str(start)}",
             parse_dates=["date"],
         )
         print(df)

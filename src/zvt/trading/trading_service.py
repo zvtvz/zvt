@@ -3,13 +3,16 @@ import logging
 from typing import List
 
 import pandas as pd
+from fastapi import HTTPException
 from fastapi_pagination.ext.sqlalchemy import paginate
 
 import zvt.api.kdata as kdata_api
 import zvt.contract.api as contract_api
 from zvt.common.query_models import TimeUnit
 from zvt.domain import Stock, StockQuote, Stock1mQuote
-from zvt.tag.tag_schemas import StockTags, StockPools
+from zvt.domain.quotes.stockhk.stockhk_quote import StockhkQuote
+from zvt.domain.quotes.stockus.stockus_quote import StockusQuote
+from zvt.tag.tag_schemas import StockTags, StockPools, StockPoolInfo
 from zvt.trading.common import ExecutionStatus
 from zvt.trading.trading_models import (
     BuildTradingPlanModel,
@@ -23,7 +26,7 @@ from zvt.trading.trading_models import (
 from zvt.trading.trading_schemas import TradingPlan, QueryStockQuoteSetting, TagQuoteStats
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
-    to_time_str,
+    to_date_time_str,
     to_pd_timestamp,
     now_pd_timestamp,
     date_time_by_interval,
@@ -61,7 +64,7 @@ def query_kdata(kdata_request_model: KdataRequestModel):
 
 
 def query_ts(ts_request_model: TSRequestModel):
-    trading_dates = kdata_api.get_recent_trade_dates(days_count=ts_request_model.days_count)
+    trading_dates = kdata_api.get_recent_trade_dates(entity_type="stock", days_count=ts_request_model.days_count)
     ts_df = Stock1mQuote.query_data(
         entity_ids=ts_request_model.entity_ids,
         provider=ts_request_model.data_provider,
@@ -86,7 +89,7 @@ def query_ts(ts_request_model: TSRequestModel):
 def build_trading_plan(build_trading_plan_model: BuildTradingPlanModel):
     with contract_api.DBSession(provider="zvt", data_schema=TradingPlan)() as session:
         stock_id = build_trading_plan_model.stock_id
-        trading_date_str = to_time_str(build_trading_plan_model.trading_date)
+        trading_date_str = to_date_time_str(build_trading_plan_model.trading_date)
         trading_date = to_pd_timestamp(trading_date_str)
         signal = build_trading_plan_model.trading_signal_type.value
         plan_id = f"{stock_id}_{trading_date_str}_{signal}"
@@ -180,7 +183,7 @@ def query_quote_stats():
     start_timestamp = current_stats["timestamp"]
 
     pre_date_df = Stock1mQuote.query_data(
-        filters=[Stock1mQuote.timestamp < to_time_str(start_timestamp)],
+        filters=[Stock1mQuote.timestamp < to_date_time_str(start_timestamp)],
         order=Stock1mQuote.timestamp.desc(),
         limit=1,
         columns=["timestamp"],
@@ -275,7 +278,7 @@ def cal_tag_quote_stats(stock_pool_name):
     )
     grouped_df["timestamp"] = timestamp
     grouped_df["id"] = grouped_df[["entity_id", "timestamp"]].apply(
-        lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"])), axis=1
+        lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
     )
 
     print(grouped_df)
@@ -297,9 +300,14 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
     else:
         entity_ids = None
 
+    entity_type = "stock"
+    if entity_ids:
+        entity_id = entity_ids[0]
+        entity_type, _, _ = contract_api.decode_entity_id(entity_id)
+
     tag_df = StockTags.query_data(
         entity_ids=entity_ids,
-        filters=[StockTags.main_tag.in_(query_tag_quote_model.main_tags)],
+        filters=[StockTags.entity_type == entity_type, StockTags.main_tag.in_(query_tag_quote_model.main_tags)],
         columns=[StockTags.entity_id, StockTags.main_tag],
         return_type="df",
         index="entity_id",
@@ -307,7 +315,14 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
 
     entity_ids = tag_df["entity_id"].tolist()
 
-    quote_df = StockQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+    if entity_type == "stock":
+        quote_df = StockQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+    elif entity_type == "stockus":
+        quote_df = StockusQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+    elif entity_type == "stockhk":
+        quote_df = StockhkQuote.query_data(entity_ids=entity_ids, return_type="df", index="entity_id")
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported entity type: {entity_type}")
 
     df = pd.concat([tag_df, quote_df], axis=1)
     grouped_df = (
@@ -331,21 +346,37 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
 def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     entity_ids = None
     if query_stock_quote_model.stock_pool_name:
-        stock_pools: List[StockPools] = StockPools.query_data(
-            filters=[StockPools.stock_pool_name == query_stock_quote_model.stock_pool_name],
-            order=StockPools.timestamp.desc(),
-            limit=1,
+        stock_pool_name = query_stock_quote_model.stock_pool_name
+        stock_pool_info = StockPoolInfo.query_data(
+            filters=[StockPoolInfo.stock_pool_name == stock_pool_name],
             return_type="domain",
         )
-        if stock_pools:
-            entity_ids = stock_pools[0].entity_ids
+        if not stock_pool_info:
+            raise HTTPException(status_code=404, detail=f"Stock pool info {stock_pool_name} not found")
+
+        if stock_pool_name != "A股":
+            stock_pools: List[StockPools] = StockPools.query_data(
+                filters=[StockPools.stock_pool_name == stock_pool_name],
+                order=StockPools.timestamp.desc(),
+                limit=1,
+                return_type="domain",
+            )
+            if not stock_pools:
+                raise HTTPException(status_code=404, detail=f"Stock pool {stock_pool_name} not found")
+            if stock_pools:
+                entity_ids = stock_pools[0].entity_ids
     else:
         entity_ids = query_stock_quote_model.entity_ids
+
+    entity_type = "stock"
+    if entity_ids:
+        entity_id = entity_ids[0]
+        entity_type, _, _ = contract_api.decode_entity_id(entity_id)
 
     if query_stock_quote_model.main_tag:
         tags_dict = StockTags.query_data(
             entity_ids=entity_ids,
-            filters=[StockTags.main_tag == query_stock_quote_model.main_tag],
+            filters=[StockTags.entity_type == entity_type, StockTags.main_tag == query_stock_quote_model.main_tag],
             return_type="dict",
         )
         if not tags_dict:
@@ -358,9 +389,23 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
 
     entity_tags_map = {item["entity_id"]: item for item in tags_dict}
 
-    order = eval(f"StockQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()")
-
-    df = StockQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
+    if entity_type == "stock":
+        order = eval(
+            f"StockQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()"
+        )
+        df = StockQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
+    elif entity_type == "stockus":
+        order = eval(
+            f"StockusQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()"
+        )
+        df = StockusQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
+    elif entity_type == "stockhk":
+        order = eval(
+            f"StockhkQuote.{query_stock_quote_model.order_by_field}.{query_stock_quote_model.order_by_type.value}()"
+        )
+        df = StockhkQuote.query_data(order=order, entity_ids=entity_ids, return_type="df")
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported entity type: {entity_type}")
 
     if not pd_is_not_null(df):
         return None
