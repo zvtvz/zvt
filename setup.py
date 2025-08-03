@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="zvt",
-    version="0.13.2",
+    version="0.13.3",
     description="unified,modular quant framework for human beings ",
     long_description=long_description,
     url="https://github.com/zvtvz/zvt",
@@ -45,7 +45,7 @@ setup(
         "SQLAlchemy==2.0.36",
         "pandas==2.2.3",
         "pydantic==2.6.4",
-        "arrow==1.2.3",
+        "arrow==1.3.0",
         "openpyxl==3.1.1",
         "demjson3==3.0.6",
         "plotly==5.13.0",
@@ -57,7 +57,7 @@ setup(
         "fastapi==0.110.0",
         "fastapi-pagination==0.12.23",
         "apscheduler==3.10.4",
-        "eastmoneypy==0.1.9",
+        "eastmoneypy==0.2.0",
         "orjson==3.10.3",
         "numpy==2.1.3",
     ],
