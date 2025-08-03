@@ -41,7 +41,7 @@ setup(
     python_requires=">=3.9, <4",
     include_package_data=True,
     install_requires=[
-        "requests==2.32.0",
+        "requests==2.32.4",
         "SQLAlchemy==2.0.36",
         "pandas==2.2.3",
         "pydantic==2.6.4",
