@@ -204,6 +204,8 @@ def query_quote_stats():
         columns=["timestamp", "entity_id", "time", "change_pct", "turnover", "is_limit_up", "is_limit_down"],
     )
 
+    pre_df = pre_df.drop_duplicates(subset=["entity_id"], keep="first")
+
     if pd_is_not_null(pre_df):
         pre_stats = cal_quote_stats(pre_df)
         current_stats["pre_turnover"] = pre_stats["turnover"]

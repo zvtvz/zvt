@@ -295,7 +295,8 @@ def tick_to_quote(entity_df):
 
         # 1分钟分时
         df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], TIME_FORMAT_MINUTE)), axis=1
+            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], fmt=TIME_FORMAT_MINUTE)),
+            axis=1,
         )
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
 

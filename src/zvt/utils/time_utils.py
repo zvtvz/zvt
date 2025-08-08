@@ -82,7 +82,7 @@ def tomorrow_date(tz=None):
     return to_pd_timestamp(date_time_by_interval(now_pd_timestamp(tz=tz), 1).date())
 
 
-def to_date_time_str(date_time, tz=None, fmt=TIME_FORMAT_DAY):
+def to_date_time_str(date_time, fmt=TIME_FORMAT_DAY, tz=None):
     try:
         return arrow.get(to_pd_timestamp(date_time, tz=tz)).format(fmt)
     except Exception as e:
