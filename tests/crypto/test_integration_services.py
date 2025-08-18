@@ -393,7 +393,7 @@ class TestDataConsistency:
             symbols=["BTC/USDT"],
             intervals=["1h"],
             start_date=datetime(2024, 1, 1),
-            end_date=datetime(2024, 1, 1, 24, 0, 0),
+            end_date=datetime(2024, 1, 2),  # Fixed: hour 24 -> next day
             exchanges=["binance"]
         )
         
