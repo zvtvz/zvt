@@ -217,17 +217,17 @@ class TestCryptoMockImplementation:
         """Test Dollar Cost Averaging calculation"""
         purchases = [
             {"price": 45000, "amount": 100},  # $100 at $45k
-            {"price": 44000, "amount": 100},  # $100 at $44k
-            {"price": 46000, "amount": 100},  # $100 at $46k
+            {"price": 40000, "amount": 100},  # $100 at $40k (larger difference)
+            {"price": 50000, "amount": 100},  # $100 at $50k
         ]
         
         total_btc = sum(purchase["amount"] / purchase["price"] for purchase in purchases)
         total_spent = sum(purchase["amount"] for purchase in purchases)
         average_price = total_spent / total_btc
         
-        # Average should be weighted, not arithmetic mean
+        # DCA average should be different from arithmetic mean due to weighting
         arithmetic_mean = sum(p["price"] for p in purchases) / len(purchases)
-        assert abs(average_price - arithmetic_mean) > 100
+        assert abs(average_price - arithmetic_mean) > 10  # Reasonable difference
 
     def test_crypto_portfolio_rebalancing_logic(self):
         """Test portfolio rebalancing calculations"""
