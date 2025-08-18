@@ -91,39 +91,37 @@ except ImportError:
             self.stats["requests_total"] += 1
             
 
-class TestServiceIntegration:
-    """Integration tests for crypto data services working together"""
-    
-    @pytest.fixture
-    def data_loader(self):
-        """Create data loader service"""
-        return CryptoDataLoader(
-            exchanges=["binance", "okx"],
-            max_workers=2,
-            rate_limit_delay=0.01
-        )
-    
-    @pytest.fixture
-    def stream_service(self):
-        """Create stream service"""
-        return CryptoStreamService(
-            exchanges=["binance", "okx"],
-            buffer_size=1000
-        )
-    
-    @pytest.fixture
-    def api_service(self, data_loader, stream_service):
-        """Create API ingestion service with dependencies"""
-        return CryptoAPIIngestion(
-            data_loader=data_loader,
-            stream_service=stream_service,
-            api_prefix="/api/v1/test"
-        )
-    
-    @pytest.fixture
-    def integrated_client(self, api_service):
-        """Create test client for API service"""
-        return TestClient(api_service.get_app())
+# Global fixtures for all tests
+@pytest.fixture
+def data_loader():
+    """Create data loader service"""
+    return CryptoDataLoader(
+        exchanges=["binance", "okx"],
+        max_workers=2,
+        rate_limit_delay=0.01
+    )
+
+@pytest.fixture
+def stream_service():
+    """Create stream service"""
+    return CryptoStreamService(
+        exchanges=["binance", "okx"],
+        buffer_size=1000
+    )
+
+@pytest.fixture
+def api_service(data_loader, stream_service):
+    """Create API ingestion service with dependencies"""
+    return CryptoAPIIngestion(
+        data_loader=data_loader,
+        stream_service=stream_service,
+        api_prefix="/api/v1/test"
+    )
+
+@pytest.fixture
+def integrated_client(api_service):
+    """Create test client for API service"""
+    return TestClient(api_service.get_app())
 
 
 class TestDataFlowIntegration:
