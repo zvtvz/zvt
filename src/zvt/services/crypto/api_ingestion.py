@@ -14,7 +14,8 @@ from pydantic import BaseModel, Field, validator
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from zvt.contract import IntervalLevel, get_db_session
+from zvt.contract import IntervalLevel
+from zvt.contract.api import get_db_session
 from zvt.domain.crypto import CryptoPair, CryptoPerp, CryptoAsset
 from zvt.services.crypto.data_loader import CryptoDataLoader
 from zvt.services.crypto.stream_service import CryptoStreamService

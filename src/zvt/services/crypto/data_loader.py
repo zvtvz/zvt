@@ -14,7 +14,8 @@ import pandas as pd
 
 from zvt.contract import IntervalLevel
 from zvt.domain.crypto import CryptoPair, CryptoPerp
-from zvt.utils.time_utils import to_pd_timestamp, pd_is_not_null
+from zvt.utils.time_utils import to_pd_timestamp
+from zvt.utils.pd_utils import pd_is_not_null
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +161,7 @@ class CryptoDataLoader:
                     self.stats["total_requests"] += 1
                     
                     # Mock data loading - in real implementation, would call exchange API
-                    df = self._mock_load_ohlcv(
+                    df = self._load_ohlcv_data(
                         connector, symbol, interval, start_date, end_date
                     )
                     
@@ -241,6 +242,55 @@ class CryptoDataLoader:
             })
         
         return pd.DataFrame(price_data)
+
+    def _load_ohlcv_data(
+        self, 
+        connector,
+        symbol: str,
+        interval: IntervalLevel,
+        start_date: pd.Timestamp,
+        end_date: pd.Timestamp
+    ) -> pd.DataFrame:
+        """Load OHLCV data using connector (real or mock)"""
+        try:
+            # Convert interval to string format
+            interval_str = self._convert_interval_to_string(interval)
+            
+            # Use connector's get_ohlcv method
+            df = connector.get_ohlcv(
+                symbol=symbol,
+                interval=interval_str,
+                start_time=start_date.to_pydatetime(),
+                end_time=end_date.to_pydatetime(),
+                limit=5000
+            )
+            
+            if not df.empty:
+                # Add metadata
+                df["exchange"] = connector.get_exchange_name()
+                df["symbol"] = symbol
+                df["interval"] = interval_str
+            
+            return df
+            
+        except Exception as e:
+            logger.error(f"Error loading OHLCV data for {symbol}: {e}")
+            return pd.DataFrame(columns=["timestamp", "open", "high", "low", "close", "volume"])
+    
+    def _convert_interval_to_string(self, interval: IntervalLevel) -> str:
+        """Convert IntervalLevel enum to string format"""
+        mapping = {
+            IntervalLevel.LEVEL_1MIN: "1m",
+            IntervalLevel.LEVEL_5MIN: "5m", 
+            IntervalLevel.LEVEL_15MIN: "15m",
+            IntervalLevel.LEVEL_30MIN: "30m",
+            IntervalLevel.LEVEL_1HOUR: "1h",
+            IntervalLevel.LEVEL_4HOUR: "4h",
+            IntervalLevel.LEVEL_1DAY: "1d",
+            IntervalLevel.LEVEL_1WEEK: "1w",
+            IntervalLevel.LEVEL_1MON: "1M"
+        }
+        return mapping.get(interval, "1h")
 
     def _validate_and_process_data(
         self,
@@ -448,11 +498,30 @@ class CryptoDataLoader:
         
         return pd.DataFrame(funding_rates)
 
-    def _get_connector(self, exchange: str) -> object:
+    def _get_connector(self, exchange: str):
         """Get or create exchange connector"""
         if exchange not in self._connectors:
-            # Mock connector creation - replace with real exchange clients
-            self._connectors[exchange] = type(f"{exchange.title()}Connector", (), {})()
+            # Import and create real exchange connectors
+            from .connectors import (
+                BinanceConnector, OKXConnector, BybitConnector, 
+                CoinbaseConnector, MockCryptoConnector
+            )
+            
+            # Map exchange names to connector classes
+            connector_map = {
+                "binance": BinanceConnector,
+                "okx": OKXConnector,
+                "bybit": BybitConnector,
+                "coinbase": CoinbaseConnector
+            }
+            
+            if exchange in connector_map:
+                # Create real connector (testnet mode by default)
+                self._connectors[exchange] = connector_map[exchange](testnet=True)
+            else:
+                # Fallback to mock connector for unknown exchanges
+                self._connectors[exchange] = MockCryptoConnector(exchange_name=exchange)
+                
         return self._connectors[exchange]
 
     def _apply_rate_limit(self, exchange: str):
