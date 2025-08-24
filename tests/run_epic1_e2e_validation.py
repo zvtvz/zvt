@@ -148,13 +148,12 @@ class Epic1E2EValidator:
         
         test_file = Path(__file__).parent / "test_epic1_e2e_integration.py"
         
-        # Execute pytest with detailed output
+        # Execute pytest with detailed output (simplified for compatibility)
         cmd = [
             sys.executable, "-m", "pytest", 
             str(test_file),
             "-v", "--tb=short", "--capture=no",
-            "--junitxml=epic1_e2e_results.xml",
-            "--html=epic1_e2e_report.html", "--self-contained-html"
+            "--junitxml=epic1_e2e_results.xml"
         ]
         
         logger.info(f"Running command: {' '.join(cmd)}")
