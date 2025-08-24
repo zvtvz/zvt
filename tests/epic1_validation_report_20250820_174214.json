@@ -1,0 +1,58 @@
+{
+  "environment": {
+    "python_version": true,
+    "zvt_imports": true,
+    "test_files": true,
+    "dependencies": true
+  },
+  "performance": {
+    "data_loading_rate": {
+      "actual": 0,
+      "threshold": 1000,
+      "passed": false
+    },
+    "streaming_capacity": {
+      "actual": 0,
+      "threshold": 10000,
+      "passed": false
+    },
+    "api_response_time": {
+      "actual": 0,
+      "threshold": 200,
+      "passed": false
+    },
+    "memory_limit": {
+      "actual": 0,
+      "threshold": 2048,
+      "passed": false
+    },
+    "test_pass_rate": {
+      "actual": 0,
+      "threshold": 95,
+      "passed": false
+    }
+  },
+  "validation_info": {
+    "start_time": "2025-08-20T17:42:11.591424",
+    "end_time": "2025-08-20T17:42:14.612384",
+    "duration_seconds": 3.02096,
+    "validator_version": "1.0.0"
+  },
+  "test_execution": {
+    "exit_code": 4,
+    "execution_time": 0.5665690898895264,
+    "stdout": "",
+    "stderr": "ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]\n__main__.py: error: unrecognized arguments: --html=epic1_e2e_report.html --self-contained-html\n  inifile: /home/tommyk/projects/quant/zvt/pyproject.toml\n  rootdir: /home/tommyk/projects/quant/zvt\n\n",
+    "success": false
+  },
+  "performance_metrics": {},
+  "summary": {
+    "overall_status": "FAIL",
+    "test_execution_status": "FAIL",
+    "performance_status": "FAIL",
+    "tests_passed": 0,
+    "tests_failed": 0,
+    "test_pass_rate": 0,
+    "duration_minutes": 0.05034958333333333
+  }
+}
