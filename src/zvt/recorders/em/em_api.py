@@ -703,6 +703,7 @@ def get_top_tradable_list(entity_type, fields, limit, entity_flag, pn=1, exchang
         df = df[df.change_pct != "-"]
         df = df[df.turnover_rate != "-"]
         df = df[df.turnover != "-"]
+        df = df[df.turnover != 0]
 
         df = df.astype({"change_pct": "float", "turnover_rate": "float", "turnover": "float", "volume": "float"})
 
@@ -1144,7 +1145,7 @@ def to_zvt_code(code):
 
 
 if __name__ == "__main__":
-    print(get_tradable_list(entity_type="indexhk"))
+    print(get_dragon_and_tiger_list(start_date="2025-08-14"))
 
 
 # the __all__ is generated

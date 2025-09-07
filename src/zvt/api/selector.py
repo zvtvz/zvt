@@ -74,6 +74,37 @@ def get_limit_up_stocks(timestamp):
         return df["entity_id"].tolist()
 
 
+def get_recent_active_stocks(adjust_type=AdjustType.qfq, provider="em", recent_days=10):
+    kdata_schema = get_kdata_schema("stock", level=IntervalLevel.LEVEL_1DAY, adjust_type=adjust_type)
+    recent_dates = get_recent_trade_dates(entity_type="stock", days_count=recent_days)
+    start_date = recent_dates[0]
+
+    df = kdata_schema.query_data(
+        provider=provider,
+        filters=[kdata_schema.timestamp >= start_date, kdata_schema.is_limit_up == True],
+        index="entity_id",
+    )
+    entity_ids = list(set(df["entity_id"].tolist()))
+
+    kdata_df = kdata_schema.query_data(
+        provider=provider,
+        entity_ids=entity_ids,
+        filters=[kdata_schema.timestamp >= start_date],
+        index=["entity_id", "timestamp"],
+    )
+
+    from zvt.factors.algorithm import MaTransformer
+
+    t = MaTransformer(windows=[10])
+    ma_df = t.transform(kdata_df)
+
+    end_date = ma_df["timestamp"].max()
+    result_df = ma_df[
+        (ma_df["close"] > ma_df["ma10"]) & (ma_df["timestamp"] == end_date) & (ma_df["turnover"] >= 500000000)
+    ]
+    return result_df["entity_id"].tolist()
+
+
 def get_dragon_and_tigger_player(start_timestamp, end_timestamp=None, direction="in"):
     assert direction in ("in", "out")
 

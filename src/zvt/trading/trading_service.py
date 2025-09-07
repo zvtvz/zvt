@@ -188,28 +188,33 @@ def query_quote_stats():
         limit=1,
         columns=["timestamp"],
     )
-    pre_date = pre_date_df["timestamp"].tolist()[0]
 
-    if start_timestamp.hour >= 15:
-        start_timestamp = date_and_time(pre_date, "15:00")
+    if pd_is_not_null(pre_date_df):
+        pre_date = pre_date_df["timestamp"].tolist()[0]
+
+        if start_timestamp.hour >= 15:
+            start_timestamp = date_and_time(pre_date, "15:00")
+        else:
+            start_timestamp = date_and_time(pre_date, f"{start_timestamp.hour}:{start_timestamp.minute}")
+        end_timestamp = date_time_by_interval(start_timestamp, 1, TimeUnit.minute)
+
+        pre_df = Stock1mQuote.query_data(
+            return_type="df",
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
+            filters=[Stock1mQuote.change_pct >= -0.31, Stock1mQuote.change_pct <= 0.31],
+            columns=["timestamp", "entity_id", "time", "change_pct", "turnover", "is_limit_up", "is_limit_down"],
+        )
+
+        if pd_is_not_null(pre_df):
+            pre_df = pre_df.drop_duplicates(subset=["entity_id"], keep="first")
+            pre_stats = cal_quote_stats(pre_df)
+            current_stats["pre_turnover"] = pre_stats["turnover"]
+            current_stats["turnover_change"] = current_stats["turnover"] - current_stats["pre_turnover"]
     else:
-        start_timestamp = date_and_time(pre_date, f"{start_timestamp.hour}:{start_timestamp.minute}")
-    end_timestamp = date_time_by_interval(start_timestamp, 1, TimeUnit.minute)
+        current_stats["pre_turnover"] = current_stats["turnover"]
+        current_stats["turnover_change"] = 0
 
-    pre_df = Stock1mQuote.query_data(
-        return_type="df",
-        start_timestamp=start_timestamp,
-        end_timestamp=end_timestamp,
-        filters=[Stock1mQuote.change_pct >= -0.31, Stock1mQuote.change_pct <= 0.31],
-        columns=["timestamp", "entity_id", "time", "change_pct", "turnover", "is_limit_up", "is_limit_down"],
-    )
-
-    pre_df = pre_df.drop_duplicates(subset=["entity_id"], keep="first")
-
-    if pd_is_not_null(pre_df):
-        pre_stats = cal_quote_stats(pre_df)
-        current_stats["pre_turnover"] = pre_stats["turnover"]
-        current_stats["turnover_change"] = current_stats["turnover"] - current_stats["pre_turnover"]
     return current_stats
 
 

@@ -646,7 +646,9 @@ class Factor(DataReader, EntityStateService, DataListener):
                 selected_df = score_df[
                     (score_df["score_result"] > negative_threshold) & (score_df["score"] < positive_threshold)
                 ]
-        print(selected_df)
+
+        self.logger.debug(selected_df)
+
         if pd_is_not_null(selected_df):
             selected_df = selected_df.reset_index(level="entity_id")
             if timestamp:

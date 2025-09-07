@@ -705,7 +705,7 @@ pycharm导入工程(推荐,你也可以使用其他ide)，然后pytest跑测试�
 
 ## 联系方式  
 
-加微信进群:foolcage 添加暗号:zvt  
+目前只接受开户朋友的进群申请，微信号 foolcage  
 <img src="https://raw.githubusercontent.com/zvtvz/zvt/master/docs/imgs/wechat.jpeg" width="25%" alt="Wechat">
 
 ------

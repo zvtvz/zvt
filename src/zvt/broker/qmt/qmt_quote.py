@@ -267,7 +267,7 @@ def tick_to_quote(entity_df):
         df["volume"] = df["pvolume"]
         df["avg_price"] = df["turnover"] / df["volume"]
         # 换手率
-        df["turnover_rate"] = df["pvolume"] / df["float_volume"]
+        # df["turnover_rate"] = df["pvolume"] / df["float_volume"]
         # 涨跌幅
         df["change_pct"] = (df["price"] - df["lastClose"]) / df["lastClose"]
         # 盘口卖单金额
@@ -288,6 +288,9 @@ def tick_to_quote(entity_df):
 
         df["float_cap"] = df["float_volume"] * df["price"]
         df["total_cap"] = df["total_volume"] * df["price"]
+
+        # 换手率
+        df["turnover_rate"] = df["turnover"] / df["float_cap"]
 
         df["provider"] = "qmt"
         # 实时行情统计，只保留最新

@@ -128,13 +128,15 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
                     adjust_type=self.adjust_type,
                 )
                 if pd_is_not_null(current_df):
-                    old = current_df.iloc[0, :]["close"]
-                    new = check_df["close"][0]
+                    old = current_df["close"].iloc[0]
+                    new = check_df["close"].iloc[0]
                     # 相同时间的close不同，表明前复权需要重新计算
                     if round(old, 2) != round(new, 2):
                         # 删掉重新获取
                         self.session.query(self.data_schema).filter(self.data_schema.entity_id == entity.id).delete()
                         start = "2005-01-01"
+                else:
+                    self.logger.warning("前复权检查失败，无法获取存储的最新数据")
 
         if not start:
             start = "2005-01-01"
@@ -160,7 +162,6 @@ class BaseQmtKdataRecorder(FixedCycleDataRecorder):
             df.rename(columns={"amount": "turnover"}, inplace=True)
             df["change_pct"] = (df["close"] - df["preClose"]) / df["preClose"]
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
-
         else:
             self.logger.info(f"no kdata for {entity.id}")
 

@@ -12,6 +12,7 @@ from zvt.api.selector import (
     get_limit_up_stocks,
     get_mini_and_small_stock,
     get_middle_and_big_stock,
+    get_recent_active_stocks,
 )
 from zvt.api.stats import get_top_performance_entities_by_periods, TopType
 from zvt.contract import Mixin, AdjustType
@@ -55,18 +56,18 @@ class TopStocks(TopStocksBase, Mixin):
 register_schema(providers=["zvt"], db_name="top_stocks", schema_base=TopStocksBase)
 
 
-def get_vol_up_stocks(target_date, provider="em", adjust_type=AdjustType.qfq, stock_type="small", entity_ids=None):
+def compute_vol_up_stocks(target_date, provider="em", adjust_type=AdjustType.qfq, stock_type="small", entity_ids=None):
     if stock_type == "small":
         current_entity_pool = get_mini_and_small_stock(
             timestamp=target_date, provider=provider, adjust_type=adjust_type
         )
-        turnover_threshold = 300000000
+        turnover_threshold = 500000000
         turnover_rate_threshold = 0.02
     elif stock_type == "big":
         current_entity_pool = get_middle_and_big_stock(
             timestamp=target_date, provider=provider, adjust_type=adjust_type
         )
-        turnover_threshold = 300000000
+        turnover_threshold = 500000000
         turnover_rate_threshold = 0.01
     else:
         assert False
@@ -160,7 +161,12 @@ def compute_top_stocks(start_date, entity_type="stock", provider="em", force_upd
         )
         if entity_type == "stock":
             limit_up_stocks = get_limit_up_stocks(timestamp=target_date)
-            short_selected = list(set(short_selected + limit_up_stocks))
+            logger.info(f"limit_up_stocks got: {len(limit_up_stocks)}")
+
+            recent_active_stocks = get_recent_active_stocks(adjust_type=adjust_type, provider=provider, recent_days=10)
+            logger.info(f"recent_active_stocks got: {len(recent_active_stocks)}")
+
+            short_selected = list(set(short_selected + limit_up_stocks + recent_active_stocks))
         top_stocks.short_count = len(short_selected)
         top_stocks.short_stocks = json.dumps(short_selected, ensure_ascii=False)
 
@@ -184,13 +190,13 @@ def compute_top_stocks(start_date, entity_type="stock", provider="em", force_upd
         top_stocks.long_stocks = json.dumps(long_selected, ensure_ascii=False)
 
         if entity_type == "stock":
-            small_vol_up_stocks = get_vol_up_stocks(
+            small_vol_up_stocks = compute_vol_up_stocks(
                 target_date=target_date, provider=provider, stock_type="small", entity_ids=entity_ids
             )
             top_stocks.small_vol_up_count = len(small_vol_up_stocks)
             top_stocks.small_vol_up_stocks = json.dumps(small_vol_up_stocks, ensure_ascii=False)
 
-            big_vol_up_stocks = get_vol_up_stocks(
+            big_vol_up_stocks = compute_vol_up_stocks(
                 target_date=target_date, provider=provider, stock_type="big", entity_ids=entity_ids
             )
             top_stocks.big_vol_up_count = len(big_vol_up_stocks)
@@ -237,7 +243,7 @@ if __name__ == "__main__":
 # the __all__ is generated
 __all__ = [
     "TopStocks",
-    "get_vol_up_stocks",
+    "compute_vol_up_stocks",
     "compute_top_stocks",
     "get_top_stocks",
 ]

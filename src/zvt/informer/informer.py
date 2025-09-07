@@ -68,7 +68,10 @@ class EmailInformer(Informer):
             logger.exception("send email failed", e)
         finally:
             if smtp_client:
-                smtp_client.quit()
+                try:
+                    smtp_client.quit()
+                except Exception as e:
+                    logger.exception("smtp_client quit failed", e)
 
     def send_message(self, to_user, title, body, sub_size=20, with_sender=True, **kwargs):
         if type(to_user) is list and sub_size:

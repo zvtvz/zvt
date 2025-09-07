@@ -110,7 +110,7 @@ class BaseEMStockKdataRecorder(FixedCycleDataRecorder):
                     else:
                         return False
                 else:
-                    raise Exception("前复权检查失败")
+                    self.logger.warning(f"no data found for {entity_id} at {latest_kdata.timestamp}, 前复权检查失败")
         return False
 
     def record(self, entity, start, end, size, timestamps):
