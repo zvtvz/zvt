@@ -370,22 +370,28 @@ def record_stock_quote(subscribe=False):
         import time
 
         first_time = True
+        last_time = False
         while True:
             if not first_time and Stock.in_trading_time() and not Stock.in_real_trading_time():
-                logger.info(f"Sleeping time......")
+                logger.info("Sleeping time......")
                 time.sleep(60 * 1)
                 continue
+
+            if not Stock.in_trading_time():
+                logger.info("Not in trading time......")
+                time.sleep(60 * 1)
+                last_time = True
 
             datas = xtdata.get_full_tick(code_list=qmt_stocks)
             on_data_func(datas=datas)
 
             time.sleep(3)
-            current_timestamp = now_pd_timestamp()
-            if not Stock.in_trading_time():
+            first_time = False
+
+            if last_time:
+                current_timestamp = now_pd_timestamp()
                 logger.info(f"record tick finished at: {current_timestamp}")
                 break
-
-            first_time = False
 
 
 if __name__ == "__main__":
