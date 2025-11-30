@@ -118,15 +118,15 @@ class StockQuoteModel(MixinModel):
     #: 是否涨停
     is_limit_up: bool
     #: 封涨停金额
-    limit_up_amount: Optional[float] = Field(default=None)
+    # limit_up_amount: Optional[float] = Field(default=None)
     #: 是否跌停
     is_limit_down: bool
     #: 封跌停金额
-    limit_down_amount: Optional[float] = Field(default=None)
+    # limit_down_amount: Optional[float] = Field(default=None)
     #: 5挡卖单金额
-    ask_amount: float
+    # ask_amount: float
     #: 5挡买单金额
-    bid_amount: float
+    # bid_amount: float
     #: 流通市值
     float_cap: float
     #: 总市值

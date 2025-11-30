@@ -52,6 +52,18 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
                 records = []
                 for data in limit_ups:
                     entity_id = china_stock_code_to_id(code=data["code"])
+
+                    first_limit_up_time = current_date()
+                    try:
+                        first_limit_up_time = pd.Timestamp.fromtimestamp(int(data["first_limit_up_time"]))
+                    except Exception:
+                        pass
+
+                    last_limit_up_time = current_date()
+                    try:
+                        last_limit_up_time = pd.Timestamp.fromtimestamp(int(data["last_limit_up_time"]))
+                    except Exception:
+                        pass
                     record = {
                         "id": "{}_{}".format(entity_id, the_date),
                         "entity_id": entity_id,
@@ -61,8 +73,8 @@ class JqkaLimitUpRecorder(TimestampsDataRecorder):
                         "is_new": data["is_new"],
                         "is_again_limit": data["is_again_limit"],
                         "open_count": data["open_num"] if data["open_num"] else 0,
-                        "first_limit_up_time": pd.Timestamp.fromtimestamp(int(data["first_limit_up_time"])),
-                        "last_limit_up_time": pd.Timestamp.fromtimestamp(int(data["last_limit_up_time"])),
+                        "first_limit_up_time": first_limit_up_time,
+                        "last_limit_up_time": last_limit_up_time,
                         "limit_up_type": data["limit_up_type"],
                         "order_amount": data["order_amount"],
                         "success_rate": data["limit_up_suc_rate"],

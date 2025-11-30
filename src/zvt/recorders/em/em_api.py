@@ -10,6 +10,7 @@ import requests
 import sqlalchemy
 from requests import Session
 
+from zvt import zvt_config
 from zvt.api.kdata import generate_kdata_id
 from zvt.api.utils import value_to_pct, china_stock_code_to_id
 from zvt.contract import (
@@ -31,9 +32,19 @@ from zvt.utils.time_utils import (
     current_date,
     now_pd_timestamp,
 )
-from zvt.utils.utils import to_float, json_callback_param
+from zvt.utils.utils import to_float, json_callback_param, chrome_copy_header_to_dict
 
 logger = logging.getLogger(__name__)
+
+EM_TOKEN_HEADER = None
+if zvt_config["em_header"]:
+    try:
+        EM_TOKEN_HEADER = chrome_copy_header_to_dict(zvt_config["em_header"])
+    except Exception as e:
+        logger.error(e)
+
+if not EM_TOKEN_HEADER:
+    EM_TOKEN_HEADER = DEFAULT_HEADER
 
 
 # 获取中美国债收益率
@@ -639,7 +650,7 @@ def get_stock_turnover():
 def get_top_tradable_list(entity_type, fields, limit, entity_flag, pn=1, exchange=None, return_quote=False):
     logger.info(f"get_top_tradable_list {entity_type} exchange: {exchange} return_quote: {return_quote} to pn: {pn}")
     url = f"https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=2&invt=2&fields={fields}&pn={pn}&pz={limit}&fid=f3&po=1&{entity_flag}&ut=f057cbcbce2a86e2866ab8877db1d059&forcect=1&cb=cbCallbackMore&&callback=jQuery34109676853980006124_{now_timestamp_ms() - 1}&_={now_timestamp_ms()}"
-    resp = requests.get(url, headers=DEFAULT_HEADER)
+    resp = requests.get(url, headers=EM_TOKEN_HEADER)
 
     resp.raise_for_status()
 
@@ -664,8 +675,8 @@ def get_top_tradable_list(entity_type, fields, limit, entity_flag, pn=1, exchang
 
         while pn < pn_size:
             pn = pn + 1
-            if pn % 2 == 0:
-                time.sleep(2)
+            logger.info(f"sleep 3 seconds to request {pn}/{pn_size}")
+            time.sleep(3)
 
             append_data = get_top_tradable_list(
                 entity_type=entity_type,
@@ -1145,7 +1156,7 @@ def to_zvt_code(code):
 
 
 if __name__ == "__main__":
-    print(get_dragon_and_tiger_list(start_date="2025-08-14"))
+    print(get_tradable_list(entity_type="stockhk"))
 
 
 # the __all__ is generated

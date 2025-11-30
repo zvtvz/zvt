@@ -2,7 +2,6 @@
 import logging
 import time
 
-import numpy as np
 import pandas as pd
 from xtquant import xtdata
 
@@ -10,19 +9,18 @@ from zvt.api.kdata import get_recent_trade_dates
 from zvt.api.selector import get_entity_ids_by_filter
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import decode_entity_id, df_to_db, get_db_session
-from zvt.domain import StockQuote, Stock, Stock1dKdata
-from zvt.domain.quotes.stock.stock_quote import Stock1mQuote, StockQuoteLog
+from zvt.domain import StockQuote, Stock, Stock1dKdata, StockQuoteLog, Stock1mQuote
 from zvt.utils.pd_utils import pd_is_not_null
 from zvt.utils.time_utils import (
     to_date_time_str,
     current_date,
     to_pd_timestamp,
     now_pd_timestamp,
-    TIME_FORMAT_MINUTE,
     date_time_by_interval,
     now_timestamp_ms,
     to_timestamp_ms,
     date_and_time,
+    TIME_FORMAT_MINUTE,
 )
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
@@ -80,6 +78,7 @@ def _qmt_instrument_detail_to_stock(stock_detail):
         "end_date": end_date,
         "pre_close": pre_close,
         "limit_up_price": limit_up_price,
+        "near_limit_up_price": limit_up_price * 0.98,
         "limit_down_price": limit_down_price,
         "float_volume": float_volume,
         "total_volume": total_volume,
@@ -148,6 +147,7 @@ def _build_entity_list(qmt_stocks):
                     limit_up_price = tick[stock]["lastClose"] * 1.1
                     limit_down_price = tick[stock]["lastClose"] * 0.9
                 entity["limit_up_price"] = round(limit_up_price, 2)
+                entity["near_limit_up_price"] = round(limit_up_price * 0.98, 2)
                 entity["limit_down_price"] = round(limit_down_price, 2)
             entity_list.append(entity)
 
@@ -195,17 +195,17 @@ def get_kdata(
 
 
 def tick_to_quote(entity_df):
-    def calculate_limit_up_amount(row):
-        if row["is_limit_up"]:
-            return row["price"] * row["bidVol"][0] * 100
-        else:
-            return None
-
-    def calculate_limit_down_amount(row):
-        if row["is_limit_down"]:
-            return row["price"] * row["askVol"][0] * 100
-        else:
-            return None
+    # def calculate_limit_up_amount(row):
+    #     if row["is_limit_up"]:
+    #         return row["price"] * row["bidVol"][0] * 100
+    #     else:
+    #         return None
+    #
+    # def calculate_limit_down_amount(row):
+    #     if row["is_limit_down"]:
+    #         return row["price"] * row["askVol"][0] * 100
+    #     else:
+    #         return None
 
     def on_data(datas, stock_df=entity_df):
         stock_finished = False
@@ -215,20 +215,21 @@ def tick_to_quote(entity_df):
 
         time_tag = False
         track_time = None
+
         for code in datas:
             tick_data = datas[code]
             if "timetag" in tick_data:
                 time_tag = True
                 track_time = to_timestamp_ms(tick_data["timetag"])
-                delay = (now_timestamp_ms() - track_time) / (60 * 1000)
             else:
                 track_time = datas[code]["time"]
-                delay = (now_timestamp_ms() - track_time) / (60 * 1000)
-            logger.info(f"check delay for {code}")
-            if delay < 1:
+
+            delay = (now_timestamp_ms() - track_time) / 1000
+            logger.info(f"stock {code} delay {delay} seconds")
+            if delay < 60:
                 break
             else:
-                logger.warning(f"delay {delay} minutes, may need to restart this script or qmt client")
+                logger.warning(f"delay {delay} seconds, may need to restart this script or qmt client")
                 break
 
         tick_df = pd.DataFrame.from_records(data=[datas[code] for code in datas], index=list(datas.keys()))
@@ -260,31 +261,28 @@ def tick_to_quote(entity_df):
 
         df["timestamp"] = df["time"].apply(to_pd_timestamp)
 
-        df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
-        )
-
         df["volume"] = df["pvolume"]
         df["avg_price"] = df["turnover"] / df["volume"]
         # 换手率
         # df["turnover_rate"] = df["pvolume"] / df["float_volume"]
         # 涨跌幅
         df["change_pct"] = (df["price"] - df["lastClose"]) / df["lastClose"]
-        # 盘口卖单金额
-        df["ask_amount"] = df.apply(
-            lambda row: np.sum(np.array(row["askPrice"]) * (np.array(row["askVol"]) * 100)), axis=1
-        )
-        # 盘口买单金额
-        df["bid_amount"] = df.apply(
-            lambda row: np.sum(np.array(row["bidPrice"]) * (np.array(row["bidVol"]) * 100)), axis=1
-        )
+        # # 盘口卖单金额
+        # df["ask_amount"] = df.apply(
+        #     lambda row: np.sum(np.array(row["askPrice"]) * (np.array(row["askVol"]) * 100)), axis=1
+        # )
+        # # 盘口买单金额
+        # df["bid_amount"] = df.apply(
+        #     lambda row: np.sum(np.array(row["bidPrice"]) * (np.array(row["bidVol"]) * 100)), axis=1
+        # )
         # 涨停
         df["is_limit_up"] = (df["price"] != 0) & (df["price"] >= df["limit_up_price"])
-        df["limit_up_amount"] = df.apply(lambda row: calculate_limit_up_amount(row), axis=1)
+        df["near_limit_up"] = (df["price"] != 0) & (df["price"] >= df["near_limit_up_price"])
+        # df["limit_up_amount"] = df.apply(lambda row: calculate_limit_up_amount(row), axis=1)
 
         # 跌停
         df["is_limit_down"] = (df["price"] != 0) & (df["price"] <= df["limit_down_price"])
-        df["limit_down_amount"] = df.apply(lambda row: calculate_limit_down_amount(row), axis=1)
+        # df["limit_down_amount"] = df.apply(lambda row: calculate_limit_down_amount(row), axis=1)
 
         df["float_cap"] = df["float_volume"] * df["price"]
         df["total_cap"] = df["total_volume"] * df["price"]
@@ -293,8 +291,18 @@ def tick_to_quote(entity_df):
         df["turnover_rate"] = df["turnover"] / df["float_cap"]
 
         df["provider"] = "qmt"
+
         # 实时行情统计，只保留最新
+        df["id"] = df[["entity_id", "timestamp"]].apply(
+            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
+        )
         df_to_db(df, data_schema=StockQuote, provider="qmt", force_update=True, drop_duplicates=False)
+
+        # 历史记录
+        # df["id"] = df[["entity_id", "timestamp"]].apply(
+        #     lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
+        # )
+        # df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=False, drop_duplicates=False)
 
         # 1分钟分时
         df["id"] = df[["entity_id", "timestamp"]].apply(
@@ -304,18 +312,13 @@ def tick_to_quote(entity_df):
         df_to_db(df, data_schema=Stock1mQuote, provider="qmt", force_update=True, drop_duplicates=False)
 
         # 日线行情
-        df["timestamp"] = date_and_time(track_time, "00:00")
-        df["id"] = df[["entity_id", "timestamp"]].apply(
-            lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
-        )
-        df["level"] = "1d"
-        df_to_db(df=df, data_schema=Stock1dKdata, provider="em", force_update=True, drop_duplicates=False)
-
-        # 历史记录
-        # df["id"] = df[["entity_id", "timestamp"]].apply(
-        #     lambda se: "{}_{}".format(se["entity_id"], to_time_str(se["timestamp"], TIME_FORMAT_MINUTE2)), axis=1
-        # )
-        # df_to_db(df, data_schema=StockQuoteLog, provider="qmt", force_update=True, drop_duplicates=False)
+        if stock_finished:
+            df["timestamp"] = date_and_time(track_time, "00:00")
+            df["id"] = df[["entity_id", "timestamp"]].apply(
+                lambda se: "{}_{}".format(se["entity_id"], to_date_time_str(se["timestamp"])), axis=1
+            )
+            df["level"] = "1d"
+            df_to_db(df=df, data_schema=Stock1dKdata, provider="em", force_update=True, drop_duplicates=False)
 
         cost_time = time.time() - start_time
         logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
@@ -323,11 +326,15 @@ def tick_to_quote(entity_df):
     return on_data
 
 
-def clear_history_quote(target_date):
+def clear_history_quote(target_date=current_date()):
     session = get_db_session("qmt", data_schema=StockQuote)
     session.query(StockQuote).filter(StockQuote.timestamp < target_date).delete()
     session.commit()
+    logger.info(f"clear stock quote data before: {target_date}")
 
+
+def clear_history_1m_quote(target_date=current_date()):
+    session = get_db_session("qmt", data_schema=StockQuote)
     dates = get_recent_trade_dates(entity_type="stock", target_date=target_date, days_count=5)
     if dates:
         start_date = dates[0]
@@ -335,8 +342,21 @@ def clear_history_quote(target_date):
         start_date = date_time_by_interval(target_date, -5)
 
     session.query(Stock1mQuote).filter(Stock1mQuote.timestamp < start_date).delete()
+    session.commit()
+    logger.info(f"clear stock 1m data before: {start_date}")
+
+
+def clear_history_quote_log(target_date):
+    dates = get_recent_trade_dates(entity_type="stock", target_date=target_date, days_count=2)
+    if dates:
+        start_date = dates[0]
+    else:
+        start_date = date_time_by_interval(target_date, -2)
+
+    session = get_db_session("qmt", data_schema=StockQuoteLog)
     session.query(StockQuoteLog).filter(StockQuoteLog.timestamp < start_date).delete()
     session.commit()
+    logger.info(f"clear stock quote log data before: {target_date}")
 
 
 def record_stock_quote(subscribe=False):
@@ -344,7 +364,16 @@ def record_stock_quote(subscribe=False):
     qmt_stocks = get_qmt_stocks()
     entity_list = _build_entity_list(qmt_stocks=qmt_stocks)
     entity_df = entity_list[
-        ["entity_id", "code", "name", "limit_up_price", "limit_down_price", "float_volume", "total_volume"]
+        [
+            "entity_id",
+            "code",
+            "name",
+            "limit_up_price",
+            "near_limit_up_price",
+            "limit_down_price",
+            "float_volume",
+            "total_volume",
+        ]
     ]
     entity_df = entity_df.set_index("entity_id", drop=False)
     on_data_func = tick_to_quote(entity_df=entity_df)
@@ -374,7 +403,7 @@ def record_stock_quote(subscribe=False):
         while True:
             if not first_time and Stock.in_trading_time() and not Stock.in_real_trading_time():
                 logger.info("Sleeping time......")
-                time.sleep(60 * 1)
+                time.sleep(30 * 1)
                 continue
 
             if not Stock.in_trading_time():
@@ -385,12 +414,13 @@ def record_stock_quote(subscribe=False):
             datas = xtdata.get_full_tick(code_list=qmt_stocks)
             on_data_func(datas=datas)
 
-            time.sleep(3)
             first_time = False
 
             if last_time:
                 current_timestamp = now_pd_timestamp()
                 logger.info(f"record tick finished at: {current_timestamp}")
+                # clear_history_quote_log(target_date=current_date())
+                clear_history_1m_quote(target_date=current_date())
                 break
 
 
@@ -399,7 +429,7 @@ if __name__ == "__main__":
 
     sched = BackgroundScheduler()
     record_stock_quote()
-    sched.add_job(func=record_stock_quote, trigger="cron", hour=9, minute=18, day_of_week="mon-fri")
+    sched.add_job(func=record_stock_quote, trigger="cron", hour=9, minute=22, day_of_week="mon-fri")
     sched.start()
     sched._thread.join()
 

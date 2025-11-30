@@ -13,6 +13,7 @@ from zvt.api.selector import (
     get_mini_and_small_stock,
     get_middle_and_big_stock,
     get_recent_active_stocks,
+    get_recent_trending_stocks,
 )
 from zvt.api.stats import get_top_performance_entities_by_periods, TopType
 from zvt.contract import Mixin, AdjustType
@@ -166,7 +167,12 @@ def compute_top_stocks(start_date, entity_type="stock", provider="em", force_upd
             recent_active_stocks = get_recent_active_stocks(adjust_type=adjust_type, provider=provider, recent_days=10)
             logger.info(f"recent_active_stocks got: {len(recent_active_stocks)}")
 
-            short_selected = list(set(short_selected + limit_up_stocks + recent_active_stocks))
+            recent_trending_stocks = get_recent_trending_stocks(
+                adjust_type=adjust_type, provider=provider, recent_days=20
+            )
+            logger.info(f"recent_trending_stocks got: {len(recent_trending_stocks)}")
+
+            short_selected = list(set(short_selected + limit_up_stocks + recent_active_stocks + recent_trending_stocks))
         top_stocks.short_count = len(short_selected)
         top_stocks.short_stocks = json.dumps(short_selected, ensure_ascii=False)
 

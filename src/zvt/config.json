@@ -13,5 +13,6 @@
   "qmt_mini_data_path": "D:\\qmt\\userdata_mini",
   "qmt_account_id": "",
   "moonshot_api_key": "",
-  "qwen_api_key": ""
+  "qwen_api_key": "",
+  "em_header": ""
 }

@@ -7,9 +7,16 @@ from sqlalchemy import or_, and_
 from zvt.api.kdata import default_adjust_type, get_kdata_schema, get_latest_kdata_date, get_recent_trade_dates
 from zvt.contract import IntervalLevel, AdjustType
 from zvt.contract.api import get_entity_ids, get_entity_schema
-from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, StockQuoteLog
+from zvt.domain import DragonAndTiger, Stock1dHfqKdata, Stock, LimitUpInfo, StockQuote, Stock1mQuote
 from zvt.utils.pd_utils import pd_is_not_null
-from zvt.utils.time_utils import to_pd_timestamp, date_time_by_interval, current_date, now_timestamp_ms, next_date
+from zvt.utils.time_utils import (
+    to_pd_timestamp,
+    date_time_by_interval,
+    current_date,
+    next_date,
+    to_date_time_str,
+    TIME_FORMAT_MINUTE2,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +79,48 @@ def get_limit_up_stocks(timestamp):
     df = LimitUpInfo.query_data(start_timestamp=timestamp, end_timestamp=timestamp, columns=[LimitUpInfo.entity_id])
     if pd_is_not_null(df):
         return df["entity_id"].tolist()
+
+
+def get_recent_trending_stocks(adjust_type=AdjustType.qfq, provider="em", recent_days=20):
+    kdata_schema = get_kdata_schema("stock", level=IntervalLevel.LEVEL_1DAY, adjust_type=adjust_type)
+    recent_dates = get_recent_trade_dates(entity_type="stock", days_count=recent_days)
+    start_date = recent_dates[0]
+
+    df = kdata_schema.query_data(
+        provider=provider,
+        filters=[
+            kdata_schema.timestamp >= start_date,
+            kdata_schema.turnover >= 500000000,
+            kdata_schema.change_pct > 0.08,
+        ],
+        index="entity_id",
+    )
+    entity_ids = list(set(df["entity_id"].tolist()))
+
+    kdata_df = kdata_schema.query_data(
+        provider=provider,
+        entity_ids=entity_ids,
+        filters=[kdata_schema.timestamp >= date_time_by_interval(start_date, -400)],
+        index=["entity_id", "timestamp"],
+    )
+
+    from zvt.factors.algorithm import MaTransformer
+
+    t = MaTransformer(windows=[10, 20, 30, 60, 120, 250])
+    ma_df = t.transform(kdata_df)
+
+    end_date = ma_df["timestamp"].max()
+    result_df = ma_df[
+        (ma_df["timestamp"] == end_date)
+        & (ma_df["turnover"] >= 500000000)
+        & (ma_df["close"] > ma_df["ma20"])
+        & (ma_df["ma10"] > ma_df["ma20"])
+        & (ma_df["ma20"] > ma_df["ma30"])
+        & (ma_df["ma30"] > ma_df["ma60"])
+        & (ma_df["ma60"] > ma_df["ma120"])
+        & (ma_df["ma120"] > ma_df["ma250"])
+    ]
+    return result_df["entity_id"].tolist()
 
 
 def get_recent_active_stocks(adjust_type=AdjustType.qfq, provider="em", recent_days=10):
@@ -369,37 +418,57 @@ def get_top_up_today(n=100):
         return df["entity_id"].to_list()
 
 
-def get_shoot_today(up_change_pct=0.03, down_change_pct=-0.03, interval=2):
-    current_time = now_timestamp_ms()
-    latest = StockQuoteLog.query_data(
-        columns=[StockQuoteLog.time], return_type="df", limit=1, order=StockQuoteLog.time.desc()
+def get_shoot_today(up_change_pct=0.03, down_change_pct=-0.03, interval=1):
+    latest = Stock1mQuote.query_data(
+        columns=[Stock1mQuote.time], return_type="df", limit=1, order=Stock1mQuote.time.desc()
     )
     latest_time = int(latest["time"][0])
-    print(latest_time)
-
-    delay = (current_time - latest_time) / (60 * 1000)
-    if delay > 2:
-        logger.warning(f"delay {delay} minutes")
 
     # interval minutes
-    start_time = latest_time - (interval * 60 * 1000)
-    filters = [StockQuoteLog.time > start_time]
-    df = StockQuoteLog.query_data(
-        filters=filters, columns=[StockQuoteLog.entity_id, StockQuoteLog.time, StockQuoteLog.price], return_type="df"
-    )
-    if pd_is_not_null(df):
-        df.sort_values(by=["entity_id", "time"], inplace=True)
+    start_time = latest_time - ((interval + 1) * 60 * 1000)
 
-        g_df = df.groupby("entity_id").agg(
-            first_price=("price", "first"),
-            last_price=("price", "last"),
-            last_time=("time", "last"),
-            change_pct=("price", lambda x: (x.iloc[-1] - x.iloc[0]) / x.iloc[0]),
+    filters = [Stock1mQuote.time > start_time, Stock1mQuote.turnover_rate > 0.02]
+    df = Stock1mQuote.query_data(
+        filters=filters,
+        columns=[
+            Stock1mQuote.entity_id,
+            Stock1mQuote.is_limit_up,
+            Stock1mQuote.near_limit_up,
+            Stock1mQuote.time,
+            Stock1mQuote.price,
+        ],
+        return_type="df",
+    )
+
+    if not pd_is_not_null(df):
+        logger.warning(
+            f"no data found in Stock1mQuote from {to_date_time_str(start_time,fmt=TIME_FORMAT_MINUTE2)} to {to_date_time_str(latest_time,fmt=TIME_FORMAT_MINUTE2)}"
         )
-        print(g_df.sort_values(by=["change_pct"]))
-        up = g_df[g_df["change_pct"] > up_change_pct]
-        down = g_df[g_df["change_pct"] < down_change_pct]
-        return up.index.tolist(), down.index.tolist()
+        return None, None
+
+    up_list = []
+    up_df = df[(~df["is_limit_up"]) & df["near_limit_up"]]
+    if pd_is_not_null(up_df):
+        up_list = up_df["entity_id"]
+        up_list = list(set(up_list.to_list()))
+
+    df.sort_values(by=["entity_id", "time"], inplace=True)
+
+    g_df = df.groupby("entity_id").agg(
+        first_price=("price", "first"),
+        last_price=("price", "last"),
+        last_time=("time", "last"),
+        change_pct=("price", lambda x: (x.iloc[-1] - x.iloc[0]) / x.iloc[0]),
+    )
+    up = g_df[g_df["change_pct"] >= up_change_pct]
+    down = g_df[g_df["change_pct"] <= down_change_pct]
+
+    if up_list:
+        up_list = list(set(up_list + up.index.tolist()))
+    else:
+        up_list = up.index.tolist()
+
+    return up_list, down.index.tolist()
 
 
 def get_top_vol(
@@ -470,8 +539,8 @@ if __name__ == "__main__":
     # assert len(stocks) == 500
     # Index1dKdata.record_data(provider="em",sleeping_time=0)
     # print(get_recent_trade_dates(days_count=10))
-    print(get_high_days_count(days_count=3, high_days_count=3))
-
+    # print(get_high_days_count(days_count=3, high_days_count=3))
+    print(get_shoot_today())
 
 # the __all__ is generated
 __all__ = [

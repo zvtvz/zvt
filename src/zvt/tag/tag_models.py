@@ -35,7 +35,7 @@ class MainTagIndustryRelation(CustomModel):
 class BuildMainTagIndustryRelationModel(CustomModel):
     main_tag: str
     industry_list: List[str]
-    activate: bool = Field(default=True)
+    activate: bool = Field(default=False)
 
 
 class MainTagSubTagRelation(CustomModel):

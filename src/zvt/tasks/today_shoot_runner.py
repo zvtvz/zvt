@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
+from typing import List
 
-import eastmoneypy
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from zvt import init_log
@@ -10,51 +10,73 @@ from zvt.api.selector import get_shoot_today
 from zvt.domain import Stock
 from zvt.informer.inform_utils import add_to_eastmoney
 from zvt.tag.common import InsertMode
+from zvt.tag.tag_schemas import StockPools
 from zvt.tag.tag_stats import refresh_stock_pool
-from zvt.utils.time_utils import now_pd_timestamp, current_date
+from zvt.utils.time_utils import (
+    now_pd_timestamp,
+    current_date,
+)
 
 logger = logging.getLogger(__name__)
-
 
 sched = BackgroundScheduler()
 
 
-def calculate_top():
-    try:
-        eastmoneypy.del_group("今日异动")
-    except:
-        pass
+def calculate_shoot():
+    first_time = True
+    stock_pool_name = "今日异动"
     while True:
-        current_timestamp = now_pd_timestamp()
-
-        if not Stock.in_trading_time():
-            logger.info(f"calculate shoots finished at: {current_timestamp}")
-            break
-
-        if Stock.in_trading_time() and not Stock.in_real_trading_time():
+        if not first_time and Stock.in_trading_time() and not Stock.in_real_trading_time():
             logger.info(f"Sleeping time......")
-            time.sleep(60 * 1)
+            time.sleep(30 * 1)
             continue
 
-        target_date = current_date()
-        shoot_up, shoot_down = get_shoot_today()
+        try:
+            shoot_up, shoot_down = get_shoot_today()
 
-        shoots = shoot_up + shoot_down
-        if shoots:
-            refresh_stock_pool(
-                entity_ids=shoots, stock_pool_name="今日异动", insert_mode=InsertMode.append, target_date=target_date
-            )
-            add_to_eastmoney(
-                codes=[entity_id.split("_")[2] for entity_id in shoots], group="今日异动", over_write=False
-            )
+            if len(shoot_up) > 80:
+                logger.warning(f"shoot_up count size: {len(shoot_up)}")
+                shoot_up = shoot_up[:80]
 
-        logger.info(f"Sleep 1 minutes to compute {target_date} shoots tag stats")
-        time.sleep(60 * 1)
+            if shoot_up:
+                over_write = False
+                stock_pools: List[StockPools] = StockPools.query_data(
+                    filters=[StockPools.stock_pool_name == stock_pool_name],
+                    order=StockPools.timestamp.desc(),
+                    limit=1,
+                    return_type="domain",
+                )
+                if stock_pools and (len(stock_pools[0].entity_ids) > 80):
+                    over_write = True
+
+                refresh_stock_pool(
+                    entity_ids=shoot_up,
+                    stock_pool_name=stock_pool_name,
+                    insert_mode=InsertMode.overwrite if over_write else InsertMode.append,
+                    target_date=current_date(),
+                )
+                add_to_eastmoney(
+                    codes=[entity_id.split("_")[2] for entity_id in shoot_up],
+                    group=stock_pool_name,
+                    over_write=over_write,
+                )
+        except Exception as e:
+            logger.error("Failed to handle shoot today", exc_info=True)
+
+        first_time = False
+
+        if not Stock.in_trading_time():
+            current_timestamp = now_pd_timestamp()
+            logger.info(f"calculate shoot finished at: {current_timestamp}")
+            break
+
+        logger.info(f"Sleep 3 seconds")
+        time.sleep(3)
 
 
 if __name__ == "__main__":
     init_log("today_shoot_runner.log")
-    calculate_top()
-    sched.add_job(func=calculate_top, trigger="cron", hour=9, minute=30, day_of_week="mon-fri")
+    calculate_shoot()
+    sched.add_job(func=calculate_shoot, trigger="cron", hour=9, minute=40, day_of_week="mon-fri")
     sched.start()
     sched._thread.join()

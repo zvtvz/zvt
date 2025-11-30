@@ -122,3 +122,9 @@ from .stock_30m_kdata import *
 from .stock_30m_kdata import __all__ as _stock_30m_kdata_all
 
 __all__ += _stock_30m_kdata_all
+
+# import all from submodule stock_quote_log
+from .stock_quote_log import *
+from .stock_quote_log import __all__ as _stock_quote_log_all
+
+__all__ += _stock_quote_log_all

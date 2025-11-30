@@ -359,12 +359,12 @@ class TradableEntity(Entity):
             return [("09:30", "11:30"), ("13:00", "15:00")]
 
     @classmethod
-    def in_real_trading_time(cls, timestamp=None):
+    def in_real_trading_time(cls, timestamp=None, include_bidding_time=True):
         if not timestamp:
             timestamp = now_pd_timestamp(tz=cls.get_timezone())
         else:
             timestamp = pd.Timestamp(timestamp, tz=cls.get_timezone())
-        for open_close in cls.get_trading_intervals(include_bidding_time=True):
+        for open_close in cls.get_trading_intervals(include_bidding_time=include_bidding_time):
             open_time = date_and_time(the_date=timestamp.date(), the_time=open_close[0], tz=cls.get_timezone())
             close_time = date_and_time(the_date=timestamp.date(), the_time=open_close[1], tz=cls.get_timezone())
             if open_time <= timestamp <= close_time:
