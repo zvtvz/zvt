@@ -109,8 +109,9 @@ def register_schema(
             index_list = []
             with engine.connect() as con:
                 # FIXME: close WAL mode for saving space, most of time no need to write in multiple process
-                if db_name in ("zvt_info", "stock_news", "stock_tags"):
+                if db_name in ("zvt_info", "stock_news", "stock_tags", "stock_quote"):
                     con.execute(text("PRAGMA journal_mode=WAL;"))
+                    con.execute(text("PRAGMA journal_size_limit=1073741824;"))
                 else:
                     con.execute(text("PRAGMA journal_mode=DELETE;"))
 

@@ -1068,9 +1068,9 @@ def change_main_tag(change_main_tag_model: ChangeMainTagModel):
 if __name__ == "__main__":
     # print(get_main_tags_in_stock_pool("涨停梯队"))
     # print(delete_tag(tag="赛马概念", tag_type=TagType.sub_tag))
-    # activate_industry_list(industry_list=["半导体"])
+    activate_industry_list(industry_list=["航天航空"])
     # activate_sub_tags(ActivateSubTagsModel(sub_tags=["航天概念", "天基互联", "北斗导航", "通用航空"]))
-    build_default_main_tag(entity_type="stockhk")
+    # build_default_main_tag(entity_type="stockhk")
 
 # the __all__ is generated
 __all__ = [

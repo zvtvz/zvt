@@ -13,7 +13,7 @@ class EMBlockRecorder(Recorder):
 
     def run(self):
         for block_category in [BlockCategory.concept, BlockCategory.industry]:
-            df = em_api.get_tradable_list(entity_type="block", block_category=block_category)
+            df = em_api.get_tradable_list(entity_type="block", block_category=block_category, limit=100)
             self.logger.info(df)
             df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
 

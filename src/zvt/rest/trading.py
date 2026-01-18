@@ -7,6 +7,7 @@ from fastapi_pagination import Page
 import zvt.contract.api as contract_api
 import zvt.trading.trading_service as trading_service
 from zvt.common.trading_models import BuyParameter, SellParameter, TradingResult
+from zvt.tag.tag_schemas import MainTagInfo
 from zvt.trading.trading_models import (
     BuildTradingPlanModel,
     TradingPlanModel,
@@ -54,9 +55,12 @@ def get_query_stock_quote_setting():
         query_setting: List[QueryStockQuoteSetting] = QueryStockQuoteSetting.query_data(
             session=session, return_type="domain"
         )
+        df = MainTagInfo.query_data(return_type="df")
+        tags = df["tag"].tolist()
+
         if query_setting:
-            return query_setting[0]
-        return None
+            return QueryStockQuoteSettingModel(stock_pool_name=query_setting[0].stock_pool_name, main_tags=tags)
+        return QueryStockQuoteSettingModel(stock_pool_name="A股", main_tags=tags)
 
 
 @trading_router.post("/build_query_stock_quote_setting", response_model=QueryStockQuoteSettingModel)

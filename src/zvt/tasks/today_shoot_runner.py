@@ -70,13 +70,13 @@ def calculate_shoot():
             logger.info(f"calculate shoot finished at: {current_timestamp}")
             break
 
-        logger.info(f"Sleep 3 seconds")
-        time.sleep(3)
+        logger.info(f"Sleep 10 seconds")
+        time.sleep(10)
 
 
 if __name__ == "__main__":
     init_log("today_shoot_runner.log")
     calculate_shoot()
-    sched.add_job(func=calculate_shoot, trigger="cron", hour=9, minute=40, day_of_week="mon-fri")
+    sched.add_job(func=calculate_shoot, trigger="cron", hour=9, minute=50, day_of_week="mon-fri")
     sched.start()
     sched._thread.join()

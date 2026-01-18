@@ -314,7 +314,7 @@ def query_tag_quotes(query_tag_quote_model: QueryTagQuoteModel):
 
     tag_df = StockTags.query_data(
         entity_ids=entity_ids,
-        filters=[StockTags.entity_type == entity_type, StockTags.main_tag.in_(query_tag_quote_model.main_tags)],
+        filters=[StockTags.entity_type == entity_type],
         columns=[StockTags.entity_id, StockTags.main_tag],
         return_type="df",
         index="entity_id",

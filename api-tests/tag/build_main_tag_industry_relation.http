@@ -3,11 +3,8 @@ accept: application/json
 Content-Type: application/json
 
 {
-  "main_tag": "AI",
+  "main_tag": "商业航天",
   "industry_list": [
-    "互联网服务",
-    "软件开发",
-    "计算机设备"
-  ],
-  "activate": true
+    "航天航空"
+  ]
 }

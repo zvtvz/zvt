@@ -21,6 +21,7 @@ from zvt.utils.time_utils import (
     to_timestamp_ms,
     date_and_time,
     TIME_FORMAT_MINUTE,
+    is_same_date,
 )
 
 # https://dict.thinktrader.net/nativeApi/start_now.html?id=e2M5nZ
@@ -323,6 +324,8 @@ def tick_to_quote(entity_df):
         cost_time = time.time() - start_time
         logger.info(f"Quotes cost_time:{cost_time} for {len(datas.keys())} stocks")
 
+        return track_time
+
     return on_data
 
 
@@ -412,7 +415,9 @@ def record_stock_quote(subscribe=False):
                 last_time = True
 
             datas = xtdata.get_full_tick(code_list=qmt_stocks)
-            on_data_func(datas=datas)
+            track_time = on_data_func(datas=datas)
+            if first_time and not is_same_date(track_time, current_date()):
+                last_time = True
 
             first_time = False
 

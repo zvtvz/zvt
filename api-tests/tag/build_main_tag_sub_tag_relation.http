@@ -3,12 +3,12 @@ accept: application/json
 Content-Type: application/json
 
 {
-  "main_tag": "华为",
+  "main_tag": "商业航天",
   "sub_tag_list": [
-    "华为汽车",
-    "华为概念",
-    "华为欧拉",
-    "华为昇腾"
+    "航天概念",
+    "天基互联",
+    "北斗导航",
+    "通用航空"
   ],
-  "activate": false
+  "activate": true
 }
