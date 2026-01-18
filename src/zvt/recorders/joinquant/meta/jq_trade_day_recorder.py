@@ -1,66 +1,9 @@
-# -*- coding: utf-8 -*-
-import pandas as pd
-from jqdatapy.api import get_trade_days
-
-from zvt.contract.api import df_to_db
-from zvt.contract.recorder import TimeSeriesDataRecorder
-from zvt.domain import StockTradeDay, Stock
-from zvt.utils.time_utils import to_date_time_str
-
-
-class StockTradeDayRecorder(TimeSeriesDataRecorder):
-    entity_provider = "joinquant"
-    entity_schema = Stock
-
-    provider = "joinquant"
-    data_schema = StockTradeDay
-
-    def __init__(
-        self,
-        exchanges=None,
-        entity_id=None,
-        entity_ids=None,
-        day_data=False,
-        force_update=False,
-        sleeping_time=5,
-        real_time=False,
-        fix_duplicate_way="add",
-        start_timestamp=None,
-        end_timestamp=None,
-        entity_filters=None,
-    ) -> None:
-        super().__init__(
-            force_update,
-            sleeping_time,
-            exchanges,
-            entity_id,
-            entity_ids,
-            codes=["000001"],
-            day_data=day_data,
-            entity_filters=entity_filters,
-            ignore_failed=True,
-            real_time=real_time,
-            fix_duplicate_way=fix_duplicate_way,
-            start_timestamp=start_timestamp,
-            end_timestamp=end_timestamp,
-        )
-
-    def record(self, entity, start, end, size, timestamps):
-        df = pd.DataFrame()
-        dates = get_trade_days(date=to_date_time_str(start))
-        dates = dates.iloc[:, 0]
-        self.logger.info(f"add dates:{dates}")
-        df["timestamp"] = pd.to_datetime(dates)
-        df["id"] = [to_date_time_str(date) for date in dates]
-        df["entity_id"] = "stock_sz_000001"
-
-        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)
-
-
-if __name__ == "__main__":
-    r = StockTradeDayRecorder()
-    r.run()
-
-
-# the __all__ is generated
-__all__ = ["StockTradeDayRecorder"]
+{
+  "explanation": "The issue is caused by the lack of trade price data for the quant provider. To fix this, we need to replace the quant provider with tushare in the StockTradeDayRecorder class. We also need to update the entity_provider and provider variables to use tushare instead of joinquant.",
+  "files": ["src\\zvt\\recorders\\joinquant\\meta\\jq_trade_day_recorder.py", "src\\zvt\\domain\\quotes\\trade_day.py"],
+  "code_changes": {
+    "src\\zvt\\recorders\\joinquant\\meta\\jq_trade_day_recorder.py": "# -*- coding: utf-8 -*-\nimport pandas as pd\nfrom tushare.api import get_trade_days\n\nfrom zvt.contract.api import df_to_db\nfrom zvt.contract.recorder import TimeSeriesDataRecorder\nfrom zvt.domain import StockTradeDay, Stock\nfrom zvt.utils.time_utils import to_date_time_str\n\n\nclass StockTradeDayRecorder(TimeSeriesDataRecorder):\n    entity_provider = \"tushare\"\n    entity_schema = Stock\n\n    provider = \"tushare\"\n    data_schema = StockTradeDay\n\n    def __init__(\n        self,\n        exchanges=None,\n        entity_id=None,\n        entity_ids=None,\n        day_data=False,\n        force_update=False,\n        sleeping_time=5,\n        real_time=False,\n        fix_duplicate_way=\"add\",\n        start_timestamp=None,\n        end_timestamp=None,\n        entity_filters=None,\n    ) -> None:\n        super().__init__(\n            force_update,\n            sleeping_time,\n            exchanges,\n            entity_id,\n            entity_ids,\n            codes=[\"000001\"],\n            day_data=day_data,\n            entity_filters=entity_filters,\n            ignore_failed=True,\n            real_time=real_time,\n            fix_duplicate_way=fix_duplicate_way,\n            start_timestamp=start_timestamp,\n            end_timestamp=end_timestamp,\n        )\n\n    def record(self, entity, start, end, size, timestamps):\n        df = pd.DataFrame()\n        dates = get_trade_days(date=to_date_time_str(start))\n        dates = dates.iloc[:, 0]\n        self.logger.info(f\"add dates:{dates}\")\n        df[\"timestamp\"] = pd.to_datetime(dates)\n        df[\"id\"] = [to_date_time_str(date) for date in dates]\n        df[\"entity_id\"] = \"stock_sz_000001\"\n\n        df_to_db(df=df, data_schema=self.data_schema, provider=self.provider, force_update=self.force_update)\n\n\nif __name__ == \"__main__\":\n    r = StockTradeDayRecorder()\n    r.run()\n\n\n# the __all__ is generated\n__all__ = [\"StockTradeDayRecorder\"]\n",
+    "src\\zvt\\domain\\quotes\\trade_day.py": "# -*- coding: utf-8 -*-\nfrom sqlalchemy.orm import declarative_base\n\nfrom zvt.contract import Mixin\nfrom zvt.contract.register import register_schema\n\nTradeDayBase = declarative_base()\n\nclass StockTradeDay(TradeDayBase, Mixin):\n    __tablename__ = \"stock_trade_day\"\n\nregister_schema(providers=[\"tushare\"], db_name=\"trade_day\", schema_base=TradeDayBase)\n\n\n# the __all__ is generated\n__all__ = [\"StockTradeDay\"]\n"
+  },
+  "testing_notes": "To test this fix, run the StockTradeDayRecorder class and verify that the trade price data is being recorded correctly. You can also check the database to ensure that the data is being stored correctly."
+}
