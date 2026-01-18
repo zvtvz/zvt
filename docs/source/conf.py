@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # -- Project information -----------------------------------------------------
 
 project = "zvt"
-copyright = "2025, foolcage"
+copyright = "2026, foolcage"
 author = "foolcage"
 
 # The full version, including alpha/beta/rc tags
-release = "0.13.4"
+release = "0.13.5"
 
 
 # -- General configuration ---------------------------------------------------
