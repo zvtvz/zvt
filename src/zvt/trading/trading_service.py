@@ -451,12 +451,80 @@ def query_stock_quotes(query_stock_quote_model: QueryStockQuoteModel):
     return result
 
 
-def buy_stocks():
-    pass
+def buy_stocks(symbol: str = None, quantity: float = None, exchange: str = None, 
+               order_type: str = "market", price: float = None, **kwargs):
+    """
+    Buy cryptocurrency using the new crypto trading engine
+    Enhanced implementation replacing the empty function
+    """
+    if not symbol or not quantity:
+        return {"success": False, "message": "Symbol and quantity are required"}
+    
+    try:
+        from zvt.trading.crypto_trading_engine import buy_crypto, OrderType
+        
+        # Convert order type string to enum
+        order_type_enum = OrderType.MARKET if order_type.lower() == "market" else OrderType.LIMIT
+        
+        # Execute buy order
+        result = buy_crypto(
+            symbol=symbol,
+            quantity=quantity,
+            exchange=exchange,
+            order_type=order_type_enum,
+            price=price
+        )
+        
+        return {
+            "success": result.success,
+            "message": result.message,
+            "order_id": result.order_id,
+            "filled_quantity": float(result.filled_quantity) if result.filled_quantity else 0,
+            "avg_fill_price": float(result.avg_fill_price) if result.avg_fill_price else None,
+            "commission": float(result.commission) if result.commission else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in buy_stocks: {e}")
+        return {"success": False, "message": f"Buy order failed: {e}"}
 
 
-def sell_stocks():
-    pass
+def sell_stocks(symbol: str = None, quantity: float = None, exchange: str = None,
+                order_type: str = "market", price: float = None, **kwargs):
+    """
+    Sell cryptocurrency using the new crypto trading engine
+    Enhanced implementation replacing the empty function
+    """
+    if not symbol or not quantity:
+        return {"success": False, "message": "Symbol and quantity are required"}
+    
+    try:
+        from zvt.trading.crypto_trading_engine import sell_crypto, OrderType
+        
+        # Convert order type string to enum
+        order_type_enum = OrderType.MARKET if order_type.lower() == "market" else OrderType.LIMIT
+        
+        # Execute sell order
+        result = sell_crypto(
+            symbol=symbol,
+            quantity=quantity,
+            exchange=exchange,
+            order_type=order_type_enum,
+            price=price
+        )
+        
+        return {
+            "success": result.success,
+            "message": result.message,
+            "order_id": result.order_id,
+            "filled_quantity": float(result.filled_quantity) if result.filled_quantity else 0,
+            "avg_fill_price": float(result.avg_fill_price) if result.avg_fill_price else None,
+            "commission": float(result.commission) if result.commission else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in sell_stocks: {e}")
+        return {"success": False, "message": f"Sell order failed: {e}"}
 
 
 def build_query_stock_quote_setting(build_query_stock_quote_setting_model: BuildQueryStockQuoteSettingModel):
