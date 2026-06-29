@@ -43,7 +43,7 @@ add_pagination(app)
 
 def main():
     log_config = os.path.join(zvt_env["resource_path"], "log_conf.yaml")
-    uvicorn.run("zvt_server:app", host="0.0.0.0", reload=True, port=8090, log_config=log_config)
+    uvicorn.run("zvt.zvt_server:app", host="0.0.0.0", reload=True, port=8090, log_config=log_config)
 
 
 if __name__ == "__main__":
