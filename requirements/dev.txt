@@ -1,4 +1,4 @@
 # dev tools
-pytest == 6.2.0
+pytest == 9.0.3
 pre-commit == 2.15.0
 rst2pdf
