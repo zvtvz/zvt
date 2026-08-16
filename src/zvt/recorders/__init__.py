@@ -100,6 +100,12 @@ from .exchange import __all__ as _exchange_all
 
 __all__ += _exchange_all
 
+# import all from submodule fxmacrodata
+from .fxmacrodata import *
+from .fxmacrodata import __all__ as _fxmacrodata_all
+
+__all__ += _fxmacrodata_all
+
 # import all from submodule wb
 from .wb import *
 from .wb import __all__ as _wb_all
