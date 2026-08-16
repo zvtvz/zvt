@@ -647,6 +647,14 @@ the data could be updated from different provider, this make the system stable.
 
 > add other providers， [Data extension tutorial](https://zvtvz.github.io/zvt/#/data_extending)
 
+FXMacroData is available as the `fxmacrodata` provider for daily currency
+reference-rate data. FX history normally requires a key, read from
+`FXMACRODATA_API_KEY` or `FXMD_API_KEY`. The provider preserves
+reference-observation OHLC when available, and otherwise maps the daily
+reference value to OHLC with zero volume. It implements currency metadata and
+`Currency1dKdata`; it does not expose FXMacroData macro history, calendar,
+forecasts, COT, commodities, sessions, news, or seasonality surfaces.
+
 ## Development
 
 ### Clone

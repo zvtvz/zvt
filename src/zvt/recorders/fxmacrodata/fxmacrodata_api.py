@@ -10,7 +10,8 @@ from zvt.contract.api import decode_entity_id
 from zvt.utils.time_utils import to_pd_timestamp
 
 PROVIDER = "fxmacrodata"
-FXMACRODATA_API_BASE_URL = "https://fxmacrodata.com/api/v1"
+FXMACRODATA_API_BASE_URL = "https://api.fxmacrodata.com/v1"
+FXMACRODATA_PAGE_SIZE = 100
 FXMACRODATA_API_KEY_ENV_VARS = ("FXMACRODATA_API_KEY", "FXMD_API_KEY")
 FXMACRODATA_DEFAULT_CURRENCY_PAIRS = [
     "AUDUSD",
@@ -40,7 +41,7 @@ def to_currency_entity_id(code):
 
 def normalize_currency_pair(code):
     normalized = "".join(char for char in str(code).upper() if char.isalpha())
-    if len(normalized) != 6:
+    if len(normalized) != 6 or not normalized.isascii():
         raise ValueError("currency pair must look like EURUSD or EUR/USD")
     return normalized
 
@@ -87,19 +88,37 @@ def get_kdata(
     url = f"{base_url.rstrip('/')}/forex/{base_currency}/{quote_currency}"
 
     http = session or requests
-    response = http.get(
-        url,
-        params=params,
-        headers={"Accept": "application/json"},
-        timeout=timeout,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    close_response(response)
+    params.update({"limit": FXMACRODATA_PAGE_SIZE, "offset": 0})
+    rows = []
+    while True:
+        try:
+            response = http.get(
+                url,
+                params=params,
+                headers={"Accept": "application/json"},
+                timeout=timeout,
+            )
+        except requests.RequestException as exc:
+            raise RuntimeError("FXMacroData request failed") from exc
+        try:
+            if not response.ok:
+                raise RuntimeError(
+                    f"FXMacroData returned HTTP {response.status_code}"
+                )
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                raise ValueError("FXMacroData returned invalid JSON") from exc
+        finally:
+            close_response(response)
 
-    rows = payload.get("data") if isinstance(payload, dict) else None
-    if not isinstance(rows, list):
-        raise ValueError("FXMacroData response did not include a data list")
+        page = payload.get("data") if isinstance(payload, dict) else None
+        if not isinstance(page, list):
+            raise ValueError("FXMacroData response did not include a data list")
+        rows.extend(row for row in page if isinstance(row, dict))
+        if len(page) < FXMACRODATA_PAGE_SIZE:
+            break
+        params["offset"] += FXMACRODATA_PAGE_SIZE
 
     kdatas = []
     for row in rows:
@@ -111,6 +130,10 @@ def get_kdata(
             continue
         timestamp = to_pd_timestamp(date_value)
         price = float(price_value)
+        open_value = float(row.get("open", price))
+        high_value = float(row.get("high", price))
+        low_value = float(row.get("low", price))
+        close_value = float(row.get("close", price))
         kdatas.append(
             {
                 "id": generate_kdata_id(
@@ -124,10 +147,10 @@ def get_kdata(
                 "code": code,
                 "name": code,
                 "level": IntervalLevel.LEVEL_1DAY.value,
-                "open": price,
-                "close": price,
-                "high": price,
-                "low": price,
+                "open": open_value,
+                "close": close_value,
+                "high": high_value,
+                "low": low_value,
                 "volume": 0.0,
                 "turnover": 0.0,
                 "turnover_rate": 0.0,
@@ -135,7 +158,12 @@ def get_kdata(
         )
 
     if kdatas:
-        return pd.DataFrame.from_records(kdatas).sort_values("timestamp")
+        return (
+            pd.DataFrame.from_records(kdatas)
+            .drop_duplicates(subset=["timestamp"], keep="first")
+            .sort_values("timestamp")
+            .reset_index(drop=True)
+        )
 
 
 def close_response(response):
