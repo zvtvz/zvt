@@ -23,13 +23,14 @@ class FakeSession:
         self.response = response
         self.calls = []
 
-    def get(self, url, params=None, headers=None, timeout=None):
+    def get(self, url, params=None, headers=None, timeout=None, allow_redirects=True):
         self.calls.append(
             {
                 "url": url,
                 "params": params,
                 "headers": headers,
                 "timeout": timeout,
+                "allow_redirects": allow_redirects,
             }
         )
         return self.response
@@ -81,6 +82,7 @@ def test_get_kdata_fetches_fxmacrodata_prices():
             },
             "headers": {"Accept": "application/json", "X-API-Key": "test-key"},
             "timeout": 12,
+            "allow_redirects": False,
         }
     ]
     assert response.closed
@@ -151,3 +153,34 @@ def test_get_kdata_http_error_does_not_expose_key():
         raise AssertionError("HTTP error was not raised")
 
     assert response.closed
+
+
+def test_get_kdata_does_not_follow_redirects_with_key():
+    response = FakeResponse({}, status_code=302)
+    session = FakeSession(response=response)
+
+    try:
+        fxmacrodata_api.get_kdata(
+            entity_id="currency_forex_EURUSD",
+            session=session,
+            api_key="test-secret",
+        )
+    except RuntimeError as exc:
+        assert "redirect" in str(exc)
+        assert "test-secret" not in str(exc)
+    else:
+        raise AssertionError("redirect was not rejected")
+
+    assert len(session.calls) == 1
+    assert session.calls[0]["allow_redirects"] is False
+    assert response.closed
+
+
+def test_api_key_whitespace_is_stripped_or_rejected_without_echo():
+    assert fxmacrodata_api._request_headers(" test-key\n")["X-API-Key"] == "test-key"
+    try:
+        fxmacrodata_api._request_headers("test secret")
+    except ValueError as exc:
+        assert "test secret" not in str(exc)
+    else:
+        raise AssertionError("key with whitespace was accepted")

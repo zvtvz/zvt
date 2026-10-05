@@ -92,15 +92,19 @@ def get_kdata(
     rows = []
     while True:
         try:
+            # Redirects are not followed so the key header is never replayed to another host.
             response = http.get(
                 url,
                 params=params,
                 headers=headers,
                 timeout=timeout,
+                allow_redirects=False,
             )
         except requests.RequestException as exc:
             raise RuntimeError("FXMacroData request failed") from exc
         try:
+            if 300 <= response.status_code < 400:
+                raise RuntimeError(f"FXMacroData returned an unexpected redirect (HTTP {response.status_code})")
             if not response.ok:
                 raise RuntimeError(f"FXMacroData returned HTTP {response.status_code}")
             try:
@@ -181,7 +185,9 @@ def _query_params(start_timestamp, end_timestamp):
 
 def _request_headers(api_key):
     headers = {"Accept": "application/json"}
-    api_key = api_key or _api_key_from_environment()
+    api_key = (api_key or _api_key_from_environment() or "").strip()
+    if any(char.isspace() for char in api_key):
+        raise ValueError("FXMacroData API key must not contain whitespace")
     if api_key:
         headers["X-API-Key"] = api_key
     return headers
