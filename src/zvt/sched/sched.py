@@ -30,7 +30,7 @@ def sched_tasks():
 
             zvt_scheduler.add_job(func=record_stock_quote, trigger="cron", hour=9, minute=19, day_of_week="mon-fri")
         except Exception as e:
-            logger.error("QMT not work", e)
+            logger.error("QMT not work: %s", e)
     else:
         logger.warning("QMT need run in Windows!")
 

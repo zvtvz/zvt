@@ -65,13 +65,13 @@ class EmailInformer(Informer):
             msg.attach(plain_text)
             smtp_client.sendmail(zvt_config["email_username"], to_user, msg.as_string())
         except Exception as e:
-            logger.exception("send email failed", e)
+            logger.exception("send email failed: %s", e)
         finally:
             if smtp_client:
                 try:
                     smtp_client.quit()
                 except Exception as e:
-                    logger.exception("smtp_client quit failed", e)
+                    logger.exception("smtp_client quit failed: %s", e)
 
     def send_message(self, to_user, title, body, sub_size=20, with_sender=True, **kwargs):
         if type(to_user) is list and sub_size:
