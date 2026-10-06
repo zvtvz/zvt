@@ -241,7 +241,7 @@ if platform.system() == "Windows":
     try:
         import zvt.recorders.qmt as qmt_recorder
     except Exception as e:
-        logger.error("QMT not work", e)
+        logger.error("QMT not work: %s", e)
 else:
     logger.warning("QMT need run in Windows!")
 

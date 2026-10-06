@@ -316,6 +316,10 @@ class CrossMaVolumeFactor(VolumeUpMaFactor):
 
 
 if __name__ == "__main__":
+    from zvt.api.kdata import get_latest_kdata_date
+    from zvt.contract.factor import TargetType
+    from zvt.utils.time_utils import date_time_by_interval
+
     provider = "em"
     target_date = get_latest_kdata_date(entity_type="stock", provider=provider, adjust_type=AdjustType.qfq)
     factor = VolumeUpMaFactor(

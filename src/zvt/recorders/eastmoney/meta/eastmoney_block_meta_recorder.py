@@ -91,7 +91,7 @@ class EastmoneyBlockStockRecorder(TimeSeriesDataRecorder):
             self.logger.info("finish recording block:{},{}".format(entity.category, entity.name))
 
         except Exception as e:
-            self.logger.error("error:,resp.text:", e, resp.text)
+            self.logger.error("error: %s, resp.text: %s", e, resp.text)
         self.sleep()
 
 

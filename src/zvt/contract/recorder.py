@@ -303,7 +303,7 @@ class TimeSeriesDataRecorder(EntityEventRecorder):
     def evaluate_start_end_size_timestamps(self, entity):
         #: not to list date yet
         if entity.timestamp and (entity.timestamp >= now_pd_timestamp()):
-            self.logger.info("ignore entity: {} list date: {}", entity.id, entity.timestamp)
+            self.logger.info("ignore entity: %s list date: %s", entity.id, entity.timestamp)
             return entity.timestamp, None, 0, None
 
         latest_saved_record = self.get_latest_saved_record(entity=entity)
